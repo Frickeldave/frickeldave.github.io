@@ -17,8 +17,8 @@ permissions:
 jobs:
   # Combined job: performs build and then deploy. Runs only for allowed refs or manual dispatch.
   deploy-and-build:
-    # Only run on manual dispatch, on main, or when a pull request targeting `main` was merged
-    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main') }}
+    # Only run on manual dispatch or when a pull request targeting `main` was merged AND we're on main
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.ref == 'refs/heads/main') }}
     runs-on: [self-hosted, frickeldave-main]
     environment:
       name: github-pages
