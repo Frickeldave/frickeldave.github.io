@@ -46,7 +46,7 @@ jobs:
           echo "Variables: homeassistant_reset=false, tag_select=frickeldave-build"
 
   deploy:
-    # Only run when manually dispatched or when the pull request was merged (not when )
+    # Only run when manually dispatched or when the pull request was merged
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) }}
     runs-on: [self-hosted, frickeldave-main]
     steps:
