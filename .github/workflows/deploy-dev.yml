@@ -9,12 +9,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    # Only run when manually dispatched or when the pull request was merged (not when )
+  deploy-and-build:
+    # Only run when manually dispatched or when the pull request was merged
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) }}
     runs-on: [self-hosted, frickeldave-main]
     steps:
-      - name: Trigger HomeNet Ansible Deployment
+      - name: Trigger HomeNet Ansible Deployment (build tag)
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.HOMENET_PAT }}
@@ -38,19 +38,14 @@ jobs:
               throw error;
             }
 
-      - name: Log deployment trigger
+      - name: Log build deployment trigger
         run: |
-          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow"
+          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (build)"
           echo "Target: waltraud-dc.yaml playbook"
           echo "Limit: waltraud"
           echo "Variables: homeassistant_reset=false, tag_select=frickeldave-build"
 
-  deploy:
-    # Only run when manually dispatched or when the pull request was merged
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) }}
-    runs-on: [self-hosted, frickeldave-main]
-    steps:
-      - name: Trigger HomeNet Ansible Deployment
+      - name: Trigger HomeNet Ansible Deployment (deploy tag)
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.HOMENET_PAT }}
@@ -74,9 +69,9 @@ jobs:
               throw error;
             }
 
-      - name: Log deployment trigger
+      - name: Log deploy deployment trigger
         run: |
-          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow"
+          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (deploy)"
           echo "Target: waltraud-dc.yaml playbook"
           echo "Limit: waltraud"
           echo "Variables: homeassistant_reset=false, tag_select=frickeldave"
