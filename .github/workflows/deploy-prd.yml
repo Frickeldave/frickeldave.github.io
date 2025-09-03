@@ -15,13 +15,19 @@ permissions:
   id-token: write
 
 jobs:
-  build:
-    # Only run on manual dispatch or when the pull request was merged
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) }}
+  # Combined job: performs build and then deploy. Runs only for allowed refs or manual dispatch.
+  deploy-and-build:
+    # Only run on manual dispatch, on main, or when a pull request targeting `main` was merged
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main') }}
     runs-on: [self-hosted, frickeldave-main]
+    environment:
+      name: github-pages
+      # The deploy step will populate this output; kept here for clarity
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v4
+
       - name: Install, build, and upload your site
         uses: withastro/action@v3
         with:
@@ -29,13 +35,6 @@ jobs:
           node-version: 22 # The specific version of Node that should be used to build your site. Defaults to 20. (optional)
           #package-manager: pnpm@latest # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
 
-  deploy:
-    needs: build
-    runs-on: [self-hosted, frickeldave-main]
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
