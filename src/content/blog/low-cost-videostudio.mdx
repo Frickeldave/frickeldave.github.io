@@ -1,0 +1,567 @@
+---
+title: Baue dein low-cost videostudio
+description: beschreibung
+date: 2024-09-21 # TODO: Nachkontrollieren
+image: "@assets/blog/diy/low-cost-videostudio/lcvs-header.jpg"
+imageAlt: Header image für den Blog Artikel über den Aufbau eines lowcost Videostudios
+categories: [DIY]
+author: Frickeldave
+tags: [Video, Kamera]
+hideToc: false
+---
+
+import RedirectLink from "@components/common/RedirectLink.astro";
+import { Image } from "astro:assets";
+import lcvs001 from "@assets/blog/diy/low-cost-videostudio/lcvs-001.png";
+import lcvs002 from "@assets/blog/diy/low-cost-videostudio/lcvs-002.png";
+import lcvs003 from "@assets/blog/diy/low-cost-videostudio/lcvs-003.png";
+import lcvs004 from "@assets/blog/diy/low-cost-videostudio/lcvs-004.png";
+import lcvs005 from "@assets/blog/diy/low-cost-videostudio/lcvs-005.png";
+import lcvs006 from "@assets/blog/diy/low-cost-videostudio/lcvs-006.png";
+import lcvs007 from "@assets/blog/diy/low-cost-videostudio/lcvs-007.png";
+import lcvs008 from "@assets/blog/diy/low-cost-videostudio/lcvs-008.png";
+import lcvs009 from "@assets/blog/diy/low-cost-videostudio/lcvs-009.png";
+import lcvs010 from "@assets/blog/diy/low-cost-videostudio/lcvs-010.png";
+import lcvs011 from "@assets/blog/diy/low-cost-videostudio/lcvs-011.png";
+import lcvs012 from "@assets/blog/diy/low-cost-videostudio/lcvs-012.png";
+import lcvs013 from "@assets/blog/diy/low-cost-videostudio/lcvs-013.png";
+import lcvs014 from "@assets/blog/diy/low-cost-videostudio/lcvs-014.png";
+import lcvs015 from "@assets/blog/diy/low-cost-videostudio/lcvs-015.png";
+
+Die letzten Monate habe ich mich damit beschäftigt, meinen Arbeitsplatz in ein Videostudio zu
+verwandeln. Wenn du dich auf YouTube und anderen Quellen umschaust, wirst du viele Tutorials finden,
+die dir Hardware empfehlen, welche auf einzelne Komponenten und Einstellungen für den Aufbau eines
+Videostudio eingehen. Leider ist aber die “Overall” Übersicht, wie du mal klein und effektiv starten
+kannst, selten zu finden. Zudem, wenn dein Budget dünn wie ein Selfie-Stick ist, wirst du da wohl
+eher weniger weit damit kommen. In diesem Artikel möchte ich dir zeigen, wie du dir mit wenig
+Aufwand und Kosten, ein erstes Setup für ein Videostudio zusammenstellen kannst, um professionell
+aussehende Videos zu produzieren. Meine Präferenz lag hauptsächlich auf der Erstellung von
+Schulungsvideos. Allerdings eignet sich dieser Guide selbstverständlich auch für die Produktion von
+YouTube Videos, sowie für Live-Streaming.
+
+## Kosten
+
+Insgesamt liegen die Unkosten des Videostudio bei ca. 500€. Rechnet man mal zusammen, was ein
+professionelles Equipment mancher Streamer kostet (DSLR Kamera, Lampen, Streamdeck,
+Mikrofonverstärker, Mischpult etc.), ist dies allerdings nur ein Bruchteil der Anschaffungskosten.
+Natürlich spricht nichts dagegen, das Setup durch Austausch einzelner Komponenten nach und nach
+seinen Wünschen anzupassen und zu erweitern. Die einzelnen Komponenten meines Start-Setup zeige ich
+dir nun auf.
+
+### Hardware des Videostudio
+
+Ich habe versucht so viel wie möglich mit Softwarekomponenten zu arbeiten. Zum einen mag ich es
+nicht, wenn der ganze Schreibtisch mit Geräten voll steht, zum anderen ist das natürlich auch eine
+Preisfrage. Ganz ohne einige Hardwareanschaffungen kommst du allerdings nicht weiter. Hier eine
+Auflistung der Hardwarekomponenten die ich im Einsatz habe:
+
+- <RedirectLink
+    id="rollei-lumis-key-light"
+    text="2 Video Desktop Lampen (50€)"
+    className="custom-link-style"
+  />
+- <RedirectLink
+    id="rollei-panel-photo-light"
+    text="2 große Videolampen zur Beleuchtung des Hintergrunds (120€)"
+    className="custom-link-style"
+  />
+- Greenscreen (140€) - Hier kann ich Dir keinen Empfehlunglink geben, da es auf dein persönliches
+  Setup ankommt ob du eine hängenden, einen auf Ständern oder eine Rollup Greenscreen bevorzugst.
+- <RedirectLink
+    id="logitech-streamcam"
+    text="Logitech Streamcam (90€)"
+    className="custom-link-style"
+  />
+- <RedirectLink
+    id="trust-usb-mikrofon"
+    text="Trust USB Mikrofon inkl. Arm (80 €)"
+    className="custom-link-style"
+  />
+
+Es geht auch noch günstiger (siehe nächster Absatz), aber für richtig gute Ergebnisse und ein
+schnell verfügbares Setup habe ich mit dieser Konfiguration die für mich beste Balance aus Kosten
+und Nutzen für das Videostudio gefunden. Den PC selber rechne ich hier mal nicht mit ein. Das System
+sollte einigermaßen moderate Leistungsdaten haben, muss aber kein 5000€ High-End Bolide sein.
+Genauso habe ich hier die Lautsprecherausstattung und Headset mal außen vor gelassen und angenommen,
+dass dies vorhanden ist.
+
+**Wie kannst du hier am Anfang Kosten sparen**
+
+Die Apps “iVCam” und “Droidcam” wandeln dein Smartphone in eine Webcam um. So kommst du erstmal ohne
+die Anschaffung einer teuren Webcam aus. Licht kannst du mit ein bisschen Bastelei und ein paar
+alten Lampen erzeugen. Als Greenscreen kann auch ein altes gefärbtes Bettuch herhalten. Zudem gibt
+es auch Greenscreens auf Rollen die günstiger sind. Software des Videostudio Also Software für dein
+Videostudio benötigst du die folgende, teils kostenpflichtige Software.
+
+### Software des Videostudio
+
+- <RedirectLink id="obs" text="OBS Studio" className="custom-link-style" />
+- <RedirectLink
+    id="voicemeeter"
+    text="Voicemeeter Potato (10-35 €)"
+    className="custom-link-style"
+  />
+- <RedirectLink id="touchportal" text="Touchportal (13,99 €)" className="custom-link-style" />
+
+Auch hier hast du ein bisschen Spielraum. Du kannst die Software erst einmal testen bevor du eine
+Lizenz kaufst. Touchportal ist auch erstmal eine Komfortfunktion und nicht zwingend notwendig.
+
+## Installation des Videostudio
+
+Kommen wir nun zur Installation des wesentlichen Equipment. Wie schon erwähnt, ich beschränke mich
+hier auf das wesentliche was du benötigst, um zu starten. Alles was nicht unbedingt benötigt ist,
+werde ich dir entsprechend markieren.
+
+### Hardwareinstallation
+
+Das Wesentliche ist ausreichend Beleuchtung mit identischer Lichtfarbe. Das bedeutet, natürliches
+Sonnenlicht ist dein Feind. Versuche alle Fenster und fremde Lichtquellen los zu werden und die
+Umgebung rund um deinen Aufnahmeplatz möglichst statisch zu konfigurieren, ansonsten fängst du vor
+jeder Aufnahme erstmal an, alles neu zu konfigurieren.
+
+<Image src={lcvs001} alt="Das Setup aus der Vogelperspektive" />
+
+### Greenscreen
+
+Der Greenscreen ermöglicht es dir, dich komplett aus dem Bild frei zu schneiden. Die Kamera/
+Software erkennt dabei den grünen Farbanteil im Bild und rechnet diesen heraus. Den Greenscreen
+solltest du so positionieren, dass hinter dir noch genug Platz ist, dass die Lampen für die
+Beleuchtung des Greenscreen, diesen noch ordentlich anstrahlen können, ohne Schatten zu werfen.
+Weiterhin muss die Position des Greenscreen zusammen mit der Webcam festgelegt werden.
+
+### Webcam
+
+Die Webcam solltest du so positionieren, dass sie dich mittig aufnimmt und dabei im Hintergrund nur
+den Greenscreen im Bild hat (wie gesagt, mein Fokus liegt auf Schulungsvideos, anderer Content
+erfordert ggf. auch eine andere Kameraposition). Sollte dies in deiner Situation nicht machbar sein,
+kannst du in OBS das Bild auf jeder Seite (links, rechts, oben und unten) beschneiden.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs002} alt="Alle automatischen Einstellungen von Logitech deaktivieren" />
+  </div>
+  <div className="lg:w-2/3">
+    Wichtig ist es, alle automatischen Bildoptimierungsfunktionen der Webcam zu deaktivieren.
+    Autofokus fokussiert manchmal Dinge die nicht fokussiert sein sollen, “Auto exposure” produziert
+    eine einheitlich helle Bildsoße die oft auch unschärfe erzeugt, Auto White balance verfälscht
+    die Farben und auch die HDR Funktion erzeugt oft seltsame Bildeffekte die sich je nach
+    Tagessituation auch noch verändern. Also alles aus. Im Falle der Logitech Streamcam geht dies
+    zum Glück alles recht einfach über die “Logitune” Anwendung.
+  </div>
+</div>
+
+### Greenscreen-Ausleuchtung
+
+2 Flächenstrahler sind für die Ausleuchtung des Greenscreens zuständig. Achte hier darauf, den
+Greenscreeen hinter der Person so gleichmäßig wie möglich auszuleuchten. Sind die Lampen zu nah am
+Greenscreen montiert, hast du “weiße” Flecken auf dem Greenscreen, was dazu führen, dass die von der
+Kamera erkannte Farbe eben nicht mehr grün, sondern weiß ist und somit nicht mehr ausgeblendet wird.
+Sind die Lampen zu weit weg montiert reicht die Ausleuchtung nicht und du wirst ständig geblendet
+sein, was speziell bei längeren Aufnahmen recht unangenehm sein kann. Bevor du die Strahler fest
+montierst, experimentiere hier auf jeden Fall ausgiebig herum.
+
+### Ausleuchtung der Person
+
+2 weitere Lampen sind für die Beleuchtung der aufzunehmenden Person zuständig. Eine Lampe dient als
+Führungslicht. Sie definiert die “Hauptseite” deines Gesichtes und ist am stärksten eingestellt. Das
+Führungslicht sollte ungefähr im 45° Winkel zur Kamera aufgestellt sein und etwas höher positioniert
+sein als die Kamera selbst.
+
+Eine weitere Lampe wird als Fülllicht genutzt. Dieses sorgt dafür, dass die andere Seite deines
+Gesichtes nicht komplett verschattet ist, sondern Konturen nach wie vor klar erkennbar sind. Das
+Fülllicht ist, in der Regel, halb so hell (bei gleicher Entfernung), wie das Führungslicht.
+Idealerweise machst du das Füllicht mit ein bisschen dünnen weißen Stoff (oder Softbox) etwas
+weicher. Den Winkel zur Kamera kannst du zwischen 20° und 60° einstellen. Es kommt dabei natürlich
+immer auf deine Umgebung an.
+
+Mit dem Führungs- und Fülllicht solltest du ein wenig rumspielen. Als erstes versuche die Helligkeit
+so niedrig wie möglich, bei bestmöglichen Bild, einzustellen. Auch hier gilt: Sehr starke
+Beleuchtung sorgt dafür, dass deine Augen schnell ermüden und du starke Schatten auf der Greenwall
+erhälst. Auf der anderen Seite ist eine gute Ausleuchtung des Gesichtes wichtig. Ich verfahre hier
+mit dem Ansatz: “So viel wie nötig, so wenig wie möglich”.
+
+### Optional: Hairlight oder Backlight
+
+Wenn du magst, kannst du noch eine dritte Lampe montieren, die von schräg oben auf deinen Hinterkopf
+scheint. Diese sorgt dafür, dass du dich klar von deinem Hintergrund abhebst. Diese dritte
+Beleuchtung solltest du erstmal mit einer vorhandenen Lampe ausprobieren, diese muss nicht unbedingt
+immer förderlich sein. Wenn du z.B. wenig Haare hast willst du dies vielleicht nicht noch zusätzlich
+hervorheben. Auch hier gilt: experimentieren.
+
+**Zusammenfassend**
+
+Es ist schwer, pauschal zu sagen wie du dein Licht gestalten musst. Es kommt immer sehr auf dein
+individuelles Umfeld und die äußeren Einflüße an. Aber ich hoffe, ich konnte dir hier einen guten
+Einblick in ein erstes Startsetup geben.
+
+## Softwareinstallation
+
+Als nächstes führe ich dich durch die Installation aller Softwarekomponenten für dein Videostudio
+und die grundlegende Konfiguration.
+
+### VoiceMeeter Potato
+
+VoiceMeeter ist ein virtuelles Mischpult, was es Dir ermöglicht, deinen Sound zwischen den
+physischen und virtuellen Geräten zu “routen”. Leider ist VoiceMeeter nicht unbedingt simpel zu
+verstehen und die Anleitungen im Netz, sind wie immer, von sehr unterschiedlicher Qualität. Also
+versuche ich mich auch mal an einer Beschreibung, mit der jeder grundsätzlich klar kommen sollte. Du
+installierst Voicemeeter mit den Standard-Einstellungen wie vorgegeben.
+
+- <RedirectLink id="voicemeeter" text="Download voicemeeter" className="custom-link-style" />
+- <RedirectLink
+    id="voicemeeter-virtual-cable"
+    text="Optional: Download virtual cable"
+    className="custom-link-style"
+  />
+
+Voicemmeeter gibt es in 3 verschiedenen Ausführungen. Die Standard Edition, “Voicemeeter Banana” und
+“Voicemeeter Potato” mit dem größten Funktionsumfang. Für diese Anleitung reicht theoretische die
+“Banana-Edition” der Preisunterschied ist aber nicht erheblich, daher empfehle ich gleich die Potato
+Edition.
+
+#### Die Herausforderung bei VoiceMeeter
+
+Die Herausforderung bei Voicemeeter liegt an der sehr unübersichtlichen Benennung der Kanäle. In dem
+folgenden Beispiel erkläre ich dir ein minimalistisches Setup, in dem folgende Komponenten gemanaged
+werden:
+
+**Input Kanäle**
+
+- Tisch-Mikrofon — Mein Standard Mikrofon -> Trust USB
+- Headset-Mikrofon — Auf das ich per Knopfdruck umschalten und damit auch im Raum herumgehen kann
+- Spotify Musik soll getrennt regel- und konfigurierbar sein.
+- Collaboration client — In meinem Fall nutze ich Microsoft Teams. Aber diese Anleitung funktioniert
+  identisch mit Zoom, Google Meet, etc. Auch kannst du mehrere Clients parallel auf deinem System
+  konfigurieren. Möchtet du auch mehrere parallel nutzen (zum Beispiel gleichzeitig streamen über 2
+  Clients), kommst du, unter Umständen, nicht an der Installation weiterer “virtual cables” herum.
+
+**Output Kanäle**
+
+- Genereller Sound auf den Lautsprechern — Grundsätzlich soll aller Sound auf den Lautsprechern
+  ausgegeben werden
+
+- Headset — Alternativ möchte ich einzelne Kanäle auf das Headset legen. Einfaches Beispiel: Die
+  langweilige Besprechung landet leise auf den Lautsprechern, auf dem Headset läuft Spotify ;-).
+
+Am Ende sieht die Konfiguration wie folgt aus:
+
+<Image src={lcvs003} alt="Die finale Konfiguration von VoiceMeeter Potato" />
+
+Im folgenden werden wir uns nun gemeinsam von links nach rechts durch das Mischpult arbeiten und die
+Konfiguration vornehmen. Ich kratze mit dir hier nur an der Oberfläche, bitte check auch für weitere
+Details das Handbuch von VoiceMeeter.
+
+<RedirectLink id="voicemeeter-manual" text="Voicemeeter Handbuch" className="custom-link-style" />
+
+#### (Reelle) Input devices konfigurieren
+
+Als Inputs sind die Geräte bezeichnet, die einen Sound in den Mixer eingeben, in meinem Fall sind
+das 2 Mikrofone. Ein Tischmikrofon und ein Headset Mikrofon.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs004} alt="Auswahl eines physikalischen Input devices" />
+  </div>
+  <div className="lg:w-2/3">
+    Der linke Regler steuert das Hauptmikrofon, der zweite Regler das Headset Mikrofon. Einstellen
+    kannst du die Quellen ganz simpel mit einem Klick auf den Text “Select input device” (unterhalb
+    von “Hardware input X”). Wir verwenden immer die “WDM” Quellen. Du hast auch die Möglichkeit,
+    die Ausgabe einer Applikation auf den Hardwarekanal zu legen. Dafür sind die “Virtual cables”
+    nutzbar (hier WDM: Cable Output), die du zusätzlich auf deinem System installierst. In dieser
+    Konfiguration ist dies aber nicht notwendig und macht die Sache unnötig kompliziert.
+  </div>
+</div>
+
+#### Virtuelle Input Devices
+
+Virtuelle Input Devices sind Applikationen, die jeweils auch eine eigene Tonausgabe haben.
+Alternativ bietet Voicemeeter eben auch die “Virtual Inputs” an, die du mit dem Name “VAIO”, “AUX”
+und “VAIO 3” im mittleren Bereich des Mischpultes findest.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs005} alt="Umstellen der Standard Windows Ausgabe zu Voicemeeter" />
+  </div>
+  <div className="lg:w-2/3">
+    Als erstes legen wir allen Sound des PCs auf “Voicemeeter VAIO”. Hierfür öffnest du deine Windows-Soundeinstellungen und stellst den generellen Soundoutput auf “Voicemeeter Input (VB-Audio VoiceMeeter VAIO)” um. Wie im Screenshot gezeigt, anhand eines Windows 11 PCs.
+
+    Damit wird aller Sound, der auf deinem PC läuft, nun auch in das Mischpult geroutet, deswegen heißt das Sounddevice “INPUT…“.
+
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs006} alt="Routing der Soundausgabe einer Windows App zu Voicemeeter" />
+  </div>
+  <div className="lg:w-2/3">
+    Spotify will ich auf einem eigenen Kanal haben, um die Lautstärke dort gesondert anzupassen.
+    Hier wird es ein bisschen komplizierter, da in der Spotify-App die Soundausgabe nicht explizit
+    angegeben werden kann, wie es z.B. in Microsoft Teams der Fall ist. Glücklicherweise bietet
+    Windows (ab Win10, hier gezeigt mit Win11), hier aber ein Applikationsbezogenes Sound-Routing
+    an. Lass als erstes irgendwas auf Spotify abspielen. Nun wechselst du, in die Sound
+    Einstellungen und startest dort den “Volume Mixer“. Jetzt kannst du für Spotify das Output
+    Device auf einen freien virtuellen Kanal legen, in meinem Fall “VoiceMeeter Aux Input“.
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs007} alt="Konfiguration des collaboration clients am Beispiel von MS Teams" />
+  </div>
+  <div className="lg:w-2/3">
+    Als letztes wird noch unser Collaboration Client (in meinem Beispiel Microsoft Teams) so
+    konfiguriert, dass die Ausgabe von Teams in VoiceMeeter landet. Bei dieser Gelegenheit kannst du
+    auch gleich einstellen, dass Teams als Mikrofon nicht das echte Mikrofon, sondern den
+    Ausgabekanal “VoiceMeeter VAIO 3 Output” verwendet. Die Erklärung hierzu folgt später.
+  </div>
+</div>
+
+#### (Reelle) Output devices konfigurieren Jetzt pumpen wir allen Sound in VoiceMeeter rein. Im nächsten
+
+Schritt wird konfiguriert, wie die Sounds auch wieder ausgegeben werden.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    Mit den Buttons “A1”, “A2”, … konfigurierst du deine Ausgabegeräte. Ich habe auf A1 die normale
+    Soundausgabe liegen und auf A2 die Ausgabe auf dem Headset.
+  </div>
+  <div className="lg:w-2/3">
+    <Image src={lcvs007} alt="Konfiguration der Ausgabegeräte" />
+  </div>
+</div>
+
+#### Virtuelle Output devices konfigurieren
+
+Neben den physischen Ausgabegeräten, wie Lautsprechern, ist es auch möglich, virtuelle Ausgabegeräte
+zu konfigurieren. Das haben wir oben schon mit Microsoft Teams gemacht, in dem wir dort als
+Eingabegerät “OUTPUT VAIO 3” definiert haben. Im folgende Kapitel werde ich nun erläutern, was es
+damit genau auf sich hat.
+
+#### Routing
+
+Es gibt in der Mischpult Ansicht die 3 virtuellen INPUT Kanäle “VAIO”, “AUX”, VAIO3″, die wir zuvor
+schon konfiguriert haben. “Input” ist immer aus Sicht von VoiceMeeter zu sehen, ich gebe etwas
+“rein” in VoiceMeeter.
+
+Daneben legt VoiceMeeter noch 3 OUTPUT Kanäle mit gleichem Namen an (also ebenfalls “VAIO”, “AUX”,
+“VAIO3”). Dieser “Output” (VoiceMeeter gibt etwas “aus”) kann nun als Eingang für Anwendungen
+verwendet werden. So haben wir weiter oben ja schon “Microsoft Teams” so konfiguriert, dass es den
+Ausgang “VAIO3” als Eingang verwendet.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs008} alt="Routing der Soundausgaben" />
+  </div>
+  <div className="lg:w-2/3">
+    Nun findest du neben jedem Regler (also Hardwareinput 1-5 und Virtual Input 1-3) Buttons mit der Beschriftung A1-A5 und B1-B3. A1-A5 ist selbsterklärend. Damit routest du den Sound des jeweiligen Kanals auf das entsprechend konfigurierte Ausgabegerät.
+
+    Aber was zum Henker ist B1-B3? Dies sind die oben erwähnten Output Sounddevices.
+
+    | Kanal | Devicename   |
+    | ----- | ------------ |
+    | B1    | OUTPUT VAIO  |
+    | B2    | OUTPUT AUX   |
+    | B3    | OUTPUT VAIO3 |
+
+  </div>
+</div>
+
+Im Klartext bedeutet das bezogen auf unsere obige Konfiguration folgendes.
+
+Aktiviere ich A1: Sound wird auf dem Lautsprecher ausgegeben Aktiviere ich A2: Sound wird auf dem
+Headset ausgegeben Aktiviere ich B2: Sound wird an OBS Studio gesendet (OBS beschreibe ich weiter
+unten) Aktiviere ich B3: Sound wird an Teams gesendet Somit ist es also zum Beispiel möglich, das
+Tischmikrofon und die Musik von Spotify an Teams zu senden, indem ich auf “Hardwareinput 1” und
+“Virtual Input Voicemeeter AUX” jeweils “B3” aktiviere.
+
+Ich hoffe, ich konnte dir hiermit die Funktionsweise von VoiceMeeter näher bringen und dich durch
+deine erste Basiskonfiguration führen. Es gibt natürlich noch Unmengen weiterer Einstellungen. So
+kannst du deine Mikrofon-Ausgabe optimieren, Unterstützung von Surround Sound aktivieren, diverse
+Sound Plugins integrieren, und, und, und… Hierfür empfehle ich dir auf jeden Fall ein Blick auf
+YouTube und in das Voicemeeter Handbuch.
+
+#### Soundengine nach System-Neustart resetten
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs009} alt="Routing der Soundausgaben" />
+  </div>
+  <div className="lg:w-2/3">
+    Auf meinem System steht der Sound nicht zur Verfügung, wenn ich den PC morgens hochfahre. Somit
+    ist einmal der Neustart der Audio-engine notwendig.
+  </div>
+</div>
+
+Dies kannst du relativ leicht automatisieren, indem du einen “Scheduled Job” anlegst, der die Task
+Engine mit einer leichten Verzögerung nach der Anmeldung automatisch neu startet. Folgende
+Einstellungen benötigst du:
+
+Run only when users os logged on Triggers: At log on (Hier stellst du eine Verzögerung von 60-120
+Sekunden ein) Actions -> Start a program -> “C:\Program Files (x86)\VB\Voicemeeter\voicemeeter8.exe”
+-> Argument: “-r”
+
+### OBS Studio
+
+OBS Studio ist für Video Wiedergabe, was VoiceMeeter für die Soundsteuerung ist und somit das zweite
+Herzstück deines Videostudio.
+
+Nach der Installation von OBS findest du das folgende Interface vor.
+
+<Image src={lcvs010} alt="Routing der Soundausgaben" />
+
+Grundsätzlich legst du dir diverse Szenen an, die deine verschiedenen Einstellungen widerspiegeln.
+In jeder Szene kannst du verschiedene Quellen zu der Szene hinzufügen und diese zu einem Setup
+kombinieren. Quellen können unter anderem Webcams, Bilder, Videos, oder auch Monitorinhalte sein.
+
+#### Greenscreen einstellen
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs011} alt="KOnfiguration des Greenscreens" />
+  </div>
+  <div className="lg:w-2/3">
+    Um den Grünanteil deines Bildes herauszurechnen kannst du in OBS “Filter” konfigurieren. Filter
+    kannst du einrichten, indem du mit Rechtsklick die Option “Filter” auf einer Quelle klickst und
+    den Filter “Chroma Key” hinzufügst. Du stellst nun als “Key color type” Grün ein (oder wählst
+    eine Farbe die deinem Greenscreen bei der aktuellen Beleuchtung am nächsten kommt) und
+    verschiebst den darunter liegenden Regler solange, bis der grüne Hintergrund komplett
+    verschwunden ist, du selber aber noch vollständig sichtbar bist.
+  </div>
+</div>
+
+Du kannst dann noch weitere Filter nach belieben hinzufügen, um die Bildqualität noch weiter zu
+verbessern. Ein wichtiger Filter ist ggf. noch der “Crop” Filter, der es dir ermöglicht das Bild an
+allen 4 Seiten zu beschneiden, wenn dein Greenscreen zu klein für den Aufnahmebereich sein sollte.
+
+Nun gibt es aber ein Problem: Wenn du die gleiche Webcam nutzt, um einen normalen Hintergrund in der
+einen Szene zu verwenden und in der anderen Szene einen Greenscreen verwendest, ist der Filter fest
+mit der Webcam verknüpft und der Chroma Filter auch aktiv, wenn du die Greenscreen nicht verwendest
+(zum Beispiel wenn du einfach nur ein normales Videobild übermitteln willst).
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs012} alt="Konfiguration des Greenscreens" />
+  </div>
+  <div className="lg:w-2/3">
+    Hier bietet OBS einen kleinen Trick: Du legst eine Szene (my Webcam) an, in der nur deine Webcam
+    als Quelle eingetragen ist. Jetzt trägst du den Filter auf der Szene ein und nicht auf der
+    Quelle. Du kannst in anderen Szenen, je nach Bedarf, entweder deine Webcam als Quelle eintragen
+    (normaler Hintergrund) oder die Szene (my Webcam) als Quelle verwenden (Greenscreen). Alternativ
+    kannst du auch weitere Szenen als Quellen anlegen und so mit verschiedenen Filtern
+    experimentieren.
+  </div>
+</div>
+
+#### Szenen
+
+Ich habe bei mir einige Szenen eingerichtet, auf die ich dann beliebig schalten kann, je nach
+Anwendungszweck.
+
+**Präsentationszenen** sind für die Vorstellung irgendwelcher Inhalte gedacht und nutzen den
+Greenscreen. Im Hintergrund ist eine Steinwand eingeblendet, darüber ein Monitorframe und die
+Aufnahme der Webcam mit Greenscreen.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs013} alt="Einrichten eines virtuellen Monitorrrahmens" />
+  </div>
+  <div className="lg:w-2/3">
+    <ul>
+      <li>
+        <strong>Presentation Monitor (left)</strong> — Hier habe ich mir einen Monitorrahmen in Gimp
+        gezeichnet. Diesen blende ich in Kombination mit einem der Monitorinhalte ein. Hat schon
+        fast was vom ZDF Videostudio.
+      </li>
+      <li>
+        <strong>Presentation Droidcam</strong> — Ich habe auf meinem Handy Droidcam installiert, was
+        dieses in eine mobile Webcam verwandelt. Es ermöglicht mir, auch anderes als den
+        Arbeitsplatz zu filmen. In Kombination mit dem Headset sind somit Aufnahmen im Umkreis der
+        Headset/WLAN-Reichweite kein Problem mehr.
+      </li>
+      <li>
+        <strong>Presentation 3D Print</strong> — Es wird in einem Monitorframe der Video-Stream von
+        OctoPrint dargestellt.
+      </li>
+    </ul>
+  </div>
+</div>
+
+**Standardszenen** kommen ohne Greenscreen aus.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs014} alt="Einrichten der Standardszenen" />
+  </div>
+  <div className="lg:w-2/3">
+    <ul>
+      <li>
+        <strong>Standardwebcam</strong> — Es wird einfach ein normales Webcam Bild erzeugt.
+      </li>
+      <li>
+        <strong>Standard AFK.</strong> — Identisch zu oben, nur das hier die mobile Webcam des
+        Smartphones genutzt wird.
+      </li>
+      <li>
+        <strong>Presentation 3D Print</strong> — Hier wird ein statisches “Away from keyboard” Bild
+        eingeblendet.
+      </li>
+    </ul>
+  </div>
+</div>
+
+OBS lädt hier mal wieder zu Spielereien ein. Zum Beispiel habe ich ein Fenster im Haus fotografiert,
+den Inhalt des Fensters ausgeschnitten und ein Video dahinter gelegt. Das Internet gibt da schon
+viel her, Regen im Urwald, Skifahr-Szenen, Standszene oder du kannst auch mal die Webcam im Büro mit
+aufzeichnen lassen und eine Büroszene in den Hintergrund legen (natürlich vorher alle Fragen, bzw.
+Personen unkenntlich machen). Die Möglichkeiten sind hier keine Grenzen gesetzt.
+
+### Touchportal
+
+Touchportal ermöglicht dir den schnellen Zugriff auf alle Funktionen deines Videostudio, mit einem
+Android Gerät. Hierfür wird eine Anwendung jeweils auf dem PC und dem Android Gerät installiert. Die
+Desktop Anwendung baut dabei über USB oder WLAN eine Verbindung zu einem Android Tablet oder
+Smartphone auf und stellt dort eine Oberfläche zur Verfügung, die du vorher auf dem PC über eine
+Simple Drag and Drop Oberfläche gestalten kannst.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={lcvs015} alt="Bendieung des Setups über ein Tablet" />
+  </div>
+  <div className="lg:w-2/3">
+    Ich verwende als Schreibtisch Gerät ein altes 7″ Tablet. Dieses wird via USB direkt mit dem PC
+    verbunden und der WLAN Adapter komplett abgeschaltet. Eine Internetverbindung ist für das Gerät
+    nicht mehr notwendig, da alle Befehle an den Windows PC weitergegeben und von diesem ausgeführt
+    werden. Somit ist es auch nicht mehr notwendig, das Android-Gerät auf aktuellem Patch Stand zu
+    halten.
+  </div>
+</div>
+
+Die Touchportal Oberfläche integriert sich mit Hilfe von Plugins in die Anwendungen, wie Voicemeeter
+oder OBS und bietet entsprechende Funktionen pro Anwendung an. So kannst du die Lautstärke pro
+Voicemeeter-Kanal verändern, beliebige Voicemeeter Knöpfe ansprechen, die Szenen von OBS
+selektieren, Funktionen von Teams oder Powerpoint steuern, etc.
+
+Folgende Seiten existieren zum Zeitpunkt des Artikels in meiner Videostudio Konfiguration:
+
+- **Home** - Bietet die wichtigsten Funktionen (Hardwaremonitor, Shutdown Button, Lautstärke,
+  Spotify Play Button, Internet Geschwindigkeit, …) auf einen Blick.
+- **Sounds** Ein Soudboard über das ich verschiedene Sounds abspielen kann, die dann z.B. in einem
+  Online Meeting eingeblendet werden.
+- **OBS** Eine Auswahl der verschiedenen Szenen und Knöpfe zum starten/stoppen der Aufnahme und der
+  virtuellen Kamera.
+- **Spotify** Steuerung von Spotify.
+- **Mix (Screenshot oben)** Ein Mischpult mit den wichtigsten Controls aus Voicemeeter. Die Buttons
+  habe ich dabei gleich etwas ansprechender gestaltet.
+- **Smart** Die Steuerung der Smarten Geräte an meinem Arbeitsplatz (Videolicht, etc.).
+
+Hier werde ich keine genaue Anleitung hinterlegen, wie die einzelnen Funktionen gebaut werden
+müssen, da das doch sehr spezifisch ist. Ich empfehle dir allerdings, im Tab “Assets” Seiten für
+deinen Zweck zu importieren. Hier kannst du sehr schön sehen, wie diese gestaltet und die einzelnen
+Knöpfe konfiguriert werden.
+
+## Fazit
+
+Es ist tatsächlich nicht schwer ein solches Videostudio zusammenzustellen. Am Ende ist es eine
+Zeitfrage und ich hoffe Dir mit diesem Artikel einige Dinge an die Hand gegeben zu haben, die es dir
+deutlich schneller ermöglichen, dass Videostudio deiner Träume zu erstellen.

@@ -1,6 +1,11 @@
-
 # Pictureprompt
 
 All images of this blog are more less created with this prompt
 
-Ich habe einen Artikel geschrieben und benötige ein Header Bild in den Maßen 1536x1024. Erstelle eine hochwertige, dynamische Illustration im Steampunk Stil. Die Farbpalette soll die Farben #07CEE0 (Türkis), #575760 (Dunkelgrau) und #363D46 (Schiefergrau-Blau) enthalten, um einen Wiedererkennungswert zu schaffen – ohne sie ausschließlich zu verwenden. Das Bild soll dynamisch, inspirierend und anspruchsvoll wirken, mit realistischen Lichtverhältnisse und metallische Texturen. Inhalt des Bildes soll ein Stoßpendel sein. Die drei Kräfte, die Höhe des Pendels, das Gewicht der Kugeln und die Stärke wie die Kugel angestoßen wird, soll die Einwirkung von Organisation, Technologie und Kultur auf die Entwicklung darstellen. Graviere in das Stoßpendel mein Logo ein, was ich Dir angehangen habe. Es soll sich unauffälig in das Bild einfügen.
+Generiere bitte folgendes Bild im Format 1536×1024: Eine fotorealistische, hochwertige Illustration
+im Steampunk-Stil. Die Farbpalette soll die Farben #07CEE0 (Türkis), #575760 (Dunkelgrau) und
+#363D46 (Schiefergrau-Blau) enthalten, um einen Wiedererkennungswert zu schaffen – ohne sie
+ausschließlich zu verwenden. Das Bild soll dynamisch, inspirierend und technisch anspruchsvoll
+wirken, mit komplexen Steampunk-Maschinen, Menschen im Look des industriellen Revolution und
+leuchtenden Elementen und einem Gefühl von Innovation und Teamarbeit. Realistische Lichtverhältnisse
+und metallische Texturen. Der Inhalt des Bildes soll sich um das folgende Thema drehen.

@@ -1,7 +1,14 @@
 {
   "links": {
+    "rollei-lumis-key-light": {
+      "targetUrl": "https://www.amazon.de/dp/B09BVLBX52",
+      "description": "Rollei Lumis Key Light, LED Videolicht inkl. Tischstativ Streaming Licht PC zum Ausleuchten von Video-Streams TikTok YouTube und Konferenzen Video Call Webcam Homeoffice",
+      "affiliate": true,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
     "amazon-recommended-book": {
-      "targetUrl": "https://amzn.to/3example123",
+      "targetUrl": "https://amzn.to/3example1234",
       "description": "Empfohlenes Buch auf Amazon",
       "affiliate": true,
       "category": "books",
