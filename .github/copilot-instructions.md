@@ -54,14 +54,12 @@ src/
 │   ├── blog/           # Blog-spezifische Komponenten
 │   ├── docs/           # Dokumentations-Komponenten
 │   ├── recipes/        # Rezept-Komponenten
-│   ├── poetry/         # Poesie-Komponenten
 │   ├── portfolio/      # Portfolio-Komponenten
 │   └── authors/        # Autoren-Komponenten
 ├── content/            # Content Collections (Markdown/MDX)
 │   ├── blog/           # Blog-Posts
 │   ├── docs/           # Dokumentation
 │   ├── recipes/        # Rezepte
-│   ├── poetry/         # Gedichte
 │   └── authors/        # Autorenprofile
 ├── lib/                # Utility-Funktionen
 ├── pages/              # Astro-Seiten (Router)
