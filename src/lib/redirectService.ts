@@ -2,7 +2,10 @@ import fs from "fs/promises";
 import path from "path";
 import type { LinkMappings, LinkMapping } from "@/types";
 
-const MAPPINGS_FILE = path.join(process.cwd(), "src/data/link-mappings.json");
+const MAPPINGS_FILE = path.join(
+  process.cwd(),
+  "public/data/link-mappings.json"
+);
 
 export async function getLinkMappings(): Promise<LinkMappings> {
   try {

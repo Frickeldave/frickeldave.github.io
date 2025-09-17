@@ -83,6 +83,30 @@
       "affiliate": false,
       "category": "tutorials",
       "openInNewTab": true
+    },
+    "le-passe-trappe-schlag-den-raab": {
+      "targetUrl": "https://www.youtube.com/watch?v=OFgq8GApk9U&t=501s",
+      "description": "Le passe trappe bei Schlag den Raab",
+      "category": "YouTube",
+      "affiliate": false,
+      "openInNewTab": true,
+      "created": "2025-09-12T12:00:00.000Z"
+    },
+    "le-passe-trappe-gegner-niedergemacht": {
+      "targetUrl": "https://www.youtube.com/watch?v=7moxprm9uVA",
+      "description": "Le passe trappe \"Gegner niedergemacht\"",
+      "category": "YouTube",
+      "affiliate": false,
+      "openInNewTab": true,
+      "created": "2025-09-12T12:00:00.000Z"
+    },
+    "le-passe trappe-ein-etwas-laengeres-match": {
+      "targetUrl": "https://www.youtube.com/watch?v=SkzrZhgL3_g",
+      "description": "Ein etwas längeres match",
+      "category": "YouTube",
+      "affiliate": false,
+      "openInNewTab": true,
+      "created": "2025-09-12T12:00:00.000Z"
     }
   },
   "analytics": {
