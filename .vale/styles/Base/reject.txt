@@ -14,3 +14,4 @@ Seo -> SEO
 Rss -> RSS
 Ui -> UI
 Ux -> UX
+frickeldave -> Frickeldave

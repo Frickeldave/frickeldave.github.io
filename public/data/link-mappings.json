@@ -1,5 +1,68 @@
 {
   "links": {
+    "rollei-lumis-key-light": {
+      "targetUrl": "https://www.amazon.de/dp/B09BVLBX52",
+      "description": "Rollei Lumis Key Light, LED Videolicht inkl. Tischstativ Streaming Licht PC zum Ausleuchten von Video-Streams TikTok YouTube und Konferenzen Video Call Webcam Homeoffice",
+      "affiliate": true,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "rollei-panel-photo-light": {
+      "targetUrl": "https://www.amazon.de/dp/B0BFR4X17H",
+      "description": "Rollei Lumis LED Panel Fotoleuchte, Dauerlicht Fotografie Lampe Bi Color 3200~5600K Key Light CRI 96+ TLCI 97+ für Videos Streaming Videokonferenz Filmen Aufzeichnen Webcam YouTube TikTok Podcasting",
+      "affiliate": true,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "logitech-streamcam": {
+      "targetUrl": "https://www.amazon.de/dp/B07W4DHNBF",
+      "description": "Livestream-Webcam für Youtube und Twitch, Full HD 1080p, 60 FPS, USB-C Anschluss, Gesichtserkennung durch Künstliche Intelligenz, Autofokus, vertikales Video",
+      "affiliate": true,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "trust-usb-mikrofon": {
+      "targetUrl": "https://www.amazon.de/dp/B079GC95S4",
+      "description": "Trust Gaming 22400 GXT 252 Emita Plus Studio USB Mikrofon mit Arm und Popfilter, mit Nierencharakteristik für PC, PS4 und PS5, Streaming, Podcast, Voice-over",
+      "affiliate": true,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "obs": {
+      "targetUrl": "https://obsproject.com/download",
+      "description": "Open Broadcaster Software (OBS) ist eine kostenlose und Open-Source-Software für Videoaufzeichnung und Live-Streaming.",
+      "affiliate": false,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "voicemeeter": {
+      "targetUrl": "https://shop.vb-audio.com",
+      "description": "Voicemeeter ist eine virtuelle Audio-Mischsoftware, die es ermöglicht, mehrere Audioquellen zu verwalten und zu steuern.",
+      "affiliate": false,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "voicemeeter-virtual-cable": {
+      "targetUrl": "https://vb-audio.com/Cable/index.htm",
+      "description": "Voicemeeter Virtual Cable ist eine Software, die es ermöglicht, Audio von einer Anwendung an eine andere zu übertragen.",
+      "affiliate": false,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "voicemeeter-manual": {
+      "targetUrl": "https://vb-audio.com/Voicemeeter/Voicemeeter_UserManual.pdf",
+      "description": "Voicemeeter Benutzerhandbuch",
+      "affiliate": false,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "touchportal": {
+      "targetUrl": "https://www.touch-portal.com/",
+      "description": "TouchPortal ist eine Plattform für die Verwaltung und Steuerung von Audioquellen über ein Tablet oder Handy.",
+      "affiliate": false,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
     "amazon-recommended-book": {
       "targetUrl": "https://amzn.to/3example123",
       "description": "Empfohlenes Buch auf Amazon",
@@ -20,6 +83,30 @@
       "affiliate": false,
       "category": "tutorials",
       "openInNewTab": true
+    },
+    "le-passe-trappe-schlag-den-raab": {
+      "targetUrl": "https://www.youtube.com/watch?v=OFgq8GApk9U&t=501s",
+      "description": "Le passe trappe bei Schlag den Raab",
+      "category": "YouTube",
+      "affiliate": false,
+      "openInNewTab": true,
+      "created": "2025-09-12T12:00:00.000Z"
+    },
+    "le-passe-trappe-gegner-niedergemacht": {
+      "targetUrl": "https://www.youtube.com/watch?v=7moxprm9uVA",
+      "description": "Le passe trappe \"Gegner niedergemacht\"",
+      "category": "YouTube",
+      "affiliate": false,
+      "openInNewTab": true,
+      "created": "2025-09-12T12:00:00.000Z"
+    },
+    "le-passe trappe-ein-etwas-laengeres-match": {
+      "targetUrl": "https://www.youtube.com/watch?v=SkzrZhgL3_g",
+      "description": "Ein etwas längeres match",
+      "category": "YouTube",
+      "affiliate": false,
+      "openInNewTab": true,
+      "created": "2025-09-12T12:00:00.000Z"
     }
   },
   "analytics": {
