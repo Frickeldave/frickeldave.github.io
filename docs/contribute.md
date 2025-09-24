@@ -4,7 +4,7 @@ Feel free to contrubite with you own pull request to the frickeldave website. Th
 
 ## 🎈 Prepare WSL
 
-I recommend to use a WSL with debian to setup the development environment.
+I recommend to use a WSL with debian or linux to setup the development environment.
 
 ```powershell
 wsl --install debian --name frickeldave
@@ -13,7 +13,7 @@ wsl --install debian --name frickeldave
 wsl -d frickeldave
 ```
 
-## 🪄 Configure your WSL
+## 🪄 Configure your environment
 
 ```bash
 
@@ -25,18 +25,12 @@ sudo apt install git -y
 sudo apt install curl -y
 # Install nvm
 sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-
-# Install 
 nvm install --lts
 ```
 
 ```bash
 
 # This is step 2 - After installing nvm, open a new shell
-
-# Install node
-nvm install --lts
-
 # Clone repo
 cd ~
 mkdir dev
@@ -47,6 +41,8 @@ git config user.name "<YOURNAME>"
 git config user.email "<YOURMAILADDRESS>"
 
 ```
+
+Please consider the [project structure](./project-structure.md) document for more information.
 
 ## 🧞 Commands (by Astro)
 
@@ -76,4 +72,12 @@ Dieses Projekt verwendet Husky, um Git-Hooks (z. B. `pre-commit`) aus dem Verzei
 
 ## Linter
 
-In dieses Projekt sind die Linter ESLint, Prettier und Vale integriert. Mehr Informationen dazu findest du [hier](./linter-installation.md).
+In dieses Projekt sind die Linter ESLint, Prettier und Vale integriert. Mehr Informationen dazu findest du [hier](./linter/linter.md).
+
+## Custom dev
+
+Folgende eigene Erweiterungen wurden hier integriert: 
+
+- [Link redirector](./features/redirects.md)
+- YouTube privacy component
+- Donwload page

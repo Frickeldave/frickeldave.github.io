@@ -48,7 +48,8 @@ dient.
 
 ```
 src/
-├── components/          # Wiederverwendbare UI-Komponenten
+├── contribute/         # Informationen für contributors und umfangreiche Dokumentation
+├── components/         # Wiederverwendbare UI-Komponenten
 │   ├── base/           # Layout-Komponenten (Header, Footer, BaseLayout)
 │   ├── common/         # Gemeinsame Komponenten (Button, Pagination, etc.)
 │   ├── blog/           # Blog-spezifische Komponenten

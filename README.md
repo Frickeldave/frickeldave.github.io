@@ -17,12 +17,11 @@ The frickeldave site is a mix of personal blog, portfolio, IT topics, diy topics
 
 Frickeldave is based on [Astro](https://astro.build/) and uses the Astro theme [Astrogon](https://github.com/astrogon/astrogon). This is a rapidly-customizable multipurpose website template built using Astro JS, Tailwind, and a sprinkle of React.
 
-## Additional information
+## How to contribute
 
-- [Contribution]( ./contribute.md)
-- [prompts]( ./prompts.md)
-- [tags-categories]( ./tags-categories.md)
-- [ideas](./ideas.md)
+You are welcome to contribute to the frickeldave projekt. 
+
+- [Contribution]( ./docs/contribute.md)
 
 ## License
 
