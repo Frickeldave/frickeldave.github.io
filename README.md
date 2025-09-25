@@ -29,12 +29,14 @@ Following you'll find the documentation of everything i added additional to astr
 - [A link redirection system useful for general link management and affiliate links](./docs/link-redirect-system.md)
 - [A youtube components with a "First click before show" mode](./docs/)
 
-## Additional information
+## How to contribute
 
-- [Contribution](./contribute.md)
-- [prompts](./prompts.md)
-- [tags-categories](./tags-categories.md)
-- [ideas](./ideas.md)
+You are welcome to contribute to the frickeldave project. 
+
+- [Contribution](./docs/contribute.md)
+- [prompts](./docs/prompts.md)
+- [tags-categories](./docs/tags-categories.md)
+- [ideas](./docs/ideas.md)
 
 ## License
 

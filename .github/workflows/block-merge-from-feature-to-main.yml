@@ -1,0 +1,33 @@
+name: Check Source Branch for Main
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    
+jobs:
+  check-branch:
+    runs-on: [self-hosted, frickeldave-main]
+    steps:
+      - name: Verify target branch is main
+        run: |
+          echo "Target branch: ${{ github.base_ref }}"
+          echo "Source branch: ${{ github.head_ref }}"
+          
+      - name: Skip if not targeting main
+        if: github.base_ref != 'main'
+        run: |
+          echo "ℹ️  This workflow only applies to PRs targeting 'main' branch."
+          echo "Current target: '${{ github.base_ref }}' - skipping checks."
+          echo "✅ This PR is not targeting main, so it passes."
+          
+      - name: Check if source branch is 'dev'
+        if: github.base_ref == 'main' && github.head_ref != 'dev'
+        run: |
+          echo "Error: Merges into 'main' are only allowed from the 'dev' branch."
+          echo "Your source branch is '${{ github.head_ref }}'."
+          echo "Target branch is '${{ github.base_ref }}'."
+          exit 1
+          
+      - name: Allow merge from dev to main
+        if: github.base_ref == 'main' && github.head_ref == 'dev'
+        run: |
+          echo "✅ Merge from 'dev' to 'main' is allowed."
