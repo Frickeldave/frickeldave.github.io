@@ -4,10 +4,10 @@ on:
     types: [ opened, synchronize, reopened ]
     
 jobs:
-  check-branch:
+  block-merge-from-feature-to-main:
     runs-on: [self-hosted, frickeldave-main]
     steps:
-      - name: Verify target branch is main
+      - name: Print branch information
         run: |
           echo "Target branch: ${{ github.base_ref }}"
           echo "Source branch: ${{ github.head_ref }}"
