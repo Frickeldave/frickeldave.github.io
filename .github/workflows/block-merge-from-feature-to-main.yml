@@ -2,8 +2,7 @@ name: Check Source Branch for Main
 on:
   pull_request:
     types: [ opened, synchronize, reopened ]
-    branches:
-      - main
+    
 jobs:
   check-branch:
     runs-on: [self-hosted, frickeldave-main]
@@ -18,7 +17,7 @@ jobs:
         run: |
           echo "ℹ️  This workflow only applies to PRs targeting 'main' branch."
           echo "Current target: '${{ github.base_ref }}' - skipping checks."
-          exit 0
+          echo "✅ This PR is not targeting main, so it passes."
           
       - name: Check if source branch is 'dev'
         if: github.base_ref == 'main' && github.head_ref != 'dev'
