@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-and-build:
+  build-and-deploy:
     runs-on: [self-hosted, frickeldave-main]
     # Only run when dev branch is the target
     if: ${{ github.base_ref == 'dev' }}
@@ -19,7 +19,7 @@ jobs:
           echo "Target branch: ${{ github.base_ref }}"
           echo "Source branch: ${{ github.head_ref }}"
           
-      - name: Trigger HomeNet Ansible Deployment (build tag)
+      - name: Trigger HomeNet Ansible Deployment by calling waltrauds playbook with tag frickeldave-build
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.HOMENET_PAT }}
@@ -28,11 +28,11 @@ jobs:
               const result = await github.rest.actions.createWorkflowDispatch({
                 owner: 'Frickeldave',
                 repo: 'HomeNet',
-                workflow_id: 'host-waltraud.yaml',
+                workflow_id: 'host-waltraud-dc.yaml',
                 ref: 'main',
                 inputs: {
                   homeassistant_reset: 'false',
-                  tag_select: 'frickeldave-build'
+                  tag_select: 'frickeldave-astro-build'
                 }
               });
               console.log('Workflow dispatch successful:', result.status);
@@ -45,10 +45,10 @@ jobs:
 
       - name: Log build deployment trigger
         run: |
-          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (build)"
+          echo "Triggered HomeNet deployment via host-waltraud-dc.yaml workflow (build)"
           echo "Target: waltraud-dc.yaml playbook"
           echo "Limit: waltraud"
-          echo "Variables: homeassistant_reset=false, tag_select=frickeldave-build"
+          echo "Variables: homeassistant_reset=false, tag_select=frickeldave-astro-build"
 
       - name: Trigger HomeNet Ansible Deployment (deploy tag)
         uses: actions/github-script@v7
@@ -59,11 +59,11 @@ jobs:
               const result = await github.rest.actions.createWorkflowDispatch({
                 owner: 'Frickeldave',
                 repo: 'HomeNet',
-                workflow_id: 'host-waltraud.yaml',
+                workflow_id: 'host-waltraud-dc.yaml',
                 ref: 'main',
                 inputs: {
                   homeassistant_reset: 'false',
-                  tag_select: 'frickeldave'
+                  tag_select: 'frickeldave-astro-deploy'
                 }
               });
               console.log('Workflow dispatch successful:', result.status);
@@ -76,7 +76,7 @@ jobs:
 
       - name: Log deploy deployment trigger
         run: |
-          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (deploy)"
+          echo "Triggered HomeNet deployment via host-waltraud-dc.yaml workflow (deploy)"
           echo "Target: waltraud-dc.yaml playbook"
           echo "Limit: waltraud"
-          echo "Variables: homeassistant_reset=false, tag_select=frickeldave"
+          echo "Variables: homeassistant_reset=false, tag_select=frickeldave-astro-deploy"
