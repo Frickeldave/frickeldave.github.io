@@ -50,33 +50,3 @@ jobs:
           echo "Limit: waltraud"
           echo "Variables: homeassistant_reset=false, tag_select=frickeldave-astro-build"
 
-      - name: Trigger HomeNet Ansible Deployment (deploy tag)
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.HOMENET_PAT }}
-          script: |
-            try {
-              const result = await github.rest.actions.createWorkflowDispatch({
-                owner: 'Frickeldave',
-                repo: 'HomeNet',
-                workflow_id: 'host-waltraud.yaml',
-                ref: 'main',
-                inputs: {
-                  homeassistant_reset: 'false',
-                  tag_select: 'frickeldave-astro-deploy'
-                }
-              });
-              console.log('Workflow dispatch successful:', result.status);
-            } catch (error) {
-              console.error('Error triggering workflow:', error);
-              console.error('Error message:', error.message);
-              console.error('Error status:', error.status);
-              throw error;
-            }
-
-      - name: Log deploy deployment trigger
-        run: |
-          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (deploy)"
-          echo "Target: waltraud-dc.yaml playbook"
-          echo "Limit: waltraud"
-          echo "Variables: homeassistant_reset=false, tag_select=frickeldave-astro-deploy"
