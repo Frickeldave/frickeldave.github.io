@@ -28,7 +28,7 @@ jobs:
               const result = await github.rest.actions.createWorkflowDispatch({
                 owner: 'Frickeldave',
                 repo: 'HomeNet',
-                workflow_id: 'host-waltraud-dc.yaml',
+                workflow_id: 'host-waltraud.yaml',
                 ref: 'main',
                 inputs: {
                   homeassistant_reset: 'false',
@@ -45,7 +45,7 @@ jobs:
 
       - name: Log build deployment trigger
         run: |
-          echo "Triggered HomeNet deployment via host-waltraud-dc.yaml workflow (build)"
+          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (build)"
           echo "Target: waltraud-dc.yaml playbook"
           echo "Limit: waltraud"
           echo "Variables: homeassistant_reset=false, tag_select=frickeldave-astro-build"
@@ -59,7 +59,7 @@ jobs:
               const result = await github.rest.actions.createWorkflowDispatch({
                 owner: 'Frickeldave',
                 repo: 'HomeNet',
-                workflow_id: 'host-waltraud-dc.yaml',
+                workflow_id: 'host-waltraud.yaml',
                 ref: 'main',
                 inputs: {
                   homeassistant_reset: 'false',
@@ -76,7 +76,7 @@ jobs:
 
       - name: Log deploy deployment trigger
         run: |
-          echo "Triggered HomeNet deployment via host-waltraud-dc.yaml workflow (deploy)"
+          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (deploy)"
           echo "Target: waltraud-dc.yaml playbook"
           echo "Limit: waltraud"
           echo "Variables: homeassistant_reset=false, tag_select=frickeldave-astro-deploy"
