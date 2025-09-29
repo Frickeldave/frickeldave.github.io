@@ -19,7 +19,7 @@ jobs:
           echo "Target branch: ${{ github.base_ref }}"
           echo "Source branch: ${{ github.head_ref }}"
           
-      - name: Trigger HomeNet Ansible Deployment by calling waltrauds playbook with tag frickeldave-build
+      - name: Trigger HomeNet Ansible Deployment by calling waltrauds playbook with tag frickeldave-astro-build
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.HOMENET_PAT }}
