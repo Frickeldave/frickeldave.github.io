@@ -10,8 +10,7 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 // https://astro.build/config
 export default defineConfig({
-  site: process.env.ASTRO_SITE || "http://localhost:3000",
-  //site: "https://frickeldave.github.io",
+  site: "https://frickeldave.github.io",
   base: "/",
   output: "static", // GitHub Pages requires static output
   trailingSlash: "ignore",
