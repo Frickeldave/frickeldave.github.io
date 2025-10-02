@@ -2,8 +2,9 @@ name: deploy-dev
 
 on:
   # Trigger when a pull request is closed (merged)
-  pull_request:
-    types: [closed]
+  push:
+    branches:
+      - dev
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
 
