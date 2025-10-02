@@ -30,7 +30,7 @@ Das Frickeldave-Repository dient als zentrale Plattform für die Entwicklung und
 
 ### Grundprinzipien
 
-1. **Keine direkten Änderungen** an den Haupt-Branches (`main` und `develop`).
+1. **Keine direkten Änderungen** an den Haupt-Branches (`main` und `dev`).
 2. **Alle Änderungen** erfolgen über Feature-Branches und Pull Requests.
 3. **Automatische Prüfungen** stellen sicher, dass die Qualität der Inhalte gewahrt bleibt.
 4. **Regelmäßige Updates** der Branches, um Konflikte zu vermeiden.
@@ -40,7 +40,7 @@ Das Frickeldave-Repository dient als zentrale Plattform für die Entwicklung und
 ### Haupt-Branches
 
 - **`main`**: Enthält die stabile und veröffentlichte Version der Inhalte.
-- **`develop`**: Dient als Integrations-Branch für neue Features und Änderungen.
+- **`dev`**: Dient als Integrations-Branch für neue Features und Änderungen.
 
 ### Unterstützende Branches
 
@@ -50,6 +50,42 @@ Das Frickeldave-Repository dient als zentrale Plattform für die Entwicklung und
 - **`chore/*`**: Für Wartungsarbeiten und technische Anpassungen.
 
 ## Workflow für Beiträge
+
+```mermaid
+graph TD
+    Start([Dev erstellt Feature Branch]) --> DevWork[Entwicklung]
+    DevWork --> PR1[PR: Feature → dev]
+    PR1 --> MergeDev{Merge in dev}
+    MergeDev --> TriggerDevDeploy[Triger: Push Event dev]
+    TriggerDevDeploy --> DevWorkflow[Workflow: deploy-dev]
+    DevWorkflow --> DevDeploy[Create OCI<br>Deploy auf Dev-Umgebung<br>ha.home.net]
+    
+    DevDeploy --> PR2[PR: dev → main]
+    PR2 --> CheckSource{Workflow: <br>block-merge-from-feature-to-main.yaml<br>Source Branch = dev?}
+    CheckSource -->|Nein| BlockMerge[❌ Merge blockiert]
+    CheckSource -->|Ja| AllowReview[✅ Check bestanden]
+    AllowReview --> Review{Code Review &<br/>Approvals OK?}
+    Review -->|Nein| BlockMerge
+    Review -->|Ja| MergeMain{Merge in main}
+    
+    MergeMain --> TriggerProdDeploy[Push Event auf main Branch]
+    TriggerProdDeploy --> ProdWorkflow[Workflow: deploy-prd]
+    ProdWorkflow --> ProdDeploy[Deploy auf Production]
+    
+    ManualTrigger([Manual Dispatch]) -.-> DevWorkflow
+    ManualTrigger -.-> ProdWorkflow
+    
+    BlockMerge --> Fix[Branch-Korrektur erforderlich]
+    Fix --> PR2
+    
+    style CheckSource fill:#ff9999
+    style AllowReview fill:#99ff99
+    style BlockMerge fill:#ff6666
+    style DevDeploy fill:#6699ff
+    style ProdDeploy fill:#ff9933
+    style ManualTrigger fill:#ffff99
+```
+
 
 ### 1. Vorbereitung
 

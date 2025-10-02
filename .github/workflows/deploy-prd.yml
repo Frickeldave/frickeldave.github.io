@@ -17,7 +17,6 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: [self-hosted, frickeldave-main]
-    if: ${{ (github.head_ref == 'dev' && github.base_ref == 'main') || github.event_name == 'workflow_dispatch' }}
     
     environment:
       name: github-pages
@@ -25,11 +24,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-
-      - name: Print branch information
-        run: |
-          echo "Target branch: ${{ github.base_ref }}"
-          echo "Source branch: ${{ github.head_ref }}"
 
       - name: Checkout your repository using git
         uses: actions/checkout@v4
