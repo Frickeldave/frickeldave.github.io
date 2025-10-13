@@ -40,9 +40,9 @@ const getStatusColor = (status: string | undefined) => {
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {projects.map((project, index) => (
+          {projects.map((project, _index) => (
             <div class="glass rounded-lg p-6 lg:p-8 hover:scale-105 transition-all duration-300 group">
-              <!-- Project Header -->
+              {/* Project Header */}
               <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
                   <h3 class="text-xl lg:text-2xl font-semibold text-txt-h dark:text-darkmode-txt-h mb-2 
@@ -62,7 +62,7 @@ const getStatusColor = (status: string | undefined) => {
                 )}
               </div>
               
-              <!-- Technologies -->
+              {/* Technologies */}
               {project.technologies && project.technologies.length > 0 && (
                 <div class="mb-4">
                   <div class="flex flex-wrap gap-2">
@@ -75,7 +75,7 @@ const getStatusColor = (status: string | undefined) => {
                 </div>
               )}
               
-              <!-- Project Content -->
+              {/* Project Content */}
               {project.content && project.content.length > 0 && (
                 <div class="mb-6">
                   <ul class="space-y-2">
@@ -89,7 +89,7 @@ const getStatusColor = (status: string | undefined) => {
                 </div>
               )}
               
-              <!-- Project Links -->
+              {/* Project Links */}
               <div class="flex space-x-4">
                 {project.github && (
                   <a
