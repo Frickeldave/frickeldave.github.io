@@ -1,0 +1,133 @@
+---
+import type { PortfolioEntry } from "@/types";
+import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { projects } = entry.data;
+
+// Function to get status color
+const getStatusColor = (status: string | undefined) => {
+  switch (status?.toLowerCase()) {
+    case 'live':
+      return 'bg-green-500';
+    case 'production':
+      return 'bg-blue-500';
+    case 'open source':
+      return 'bg-purple-500';
+    case 'enterprise':
+      return 'bg-orange-500';
+    default:
+      return 'bg-gray-500';
+  }
+};
+---
+
+{projects && projects.length > 0 && (
+  <section class="section-sm container">
+    <div class="row justify-center">
+      <div class="col-12">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl lg:text-4xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4">
+            Featured Projects
+          </h2>
+          <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
+            Some of my recent work and contributions
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {projects.map((project, index) => (
+            <div class="glass rounded-lg p-6 lg:p-8 hover:scale-105 transition-all duration-300 group">
+              <!-- Project Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <h3 class="text-xl lg:text-2xl font-semibold text-txt-h dark:text-darkmode-txt-h mb-2 
+                             group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {project.title}
+                  </h3>
+                  {project.description && (
+                    <p class="text-txt-p dark:text-darkmode-txt-p mb-3 leading-relaxed">
+                      {project.description}
+                    </p>
+                  )}
+                </div>
+                {project.status && (
+                  <span class={`px-2 py-1 rounded-full text-xs text-white ${getStatusColor(project.status)} ml-4`}>
+                    {project.status}
+                  </span>
+                )}
+              </div>
+              
+              <!-- Technologies -->
+              {project.technologies && project.technologies.length > 0 && (
+                <div class="mb-4">
+                  <div class="flex flex-wrap gap-2">
+                    {project.technologies.map((tech) => (
+                      <span class="glass-t px-2 py-1 rounded text-xs text-txt-p dark:text-darkmode-txt-p">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <!-- Project Content -->
+              {project.content && project.content.length > 0 && (
+                <div class="mb-6">
+                  <ul class="space-y-2">
+                    {project.content.map((item) => (
+                      <li class="flex items-start">
+                        <span class="text-blue-500 mr-2 mt-1">▸</span>
+                        <span class="text-sm text-txt-p dark:text-darkmode-txt-p">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              <!-- Project Links -->
+              <div class="flex space-x-4">
+                {project.github && (
+                  <a
+                    href={project.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex items-center space-x-2 glass-t px-3 py-2 rounded 
+                           hover:bg-gray-800 hover:text-white transition-all duration-300"
+                    aria-label="View on GitHub"
+                  >
+                    <FaGithub className="w-4 h-4" />
+                    <span class="text-sm">Code</span>
+                  </a>
+                )}
+                {project.demo && (
+                  <a
+                    href={project.demo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex items-center space-x-2 glass-t px-3 py-2 rounded 
+                           hover:bg-blue-600 hover:text-white transition-all duration-300"
+                    aria-label="View Live Demo"
+                  >
+                    <FaExternalLinkAlt className="w-4 h-4" />
+                    <span class="text-sm">Demo</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .glass-t {
+    @apply backdrop-blur-sm bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-600/30;
+  }
+</style>

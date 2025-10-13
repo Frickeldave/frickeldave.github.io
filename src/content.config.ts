@@ -110,14 +110,56 @@ const portfolio = defineCollection({
     base: "./src/content/portfolio",
   }),
   schema: searchable.extend({
-    projects: z.array(
-      z.object({
-        title: z.string(),
-        github: z.string().optional(),
-        technologies: z.array(z.string()).optional(),
-        content: z.array(z.string()).optional(),
-      })
-    ),
+    name: z.string().optional(),
+    jobTitle: z.string().optional(),
+    tagline: z.string().optional(),
+    location: z.string().optional(),
+    email: z.string().optional(),
+    linkedin: z.string().optional(),
+    github: z.string().optional(),
+    summary: z.string().optional(),
+    skills: z
+      .array(
+        z.object({
+          category: z.string(),
+          technologies: z.array(z.string()),
+        })
+      )
+      .optional(),
+    experience: z
+      .array(
+        z.object({
+          company: z.string(),
+          position: z.string(),
+          period: z.string(),
+          location: z.string().optional(),
+          responsibilities: z.array(z.string()).optional(),
+        })
+      )
+      .optional(),
+    projects: z
+      .array(
+        z.object({
+          title: z.string(),
+          description: z.string().optional(),
+          github: z.string().optional(),
+          demo: z.string().optional(),
+          status: z.string().optional(),
+          technologies: z.array(z.string()).optional(),
+          content: z.array(z.string()).optional(),
+        })
+      )
+      .optional(),
+    education: z
+      .array(
+        z.object({
+          degree: z.string(),
+          institution: z.string(),
+          year: z.string(),
+        })
+      )
+      .optional(),
+    achievements: z.array(z.string()).optional(),
   }),
 });
 

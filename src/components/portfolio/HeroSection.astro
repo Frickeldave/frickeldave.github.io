@@ -1,0 +1,122 @@
+---
+import type { PortfolioEntry } from "@/types";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { name, jobTitle, tagline, location, email, linkedin, github, summary } =
+  entry.data;
+---
+
+<section class="section-sm container">
+  <div class="row justify-center">
+    <div class="col-12">
+      <!-- Hero Section -->
+      <div class="glass rounded-xl p-8 lg:p-12 mb-8">
+        <div class="row items-center">
+          <div class="col-12 lg:col-8">
+            <div class="mb-6">
+              <h1
+                class="text-4xl lg:text-6xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4"
+              >
+                {name}
+              </h1>
+              <h2
+                class="text-xl lg:text-2xl text-txt-p dark:text-darkmode-txt-p mb-4 font-light"
+              >
+                {jobTitle}
+              </h2>
+              {
+                tagline && (
+                  <p class="text-lg text-txt-p dark:text-darkmode-txt-p mb-4 italic">
+                    {tagline}
+                  </p>
+                )
+              }
+              <div class="flex items-center space-x-4 mb-6">
+                {
+                  location && (
+                    <span class="glass-t px-3 py-1 rounded-full text-sm text-txt-p dark:text-darkmode-txt-p">
+                      📍 {location}
+                    </span>
+                  )
+                }
+              </div>
+              <p
+                class="text-lg text-txt-p dark:text-darkmode-txt-p leading-relaxed mb-6"
+              >
+                {summary}
+              </p>
+            </div>
+
+            <!-- Contact Buttons -->
+            <div class="flex flex-wrap gap-4">
+              {
+                email && (
+                  <a
+                    href={`mailto:${email}`}
+                    class="btn btn-primary glass-btn"
+                    aria-label="Send Email"
+                  >
+                    📧 Contact Me
+                  </a>
+                )
+              }
+              {
+                linkedin && (
+                  <a
+                    href={linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-outline glass-btn"
+                    aria-label="LinkedIn Profile"
+                  >
+                    💼 LinkedIn
+                  </a>
+                )
+              }
+              {
+                github && (
+                  <a
+                    href={github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-outline glass-btn"
+                    aria-label="GitHub Profile"
+                  >
+                    🚀 GitHub
+                  </a>
+                )
+              }
+            </div>
+          </div>
+
+          <div class="col-12 lg:col-4 text-center">
+            <!-- Profile Image Placeholder -->
+            <div
+              class="glass rounded-full w-48 h-48 mx-auto mb-4 flex items-center justify-center"
+            >
+              <span class="text-6xl">👨‍💻</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .glass-btn {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+  }
+
+  .btn-primary {
+    @apply border-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white;
+  }
+
+  .btn-outline {
+    @apply border-2 border-gray-300 text-txt-p hover:bg-gray-100 dark:border-gray-600 dark:text-darkmode-txt-p dark:hover:bg-gray-800;
+  }
+</style>

@@ -1,0 +1,71 @@
+---
+import type { PortfolioEntry } from "@/types";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { education, achievements } = entry.data;
+---
+
+<section class="section-sm container">
+  <div class="row justify-center">
+    <div class="col-12 lg:col-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Education & Certifications -->
+        {
+          education && education.length > 0 && (
+            <div class="glass rounded-lg p-6 lg:p-8">
+              <h2 class="text-2xl lg:text-3xl font-bold text-txt-h dark:text-darkmode-txt-h mb-6">
+                Education & Certifications
+              </h2>
+              <div class="space-y-4">
+                {education.map((edu) => (
+                  <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="font-semibold text-txt-h dark:text-darkmode-txt-h mb-1">
+                      {edu.degree}
+                    </h3>
+                    <p class="text-blue-600 dark:text-blue-400 font-medium mb-1">
+                      {edu.institution}
+                    </p>
+                    <span class="glass-t px-2 py-1 rounded text-xs text-txt-p dark:text-darkmode-txt-p">
+                      {edu.year}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        }
+
+        <!-- Achievements -->
+        {
+          achievements && achievements.length > 0 && (
+            <div class="glass rounded-lg p-6 lg:p-8">
+              <h2 class="text-2xl lg:text-3xl font-bold text-txt-h dark:text-darkmode-txt-h mb-6">
+                Key Achievements
+              </h2>
+              <div class="space-y-3">
+                {achievements.map((achievement, index) => (
+                  <div class="flex items-start">
+                    <span class="text-yellow-500 mr-3 mt-1">🏆</span>
+                    <span class="text-txt-p dark:text-darkmode-txt-p">
+                      {achievement}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .glass-t {
+    @apply border border-white/20 bg-white/10 backdrop-blur-sm dark:border-gray-600/30 dark:bg-gray-800/20;
+  }
+</style>
