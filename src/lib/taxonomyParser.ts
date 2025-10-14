@@ -12,8 +12,10 @@ export const getTaxa = async (collection: CollectionKey, name: string) => {
   const taxonomies: string[] = [];
   for (let i = 0; i < taxonomyPages.length; i++) {
     const categoryArray = taxonomyPages[i];
-    for (let j = 0; j < categoryArray.length; j++) {
-      taxonomies.push(slugify(categoryArray[j]));
+    if (categoryArray && Array.isArray(categoryArray)) {
+      for (let j = 0; j < categoryArray.length; j++) {
+        taxonomies.push(slugify(categoryArray[j]));
+      }
     }
   }
   const taxonomy = [...new Set(taxonomies)];
@@ -30,8 +32,10 @@ export const getAllTaxa = async (collection: CollectionKey, name: string) => {
   const taxonomies: string[] = [];
   for (let i = 0; i < taxonomyPages.length; i++) {
     const categoryArray = taxonomyPages[i];
-    for (let j = 0; j < categoryArray.length; j++) {
-      taxonomies.push(slugify(categoryArray[j]));
+    if (categoryArray && Array.isArray(categoryArray)) {
+      for (let j = 0; j < categoryArray.length; j++) {
+        taxonomies.push(slugify(categoryArray[j]));
+      }
     }
   }
   return taxonomies;
@@ -49,8 +53,10 @@ export const getTaxaMultiset = async (
   const taxonomies: string[] = [];
   for (let i = 0; i < taxonomyPages.length; i++) {
     const categoryArray = taxonomyPages[i];
-    for (let j = 0; j < categoryArray.length; j++) {
-      taxonomies.push(slugify(categoryArray[j]));
+    if (categoryArray && Array.isArray(categoryArray)) {
+      for (let j = 0; j < categoryArray.length; j++) {
+        taxonomies.push(slugify(categoryArray[j]));
+      }
     }
   }
   return taxonomies;

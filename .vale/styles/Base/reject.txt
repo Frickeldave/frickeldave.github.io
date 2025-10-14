@@ -15,3 +15,6 @@ Rss -> RSS
 Ui -> UI
 Ux -> UX
 frickeldave -> Frickeldave
+Frikeldave -> Frickeldave
+Adesso -> Adesso
+adeso -> adesso

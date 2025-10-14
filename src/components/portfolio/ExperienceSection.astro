@@ -9,71 +9,77 @@ const { entry } = Astro.props;
 const { experience } = entry.data;
 ---
 
-{experience && experience.length > 0 && (
-  <section class="section-sm container">
-    <div class="row justify-center">
-      <div class="col-12 lg:col-10">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl lg:text-4xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4">
-            Professional Experience
-          </h2>
-          <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
-            My professional journey and key achievements
-          </p>
-        </div>
-        
-        <div class="space-y-8">
-          {experience.map((job, _index) => (
-            <div class="glass rounded-lg p-6 lg:p-8 relative">
-              {/* Timeline Indicator */}
-              <div class="absolute left-0 top-6 w-1 h-16 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full hidden lg:block"></div>
-              
-              <div class="lg:pl-8">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
-                  <div>
-                    <h3 class="text-xl lg:text-2xl font-semibold text-txt-h dark:text-darkmode-txt-h mb-2">
-                      {job.position}
-                    </h3>
-                    <h4 class="text-lg font-medium text-blue-600 dark:text-blue-400 mb-2">
-                      {job.company}
-                    </h4>
-                  </div>
-                  <div class="flex flex-col lg:text-right">
-                    <span class="glass-t px-3 py-1 rounded-full text-sm text-txt-p dark:text-darkmode-txt-p mb-2">
-                      {job.period}
-                    </span>
-                    {job.location && (
-                      <span class="text-sm text-txt-p dark:text-darkmode-txt-p">
-                        📍 {job.location}
+{
+  experience && experience.length > 0 && (
+    <section class="section-sm container">
+      <div class="row justify-center">
+        <div class="col-12 lg:col-10">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl lg:text-4xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4">
+              Professional Experience
+            </h2>
+            <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
+              My professional journey and key achievements
+            </p>
+          </div>
+
+          <div class="space-y-8">
+            {experience.map((job, _index) => (
+              <div class="glass rounded-lg p-6 lg:p-8 relative">
+                {/* Timeline Indicator */}
+                <div class="absolute left-0 top-6 w-1 h-16 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full hidden lg:block" />
+
+                <div class="lg:pl-8">
+                  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                    <div>
+                      <h3 class="text-xl lg:text-2xl font-semibold text-txt-h dark:text-darkmode-txt-h mb-2">
+                        {job.position}
+                      </h3>
+                      <h4 class="text-lg font-medium text-blue-600 dark:text-blue-400 mb-2">
+                        {job.company}
+                      </h4>
+                    </div>
+                    <div class="flex flex-col lg:text-right">
+                      <span class="glass-t px-3 py-1 rounded-full text-sm text-txt-p dark:text-darkmode-txt-p mb-2">
+                        {job.period}
                       </span>
-                    )}
+                      {job.location && (
+                        <span class="text-sm text-txt-p dark:text-darkmode-txt-p">
+                          📍 {job.location}
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {job.responsibilities && job.responsibilities.length > 0 && (
+                    <div class="mt-4">
+                      <h5 class="font-medium text-txt-h dark:text-darkmode-txt-h mb-3">
+                        Key Responsibilities:
+                      </h5>
+                      <ul class="space-y-2">
+                        {job.responsibilities.map((responsibility) => (
+                          <li class="flex items-start">
+                            <span class="text-blue-500 mr-3 mt-1">▸</span>
+                            <span class="text-txt-p dark:text-darkmode-txt-p">
+                              {responsibility}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-                
-                {job.responsibilities && job.responsibilities.length > 0 && (
-                  <div class="mt-4">
-                    <h5 class="font-medium text-txt-h dark:text-darkmode-txt-h mb-3">Key Responsibilities:</h5>
-                    <ul class="space-y-2">
-                      {job.responsibilities.map((responsibility) => (
-                        <li class="flex items-start">
-                          <span class="text-blue-500 mr-3 mt-1">▸</span>
-                          <span class="text-txt-p dark:text-darkmode-txt-p">{responsibility}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-)}
+    </section>
+  )
+}
 
 <style>
   .glass-t {
-    @apply backdrop-blur-sm bg-white/10 dark:bg-gray-800/20 border border-white/20 dark:border-gray-600/30;
+    @apply border border-white/20 bg-white/10 backdrop-blur-sm dark:border-gray-600/30 dark:bg-gray-800/20;
   }
 </style>
