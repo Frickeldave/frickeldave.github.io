@@ -12,7 +12,7 @@
     "prepare": "husky install",
     "postinstall": "npm run install-vale",
     "format": "prettier --write ./src --log-level silent",
-    "format:check": "prettier --check ./src --log-level silent",
+    "format:check": "prettier --check ./src",
     "lint": "eslint ./src --ext .js,.ts,.jsx,.tsx,.astro --fix",
     "lint:check": "eslint ./src --ext .js,.ts,.jsx,.tsx,.astro",
     "install-vale": "node -e \"const cmd = process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File .vale/install-vale.ps1' : 'bash .vale/install-vale.sh'; require('child_process').exec(cmd, (err, stdout, stderr) => { if (err) { console.error(stderr); process.exit(1); } console.log(stdout); })\"",

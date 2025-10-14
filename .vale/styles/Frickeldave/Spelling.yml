@@ -1,7 +1,0 @@
-extends: spelling
-message: "Wort '%s' möglicherweise falsch geschrieben."
-level: error
-custom: true
-dicpath: ../dictionaries
-dictionaries:
-  - de_DE

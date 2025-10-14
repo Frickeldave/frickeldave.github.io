@@ -31,7 +31,7 @@ esac
 # Download and extract Vale
 echo "Downloading Vale ${VALE_VERSION} for ${OS} ${ARCH}..."
 mkdir -p ./.vale
-timeout 60 curl -L --progress-bar --max-time 30 "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/${BINARY_NAME}" | tar -xz -C ./.vale || {
+timeout 60 curl --progress-bar -L --max-time 30 "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/${BINARY_NAME}" | tar -xz -C ./.vale || {
     echo "Error: Failed to download or extract Vale"
     exit 1
 }
@@ -105,20 +105,8 @@ mkdir -p ./.vale/dictionaries
 
 # Download German dictionary files
 echo "Downloading German dictionary (de_DE)..."
-timeout 300 curl -L --progress-bar --max-time 100 "https://github.com/LibreOffice/dictionaries/raw/refs/heads/master/de/de_DE_frami.dic" -o ./.vale/dictionaries/de_DE.dic || echo "Warning: Could not download de_DE.dic"
-timeout 300 curl -L --progress-bar --max-time 100 "https://github.com/LibreOffice/dictionaries/raw/refs/heads/master/de/de_DE_frami.aff" -o ./.vale/dictionaries/de_DE.aff || echo "Warning: Could not download de_DE.aff"
-
-# Convert dictionaries from ISO-8859-1 to UTF-8
-echo "Converting dictionaries to UTF-8..."
-if command -v iconv >/dev/null 2>&1; then
-    iconv -f ISO-8859-1 -t UTF-8 ./.vale/dictionaries/de_DE.dic -o ./.vale/dictionaries/de_DE.dic.utf8 && mv ./.vale/dictionaries/de_DE.dic.utf8 ./.vale/dictionaries/de_DE.dic || echo "Warning: Could not convert de_DE.dic"
-    iconv -f ISO-8859-1 -t UTF-8 ./.vale/dictionaries/de_DE.aff -o ./.vale/dictionaries/de_DE.aff.utf8 && mv ./.vale/dictionaries/de_DE.aff.utf8 ./.vale/dictionaries/de_DE.aff || echo "Warning: Could not convert de_DE.aff"
-    # Update encoding declaration in .aff file
-    sed -i 's/^SET ISO8859-1/SET UTF-8/' ./.vale/dictionaries/de_DE.aff
-    echo "Dictionaries converted to UTF-8"
-else
-    echo "Warning: iconv not found, dictionaries may have encoding issues"
-fi
+timeout 120 curl --progress-bar -L --max-time 60 "https://cgit.freedesktop.org/libreoffice/dictionaries/plain/de/de_DE_frami.dic" -o ./.vale/dictionaries/de_DE.dic 2>/dev/null || echo "Warning: Could not download de_DE.dic"
+timeout 120 curl --progress-bar -L --max-time 60 "https://cgit.freedesktop.org/libreoffice/dictionaries/plain/de/de_DE_frami.aff" -o ./.vale/dictionaries/de_DE.aff 2>/dev/null || echo "Warning: Could not download de_DE.aff"
 
 echo "German dictionaries downloaded to ./.vale/dictionaries/"
 

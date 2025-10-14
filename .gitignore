@@ -58,9 +58,9 @@ dist/
 # Wrangler output
 .wrangler/
 
-# Vale binary (install with npm run install-vale)
+# Vale files (install with npm run install-vale)
 .vale/dictionaries
 .vale/styles/Microsoft
-.vale&/styles/write-good
+.vale/styles/write-good
 .vale/vale
 .vale/vale.exe
