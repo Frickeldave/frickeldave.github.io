@@ -1,0 +1,47 @@
+name: Check Source Branch for Main
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    
+jobs:
+  pull-request-checks:
+    runs-on: [self-hosted, frickeldave-main]
+    steps:
+      - name: Print branch information
+        run: |
+          echo "Target branch: ${{ github.base_ref }}"
+          echo "Source branch: ${{ github.head_ref }}"
+
+      - name: Skip if not targeting 'main' or 'dev'
+        if: github.base_ref != 'main' && github.base_ref != 'dev'
+        run: |
+          echo "ℹ️  This workflow only applies to PRs targeting 'dev' and 'main' branch."
+          echo "Current target: '${{ github.base_ref }}' - skipping checks."
+          echo "✅ This PR is not targeting 'dev' or 'main', so it passes."
+
+      - name: Prevent any attempt to merge a branch other than 'dev' into 'main'.
+        if: github.base_ref == 'main' && github.head_ref != 'dev'
+        run: |
+          echo "Error: Merges into 'main' are only allowed from the 'dev' branch."
+          echo "Your source branch is '${{ github.head_ref }}'."
+          echo "Target branch is '${{ github.base_ref }}'."
+          exit 1
+          
+      - name: Allow merge from dev to main
+        if:  github.base_ref == 'main' && github.head_ref == 'dev'
+        run: |
+          echo "✅ Merging into '${{ github.base_ref }}'. Start linting process..."
+          
+          # Run ESLint check
+          echo "🔍 Running ESLint check..."
+          npm run lint:check || { echo "❌ ESLint check failed"; exit 1; }
+          
+          # Run Prettier check
+          echo "✨ Running Prettier check..."
+          npm run format:check || { echo "❌ Prettier check failed"; exit 1; }
+          
+          # Run Vale prose check
+          echo "📝 Running Vale prose check..."
+          npm run prose || { echo "❌ Vale prose check failed"; exit 1; }
+          
+          echo "✅ All linting checks passed!"
