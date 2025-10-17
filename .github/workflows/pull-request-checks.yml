@@ -44,7 +44,7 @@ jobs:
           export NODE_OPTIONS="--max-old-space-size=8192"
           source ~/.bashrc
           nvm install --lts
-          npm run ci || { echo "❌ Installation of dependencies failed"; exit 1; }
+          npm ci || { echo "❌ Installation of dependencies failed"; exit 1; }
 
           # Run ESLint check
           echo "--------------------------------------"
