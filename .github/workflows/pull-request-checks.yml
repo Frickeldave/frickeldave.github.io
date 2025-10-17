@@ -34,6 +34,10 @@ jobs:
 
           # Install dependencies
           echo "➕ Install dependencies"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+          echo 'export NODE_OPTIONS="--max-old-space-size=8192"' >> ~/.bashrc
+          source ~/.bashrc
+          nvm install --lts
           npm run ci || { echo "❌ Installation of dependencies failed"; exit 1; }
 
           # Run ESLint check
