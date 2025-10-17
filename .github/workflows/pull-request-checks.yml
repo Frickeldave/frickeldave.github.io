@@ -27,8 +27,8 @@ jobs:
           echo "❌ Target branch is '${{ github.base_ref }}'."
           exit 1
           
-      - name: Allow merge from dev to main
-        if:  github.base_ref == 'main' && github.head_ref == 'dev'
+      - name: Allow merge from dev->main or from any other branch->dev
+        if:  (github.base_ref == 'main' && github.head_ref == 'dev') || (github.base_ref == 'dev')
         run: |
           echo "✅ Merging into '${{ github.base_ref }}'. Start linting process..."
 
