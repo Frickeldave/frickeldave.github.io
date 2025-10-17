@@ -1,4 +1,4 @@
-name: Check Source Branch for Main
+name: Pull request checks
 on:
   pull_request:
     types: [ opened, synchronize, reopened ]
@@ -22,16 +22,20 @@ jobs:
       - name: Prevent any attempt to merge a branch other than 'dev' into 'main'.
         if: github.base_ref == 'main' && github.head_ref != 'dev'
         run: |
-          echo "Error: Merges into 'main' are only allowed from the 'dev' branch."
-          echo "Your source branch is '${{ github.head_ref }}'."
-          echo "Target branch is '${{ github.base_ref }}'."
+          echo "❌ Merges into 'main' are only allowed from the 'dev' branch."
+          echo "❌ Your source branch is '${{ github.head_ref }}'."
+          echo "❌ Target branch is '${{ github.base_ref }}'."
           exit 1
           
       - name: Allow merge from dev to main
         if:  github.base_ref == 'main' && github.head_ref == 'dev'
         run: |
           echo "✅ Merging into '${{ github.base_ref }}'. Start linting process..."
-          
+
+          # Install dependencies
+          echo "➕ Install dependencies"
+          npm run ci || { echo "❌ Installation of dependencies failed"; exit 1; }
+
           # Run ESLint check
           echo "🔍 Running ESLint check..."
           npm run lint:check || { echo "❌ ESLint check failed"; exit 1; }
