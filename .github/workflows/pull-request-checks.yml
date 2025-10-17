@@ -33,23 +33,35 @@ jobs:
           echo "✅ Merging into '${{ github.base_ref }}'. Start linting process..."
 
           # Install dependencies
+          echo "--------------------------------------"
           echo "➕ Install dependencies"
+          echo "--------------------------------------"
+          echo "Downloading and installing nvm..."
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-          echo 'export NODE_OPTIONS="--max-old-space-size=8192"' >> ~/.bashrc
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          
+          export NODE_OPTIONS="--max-old-space-size=8192"
           source ~/.bashrc
           nvm install --lts
           npm run ci || { echo "❌ Installation of dependencies failed"; exit 1; }
 
           # Run ESLint check
+          echo "--------------------------------------"
           echo "🔍 Running ESLint check..."
+          echo "--------------------------------------"
           npm run lint:check || { echo "❌ ESLint check failed"; exit 1; }
           
           # Run Prettier check
+          echo "--------------------------------------"
           echo "✨ Running Prettier check..."
+          echo "--------------------------------------"
           npm run format:check || { echo "❌ Prettier check failed"; exit 1; }
           
           # Run Vale prose check
+          echo "--------------------------------------"
           echo "📝 Running Vale prose check..."
+          echo "--------------------------------------"
           npm run prose || { echo "❌ Vale prose check failed"; exit 1; }
           
           echo "✅ All linting checks passed!"
