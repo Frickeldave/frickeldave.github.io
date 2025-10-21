@@ -15,3 +15,6 @@ Rss -> RSS
 Ui -> UI
 Ux -> UX
 frickeldave -> Frickeldave
+Lego -> Klemmbaustein
+lego -> Klemmbaustein
+LEGO -> Klemmbaustein
