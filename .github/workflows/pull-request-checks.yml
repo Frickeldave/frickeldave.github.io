@@ -1,4 +1,4 @@
-name: Check Source Branch for Main
+name: Pull request checks
 on:
   pull_request:
     types: [ opened, synchronize, reopened ]
@@ -22,26 +22,47 @@ jobs:
       - name: Prevent any attempt to merge a branch other than 'dev' into 'main'.
         if: github.base_ref == 'main' && github.head_ref != 'dev'
         run: |
-          echo "Error: Merges into 'main' are only allowed from the 'dev' branch."
-          echo "Your source branch is '${{ github.head_ref }}'."
-          echo "Target branch is '${{ github.base_ref }}'."
+          echo "❌ Merges into 'main' are only allowed from the 'dev' branch."
+          echo "❌ Your source branch is '${{ github.head_ref }}'."
+          echo "❌ Target branch is '${{ github.base_ref }}'."
           exit 1
           
-      - name: Allow merge from dev to main
-        if:  github.base_ref == 'main' && github.head_ref == 'dev'
+      - name: Allow merge from dev->main or from any other branch->dev
+        if:  (github.base_ref == 'main' && github.head_ref == 'dev') || (github.base_ref == 'dev')
         run: |
           echo "✅ Merging into '${{ github.base_ref }}'. Start linting process..."
+
+          # Install dependencies
+          echo "--------------------------------------"
+          echo "➕ Install dependencies"
+          echo "--------------------------------------"
+          echo "Downloading and installing nvm..."
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           
+          export NODE_OPTIONS="--max-old-space-size=8192"
+          source ~/.bashrc
+          nvm install 24
+          nvm use 24
+          npm ci || { echo "❌ Installation of dependencies failed"; exit 1; }
+
           # Run ESLint check
+          echo "--------------------------------------"
           echo "🔍 Running ESLint check..."
+          echo "--------------------------------------"
           npm run lint:check || { echo "❌ ESLint check failed"; exit 1; }
           
           # Run Prettier check
+          echo "--------------------------------------"
           echo "✨ Running Prettier check..."
+          echo "--------------------------------------"
           npm run format:check || { echo "❌ Prettier check failed"; exit 1; }
           
           # Run Vale prose check
+          echo "--------------------------------------"
           echo "📝 Running Vale prose check..."
+          echo "--------------------------------------"
           npm run prose || { echo "❌ Vale prose check failed"; exit 1; }
           
           echo "✅ All linting checks passed!"
