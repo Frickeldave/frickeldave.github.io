@@ -143,6 +143,27 @@
       "affiliate": true,
       "openInNewTab": true
     },
+    "beton-pigmente-schwarz": {
+      "targetUrl": "https://www.amazon.de/dp/B06ZYQC2YH",
+      "description": "Betonpigmente in Schwarz für Betonverarbeitung",
+      "category": "Beton & Stein",
+      "affiliate": true,
+      "openInNewTab": true
+    },
+    "falke-kreisschneider": {
+      "targetUrl": "https://www.amazon.de/dp/B07C5MV47W",
+      "description": "Falke Kreisschneider 200mm",
+      "category": "Werkzeuge",
+      "affiliate": true,
+      "openInNewTab": true
+    },
+    "sekundenkleber": {
+      "targetUrl": "https://www.amazon.de/dp/B0BYJGH8SG",
+      "description": "Kraftprotz Sekundenkleber 50g",
+      "category": "Werkzeuge",
+      "affiliate": true,
+      "openInNewTab": true
+    },
     "zlh-challenge": {
       "targetUrl": "https://frickeldave.github.io/blog/zlh150_3-charity-challenge/",
       "description": "ZLH Challenge von Patrick - Charity Challenge",
