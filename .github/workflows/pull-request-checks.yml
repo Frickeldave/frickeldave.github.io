@@ -7,6 +7,10 @@ jobs:
   pull-request-checks:
     runs-on: [self-hosted, frickeldave-main]
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Get whole history for all branches and tags
+
       - name: Print branch information
         run: |
           echo "Target branch: ${{ github.base_ref }}"
