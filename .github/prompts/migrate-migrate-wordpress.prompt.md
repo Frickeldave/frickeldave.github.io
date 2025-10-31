@@ -9,7 +9,7 @@ Migriere den Artikel von der URL ${input:url} in eine Astro-kompatible MDX-Datei
 
 Der Zielartikel soll unter src/content/blog liegen. Der Dateiname soll dem Schema YYYY-MM-DD-<slug>.mdx folgen, wobei das Datum aus dem Originalartikel übernommen wird und der Slug aus dem Titel generiert wird (Kleinbuchstaben, Bindestriche statt Leerzeichen, keine Sonderzeichen). 
 
-Bilder werden lokal im Verzeichnis src/assets/blog/<category>/<dateiname>/ abgelegt, wobei <category> die Kategorien des Blogs ist (z.B. DevOps, IT, DIY, 3D Druck) und <dateiname> der generierte "YYYY-MM-DD-<slug>" Dateiname ist. Die Bilder sollen nach dem Schema <identifier>-001.png, <identifier>-002.png usw. benannt werden. Nur das header image soll <identifier>-header.png heißen.
+Bilder werden lokal im Verzeichnis src/assets/blog/<category>/<dateiname>/ abgelegt, wobei <category> die Kategorien des Blogs ist (z.B. DevOps, IT, DIY, 3D Druck) und <dateiname> der generierte "YYYY-MM-DD-<slug>" Dateiname ist. Beachte aber, das Ordernamen klein geschrieben sein sollen. Die Bilder sollen nach dem Schema <identifier>-001.png, <identifier>-002.png usw. benannt werden. Nur das header image soll <identifier>-header.png heißen.
 
 Da ich die Header Images alles neu generieren möchte, kopiere bitte das Bild src/assets/placeholder-header.png in den entsprechenden Ordner und benenne es in dkot-header.png um.
 

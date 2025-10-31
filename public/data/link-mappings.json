@@ -170,6 +170,13 @@
       "category": "Blog",
       "affiliate": false,
       "openInNewTab": false
+    },
+    "vogelfutterhaus-lightburn": {
+      "targetUrl": "downloads/Vogelfutterhaus.lbrn2",
+      "description": "Lightburn Datei mit vorgefertigten Dekorelementen für das Vogelfutterhaus Projekt",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
     }
   },
   "analytics": {
