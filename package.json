@@ -5,6 +5,9 @@
   "author": "Frickeldave",
   "license": "MIT",
   "packageManager": "npm@10.8.2",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -54,7 +57,7 @@
     "@tailwindcss/forms": "^0.5.4",
     "@tailwindcss/typography": "^0.5.9",
     "@types/marked": "^5.0.1",
-    "@types/node": "20.4.8",
+    "@types/node": "^24.9.2",
     "@types/react": "18.2.18",
     "@types/react-dom": "18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
