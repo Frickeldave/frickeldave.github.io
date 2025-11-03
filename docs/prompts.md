@@ -9,3 +9,6 @@ ausschließlich zu verwenden. Das Bild soll dynamisch, inspirierend und technisc
 wirken, mit komplexen Steampunk-Maschinen, Menschen im Look des industriellen Revolution und
 leuchtenden Elementen und einem Gefühl von Innovation und Teamarbeit. Realistische Lichtverhältnisse
 und metallische Texturen. Der Inhalt des Bildes soll sich um das folgende Thema drehen.
+
+
+Füge das schwarze und blaue Logo in das komplexe Steampunk-Laborbild ein, indem du es unauffällig als Detail auf einem Zahnrad oder im Hintergrund platzierst. Das ursprüngliche Bild soll ansonsten nicht verändert werden. Die Integration soll subtil und realistisch wirken.
