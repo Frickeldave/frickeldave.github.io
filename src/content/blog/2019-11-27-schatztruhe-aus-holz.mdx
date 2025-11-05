@@ -1,0 +1,344 @@
+---
+title: Schatztruhe aus Holz
+description:
+  Ein Schritt-für-Schritt Leitfaden zum Bau einer rustikalen Schatztruhe aus Holz mit geflammter
+  Oberfläche und handgeschmiedeten Beschlägen
+slug: schatztruhe-aus-holz
+date: 2019-11-27
+image: "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-header.png"
+imageAlt: Header image für den Blog Artikel Schatztruhe aus Holz
+categories: [DIY]
+author: Frickeldave
+tags: [Holzwerken, DIY, Schatztruhe, Flammen, Beschläge, Handarbeit]
+---
+
+import PrivacyYouTube from "@components/frickeldave/PrivacyYouTube.astro";
+import RedirectLink from "@components/common/RedirectLink.astro";
+import { Image } from "astro:assets";
+import shah001 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-001.jpg";
+import shah002 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-002.png";
+import shah003 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-003.jpg";
+import shah004 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-004.jpg";
+import shah005 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-005.jpg";
+import shah006 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-006.jpg";
+import shah007 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-007.jpg";
+import shah008 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-008.jpg";
+import shah010 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-010.jpg";
+import shah011 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-011.jpg";
+import shah012 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-012.jpg";
+import shah013 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-013.jpg";
+import shah014 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-014.jpg";
+import shah015 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-015.jpg";
+import shah016 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-016.jpg";
+import shah017 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-017.jpg";
+import shah018 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-018.jpg";
+import shah019 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-019.jpg";
+import shah020 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-020.jpg";
+import shah021 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-021.jpg";
+import shah022 from "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-022.jpg";
+
+# Schatztruhe aus Holz
+
+Die <RedirectLink id="msg-systems" text="msg-systems ag" /> (mein damaliger Arbeitgeber) ist auf der
+
+<RedirectLink id="devopscon-munich" text="DevOpsCon" />, einer IT Messe in München aufgetreten. Wir
+haben uns entschlossen, den ganzen Auftritt unter ein Motto zu stellen. Da die "DevOps-Transition"
+durchaus einer Suche nach einem Schatz gleichen kann, haben wir das Motto "Schatzsuche" gewählt.
+
+Besonders ist, dass die Veranstalter auch einige Preise auslosen, die von den Ausstellern gestellt
+werden. Um unserem Motto gerecht zu werden, liegt es doch Nahe, eine Schatztruhe zu bauen, die
+unseren "Schatz" (eine Buchreihe von <RedirectLink id="jez-humble" text="Jez Humble" />) beinhaltet.
+
+Scrollst du in diesem Artikel einmal ganz nach unten, findest du auch noch mal ein YouTube Video in
+dem ich den Bau eienr solchen Schatztruhe komplett mitgefilmt habe.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+
+    {/* #TODO: Check internal link */}
+
+    Wie schon bei meinem Artikel zur [Monitorwand](https://frickeldave.github.io/blog/monitor-panel-fuer-besprechungsraeume-1), ist es zudem eine echt klasse Sache, wenn der Arbeitgeber es einem ermöglicht, Hobby und Beruf fantastisch miteinander zu verknüpfen. Aber nicht, dass hier der Eindruck entsteht, ich verbringe meine Arbeitsalltag in der Werkstatt. Mein Hauptjob macht mir nach wie vor genausoviel Spaß 😉
+
+    Hier soll es aber nun um den Bau der Schatztruhe gehen. Ich hoffe euch gefällts und vielleicht bauts ja der/die eine oder andere nach.
+
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah001} alt="Die fertige Schatztruhe" />
+  </div>
+</div>
+
+## Die Planung der Schatztruhe
+
+Ich wollte drei Bücher in der Schatztruhe unterbringen. Nach einer groben Abmessung an den Büchern
+bin ich dabei auf folgende Maße gekommen.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={shah002} alt="Der Plan für die Schatztruhe" />
+  </div>
+  <div className="lg:w-1/2">
+    Tatsächlich habe ich die Schatztruhe am Ende eine Leiste niedriger gebaut. Zudem habe ich mich
+    entschlossen die Kiste ohne Maschinen zu bauen. Zum Einsatz kommen für dieses Projekt also nur
+    Japansäge, Handhobel, ein kleiner Gasbrenner, Schraubzwingen, Klebeband und Akkuschrauber. Der
+    Bau von Hand sorgt auch für den gewollt unperfekten Look am Ende.
+  </div>
+</div>
+
+## Einkaufsliste
+
+Die Holztruhe soll natürlich möglichst alt ausschauen. Daher habe ich als Holzleisten möglichst von
+Würmern zerfressene und mit Ästen durchsetzte, aber doch möglichst grade, sägeraue Leisten gesucht.
+Die Leisten haben eine Größe von 47x22mm.
+
+Dazu kommen noch Beschläge. Da ich aber nicht 50€ alleine für die Beschläge ausgeben wollte, habe
+ich 2 große Standard-Baumarktscharniere, 2 Flachstähle, ein Verschluß und Seile die als Griffe
+dienen, mitgenommen. Dazu habe ich eine Dose
+
+<RedirectLink id="hammerschlag-hammerit" text="Hammerschlag Hammerit in Schwarz" /> eingepackt, mit
+denen der Flachstahl und die Beschläge lackiert werden. Last but not least, wanderten noch 60
+Schloßschrauben mit 35mm Länge in den Einkaufwagen.
+
+Insgesamt bin ich auf ca. 60€ Unkosten gekommen.
+
+## Lackieren der Beschläge
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Ich habe erstmal alle Eisen und Beschläge mit dem schwarzen Hammerschlag Hammerit lackiert.
+
+    Hier kann trefflich gestritten werden, ob man erst lackiert und dann die Eisen biegt, oder die Lackierarbeiten erst kurz vor der Endmontage macht. Da ich weniger Zeit hatte, habe ich die Eisen als erstes lackiert und ein paar Tage während ich den Rest gebaut habe, trocknen lassen. Dann habe ich die Eisen gebogen was zur Folge hatte, dass der Lack an den Biegestellen aufbricht und ich nach dem biegen noch einmal lackiert habe.
+
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah003} alt="Lackieren der Beschläge" />
+  </div>
+</div>
+
+Nach der zweiten Lackschicht habe ich die Eisen einen Tag trocknen lassen und dann auch gleich
+montiert. Normalerweise darf man dem Lack ruhig 1-2 Wochen gönnen, bevor er wirklich durchgehärtet
+ist, richtig wäre also die Reihenfolge:
+
+- Kiste bauen
+- Eisen passend biegen
+- Lackieren
+- 1-2 Wochen warten
+- Montieren
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={shah004} alt="Lackierte Schraubenköpfe" />
+  </div>
+  <div className="lg:w-2/3">
+    Neben den schwarzen Eisen wollte ich auch Gold/Messingfarbene Schraubenköpfe als Kontrast. Dazu habe ich die Schloßschrauben mit dem Kopf in Messing-Hammerit Lack getaucht.
+
+    Auch hier ist mir an einigen Stellen aufgrund zu wenig Wartezeit der Lack bei der Montage abgeplatzt. Beim Nachbau also wirklich 1-2 Wochen trocknen lassen.
+
+  </div>
+</div>
+
+## Deckel der Schatztruhe bauen
+
+Um die Deckelrundung hinzubekommen, mussten die Leisten einen Winkel von 22,5° an der Seite
+bekommen. Anstatt nun die Kreissäge herzunehmen, wollte ich das mit dem Hobel erledigen. Mit einem
+Geodreieck wird der Winkel als erst an den Stirnseiten der abgelängten Leisten angezeichnet.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Dann wird mit einer Linie über die gesamte Länge der Winkel markiert und die Leiste mit dem
+    Hobel bearbeitet. Das ganze klappt erstaunlich gut. Es wird zwar ein wenig anstrengend wenn man
+    auf eine Ast trifft (hier also vorher gut überlegen, wo man den Winkel anbringen möchte), aber
+    auch das bekommt mit ein wenig Schwung hin.
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah005} alt="Einarbeiten des Winkels mit dem Hobel" />
+  </div>
+</div>
+
+Sind die Winkel angebracht, kann der Deckel schon montiert werden. Hierfür werden 2 Streifen
+Klebeband ausgelegt und der Deckel nach oben hin zusammen gezogen.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={shah007} alt="Anordnen der Leisten auf dem Klebeband" />
+  </div>
+  <div className="lg:w-2/3">
+    Das funktioniert nicht unbedingt beim ersten mal, aber mit ein bisschen Geduld wird das schon. Zwei Leisten auf der richtigen Länge die man oben einklemmt, leisten hier ebenfalls einen guten Dienst.
+
+    Vor allem durch die krummen und nicht abgerichteten Balken entstehen hier zwangsläufig Lücken. Nachdem ich den Deckel zusammengeführt habe, habe ich diese Lücken mit einer Sägemehl-Leim Mischung ausgerieben.
+
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Ich hatte vorher einiges aus Nußbaumholz an der TKS geschnitten. Das deutlich dunklere Sägemehl macht sich in den Lücken so richtig gut.
+
+    Nach einigen Stunden Wartezeit wird die gleiche Behandlung auch auf der Oberseite durchgeführt.
+
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah008} alt="Füllen der Lücken mit dunklen Sägemehl" />
+  </div>
+</div>
+
+Nun sollte der Deckel der Schatztruhe gut 12 Stunden ruhen. Danach hält der bombenfest.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={shah010} alt="Einpassen der Seitenwand" />
+  </div>
+  <div className="lg:w-2/3">
+    Zu guter letzt kommen noch die Seitenwände. Ich habe mir aus den gleichen Balken ein Brett
+    geleimt. Auf diesem wird nun die Seitenwand angezeichnet, ausgesägt und eingeklebt. Hier können
+    dann auch endlich wieder Zwingen verwendet werden ;-). Den Deckel habe ich bewußt etwas größer
+    als notwendig gestaltet und die Überstände bündig abgesägt.
+  </div>
+</div>
+
+## Beschläge der Schatztruhe biegen
+
+Das biegen der Beschläge ist keine Raketenwissenschaft, sehr wohl aber eine Geduldsarbeit. Ich habe
+die Eisen eingespannt, gebogen, angehalten, wieder eingespannt und nachgearbeitet. Das ganze für
+jeden einzelnen Knick des Deckels.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Das dauert ein wenig, aber ein tolles Ergebnis ist die Belohnung: Die Eisen und Scharniere passen perfekt auf den Deckel. Die letzten kleinen Lücken schließen sich, wenn die Beschläge montiert werden.
+
+    Sind alle Teile gebogen, können die Löcher gebohrt werden. Hier ist auf jeden Fall ein Körner notwendig. Ich habe 7mm Löcher gebohrt (bzw. die Löcher der Scharniere auf 7mm aufgebohrt), damit die Schloßschrauben plan aufliegen.
+
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah011} alt="Biegen der Eisen" />
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={shah012} alt="Körnen der Löcher" />
+  </div>
+
+  <div className="lg:w-1/2">
+    <Image src={shah013} alt="Bohren der Löcher in die Beschläge" />
+  </div>
+</div>
+
+## Bau des Korpus der Schatztruhe
+
+Der Bau des Korpus der Schatztruhe gestaltet sich recht einfach, es ist nur etwas Geduld nötig. Als
+erstes wird ein Brett aus den Balken geleimt, dies sollte der Gesamtgröße des Deckels minus die 2x
+der Balkendicke entsprechen. Ist dieses durchgehärtet, wird dieses Brett mit weiteren Balken
+umrahmt.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={shah014} alt="Aufbau des Truhenkorpus" />
+  </div>
+  <div className="lg:w-2/3">
+    Nun arbeitet man sich Ebene für Ebene nach oben. Die Balken werden dabei immer im Versatz gelegt.
+
+    Ich habe nach 1-2 Stunden Wartezeit immer mit der nächsten Ebene begonnen, so dass nach einem halben Tag die Kiste fertig war.
+
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={shah015} alt="Verleimen der zweiten Ebene" />
+  </div>
+  <div className="lg:w-2/3">
+    Als alles fertig montiert war, habe ich einen Raspelhobel zur Hand genommen um die Schatztruhe
+rundherum zu glätten. Alle fiesen Spreissel wird man damit sehr schnell los und alle Kanten können
+sehr einfach abgerundet werden. Zudem wird das Holz nicht zu glatt, die ganze Kiste soll ja eben
+nicht perfekt passgenau sein, sondern so Ihre Ecken und Schrunten haben.
+
+  </div>
+</div>
+
+## Flammen und Ölen der Schatztruhe
+
+Ist nun alles fertig, kommt der (für mich) schönste Teil der Arbeit: Das Flammen. Ich habe die
+Schatztruhe im ersten Durchgang nur mäßig geflammt. Dann kommen nämlich wunderbar noch die
+restlichen Leimspuren raus, die entfernt werden müssen.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Um diese Leimreste zu entfernen bietet sich eine Drahtbürste auf einem Akkuschrauber an. Zweiter Vorteil dieser Vorgehensweise: Das Holz bekommt noch mal richtig viele schöne Schrunten und Unebenheiten.
+
+    Sind alle Leimreste entfernt, werden alle alle Teile schön gleichmäßig durchgeflammt. Im Anschluß wird eine Drahtbürste genutzt um die verkohlten Holzstaub auszubürsten.
+
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah016} alt="Fertig geflammte und abgebürstete Truhe" />
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={shah017} alt="Ausbürsten der Truhe" />
+  </div>
+  <div className="lg:w-2/3">
+    Im unteren Bild ist die Oberseite ausgebürstet, die zur Kamera ausgerichtete Seite noch nicht.
+
+    Ist die ganze Schatztruhe abgebürstet geht es auch schon ans einölen. Nun bekommt das Holz endlich seinen finalen Look. Ich nutze hier ein <RedirectLink id="leinolfirnis-isolbau" text="Leinölfirnis von Isolbau" />. Das Holz darf nach dem Ölen ruhig noch leicht feucht an der Oberfläche sein, speziell das geflammte Holz braucht unheimlich viel Öl.
+
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={shah018} alt="Ölen der Truhe" />
+  </div>
+  <div className="lg:w-2/3">
+    Auf den Bildern kommt das gar nicht so krass rüber, aber der Effekt ist wirklich beeindruckend.
+  </div>
+</div>
+
+## Montage
+
+Mit der Montage begonnen wird bei den hinteren Scharnieren. Der Deckel wird aufgesetzt und vorne
+fest auf den Korpus gedrückt (oder mit Klebeband fixiert). Danach werden die Scharniere
+angeschraubt. Auf diese Weise ist sichergestellt, dass der Deckel schön sauber mit der Vorderkante
+der Truhe abschließt.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Nach den Scharnieren werden die Bänder montiert. Diese werden einfach angelegt, 5,5er (oder 6er)
+    Löcher durch die Löcher der Bänder gebohrt und die Schrauben angezogen. Beim Deckel ist wichtig
+    darauf zu achten, dass mit der mittleren oberen Schrauben begonnen wird und man sich Schraube
+    für Schraube nach unten arbeitet. Die Bänder vorne und hinten werden auf die gleiche Weise
+    montiert, den Riegel vorne habe ich mit normalen Spax Schrauben befestigt, die im Nachhinein
+    schwarz überlackiert werden.
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah019} alt="Fixieren der Scharniere" />
+  </div>
+</div>
+
+Am Ende werden noch 4 kleine Holzklötze ausgeschnitten, geflammt, geölt und unter die Truhe
+montiert. Ich habe die Klötze mit einem Holzdübel durchbohrt und direkt an die Kiste geleimt. Weil
+ich ein wenig ungeduldig war, habe ich links und rechts noch 2 kleine Stiftnägel versenkt.
+
+## Fazit
+
+Ein bisschen Werkzeug, ein bisschen Geduld, Phantasie und ein paar Holzleisten aus dem Baumarkt,
+schon kann man durchaus auch ein wunderschönes Ergebnis erreichen. Ich hoffe ich konnte euch einen
+Anreiz bieten, euch auch mal an einem Projekt wie diesen zu versuchen. Selbst wenn man sich das
+Werkzeug dafür kaufen muss, ist man mit unter 100€ dabei. Zudem ist das vlt. auch Anreiz für den
+einen oder anderen, darüber nachzudenken wie man Dinge reizvoll verpacken kann.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={shah020} alt="Finale Truhe 1" />
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah021} alt="Finale Truhe 2" />
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={shah022} alt="Finale Truhe 3" />
+  </div>
+</div>
+
+Danach habe ich noch einmal eine ähnliche Truhe gebaut und dieses Projekt einmal mitgefilmt.
+
+<PrivacyYouTube videoId="DqMG7ClaaAs" title="Schatztruhe bauen" />

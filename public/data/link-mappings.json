@@ -107,6 +107,83 @@
       "affiliate": false,
       "openInNewTab": true,
       "created": "2025-09-12T12:00:00.000Z"
+    },
+    "msg-systems": {
+      "targetUrl": "https://www.msg.group/automotive",
+      "description": "msg systems ag - Mein Arbeitgeber",
+      "category": "Unternehmen",
+      "affiliate": false,
+      "openInNewTab": true
+    },
+    "devopscon-munich": {
+      "targetUrl": "https://devopscon.io/munich/",
+      "description": "DevOpsCon - IT Messe in München",
+      "category": "Events",
+      "affiliate": false,
+      "openInNewTab": true
+    },
+    "jez-humble": {
+      "targetUrl": "https://www.linkedin.com/in/jez-humble/",
+      "description": "Jez Humble - DevOps Autor und Experte",
+      "category": "Personen",
+      "affiliate": false,
+      "openInNewTab": true
+    },
+    "hammerschlag-hammerit": {
+      "targetUrl": "https://www.amazon.de/dp/B00I5PE1FM",
+      "description": "Hammerschlag Hammerit Lack in Schwarz",
+      "category": "Werkzeuge",
+      "affiliate": true,
+      "openInNewTab": true
+    },
+    "leinolfirnis-isolbau": {
+      "targetUrl": "https://www.amazon.de/gp/product/B075N4YHG6",
+      "description": "Leinölfirnis von Isolbau für Holzschutz",
+      "category": "Werkzeuge",
+      "affiliate": true,
+      "openInNewTab": true
+    },
+    "beton-pigmente-schwarz": {
+      "targetUrl": "https://www.amazon.de/dp/B06ZYQC2YH",
+      "description": "Betonpigmente in Schwarz für Betonverarbeitung",
+      "category": "Beton & Stein",
+      "affiliate": true,
+      "openInNewTab": true
+    },
+    "falke-kreisschneider": {
+      "targetUrl": "https://www.amazon.de/dp/B07C5MV47W",
+      "description": "Falke Kreisschneider 200mm",
+      "category": "Werkzeuge",
+      "affiliate": true,
+      "openInNewTab": true
+    },
+    "sekundenkleber": {
+      "targetUrl": "https://www.amazon.de/dp/B0BYJGH8SG",
+      "description": "Kraftprotz Sekundenkleber 50g",
+      "category": "Werkzeuge",
+      "affiliate": true,
+      "openInNewTab": true
+    },
+    "zlh-challenge": {
+      "targetUrl": "https://frickeldave.github.io/blog/zlh150_3-charity-challenge/",
+      "description": "ZLH Challenge von Patrick - Charity Challenge",
+      "category": "Blog",
+      "affiliate": false,
+      "openInNewTab": false
+    },
+    "vogelfutterhaus-lightburn": {
+      "targetUrl": "downloads/Vogelfutterhaus.lbrn2",
+      "description": "Lightburn Datei mit vorgefertigten Dekorelementen für das Vogelfutterhaus Projekt",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "drechselholz-laschinger": {
+      "targetUrl": "https://www.drechselholz-laschinger.de/Drechselholz/Nussbaum/Klotz/Nussbaum-Klotz-125x125x50-mm.html",
+      "description": "Drechselholz Laschinger - Nussbaum Drechselblock für individuelle Holzarbeiten",
+      "affiliate": false,
+      "category": "Werkzeuge",
+      "openInNewTab": true
     }
   },
   "analytics": {
