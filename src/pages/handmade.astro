@@ -1,0 +1,271 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import Card from "@components/handmade/Card.astro";
+import Sidebar from "@components/handmade/Sidebar.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+import type { HandmadeData } from "@/types";
+
+// Import all product images
+import weihnachtsbaumDeko from "@assets/handmade/3d-druck/weihnachtsbaum-deko.png";
+import geschenkbox from "@assets/handmade/3d-druck/geschenkbox.png";
+import schneidebrettEiche from "@assets/handmade/holz/schneidebrett-eiche.png";
+import schmuckkaestchen from "@assets/handmade/holz/schmuckkaestchen.png";
+import osterhasenFamilie from "@assets/handmade/laser/osterhasen-familie.png";
+import weihnachtsanhaenger from "@assets/handmade/laser/weihnachtsanhaenger.png";
+import riverTable from "@assets/handmade/epoxidharz/river-table.png";
+import untersetzerSet from "@assets/handmade/epoxidharz/untersetzer-set.png";
+
+// Import handmade data directly
+import handmadeDataRaw from "../../public/data/handmade.json";
+const handmadeData = handmadeDataRaw as HandmadeData;
+
+const products = handmadeData.products;
+
+// Map product IDs to images
+const imageMap: Record<string, any> = {
+  "3d-print-christmas-tree": weihnachtsbaumDeko,
+  "3d-print-gift-box": geschenkbox,
+  "wood-cutting-board": schneidebrettEiche,
+  "wood-jewelry-box": schmuckkaestchen,
+  "laser-easter-bunny": osterhasenFamilie,
+  "laser-christmas-ornaments": weihnachtsanhaenger,
+  "epoxy-river-table": riverTable,
+  "epoxy-coasters": untersetzerSet,
+};
+
+// Get unique categories and tags
+const categories = [...new Set(products.map((p) => p.category))];
+const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
+---
+
+<BaseLayout
+  title="Handmade - Unsere handgefertigten Produkte"
+  description="Entdecke unsere handgefertigten Produkte aus Holz, 3D-Druck, Laser und Epoxidharz. Einzigartige Geschenke und Dekorationen."
+>
+  <PageHeader title="Handmade Produkte" />
+  <section class="section">
+    <div class="flex container">
+      <div class="row px-0 mx-0 w-full">
+        <!-- Products Grid -->
+        <div class="col-12 lg:col-8 lg:p-0">
+          <!-- Products Grid -->
+          <div
+            id="products-grid"
+            class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+          >
+            {
+              products.map((product) => (
+                <div
+                  class="product-card"
+                  data-id={product.id}
+                  data-name={product.name.toLowerCase()}
+                  data-description={product.description.toLowerCase()}
+                  data-category={product.category}
+                  data-tags={JSON.stringify(product.tags)}
+                  data-price={product.price}
+                >
+                  <Card item={product} image={imageMap[product.id]} />
+                </div>
+              ))
+            }
+          </div>
+
+          <!-- No Results Message -->
+          <div id="no-results" class="hidden text-center py-12 glass rounded-lg">
+            <p class="text-xl opacity-70">
+              Keine Produkte gefunden. Versuche andere Filter.
+            </p>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div
+          class="hidden lg:col-4 lg:flex max-h-static_sidemenu sticky p-0 pl-4 top-[4rem]"
+        >
+          <Sidebar categories={categories} allTags={allTags} totalProducts={products.length} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Client-side filtering and sorting logic
+    let selectedCategories: string[] = [];
+    let selectedTags: string[] = [];
+    let searchQuery = "";
+    let sortBy = "name-asc";
+
+    const searchInput = document.getElementById(
+      "search-input"
+    ) as HTMLInputElement;
+    const sortSelect = document.getElementById(
+      "sort-select"
+    ) as HTMLSelectElement;
+    const clearButton = document.getElementById("clear-filters");
+    const productsGrid = document.getElementById("products-grid");
+    const resultsCount = document.getElementById("results-count");
+    const noResults = document.getElementById("no-results");
+
+    function updateDisplay() {
+      const productCards =
+        productsGrid?.querySelectorAll(".product-card") || [];
+      let visibleCount = 0;
+
+      const sortedCards = Array.from(productCards).sort((a, b) => {
+        const aPrice = parseFloat(a.getAttribute("data-price") || "0");
+        const bPrice = parseFloat(b.getAttribute("data-price") || "0");
+        const aName = a.getAttribute("data-name") || "";
+        const bName = b.getAttribute("data-name") || "";
+
+        switch (sortBy) {
+          case "price-asc":
+            return aPrice - bPrice;
+          case "price-desc":
+            return bPrice - aPrice;
+          case "name-asc":
+            return aName.localeCompare(bName);
+          case "name-desc":
+            return bName.localeCompare(aName);
+          default:
+            return 0;
+        }
+      });
+
+      // Clear and re-append sorted cards
+      if (productsGrid) {
+        productsGrid.innerHTML = "";
+        sortedCards.forEach((card) => {
+          const category = card.getAttribute("data-category") || "";
+          const tags = JSON.parse(card.getAttribute("data-tags") || "[]");
+          const name = card.getAttribute("data-name") || "";
+          const description = card.getAttribute("data-description") || "";
+
+          let visible = true;
+
+          // Filter by categories (if any selected)
+          if (
+            selectedCategories.length > 0 &&
+            !selectedCategories.includes(category)
+          ) {
+            visible = false;
+          }
+
+          // Filter by tags (if any selected)
+          if (
+            selectedTags.length > 0 &&
+            !selectedTags.every((tag) => tags.includes(tag))
+          ) {
+            visible = false;
+          }
+
+          // Filter by search
+          if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            if (
+              !name.includes(query) &&
+              !description.includes(query) &&
+              !tags.some((tag: string) => tag.toLowerCase().includes(query))
+            ) {
+              visible = false;
+            }
+          }
+
+          if (visible) {
+            visibleCount++;
+            card.classList.remove("hidden");
+          } else {
+            card.classList.add("hidden");
+          }
+
+          productsGrid.appendChild(card);
+        });
+      }
+
+      // Update results count
+      if (resultsCount) {
+        const totalCount = productCards.length;
+        resultsCount.textContent = `${visibleCount} von ${totalCount} Produkten`;
+      }
+
+      // Show/hide no results message
+      if (noResults) {
+        if (visibleCount === 0) {
+          noResults.classList.remove("hidden");
+        } else {
+          noResults.classList.add("hidden");
+        }
+      }
+    }
+
+    // Category filter buttons with toggle functionality
+    document.querySelectorAll(".category-filter").forEach((button) => {
+      button.addEventListener("click", () => {
+        const category = button.getAttribute("data-category") || "";
+
+        if (selectedCategories.includes(category)) {
+          // Deselect category
+          selectedCategories = selectedCategories.filter((c) => c !== category);
+          button.classList.remove("!bg-blue-500/30", "!border-blue-400");
+        } else {
+          // Select category
+          selectedCategories.push(category);
+          button.classList.add("!bg-blue-500/30", "!border-blue-400");
+        }
+
+        updateDisplay();
+      });
+    });
+
+    // Tag filter buttons with toggle functionality
+    document.querySelectorAll(".tag-filter").forEach((button) => {
+      button.addEventListener("click", () => {
+        const tag = button.getAttribute("data-tag") || "";
+
+        if (selectedTags.includes(tag)) {
+          selectedTags = selectedTags.filter((t) => t !== tag);
+          button.classList.remove("!bg-blue-500/30", "!border-blue-400");
+        } else {
+          selectedTags.push(tag);
+          button.classList.add("!bg-blue-500/30", "!border-blue-400");
+        }
+
+        updateDisplay();
+      });
+    });
+
+    // Search input
+    searchInput?.addEventListener("input", (e) => {
+      searchQuery = (e.target as HTMLInputElement).value;
+      updateDisplay();
+    });
+
+    // Sort select
+    sortSelect?.addEventListener("change", (e) => {
+      sortBy = (e.target as HTMLSelectElement).value;
+      updateDisplay();
+    });
+
+    // Clear filters button
+    clearButton?.addEventListener("click", () => {
+      selectedCategories = [];
+      selectedTags = [];
+      searchQuery = "";
+      sortBy = "name-asc";
+
+      if (searchInput) searchInput.value = "";
+      if (sortSelect) sortSelect.value = "name-asc";
+
+      // Reset category buttons
+      document.querySelectorAll(".category-filter").forEach((btn) => {
+        btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
+      });
+
+      // Reset tag buttons
+      document.querySelectorAll(".tag-filter").forEach((btn) => {
+        btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
+      });
+
+      updateDisplay();
+    });
+  </script>
+</BaseLayout>
