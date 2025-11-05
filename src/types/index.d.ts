@@ -91,7 +91,7 @@ export type LinkMappings = {
 
 // Handmade products types
 export type HandmadeItem = {
-  id: string;
+  articleNumber: string;
   name: string;
   description: string;
   picture: string;

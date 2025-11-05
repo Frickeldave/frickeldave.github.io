@@ -1,7 +1,7 @@
 {
   "products": [
     {
-      "id": "3d-print-christmas-tree",
+      "articleNumber": "3DA8F3",
       "name": "Weihnachtsbaum Deko",
       "description": "Festlicher 3D-gedruckter Weihnachtsbaum mit LED-Beleuchtung. Perfekt für die Weihnachtsdekoration.",
       "picture": "3d-druck/weihnachtsbaum-deko.png",
@@ -11,7 +11,7 @@
       "size": "15cm x 10cm"
     },
     {
-      "id": "wood-cutting-board",
+      "articleNumber": "WO52K9",
       "name": "Schneidebrett Eiche",
       "description": "Handgefertigtes Schneidebrett aus massiver Eiche. Perfekt für die Küche.",
       "picture": "holz/schneidebrett-eiche.png",
@@ -21,7 +21,7 @@
       "size": "40cm x 25cm x 2cm"
     },
     {
-      "id": "laser-easter-bunny",
+      "articleNumber": "LAH7M4",
       "name": "Osterhasen Familie",
       "description": "Lasergeschnittene Osterhasen aus Birkenholz. Set mit 3 verschiedenen Größen.",
       "picture": "laser/osterhasen-familie.png",
@@ -31,7 +31,7 @@
       "size": "10-20cm Höhe"
     },
     {
-      "id": "epoxy-river-table",
+      "articleNumber": "EPR6N8",
       "name": "River Table Couchtisch",
       "description": "Einzigartiger Epoxidharz River Table mit blauem Flussmuster. Handgemacht aus Nussbaum.",
       "picture": "epoxidharz/river-table.png",
@@ -41,7 +41,7 @@
       "size": "80cm x 50cm x 45cm"
     },
     {
-      "id": "3d-print-gift-box",
+      "articleNumber": "3DG4V7",
       "name": "Personalisierte Geschenkbox",
       "description": "3D-gedruckte Geschenkbox mit individueller Gravur. Ideal für besondere Anlässe.",
       "picture": "3d-druck/geschenkbox.png",
@@ -50,7 +50,7 @@
       "price": 12.99
     },
     {
-      "id": "wood-jewelry-box",
+      "articleNumber": "WOT3P5",
       "name": "Schmuckkästchen Kirsche",
       "description": "Handgefertigtes Schmuckkästchen aus Kirschholz mit Samteinsatz.",
       "picture": "holz/schmuckkaestchen.png",
@@ -60,7 +60,7 @@
       "size": "20cm x 15cm x 10cm"
     },
     {
-      "id": "laser-christmas-ornaments",
+      "articleNumber": "LAW9X2",
       "name": "Weihnachtsanhänger Set",
       "description": "Lasergeschnittene Weihnachtsanhänger aus Holz. Set mit 12 verschiedenen Motiven.",
       "picture": "laser/weihnachtsanhaenger.png",
@@ -69,7 +69,7 @@
       "price": 18.50
     },
     {
-      "id": "epoxy-coasters",
+      "articleNumber": "EPQ8D6",
       "name": "Untersetzer Set Ozean",
       "description": "4er Set Epoxidharz Untersetzer mit Ozeanwellen-Design. Wasserabweisend und hitzebeständig.",
       "picture": "epoxidharz/untersetzer-set.png",

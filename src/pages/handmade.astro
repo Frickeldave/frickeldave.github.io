@@ -21,16 +21,16 @@ const handmadeData = handmadeDataRaw as HandmadeData;
 
 const products = handmadeData.products;
 
-// Map product IDs to images
+// Map article numbers to images
 const imageMap: Record<string, any> = {
-  "3d-print-christmas-tree": weihnachtsbaumDeko,
-  "3d-print-gift-box": geschenkbox,
-  "wood-cutting-board": schneidebrettEiche,
-  "wood-jewelry-box": schmuckkaestchen,
-  "laser-easter-bunny": osterhasenFamilie,
-  "laser-christmas-ornaments": weihnachtsanhaenger,
-  "epoxy-river-table": riverTable,
-  "epoxy-coasters": untersetzerSet,
+  "3DA8F3": weihnachtsbaumDeko,
+  "3DG4V7": geschenkbox,
+  "WO52K9": schneidebrettEiche,
+  "WOT3P5": schmuckkaestchen,
+  "LAH7M4": osterhasenFamilie,
+  "LAW9X2": weihnachtsanhaenger,
+  "EPR6N8": riverTable,
+  "EPQ8D6": untersetzerSet,
 };
 
 // Get unique categories and tags
@@ -57,14 +57,14 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               products.map((product) => (
                 <div
                   class="product-card"
-                  data-id={product.id}
+                  data-article-number={product.articleNumber}
                   data-name={product.name.toLowerCase()}
                   data-description={product.description.toLowerCase()}
                   data-category={product.category}
                   data-tags={JSON.stringify(product.tags)}
                   data-price={product.price}
                 >
-                  <Card item={product} image={imageMap[product.id]} />
+                  <Card item={product} image={imageMap[product.articleNumber]} />
                 </div>
               ))
             }

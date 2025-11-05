@@ -28,6 +28,11 @@ const shortDescription = truncateDescription(item.description);
       class="w-full h-full object-cover"
       loading="lazy"
     />
+    <div class="absolute top-2 left-2">
+      <span class="glass px-3 py-1 rounded-full text-xs font-semibold font-mono">
+        {item.articleNumber}
+      </span>
+    </div>
     <div class="absolute top-2 right-2">
       <span class="glass px-3 py-1 rounded-full text-xs font-semibold">
         {item.category}
