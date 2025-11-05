@@ -2,7 +2,7 @@
 
 Feel free to contrubite with you own pull request to the frickeldave website. This contribution guide describe how to do that. 
 
-## 🎈 Prepare WSL
+## 🎈 Prepare WSL (optional)
 
 I recommend to use a WSL with debian or linux to setup the development environment.
 
@@ -15,34 +15,51 @@ wsl -d frickeldave
 
 ## 🪄 Configure your environment
 
+Install all prerequsites for linux
+
 ```bash
-
-# This is step 1
-
 # Install git
 sudo apt install git -y
 # Install curl
 sudo apt install curl -y
 # Install nvm
 sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+# Install node
 nvm install --lts
 ```
+Install all prerequsites for windows
 
-```bash
+```powershell
+winget install Git.Git
+```
 
-# This is step 2 - After installing nvm, open a new shell
-# Clone repo
+Clone repo (works on powershell and bash)
+
+```shell
 cd ~
 mkdir dev
 cd dev
-git clone https://github.com/Frickeldave/frickeldave-main.git
-cd frickeldave-main
+git clone https://github.com/Frickeldave/frickeldave.github.io.git
+cd frickeldave.github.io
 git config user.name "<YOURNAME>"
 git config user.email "<YOURMAILADDRESS>"
 
 ```
 
+```powershell
+winget install OpenJS.NodeJS.LTS
+Set-ExecutionPolicy -Scope CurrentUser Bypass
+```
+
 Please consider the [project structure](./project-structure.md) document for more information.
+
+## Configure astro
+
+When all prerequisites are done, you can configure astro with this command: 
+
+```shell
+npm run install
+```
 
 ## 🧞 Commands (by Astro)
 
