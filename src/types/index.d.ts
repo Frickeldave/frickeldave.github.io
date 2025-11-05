@@ -88,3 +88,19 @@ export type LinkMappings = {
     lastUpdated: string;
   };
 };
+
+// Handmade products types
+export type HandmadeItem = {
+  articleNumber: string;
+  name: string;
+  description: string;
+  picture: string;
+  category: "3D-Druck" | "Holz" | "Laser" | "Epoxidharz";
+  tags: string[];
+  price: number;
+  size?: string;
+};
+
+export type HandmadeData = {
+  products: HandmadeItem[];
+};
