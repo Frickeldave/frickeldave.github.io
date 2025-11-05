@@ -13,18 +13,22 @@ const { categories, allTags, totalProducts } = Astro.props;
 
 <ScrollArea className="h-full" client:only="react">
   <!-- Results Count -->
-  <div class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0">
+  <div
+    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+  >
     <div class="text-sm opacity-80" id="results-count">
       {totalProducts} von {totalProducts} Produkten
     </div>
   </div>
 
   <!-- Search -->
-  <div class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0">
+  <div
+    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+  >
     <div>
       <h4 class="mb-2">
         <FaFilter className={"mr-1 -mt-1.5 inline-block"} />
-        Suche
+         Suche
       </h4>
       <hr class="mb-2 -mt-1" />
       <input
@@ -37,11 +41,13 @@ const { categories, allTags, totalProducts } = Astro.props;
   </div>
 
   <!-- Categories -->
-  <div class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0">
+  <div
+    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+  >
     <div>
       <h4 class="mb-2">
         <FaFilter className={"mr-1 -mt-1.5 inline-block"} />
-        Kategorie
+         Kategorie
       </h4>
       <hr class="mb-2 -mt-1" />
       <ul class="space-y-2" id="category-filters">
@@ -62,11 +68,13 @@ const { categories, allTags, totalProducts } = Astro.props;
   </div>
 
   <!-- Tags -->
-  <div class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0">
+  <div
+    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+  >
     <div>
       <h4 class="mb-2">
         <FaHashtag className={"mr-1 -mt-1.5 inline-block"} />
-        Tags
+         Tags
       </h4>
       <hr class="mb-2 -mt-1" />
       <div class="flex flex-wrap gap-2" id="tag-filters">
@@ -85,11 +93,13 @@ const { categories, allTags, totalProducts } = Astro.props;
   </div>
 
   <!-- Sort -->
-  <div class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0">
+  <div
+    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+  >
     <div>
       <h4 class="mb-2">
         <FaSort className={"mr-1 -mt-1.5 inline-block"} />
-        Sortierung
+         Sortierung
       </h4>
       <hr class="mb-2 -mt-1" />
       <select

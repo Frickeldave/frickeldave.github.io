@@ -71,7 +71,10 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           </div>
 
           <!-- No Results Message -->
-          <div id="no-results" class="hidden text-center py-12 glass rounded-lg">
+          <div
+            id="no-results"
+            class="hidden text-center py-12 glass rounded-lg"
+          >
             <p class="text-xl opacity-70">
               Keine Produkte gefunden. Versuche andere Filter.
             </p>
@@ -82,7 +85,11 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         <div
           class="hidden lg:col-4 lg:flex max-h-static_sidemenu sticky p-0 pl-4 top-[4rem]"
         >
-          <Sidebar categories={categories} allTags={allTags} totalProducts={products.length} />
+          <Sidebar
+            categories={categories}
+            allTags={allTags}
+            totalProducts={products.length}
+          />
         </div>
       </div>
     </div>
