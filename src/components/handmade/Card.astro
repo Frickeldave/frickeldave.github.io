@@ -4,6 +4,7 @@ import { Image } from "astro:assets";
 
 interface Props {
   item: HandmadeItem;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   image: any;
 }
 
@@ -28,12 +29,22 @@ const shortDescription = truncateDescription(item.description);
       class="w-full h-full object-cover"
       loading="lazy"
     />
-    <div class="absolute top-2 left-2">
+    <div class="absolute top-2 left-2 flex gap-2 items-center">
       <span
         class="glass px-3 py-1 rounded-full text-xs font-semibold font-mono"
       >
         {item.articleNumber}
       </span>
+      {
+        item.customizable && (
+          <span
+            class="glass px-2 py-1 rounded-full text-xs"
+            title="Personalisierbar"
+          >
+            ✨
+          </span>
+        )
+      }
     </div>
     <div class="absolute top-2 right-2">
       <span class="glass px-3 py-1 rounded-full text-xs font-semibold">

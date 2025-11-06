@@ -4,33 +4,36 @@ import Card from "@components/handmade/Card.astro";
 import Sidebar from "@components/handmade/Sidebar.astro";
 import PageHeader from "@components/common/PageHeader.astro";
 import type { HandmadeData } from "@/types";
-
-// Import all product images
-import weihnachtsbaumDeko from "@assets/handmade/3d-druck/weihnachtsbaum-deko.png";
-import geschenkbox from "@assets/handmade/3d-druck/geschenkbox.png";
-import schneidebrettEiche from "@assets/handmade/holz/schneidebrett-eiche.png";
-import schmuckkaestchen from "@assets/handmade/holz/schmuckkaestchen.png";
-import osterhasenFamilie from "@assets/handmade/laser/osterhasen-familie.png";
-import weihnachtsanhaenger from "@assets/handmade/laser/weihnachtsanhaenger.png";
-import riverTable from "@assets/handmade/epoxidharz/river-table.png";
-import untersetzerSet from "@assets/handmade/epoxidharz/untersetzer-set.png";
+import type { ImageMetadata } from "astro";
 
 // Import handmade data directly
 import handmadeDataRaw from "../../public/data/handmade.json";
 const handmadeData = handmadeDataRaw as HandmadeData;
 
-const products = handmadeData.products;
+// Filter only visible products
+const products = handmadeData.products.filter((p) => p.visible);
 
-// Map article numbers to images
-const imageMap: Record<string, any> = {
-  "3DA8F3": weihnachtsbaumDeko,
-  "3DG4V7": geschenkbox,
-  WO52K9: schneidebrettEiche,
-  WOT3P5: schmuckkaestchen,
-  LAH7M4: osterhasenFamilie,
-  LAW9X2: weihnachtsanhaenger,
-  EPR6N8: riverTable,
-  EPQ8D6: untersetzerSet,
+// Automatically import all images from handmade folder using Vite's glob import
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/handmade/**/*.{png,jpg,jpeg,webp}",
+  { eager: true }
+);
+
+// Create a map of filename (without path) to image
+const imageMap = Object.entries(images).reduce(
+  (acc, [path, image]) => {
+    const filename = path.split("/").pop() || "";
+    acc[filename] = image.default;
+    return acc;
+  },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  {} as Record<string, any>
+);
+
+// Helper function to get image for product
+const getProductImage = (picturePath: string) => {
+  const filename = picturePath.split("/").pop() || "";
+  return imageMap[filename];
 };
 
 // Get unique categories and tags
@@ -63,10 +66,11 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
                   data-category={product.category}
                   data-tags={JSON.stringify(product.tags)}
                   data-price={product.price}
+                  data-customizable={product.customizable}
                 >
                   <Card
                     item={product}
-                    image={imageMap[product.articleNumber]}
+                    image={getProductImage(product.picture)}
                   />
                 </div>
               ))
@@ -104,6 +108,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
     let selectedTags: string[] = [];
     let searchQuery = "";
     let sortBy = "name-asc";
+    let filterCustomizable = false;
 
     const searchInput = document.getElementById(
       "search-input"
@@ -111,6 +116,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
     const sortSelect = document.getElementById(
       "sort-select"
     ) as HTMLSelectElement;
+    const customizableCheckbox = document.getElementById(
+      "customizable-filter"
+    ) as HTMLInputElement;
     const clearButton = document.getElementById("clear-filters");
     const productsGrid = document.getElementById("products-grid");
     const resultsCount = document.getElementById("results-count");
@@ -149,6 +157,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           const tags = JSON.parse(card.getAttribute("data-tags") || "[]");
           const name = card.getAttribute("data-name") || "";
           const description = card.getAttribute("data-description") || "";
+          const articleNumber = card.getAttribute("data-article-number") || "";
+          const customizable =
+            card.getAttribute("data-customizable") === "true";
 
           let visible = true;
 
@@ -168,12 +179,18 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             visible = false;
           }
 
+          // Filter by customizable
+          if (filterCustomizable && !customizable) {
+            visible = false;
+          }
+
           // Filter by search
           if (searchQuery) {
             const query = searchQuery.toLowerCase();
             if (
               !name.includes(query) &&
               !description.includes(query) &&
+              !articleNumber.toLowerCase().includes(query) &&
               !tags.some((tag: string) => tag.toLowerCase().includes(query))
             ) {
               visible = false;
@@ -255,15 +272,23 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
       updateDisplay();
     });
 
+    // Customizable filter
+    customizableCheckbox?.addEventListener("change", (e) => {
+      filterCustomizable = (e.target as HTMLInputElement).checked;
+      updateDisplay();
+    });
+
     // Clear filters button
     clearButton?.addEventListener("click", () => {
       selectedCategories = [];
       selectedTags = [];
       searchQuery = "";
       sortBy = "name-asc";
+      filterCustomizable = false;
 
       if (searchInput) searchInput.value = "";
       if (sortSelect) sortSelect.value = "name-asc";
+      if (customizableCheckbox) customizableCheckbox.checked = false;
 
       // Reset category buttons
       document.querySelectorAll(".category-filter").forEach((btn) => {
