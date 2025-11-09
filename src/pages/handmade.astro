@@ -40,7 +40,7 @@ const getProductImage = (category: string, articleNumber: string) => {
   const categoryFolder = category.toLowerCase().replace(/\s+/g, "-");
   // Build the dynamic path: category/articleNumber/articleNumber-000.png
   const imagePath = `${categoryFolder}/${articleNumber}/${articleNumber}-000.png`;
-  
+
   // Return the product image if it exists, otherwise return placeholder
   return imageMap[imagePath] || placeholderImage;
 };
@@ -204,7 +204,10 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
                 >
                   <Card
                     item={product}
-                    image={getProductImage(product.category, product.articleNumber)}
+                    image={getProductImage(
+                      product.category,
+                      product.articleNumber
+                    )}
                   />
                 </div>
               ))
