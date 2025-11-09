@@ -46,7 +46,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
   description="Entdecke unsere handgefertigten Produkte aus Holz, 3D-Druck, Laser und Epoxidharz. Einzigartige Geschenke und Dekorationen."
 >
   <PageHeader title="Handmade Produkte" />
-  
+
   <!-- Mobile Filter Bar (visible only on small screens) -->
   <section class="lg:hidden section py-2">
     <div class="container">
@@ -78,8 +78,15 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             class="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 flex items-center justify-between"
           >
             <span>Kategorien</span>
-            <svg class="w-4 h-4 transform transition-transform" id="mobile-categories-arrow">
-              <path stroke="currentColor" stroke-width="2" d="M6 9l6 6 6-6" fill="none" />
+            <svg
+              class="w-4 h-4 transform transition-transform"
+              id="mobile-categories-arrow"
+            >
+              <path
+                stroke="currentColor"
+                stroke-width="2"
+                d="M6 9l6 6 6-6"
+                fill="none"></path>
             </svg>
           </button>
 
@@ -89,13 +96,22 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             class="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 flex items-center justify-between"
           >
             <span>Tags</span>
-            <svg class="w-4 h-4 transform transition-transform" id="mobile-tags-arrow">
-              <path stroke="currentColor" stroke-width="2" d="M6 9l6 6 6-6" fill="none" />
+            <svg
+              class="w-4 h-4 transform transition-transform"
+              id="mobile-tags-arrow"
+            >
+              <path
+                stroke="currentColor"
+                stroke-width="2"
+                d="M6 9l6 6 6-6"
+                fill="none"></path>
             </svg>
           </button>
 
           <!-- Customizable Filter -->
-          <label class="flex items-center gap-2 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm cursor-pointer hover:bg-white/20">
+          <label
+            class="flex items-center gap-2 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm cursor-pointer hover:bg-white/20"
+          >
             <input
               type="checkbox"
               id="mobile-customizable-filter"
@@ -108,33 +124,39 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         <!-- Categories Dropdown (initially hidden) -->
         <div id="mobile-categories-dropdown" class="hidden">
           <div class="grid grid-cols-2 gap-2">
-            {categories.map((category) => (
-              <button
-                class="mobile-category-filter px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 text-left"
-                data-category={category}
-              >
-                {category}
-              </button>
-            ))}
+            {
+              categories.map((category) => (
+                <button
+                  class="mobile-category-filter px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 text-left"
+                  data-category={category}
+                >
+                  {category}
+                </button>
+              ))
+            }
           </div>
         </div>
 
         <!-- Tags Dropdown (initially hidden) -->
         <div id="mobile-tags-dropdown" class="hidden">
           <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-            {allTags.map((tag) => (
-              <button
-                class="mobile-tag-filter px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 text-left"
-                data-tag={tag}
-              >
-                {tag}
-              </button>
-            ))}
+            {
+              allTags.map((tag) => (
+                <button
+                  class="mobile-tag-filter px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 text-left"
+                  data-tag={tag}
+                >
+                  {tag}
+                </button>
+              ))
+            }
           </div>
         </div>
 
         <!-- Results Count and Clear Button -->
-        <div class="flex justify-between items-center pt-2 border-t border-white/20">
+        <div
+          class="flex justify-between items-center pt-2 border-t border-white/20"
+        >
           <div id="mobile-results-count" class="text-sm opacity-70">
             {products.length} von {products.length} Produkten
           </div>
@@ -219,9 +241,15 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         console.log("Initializing handmade filters...");
 
         // Desktop elements
-        const searchInput = document.getElementById("search-input") as HTMLInputElement;
-        const sortSelect = document.getElementById("sort-select") as HTMLSelectElement;
-        const customizableCheckbox = document.getElementById("customizable-filter") as HTMLInputElement;
+        const searchInput = document.getElementById(
+          "search-input"
+        ) as HTMLInputElement;
+        const sortSelect = document.getElementById(
+          "sort-select"
+        ) as HTMLSelectElement;
+        const customizableCheckbox = document.getElementById(
+          "customizable-filter"
+        ) as HTMLInputElement;
         const clearButton = document.getElementById("clear-filters");
         const productsGrid = document.getElementById("products-grid");
         const resultsCount = document.getElementById("results-count");
@@ -230,131 +258,155 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         const tagButtons = document.querySelectorAll(".tag-filter");
 
         // Mobile elements
-        const mobileSearchInput = document.getElementById("mobile-search-input") as HTMLInputElement;
-        const mobileSortSelect = document.getElementById("mobile-sort-select") as HTMLSelectElement;
-        const mobileCustomizableCheckbox = document.getElementById("mobile-customizable-filter") as HTMLInputElement;
-        const mobileClearButton = document.getElementById("mobile-clear-filters");
-        const mobileResultsCount = document.getElementById("mobile-results-count");
-        const mobileCategoryButtons = document.querySelectorAll(".mobile-category-filter");
-        const mobileTagButtons = document.querySelectorAll(".mobile-tag-filter");
+        const mobileSearchInput = document.getElementById(
+          "mobile-search-input"
+        ) as HTMLInputElement;
+        const mobileSortSelect = document.getElementById(
+          "mobile-sort-select"
+        ) as HTMLSelectElement;
+        const mobileCustomizableCheckbox = document.getElementById(
+          "mobile-customizable-filter"
+        ) as HTMLInputElement;
+        const mobileClearButton = document.getElementById(
+          "mobile-clear-filters"
+        );
+        const mobileResultsCount = document.getElementById(
+          "mobile-results-count"
+        );
+        const mobileCategoryButtons = document.querySelectorAll(
+          ".mobile-category-filter"
+        );
+        const mobileTagButtons =
+          document.querySelectorAll(".mobile-tag-filter");
 
         // Mobile toggle elements
-        const mobileCategoriesToggle = document.getElementById("mobile-categories-toggle");
+        const mobileCategoriesToggle = document.getElementById(
+          "mobile-categories-toggle"
+        );
         const mobileTagsToggle = document.getElementById("mobile-tags-toggle");
-        const mobileCategoriesDropdown = document.getElementById("mobile-categories-dropdown");
-        const mobileTagsDropdown = document.getElementById("mobile-tags-dropdown");
-        const mobileCategoriesArrow = document.getElementById("mobile-categories-arrow");
+        const mobileCategoriesDropdown = document.getElementById(
+          "mobile-categories-dropdown"
+        );
+        const mobileTagsDropdown = document.getElementById(
+          "mobile-tags-dropdown"
+        );
+        const mobileCategoriesArrow = document.getElementById(
+          "mobile-categories-arrow"
+        );
         const mobileTagsArrow = document.getElementById("mobile-tags-arrow");
 
         // Early return if essential elements don't exist
         if (!productsGrid || !noResults) {
-          console.warn("Essential handmade filter elements not found, retrying in 100ms...");
+          console.warn(
+            "Essential handmade filter elements not found, retrying in 100ms..."
+          );
           setTimeout(initializeFilters, 100);
           return;
         }
 
-    function updateDisplay() {
-      const productCards =
-        productsGrid?.querySelectorAll(".product-card") || [];
-      let visibleCount = 0;
+        function updateDisplay() {
+          const productCards =
+            productsGrid?.querySelectorAll(".product-card") || [];
+          let visibleCount = 0;
 
-      const sortedCards = Array.from(productCards).sort((a, b) => {
-        const aPrice = parseFloat(a.getAttribute("data-price") || "0");
-        const bPrice = parseFloat(b.getAttribute("data-price") || "0");
-        const aName = a.getAttribute("data-name") || "";
-        const bName = b.getAttribute("data-name") || "";
+          const sortedCards = Array.from(productCards).sort((a, b) => {
+            const aPrice = parseFloat(a.getAttribute("data-price") || "0");
+            const bPrice = parseFloat(b.getAttribute("data-price") || "0");
+            const aName = a.getAttribute("data-name") || "";
+            const bName = b.getAttribute("data-name") || "";
 
-        switch (sortBy) {
-          case "price-asc":
-            return aPrice - bPrice;
-          case "price-desc":
-            return bPrice - aPrice;
-          case "name-asc":
-            return aName.localeCompare(bName);
-          case "name-desc":
-            return bName.localeCompare(aName);
-          default:
-            return 0;
-        }
-      });
+            switch (sortBy) {
+              case "price-asc":
+                return aPrice - bPrice;
+              case "price-desc":
+                return bPrice - aPrice;
+              case "name-asc":
+                return aName.localeCompare(bName);
+              case "name-desc":
+                return bName.localeCompare(aName);
+              default:
+                return 0;
+            }
+          });
 
-      // Filter and sort cards WITHOUT DOM manipulation to preserve event listeners
-      sortedCards.forEach((card, index) => {
-        const category = card.getAttribute("data-category") || "";
-        const tags = JSON.parse(card.getAttribute("data-tags") || "[]");
-        const name = card.getAttribute("data-name") || "";
-        const description = card.getAttribute("data-description") || "";
-        const articleNumber = card.getAttribute("data-article-number") || "";
-        const customizable =
-          card.getAttribute("data-customizable") === "true";
+          // Filter and sort cards WITHOUT DOM manipulation to preserve event listeners
+          sortedCards.forEach((card, index) => {
+            const category = card.getAttribute("data-category") || "";
+            const tags = JSON.parse(card.getAttribute("data-tags") || "[]");
+            const name = card.getAttribute("data-name") || "";
+            const description = card.getAttribute("data-description") || "";
+            const articleNumber =
+              card.getAttribute("data-article-number") || "";
+            const customizable =
+              card.getAttribute("data-customizable") === "true";
 
-        let visible = true;
+            let visible = true;
 
-        // Filter by categories (if any selected)
-        if (
-          selectedCategories.length > 0 &&
-          !selectedCategories.includes(category)
-        ) {
-          visible = false;
-        }
+            // Filter by categories (if any selected)
+            if (
+              selectedCategories.length > 0 &&
+              !selectedCategories.includes(category)
+            ) {
+              visible = false;
+            }
 
-        // Filter by tags (if any selected)
-        if (
-          selectedTags.length > 0 &&
-          !selectedTags.every((tag) => tags.includes(tag))
-        ) {
-          visible = false;
-        }
+            // Filter by tags (if any selected)
+            if (
+              selectedTags.length > 0 &&
+              !selectedTags.every((tag) => tags.includes(tag))
+            ) {
+              visible = false;
+            }
 
-        // Filter by customizable
-        if (filterCustomizable && !customizable) {
-          visible = false;
-        }
+            // Filter by customizable
+            if (filterCustomizable && !customizable) {
+              visible = false;
+            }
 
-        // Filter by search
-        if (searchQuery) {
-          const query = searchQuery.toLowerCase();
-          if (
-            !name.includes(query) &&
-            !description.includes(query) &&
-            !articleNumber.toLowerCase().includes(query) &&
-            !tags.some((tag: string) => tag.toLowerCase().includes(query))
-          ) {
-            visible = false;
+            // Filter by search
+            if (searchQuery) {
+              const query = searchQuery.toLowerCase();
+              if (
+                !name.includes(query) &&
+                !description.includes(query) &&
+                !articleNumber.toLowerCase().includes(query) &&
+                !tags.some((tag: string) => tag.toLowerCase().includes(query))
+              ) {
+                visible = false;
+              }
+            }
+
+            if (visible) {
+              visibleCount++;
+              card.classList.remove("hidden");
+            } else {
+              card.classList.add("hidden");
+            }
+
+            // Apply sorting with CSS order instead of DOM manipulation
+            (card as HTMLElement).style.order = index.toString();
+          });
+
+          // Update results count (both desktop and mobile)
+          const totalCount = productCards.length;
+          const resultsText = `${visibleCount} von ${totalCount} Produkten`;
+
+          if (resultsCount) {
+            resultsCount.textContent = resultsText;
+          }
+          if (mobileResultsCount) {
+            mobileResultsCount.textContent = resultsText;
+          }
+
+          // Show/hide no results message
+          if (noResults) {
+            if (visibleCount === 0) {
+              noResults.classList.remove("hidden");
+            } else {
+              noResults.classList.add("hidden");
+            }
           }
         }
-
-        if (visible) {
-          visibleCount++;
-          card.classList.remove("hidden");
-        } else {
-          card.classList.add("hidden");
-        }
-
-        // Apply sorting with CSS order instead of DOM manipulation
-        (card as HTMLElement).style.order = index.toString();
-      });
-
-      // Update results count (both desktop and mobile)
-      const totalCount = productCards.length;
-      const resultsText = `${visibleCount} von ${totalCount} Produkten`;
-      
-      if (resultsCount) {
-        resultsCount.textContent = resultsText;
-      }
-      if (mobileResultsCount) {
-        mobileResultsCount.textContent = resultsText;
-      }
-
-      // Show/hide no results message
-      if (noResults) {
-        if (visibleCount === 0) {
-          noResults.classList.remove("hidden");
-        } else {
-          noResults.classList.add("hidden");
-        }
-      }
-    }
 
         // Remove existing event listeners to prevent duplicates
         categoryButtons.forEach((button) => {
@@ -364,13 +416,14 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         });
 
         tagButtons.forEach((button) => {
-          // Clone node to remove all event listeners  
+          // Clone node to remove all event listeners
           const newButton = button.cloneNode(true);
           button.parentNode?.replaceChild(newButton, button);
         });
 
         // Re-get buttons after cloning
-        const freshCategoryButtons = document.querySelectorAll(".category-filter");
+        const freshCategoryButtons =
+          document.querySelectorAll(".category-filter");
         const freshTagButtons = document.querySelectorAll(".tag-filter");
 
         // Category filter buttons with toggle functionality (with mobile sync)
@@ -380,7 +433,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
 
             if (selectedCategories.includes(category)) {
               // Deselect category
-              selectedCategories = selectedCategories.filter((c) => c !== category);
+              selectedCategories = selectedCategories.filter(
+                (c) => c !== category
+              );
               button.classList.remove("!bg-blue-500/30", "!border-blue-400");
             } else {
               // Select category
@@ -389,13 +444,23 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             }
 
             // Sync with mobile
-            document.querySelectorAll(`.mobile-category-filter[data-category="${category}"]`).forEach((mobileBtn) => {
-              if (selectedCategories.includes(category)) {
-                mobileBtn.classList.add("!bg-blue-500/30", "!border-blue-400");
-              } else {
-                mobileBtn.classList.remove("!bg-blue-500/30", "!border-blue-400");
-              }
-            });
+            document
+              .querySelectorAll(
+                `.mobile-category-filter[data-category="${category}"]`
+              )
+              .forEach((mobileBtn) => {
+                if (selectedCategories.includes(category)) {
+                  mobileBtn.classList.add(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
+                } else {
+                  mobileBtn.classList.remove(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
+                }
+              });
 
             updateDisplay();
           });
@@ -415,13 +480,21 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             }
 
             // Sync with mobile
-            document.querySelectorAll(`.mobile-tag-filter[data-tag="${tag}"]`).forEach((mobileBtn) => {
-              if (selectedTags.includes(tag)) {
-                mobileBtn.classList.add("!bg-blue-500/30", "!border-blue-400");
-              } else {
-                mobileBtn.classList.remove("!bg-blue-500/30", "!border-blue-400");
-              }
-            });
+            document
+              .querySelectorAll(`.mobile-tag-filter[data-tag="${tag}"]`)
+              .forEach((mobileBtn) => {
+                if (selectedTags.includes(tag)) {
+                  mobileBtn.classList.add(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
+                } else {
+                  mobileBtn.classList.remove(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
+                }
+              });
 
             updateDisplay();
           });
@@ -444,7 +517,8 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         // Customizable filter (with mobile sync)
         customizableCheckbox?.addEventListener("change", (e) => {
           filterCustomizable = (e.target as HTMLInputElement).checked;
-          if (mobileCustomizableCheckbox) mobileCustomizableCheckbox.checked = filterCustomizable;
+          if (mobileCustomizableCheckbox)
+            mobileCustomizableCheckbox.checked = filterCustomizable;
           updateDisplay();
         });
 
@@ -460,175 +534,200 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           if (sortSelect) sortSelect.value = "name-asc";
           if (customizableCheckbox) customizableCheckbox.checked = false;
 
-            // Reset category buttons
-            document.querySelectorAll(".category-filter").forEach((btn) => {
-              btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
-            });
-
-            // Reset tag buttons
-            document.querySelectorAll(".tag-filter").forEach((btn) => {
-              btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
-            });
-
-            updateDisplay();
+          // Reset category buttons
+          document.querySelectorAll(".category-filter").forEach((btn) => {
+            btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
           });
 
-          // ===============================
-          // MOBILE FILTER EVENT LISTENERS
-          // ===============================
-
-          // Mobile toggle functionality
-          mobileCategoriesToggle?.addEventListener("click", () => {
-            const isOpen = !mobileCategoriesDropdown?.classList.contains("hidden");
-            if (isOpen) {
-              mobileCategoriesDropdown?.classList.add("hidden");
-              mobileCategoriesArrow?.classList.remove("rotate-180");
-            } else {
-              mobileCategoriesDropdown?.classList.remove("hidden");
-              mobileCategoriesArrow?.classList.add("rotate-180");
-            }
+          // Reset tag buttons
+          document.querySelectorAll(".tag-filter").forEach((btn) => {
+            btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
           });
 
-          mobileTagsToggle?.addEventListener("click", () => {
-            const isOpen = !mobileTagsDropdown?.classList.contains("hidden");
-            if (isOpen) {
-              mobileTagsDropdown?.classList.add("hidden");
-              mobileTagsArrow?.classList.remove("rotate-180");
-            } else {
-              mobileTagsDropdown?.classList.remove("hidden");
-              mobileTagsArrow?.classList.add("rotate-180");
-            }
-          });
-
-          // Mobile category filters
-          mobileCategoryButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-              const category = button.getAttribute("data-category") || "";
-
-              if (selectedCategories.includes(category)) {
-                selectedCategories = selectedCategories.filter((c) => c !== category);
-                button.classList.remove("!bg-blue-500/30", "!border-blue-400");
-              } else {
-                selectedCategories.push(category);
-                button.classList.add("!bg-blue-500/30", "!border-blue-400");
-              }
-
-              // Sync with desktop
-              document.querySelectorAll(`.category-filter[data-category="${category}"]`).forEach((desktopBtn) => {
-                if (selectedCategories.includes(category)) {
-                  desktopBtn.classList.add("!bg-blue-500/30", "!border-blue-400");
-                } else {
-                  desktopBtn.classList.remove("!bg-blue-500/30", "!border-blue-400");
-                }
-              });
-
-              updateDisplay();
-            });
-          });
-
-          // Mobile tag filters
-          mobileTagButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-              const tag = button.getAttribute("data-tag") || "";
-
-              if (selectedTags.includes(tag)) {
-                selectedTags = selectedTags.filter((t) => t !== tag);
-                button.classList.remove("!bg-blue-500/30", "!border-blue-400");
-              } else {
-                selectedTags.push(tag);
-                button.classList.add("!bg-blue-500/30", "!border-blue-400");
-              }
-
-              // Sync with desktop
-              document.querySelectorAll(`.tag-filter[data-tag="${tag}"]`).forEach((desktopBtn) => {
-                if (selectedTags.includes(tag)) {
-                  desktopBtn.classList.add("!bg-blue-500/30", "!border-blue-400");
-                } else {
-                  desktopBtn.classList.remove("!bg-blue-500/30", "!border-blue-400");
-                }
-              });
-
-              updateDisplay();
-            });
-          });
-
-          // Mobile search input
-          mobileSearchInput?.addEventListener("input", (e) => {
-            searchQuery = (e.target as HTMLInputElement).value;
-            if (searchInput) searchInput.value = searchQuery; // Sync with desktop
-            updateDisplay();
-          });
-
-          // Mobile sort select
-          mobileSortSelect?.addEventListener("change", (e) => {
-            sortBy = (e.target as HTMLSelectElement).value;
-            if (sortSelect) sortSelect.value = sortBy; // Sync with desktop
-            updateDisplay();
-          });
-
-          // Mobile customizable filter
-          mobileCustomizableCheckbox?.addEventListener("change", (e) => {
-            filterCustomizable = (e.target as HTMLInputElement).checked;
-            if (customizableCheckbox) customizableCheckbox.checked = filterCustomizable; // Sync with desktop
-            updateDisplay();
-          });
-
-          // Mobile clear filters button
-          mobileClearButton?.addEventListener("click", () => {
-            selectedCategories = [];
-            selectedTags = [];
-            searchQuery = "";
-            sortBy = "name-asc";
-            filterCustomizable = false;
-
-            // Reset mobile inputs
-            if (mobileSearchInput) mobileSearchInput.value = "";
-            if (mobileSortSelect) mobileSortSelect.value = "name-asc";
-            if (mobileCustomizableCheckbox) mobileCustomizableCheckbox.checked = false;
-
-            // Reset desktop inputs
-            if (searchInput) searchInput.value = "";
-            if (sortSelect) sortSelect.value = "name-asc";
-            if (customizableCheckbox) customizableCheckbox.checked = false;
-
-            // Reset all filter buttons
-            document.querySelectorAll(".category-filter, .mobile-category-filter").forEach((btn) => {
-              btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
-            });
-
-            document.querySelectorAll(".tag-filter, .mobile-tag-filter").forEach((btn) => {
-              btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
-            });
-
-            // Close mobile dropdowns
-            mobileCategoriesDropdown?.classList.add("hidden");
-            mobileTagsDropdown?.classList.add("hidden");
-            mobileCategoriesArrow?.classList.remove("rotate-180");
-            mobileTagsArrow?.classList.remove("rotate-180");
-
-            updateDisplay();
-          });
-
-          // Initial display update
           updateDisplay();
-        }
+        });
 
-        // Re-initialize when navigating back to page (for SPA behavior)
-        document.addEventListener("astro:page-load", initializeFilters);
-        
-        // Also try after DOM content is loaded
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", initializeFilters);
-        } else {
-          // DOM is already loaded
-          initializeFilters();
-        }
+        // ===============================
+        // MOBILE FILTER EVENT LISTENERS
+        // ===============================
 
-        // Fallback for navigation events
-        window.addEventListener("popstate", initializeFilters);
+        // Mobile toggle functionality
+        mobileCategoriesToggle?.addEventListener("click", () => {
+          const isOpen =
+            !mobileCategoriesDropdown?.classList.contains("hidden");
+          if (isOpen) {
+            mobileCategoriesDropdown?.classList.add("hidden");
+            mobileCategoriesArrow?.classList.remove("rotate-180");
+          } else {
+            mobileCategoriesDropdown?.classList.remove("hidden");
+            mobileCategoriesArrow?.classList.add("rotate-180");
+          }
+        });
 
-        // Initial call
+        mobileTagsToggle?.addEventListener("click", () => {
+          const isOpen = !mobileTagsDropdown?.classList.contains("hidden");
+          if (isOpen) {
+            mobileTagsDropdown?.classList.add("hidden");
+            mobileTagsArrow?.classList.remove("rotate-180");
+          } else {
+            mobileTagsDropdown?.classList.remove("hidden");
+            mobileTagsArrow?.classList.add("rotate-180");
+          }
+        });
+
+        // Mobile category filters
+        mobileCategoryButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const category = button.getAttribute("data-category") || "";
+
+            if (selectedCategories.includes(category)) {
+              selectedCategories = selectedCategories.filter(
+                (c) => c !== category
+              );
+              button.classList.remove("!bg-blue-500/30", "!border-blue-400");
+            } else {
+              selectedCategories.push(category);
+              button.classList.add("!bg-blue-500/30", "!border-blue-400");
+            }
+
+            // Sync with desktop
+            document
+              .querySelectorAll(`.category-filter[data-category="${category}"]`)
+              .forEach((desktopBtn) => {
+                if (selectedCategories.includes(category)) {
+                  desktopBtn.classList.add(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
+                } else {
+                  desktopBtn.classList.remove(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
+                }
+              });
+
+            updateDisplay();
+          });
+        });
+
+        // Mobile tag filters
+        mobileTagButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const tag = button.getAttribute("data-tag") || "";
+
+            if (selectedTags.includes(tag)) {
+              selectedTags = selectedTags.filter((t) => t !== tag);
+              button.classList.remove("!bg-blue-500/30", "!border-blue-400");
+            } else {
+              selectedTags.push(tag);
+              button.classList.add("!bg-blue-500/30", "!border-blue-400");
+            }
+
+            // Sync with desktop
+            document
+              .querySelectorAll(`.tag-filter[data-tag="${tag}"]`)
+              .forEach((desktopBtn) => {
+                if (selectedTags.includes(tag)) {
+                  desktopBtn.classList.add(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
+                } else {
+                  desktopBtn.classList.remove(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
+                }
+              });
+
+            updateDisplay();
+          });
+        });
+
+        // Mobile search input
+        mobileSearchInput?.addEventListener("input", (e) => {
+          searchQuery = (e.target as HTMLInputElement).value;
+          if (searchInput) searchInput.value = searchQuery; // Sync with desktop
+          updateDisplay();
+        });
+
+        // Mobile sort select
+        mobileSortSelect?.addEventListener("change", (e) => {
+          sortBy = (e.target as HTMLSelectElement).value;
+          if (sortSelect) sortSelect.value = sortBy; // Sync with desktop
+          updateDisplay();
+        });
+
+        // Mobile customizable filter
+        mobileCustomizableCheckbox?.addEventListener("change", (e) => {
+          filterCustomizable = (e.target as HTMLInputElement).checked;
+          if (customizableCheckbox)
+            customizableCheckbox.checked = filterCustomizable; // Sync with desktop
+          updateDisplay();
+        });
+
+        // Mobile clear filters button
+        mobileClearButton?.addEventListener("click", () => {
+          selectedCategories = [];
+          selectedTags = [];
+          searchQuery = "";
+          sortBy = "name-asc";
+          filterCustomizable = false;
+
+          // Reset mobile inputs
+          if (mobileSearchInput) mobileSearchInput.value = "";
+          if (mobileSortSelect) mobileSortSelect.value = "name-asc";
+          if (mobileCustomizableCheckbox)
+            mobileCustomizableCheckbox.checked = false;
+
+          // Reset desktop inputs
+          if (searchInput) searchInput.value = "";
+          if (sortSelect) sortSelect.value = "name-asc";
+          if (customizableCheckbox) customizableCheckbox.checked = false;
+
+          // Reset all filter buttons
+          document
+            .querySelectorAll(".category-filter, .mobile-category-filter")
+            .forEach((btn) => {
+              btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
+            });
+
+          document
+            .querySelectorAll(".tag-filter, .mobile-tag-filter")
+            .forEach((btn) => {
+              btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
+            });
+
+          // Close mobile dropdowns
+          mobileCategoriesDropdown?.classList.add("hidden");
+          mobileTagsDropdown?.classList.add("hidden");
+          mobileCategoriesArrow?.classList.remove("rotate-180");
+          mobileTagsArrow?.classList.remove("rotate-180");
+
+          updateDisplay();
+        });
+
+        // Initial display update
+        updateDisplay();
+      }
+
+      // Re-initialize when navigating back to page (for SPA behavior)
+      document.addEventListener("astro:page-load", initializeFilters);
+
+      // Also try after DOM content is loaded
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeFilters);
+      } else {
+        // DOM is already loaded
         initializeFilters();
-      })();
+      }
+
+      // Fallback for navigation events
+      window.addEventListener("popstate", initializeFilters);
+
+      // Initial call
+      initializeFilters();
+    })();
   </script>
 </BaseLayout>
