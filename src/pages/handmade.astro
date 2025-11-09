@@ -428,7 +428,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             button.parentNode?.replaceChild(newButton, button);
           });
 
-          // Clone tag buttons to remove all event listeners  
+          // Clone tag buttons to remove all event listeners
           tagButtons.forEach((button) => {
             const newButton = button.cloneNode(true);
             button.parentNode?.replaceChild(newButton, button);
@@ -448,12 +448,18 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           // Clone mobile toggle buttons to remove all event listeners
           if (mobileCategoriesToggle) {
             const newToggle = mobileCategoriesToggle.cloneNode(true);
-            mobileCategoriesToggle.parentNode?.replaceChild(newToggle, mobileCategoriesToggle);
+            mobileCategoriesToggle.parentNode?.replaceChild(
+              newToggle,
+              mobileCategoriesToggle
+            );
           }
 
           if (mobileTagsToggle) {
             const newToggle = mobileTagsToggle.cloneNode(true);
-            mobileTagsToggle.parentNode?.replaceChild(newToggle, mobileTagsToggle);
+            mobileTagsToggle.parentNode?.replaceChild(
+              newToggle,
+              mobileTagsToggle
+            );
           }
         };
 
@@ -461,14 +467,21 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         cleanupAndReattachEvents();
 
         // Re-query all buttons after cleanup
-        const freshCategoryButtons = document.querySelectorAll(".category-filter");
+        const freshCategoryButtons =
+          document.querySelectorAll(".category-filter");
         const freshTagButtons = document.querySelectorAll(".tag-filter");
-        const freshMobileCategoryButtons = document.querySelectorAll(".mobile-category-filter");
-        const freshMobileTagButtons = document.querySelectorAll(".mobile-tag-filter");
-        
+        const freshMobileCategoryButtons = document.querySelectorAll(
+          ".mobile-category-filter"
+        );
+        const freshMobileTagButtons =
+          document.querySelectorAll(".mobile-tag-filter");
+
         // Re-query mobile toggle elements after cleanup
-        const freshMobileCategoriesToggle = document.getElementById("mobile-categories-toggle");
-        const freshMobileTagsToggle = document.getElementById("mobile-tags-toggle");
+        const freshMobileCategoriesToggle = document.getElementById(
+          "mobile-categories-toggle"
+        );
+        const freshMobileTagsToggle =
+          document.getElementById("mobile-tags-toggle");
 
         // Category filter buttons with toggle functionality (with mobile sync)
         freshCategoryButtons.forEach((button) => {
@@ -491,9 +504,15 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             freshMobileCategoryButtons.forEach((mobileBtn) => {
               if (mobileBtn.getAttribute("data-category") === category) {
                 if (selectedCategories.includes(category)) {
-                  mobileBtn.classList.add("!bg-blue-500/30", "!border-blue-400");
+                  mobileBtn.classList.add(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
                 } else {
-                  mobileBtn.classList.remove("!bg-blue-500/30", "!border-blue-400");
+                  mobileBtn.classList.remove(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
                 }
               }
             });
@@ -519,9 +538,15 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             freshMobileTagButtons.forEach((mobileBtn) => {
               if (mobileBtn.getAttribute("data-tag") === tag) {
                 if (selectedTags.includes(tag)) {
-                  mobileBtn.classList.add("!bg-blue-500/30", "!border-blue-400");
+                  mobileBtn.classList.add(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
                 } else {
-                  mobileBtn.classList.remove("!bg-blue-500/30", "!border-blue-400");
+                  mobileBtn.classList.remove(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
                 }
               }
             });
@@ -626,9 +651,15 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             freshCategoryButtons.forEach((desktopBtn) => {
               if (desktopBtn.getAttribute("data-category") === category) {
                 if (selectedCategories.includes(category)) {
-                  desktopBtn.classList.add("!bg-blue-500/30", "!border-blue-400");
+                  desktopBtn.classList.add(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
                 } else {
-                  desktopBtn.classList.remove("!bg-blue-500/30", "!border-blue-400");
+                  desktopBtn.classList.remove(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
                 }
               }
             });
@@ -654,9 +685,15 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             freshTagButtons.forEach((desktopBtn) => {
               if (desktopBtn.getAttribute("data-tag") === tag) {
                 if (selectedTags.includes(tag)) {
-                  desktopBtn.classList.add("!bg-blue-500/30", "!border-blue-400");
+                  desktopBtn.classList.add(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
                 } else {
-                  desktopBtn.classList.remove("!bg-blue-500/30", "!border-blue-400");
+                  desktopBtn.classList.remove(
+                    "!bg-blue-500/30",
+                    "!border-blue-400"
+                  );
                 }
               }
             });
@@ -742,18 +779,24 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
 
       // Re-initialize on Astro page events
       document.addEventListener("astro:page-load", () => {
-        console.log("Astro page load event detected, reinitializing handmade filters...");
+        console.log(
+          "Astro page load event detected, reinitializing handmade filters..."
+        );
         setTimeout(initializeFilters, 100);
       });
 
       document.addEventListener("astro:after-swap", () => {
-        console.log("Astro after-swap event detected, reinitializing handmade filters...");
+        console.log(
+          "Astro after-swap event detected, reinitializing handmade filters..."
+        );
         setTimeout(initializeFilters, 100);
       });
 
       // Fallback for navigation events
       window.addEventListener("popstate", () => {
-        console.log("Popstate event detected, reinitializing handmade filters...");
+        console.log(
+          "Popstate event detected, reinitializing handmade filters..."
+        );
         setTimeout(initializeFilters, 100);
       });
 
@@ -766,10 +809,13 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           clearInterval(checkInterval);
           return;
         }
-        
-        const hasButtons = document.querySelectorAll(".category-filter, .tag-filter").length > 0;
+
+        const hasButtons =
+          document.querySelectorAll(".category-filter, .tag-filter").length > 0;
         if (!hasButtons) {
-          console.log(`Backup check ${checkCount}/${maxChecks}: No filter buttons found, reinitializing...`);
+          console.log(
+            `Backup check ${checkCount}/${maxChecks}: No filter buttons found, reinitializing...`
+          );
           initializeFilters();
         }
       }, 2000);
