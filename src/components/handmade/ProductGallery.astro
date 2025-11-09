@@ -18,26 +18,30 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   <!-- Left Side: Mini Gallery (Thumbnails arranged vertically) -->
   <div class="mini-gallery flex-shrink-0">
     <div class="gallery-scroll flex flex-col space-y-2 overflow-y-auto">
-      {displayImages.map((image, index) => (
-        <button
-          type="button"
-          class="thumbnail-btn glass rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 focus:border-blue-500 transition-colors"
-          data-image-index={index}
-        >
-          <Image
-            src={image}
-            alt={`${productName} - Bild ${index + 1}`}
-            class="thumbnail-image"
-            loading="lazy"
-          />
-        </button>
-      ))}
+      {
+        displayImages.map((image, index) => (
+          <button
+            type="button"
+            class="thumbnail-btn glass rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 focus:border-blue-500 transition-colors"
+            data-image-index={index}
+          >
+            <Image
+              src={image}
+              alt={`${productName} - Bild ${index + 1}`}
+              class="thumbnail-image"
+              loading="lazy"
+            />
+          </button>
+        ))
+      }
     </div>
   </div>
 
   <!-- Right Side: Main Image Display -->
   <div class="main-image-container flex-1">
-    <div class="main-image-wrapper glass rounded-lg overflow-hidden inline-block">
+    <div
+      class="main-image-wrapper glass rounded-lg overflow-hidden inline-block"
+    >
       <Image
         src={displayImages[0]}
         alt={`${productName} - Hauptbild`}
@@ -60,7 +64,9 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
       return;
     }
 
-    console.log(`Gallery: Found ${thumbnailButtons.length} thumbnails and main image`);
+    console.log(
+      `Gallery: Found ${thumbnailButtons.length} thumbnails and main image`
+    );
 
     // Get all image sources
     const imageSources = Array.from(thumbnailButtons).map((btn) => {
@@ -79,7 +85,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
     // Function to handle image change
     const changeImage = (index: number, btn: Element) => {
       console.log(`Gallery: Changing to image ${index}`);
-      
+
       // Remove active state from all thumbnails
       thumbnailButtons.forEach((b) => b.classList.remove("border-blue-500"));
 
@@ -100,14 +106,18 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
 
     thumbnailButtons.forEach((btn, index) => {
       // Add both click and touchstart events for better mobile support
-      ["click", "touchstart"].forEach(eventType => {
-        btn.addEventListener(eventType, (e) => {
-          // Prevent default for touchstart to avoid double-firing
-          if (e.type === 'touchstart') {
-            e.preventDefault();
-          }
-          changeImage(index, btn);
-        }, { passive: false });
+      ["click", "touchstart"].forEach((eventType) => {
+        btn.addEventListener(
+          eventType,
+          (e) => {
+            // Prevent default for touchstart to avoid double-firing
+            if (e.type === "touchstart") {
+              e.preventDefault();
+            }
+            changeImage(index, btn);
+          },
+          { passive: false }
+        );
       });
     });
   });
@@ -175,7 +185,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   }
 
   .thumbnail-image {
-    @apply w-full h-full object-cover;
+    @apply h-full w-full object-cover;
   }
 
   .thumbnail-btn:hover {
