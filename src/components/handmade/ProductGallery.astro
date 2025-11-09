@@ -1,0 +1,188 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  images: ImageMetadata[];
+  productName: string;
+}
+
+const { images, productName } = Astro.props;
+
+// Use placeholder if no images available
+import placeholderImage from "@/assets/placeholder-product-notfound.png";
+const displayImages = images.length > 0 ? images : [placeholderImage];
+---
+
+<div class="product-gallery flex gap-6">
+  <!-- Left Side: Mini Gallery (Thumbnails arranged vertically) -->
+  <div class="mini-gallery flex-shrink-0">
+    <div class="gallery-scroll flex flex-col space-y-2 overflow-y-auto">
+      {displayImages.map((image, index) => (
+        <button
+          type="button"
+          class="thumbnail-btn glass rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 focus:border-blue-500 transition-colors"
+          data-image-index={index}
+        >
+          <Image
+            src={image}
+            alt={`${productName} - Bild ${index + 1}`}
+            class="thumbnail-image"
+            loading="lazy"
+          />
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- Right Side: Main Image Display -->
+  <div class="main-image-container flex-1">
+    <div class="main-image-wrapper glass rounded-lg overflow-hidden inline-block">
+      <Image
+        src={displayImages[0]}
+        alt={`${productName} - Hauptbild`}
+        id="main-image"
+        class="h-64 md:h-96 w-auto object-contain"
+        loading="eager"
+      />
+    </div>
+  </div>
+</div>
+
+<script>
+  // Gallery interaction functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const mainImage = document.getElementById("main-image") as HTMLImageElement;
+    const thumbnailButtons = document.querySelectorAll(".thumbnail-btn");
+
+    if (!mainImage || thumbnailButtons.length === 0) {
+      console.log("Gallery: Missing main image or thumbnail buttons");
+      return;
+    }
+
+    console.log(`Gallery: Found ${thumbnailButtons.length} thumbnails and main image`);
+
+    // Get all image sources
+    const imageSources = Array.from(thumbnailButtons).map((btn) => {
+      const img = btn.querySelector("img") as HTMLImageElement;
+      return {
+        src: img.src,
+        alt: img.alt,
+      };
+    });
+
+    // Add active state to first thumbnail
+    if (thumbnailButtons.length > 0) {
+      thumbnailButtons[0].classList.add("border-blue-500");
+    }
+
+    // Function to handle image change
+    const changeImage = (index: number, btn: Element) => {
+      console.log(`Gallery: Changing to image ${index}`);
+      
+      // Remove active state from all thumbnails
+      thumbnailButtons.forEach((b) => b.classList.remove("border-blue-500"));
+
+      // Add active state to clicked thumbnail
+      btn.classList.add("border-blue-500");
+
+      // Update main image
+      const imageData = imageSources[index];
+      mainImage.src = imageData.src;
+      mainImage.alt = imageData.alt;
+
+      // Add fade effect
+      mainImage.style.opacity = "0";
+      setTimeout(() => {
+        mainImage.style.opacity = "1";
+      }, 100);
+    };
+
+    thumbnailButtons.forEach((btn, index) => {
+      // Add both click and touchstart events for better mobile support
+      ["click", "touchstart"].forEach(eventType => {
+        btn.addEventListener(eventType, (e) => {
+          // Prevent default for touchstart to avoid double-firing
+          if (e.type === 'touchstart') {
+            e.preventDefault();
+          }
+          changeImage(index, btn);
+        }, { passive: false });
+      });
+    });
+  });
+</script>
+
+<style>
+  .product-gallery {
+    @apply w-full overflow-hidden;
+  }
+
+  .mini-gallery {
+    @apply flex-shrink-0;
+    width: 5rem; /* w-20 equivalent - 80px */
+  }
+
+  @media (min-width: 768px) {
+    .mini-gallery {
+      width: 6rem; /* w-24 equivalent - 96px */
+    }
+  }
+
+  .gallery-scroll {
+    height: 16rem; /* h-64 equivalent - same as main image */
+    @apply overflow-y-auto;
+    /* Hide scrollbars but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+
+  /* Hide scrollbars for WebKit browsers (Chrome, Safari, Edge) */
+  .gallery-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .gallery-scroll {
+      height: 24rem; /* h-96 equivalent for md screens - same as main image */
+    }
+  }
+
+  .main-image-container {
+    @apply relative;
+  }
+
+  .main-image-wrapper {
+    @apply max-w-fit;
+  }
+
+  .main-image-container img {
+    @apply transition-opacity duration-200;
+  }
+
+  .thumbnail-btn {
+    @apply cursor-pointer transition-all duration-200;
+    width: 5rem; /* 80px */
+    height: 5rem; /* 80px */
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 768px) {
+    .thumbnail-btn {
+      width: 6rem; /* 96px */
+      height: 6rem; /* 96px */
+    }
+  }
+
+  .thumbnail-image {
+    @apply w-full h-full object-cover;
+  }
+
+  .thumbnail-btn:hover {
+    @apply scale-105 transform;
+  }
+
+  .thumbnail-btn:focus {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  }
+</style>
