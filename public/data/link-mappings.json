@@ -184,6 +184,27 @@
       "affiliate": false,
       "category": "Werkzeuge",
       "openInNewTab": true
+    },
+    "canon-creative-park": {
+      "targetUrl": "https://creativepark.canon/de/contents/CNT-0027937/index.html",
+      "description": "Canon Creative Park - Kostenlose Papercraft Lebkuchenhaus Vorlage zum Download",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "oli-natura-hartwachsoel": {
+      "targetUrl": "https://frickeldave.de/aff_hartwachsöl",
+      "description": "Oli Natura Hartwachsöl für die Holzoberflächenbehandlung",
+      "affiliate": true,
+      "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "amazon-bindfaden": {
+      "targetUrl": "https://www.amazon.de/dp/B077MDPFNG",
+      "description": "Natürlicher Bindfaden aus Jute für Geschenkverpackungen und Bastelarbeiten",
+      "affiliate": true,
+      "category": "Basteln",
+      "openInNewTab": true
     }
   },
   "analytics": {
