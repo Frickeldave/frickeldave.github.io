@@ -6,6 +6,9 @@ import PageHeader from "@components/common/PageHeader.astro";
 import type { HandmadeData } from "@/types";
 import type { ImageMetadata } from "astro";
 
+// Import placeholder image
+import placeholderImage from "@/assets/placeholder-product-notfound.png";
+
 // Import handmade data directly
 import handmadeDataRaw from "../../public/data/handmade.json";
 const handmadeData = handmadeDataRaw as HandmadeData;
@@ -19,11 +22,12 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
   { eager: true }
 );
 
-// Create a map of filename (without path) to image
+// Create a map of relative path to image
 const imageMap = Object.entries(images).reduce(
   (acc, [path, image]) => {
-    const filename = path.split("/").pop() || "";
-    acc[filename] = image.default;
+    // Extract relative path from the full path (remove /src/assets/handmade/)
+    const relativePath = path.replace("/src/assets/handmade/", "");
+    acc[relativePath] = image.default;
     return acc;
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,9 +35,14 @@ const imageMap = Object.entries(images).reduce(
 );
 
 // Helper function to get image for product
-const getProductImage = (picturePath: string) => {
-  const filename = picturePath.split("/").pop() || "";
-  return imageMap[filename];
+const getProductImage = (category: string, articleNumber: string) => {
+  // Convert category to folder name (lowercase and replace spaces with hyphens)
+  const categoryFolder = category.toLowerCase().replace(/\s+/g, "-");
+  // Build the dynamic path: category/articleNumber/articleNumber-000.png
+  const imagePath = `${categoryFolder}/${articleNumber}/${articleNumber}-000.png`;
+
+  // Return the product image if it exists, otherwise return placeholder
+  return imageMap[imagePath] || placeholderImage;
 };
 
 // Get unique categories and tags
@@ -195,7 +204,10 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
                 >
                   <Card
                     item={product}
-                    image={getProductImage(product.picture)}
+                    image={getProductImage(
+                      product.category,
+                      product.articleNumber
+                    )}
                   />
                 </div>
               ))
@@ -408,23 +420,68 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           }
         }
 
-        // Remove existing event listeners to prevent duplicates
-        categoryButtons.forEach((button) => {
-          // Clone node to remove all event listeners
-          const newButton = button.cloneNode(true);
-          button.parentNode?.replaceChild(newButton, button);
-        });
+        // Clean up existing event listeners by cloning elements
+        const cleanupAndReattachEvents = () => {
+          // Clone category buttons to remove all event listeners
+          categoryButtons.forEach((button) => {
+            const newButton = button.cloneNode(true);
+            button.parentNode?.replaceChild(newButton, button);
+          });
 
-        tagButtons.forEach((button) => {
-          // Clone node to remove all event listeners
-          const newButton = button.cloneNode(true);
-          button.parentNode?.replaceChild(newButton, button);
-        });
+          // Clone tag buttons to remove all event listeners
+          tagButtons.forEach((button) => {
+            const newButton = button.cloneNode(true);
+            button.parentNode?.replaceChild(newButton, button);
+          });
 
-        // Re-get buttons after cloning
+          // Clone mobile buttons too
+          mobileCategoryButtons.forEach((button) => {
+            const newButton = button.cloneNode(true);
+            button.parentNode?.replaceChild(newButton, button);
+          });
+
+          mobileTagButtons.forEach((button) => {
+            const newButton = button.cloneNode(true);
+            button.parentNode?.replaceChild(newButton, button);
+          });
+
+          // Clone mobile toggle buttons to remove all event listeners
+          if (mobileCategoriesToggle) {
+            const newToggle = mobileCategoriesToggle.cloneNode(true);
+            mobileCategoriesToggle.parentNode?.replaceChild(
+              newToggle,
+              mobileCategoriesToggle
+            );
+          }
+
+          if (mobileTagsToggle) {
+            const newToggle = mobileTagsToggle.cloneNode(true);
+            mobileTagsToggle.parentNode?.replaceChild(
+              newToggle,
+              mobileTagsToggle
+            );
+          }
+        };
+
+        // Clean up existing listeners
+        cleanupAndReattachEvents();
+
+        // Re-query all buttons after cleanup
         const freshCategoryButtons =
           document.querySelectorAll(".category-filter");
         const freshTagButtons = document.querySelectorAll(".tag-filter");
+        const freshMobileCategoryButtons = document.querySelectorAll(
+          ".mobile-category-filter"
+        );
+        const freshMobileTagButtons =
+          document.querySelectorAll(".mobile-tag-filter");
+
+        // Re-query mobile toggle elements after cleanup
+        const freshMobileCategoriesToggle = document.getElementById(
+          "mobile-categories-toggle"
+        );
+        const freshMobileTagsToggle =
+          document.getElementById("mobile-tags-toggle");
 
         // Category filter buttons with toggle functionality (with mobile sync)
         freshCategoryButtons.forEach((button) => {
@@ -443,12 +500,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               button.classList.add("!bg-blue-500/30", "!border-blue-400");
             }
 
-            // Sync with mobile
-            document
-              .querySelectorAll(
-                `.mobile-category-filter[data-category="${category}"]`
-              )
-              .forEach((mobileBtn) => {
+            // Sync with mobile buttons using fresh query
+            freshMobileCategoryButtons.forEach((mobileBtn) => {
+              if (mobileBtn.getAttribute("data-category") === category) {
                 if (selectedCategories.includes(category)) {
                   mobileBtn.classList.add(
                     "!bg-blue-500/30",
@@ -460,7 +514,8 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
                     "!border-blue-400"
                   );
                 }
-              });
+              }
+            });
 
             updateDisplay();
           });
@@ -479,10 +534,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               button.classList.add("!bg-blue-500/30", "!border-blue-400");
             }
 
-            // Sync with mobile
-            document
-              .querySelectorAll(`.mobile-tag-filter[data-tag="${tag}"]`)
-              .forEach((mobileBtn) => {
+            // Sync with mobile buttons using fresh query
+            freshMobileTagButtons.forEach((mobileBtn) => {
+              if (mobileBtn.getAttribute("data-tag") === tag) {
                 if (selectedTags.includes(tag)) {
                   mobileBtn.classList.add(
                     "!bg-blue-500/30",
@@ -494,7 +548,8 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
                     "!border-blue-400"
                   );
                 }
-              });
+              }
+            });
 
             updateDisplay();
           });
@@ -551,8 +606,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         // MOBILE FILTER EVENT LISTENERS
         // ===============================
 
-        // Mobile toggle functionality
-        mobileCategoriesToggle?.addEventListener("click", () => {
+        // Mobile toggle functionality (using fresh references)
+        freshMobileCategoriesToggle?.addEventListener("click", () => {
+          console.log("Mobile categories toggle clicked");
           const isOpen =
             !mobileCategoriesDropdown?.classList.contains("hidden");
           if (isOpen) {
@@ -564,7 +620,8 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           }
         });
 
-        mobileTagsToggle?.addEventListener("click", () => {
+        freshMobileTagsToggle?.addEventListener("click", () => {
+          console.log("Mobile tags toggle clicked");
           const isOpen = !mobileTagsDropdown?.classList.contains("hidden");
           if (isOpen) {
             mobileTagsDropdown?.classList.add("hidden");
@@ -576,7 +633,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         });
 
         // Mobile category filters
-        mobileCategoryButtons.forEach((button) => {
+        freshMobileCategoryButtons.forEach((button) => {
           button.addEventListener("click", () => {
             const category = button.getAttribute("data-category") || "";
 
@@ -590,10 +647,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               button.classList.add("!bg-blue-500/30", "!border-blue-400");
             }
 
-            // Sync with desktop
-            document
-              .querySelectorAll(`.category-filter[data-category="${category}"]`)
-              .forEach((desktopBtn) => {
+            // Sync with desktop buttons using fresh query
+            freshCategoryButtons.forEach((desktopBtn) => {
+              if (desktopBtn.getAttribute("data-category") === category) {
                 if (selectedCategories.includes(category)) {
                   desktopBtn.classList.add(
                     "!bg-blue-500/30",
@@ -605,14 +661,15 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
                     "!border-blue-400"
                   );
                 }
-              });
+              }
+            });
 
             updateDisplay();
           });
         });
 
         // Mobile tag filters
-        mobileTagButtons.forEach((button) => {
+        freshMobileTagButtons.forEach((button) => {
           button.addEventListener("click", () => {
             const tag = button.getAttribute("data-tag") || "";
 
@@ -624,10 +681,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               button.classList.add("!bg-blue-500/30", "!border-blue-400");
             }
 
-            // Sync with desktop
-            document
-              .querySelectorAll(`.tag-filter[data-tag="${tag}"]`)
-              .forEach((desktopBtn) => {
+            // Sync with desktop buttons using fresh query
+            freshTagButtons.forEach((desktopBtn) => {
+              if (desktopBtn.getAttribute("data-tag") === tag) {
                 if (selectedTags.includes(tag)) {
                   desktopBtn.classList.add(
                     "!bg-blue-500/30",
@@ -639,7 +695,8 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
                     "!border-blue-400"
                   );
                 }
-              });
+              }
+            });
 
             updateDisplay();
           });
@@ -712,19 +769,56 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         updateDisplay();
       }
 
-      // Re-initialize when navigating back to page (for SPA behavior)
-      document.addEventListener("astro:page-load", initializeFilters);
-
-      // Also try after DOM content is loaded
+      // Initialize immediately if DOM is ready
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initializeFilters);
       } else {
         // DOM is already loaded
-        initializeFilters();
+        setTimeout(initializeFilters, 0);
       }
 
+      // Re-initialize on Astro page events
+      document.addEventListener("astro:page-load", () => {
+        console.log(
+          "Astro page load event detected, reinitializing handmade filters..."
+        );
+        setTimeout(initializeFilters, 100);
+      });
+
+      document.addEventListener("astro:after-swap", () => {
+        console.log(
+          "Astro after-swap event detected, reinitializing handmade filters..."
+        );
+        setTimeout(initializeFilters, 100);
+      });
+
       // Fallback for navigation events
-      window.addEventListener("popstate", initializeFilters);
+      window.addEventListener("popstate", () => {
+        console.log(
+          "Popstate event detected, reinitializing handmade filters..."
+        );
+        setTimeout(initializeFilters, 100);
+      });
+
+      // Backup periodic check (every 2 seconds for the first 10 seconds)
+      let checkCount = 0;
+      const maxChecks = 5;
+      const checkInterval = setInterval(() => {
+        checkCount++;
+        if (checkCount >= maxChecks) {
+          clearInterval(checkInterval);
+          return;
+        }
+
+        const hasButtons =
+          document.querySelectorAll(".category-filter, .tag-filter").length > 0;
+        if (!hasButtons) {
+          console.log(
+            `Backup check ${checkCount}/${maxChecks}: No filter buttons found, reinitializing...`
+          );
+          initializeFilters();
+        }
+      }, 2000);
 
       // Initial call
       initializeFilters();
