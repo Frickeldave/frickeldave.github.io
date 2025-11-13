@@ -88,7 +88,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
       // Update main image with fade effect
       const imageData = imageSources[index];
       mainImage.style.opacity = "0";
-      
+
       setTimeout(() => {
         mainImage.src = imageData.src;
         mainImage.alt = imageData.alt;
@@ -102,10 +102,10 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
         e.preventDefault();
         changeImage(index, btn);
       };
-      
+
       // Remove old listener if it exists
       (btn as HTMLElement).onclick = null;
-      
+
       // Add new listener
       btn.addEventListener("click", handleClick);
     });
@@ -170,7 +170,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   }
 
   #main-image {
-    @apply h-64 md:h-96 w-auto object-contain;
+    @apply h-64 w-auto object-contain md:h-96;
   }
 
   .thumbnail-btn {
