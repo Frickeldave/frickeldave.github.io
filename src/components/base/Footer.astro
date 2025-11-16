@@ -7,9 +7,14 @@ import Social from "@components/common/Social.astro";
 >
   <div class="row py-2 lg:py-0 items-center flex-wrap-reverse">
     <div class="text-center lg:col-6 lg:mb-0 lg:text-left">
-      <ul>
+      <ul class="space-y-1">
         <li class="m-2 inline-block">
           <a href="/terms">&copy; Frickeldave 2025</a>
+        </li>
+        <li class="m-2 inline-block">
+          <span id="footer-version" class="text-xs text-gray-900 dark:text-gray-400">
+            <!-- Version wird client-side geladen -->
+          </span>
         </li>
       </ul>
     </div>
@@ -26,3 +31,34 @@ import Social from "@components/common/Social.astro";
     </div>
   </div>
 </footer>
+
+<script>
+  // Load version info into footer
+  async function loadFooterVersion() {
+    try {
+      const response = await fetch('/version.json');
+      const versionInfo = await response.json();
+      
+      const footerVersion = document.getElementById('footer-version');
+      if (!footerVersion) return;
+
+      const buildDate = new Date(versionInfo.buildTime).toLocaleString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      footerVersion.textContent = `${versionInfo.version} | Built: ${buildDate}`;
+    } catch (error) {
+      console.warn('Could not load version info for footer:', error);
+    }
+  }
+
+  // Load on page load
+  loadFooterVersion();
+  
+  // Reload on view transitions
+  document.addEventListener('astro:page-load', loadFooterVersion);
+</script>
