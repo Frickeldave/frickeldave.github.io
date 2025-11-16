@@ -1,7 +1,7 @@
 ---
 /**
  * VersionBadge Component
- * 
+ *
  * Floating badge that shows version info in non-production environments
  * - Local: Shows branch + commit
  * - Dev: Shows dev version + commit
@@ -18,26 +18,30 @@
   // Load version info and render badge
   async function loadVersionInfo() {
     try {
-      const response = await fetch('/version.json');
+      const response = await fetch("/version.json");
       const versionInfo = await response.json();
-      
+
       // Only show in non-production environments
-      if (versionInfo.environment === 'production') {
+      if (versionInfo.environment === "production") {
         return;
       }
 
-      const badge = document.getElementById('version-badge');
+      const badge = document.getElementById("version-badge");
       if (!badge) return;
 
       // Build badge content
-      const envColor = versionInfo.environment === 'local' ? 'bg-blue-500' : 'bg-green-500';
-      const buildDate = new Date(versionInfo.buildTime).toLocaleString('de-DE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const envColor =
+        versionInfo.environment === "local" ? "bg-blue-500" : "bg-green-500";
+      const buildDate = new Date(versionInfo.buildTime).toLocaleString(
+        "de-DE",
+        {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      );
 
       badge.innerHTML = `
         <div class="glass p-2 rounded-lg shadow-lg text-xs space-y-1">
@@ -71,10 +75,9 @@
       `;
 
       // Make badge visible with fade-in animation
-      setTimeout(() => badge.classList.add('visible'), 100);
-
+      setTimeout(() => badge.classList.add("visible"), 100);
     } catch (error) {
-      console.warn('Could not load version info:', error);
+      console.warn("Could not load version info:", error);
     }
   }
 
@@ -91,10 +94,10 @@
   let yOffset = 0;
 
   function dragStart(e: MouseEvent | TouchEvent) {
-    const badge = document.getElementById('version-badge');
+    const badge = document.getElementById("version-badge");
     if (!badge) return;
 
-    if (e.type === 'touchstart') {
+    if (e.type === "touchstart") {
       const touch = (e as TouchEvent).touches[0];
       initialX = touch.clientX - xOffset;
       initialY = touch.clientY - yOffset;
@@ -103,30 +106,30 @@
       initialY = (e as MouseEvent).clientY - yOffset;
     }
 
-    if ((e.target as HTMLElement).closest('#version-badge')) {
+    if ((e.target as HTMLElement).closest("#version-badge")) {
       isDragging = true;
-      badge.style.cursor = 'grabbing';
+      badge.style.cursor = "grabbing";
     }
   }
 
   function dragEnd() {
-    const badge = document.getElementById('version-badge');
+    const badge = document.getElementById("version-badge");
     if (badge) {
-      badge.style.cursor = 'grab';
+      badge.style.cursor = "grab";
     }
     isDragging = false;
-    
+
     // Save position to localStorage
-    localStorage.setItem('versionBadgeX', xOffset.toString());
-    localStorage.setItem('versionBadgeY', yOffset.toString());
+    localStorage.setItem("versionBadgeX", xOffset.toString());
+    localStorage.setItem("versionBadgeY", yOffset.toString());
   }
 
   function drag(e: MouseEvent | TouchEvent) {
     if (!isDragging) return;
-    
+
     e.preventDefault();
 
-    if (e.type === 'touchmove') {
+    if (e.type === "touchmove") {
       const touch = (e as TouchEvent).touches[0];
       currentX = touch.clientX - initialX;
       currentY = touch.clientY - initialY;
@@ -138,7 +141,7 @@
     xOffset = currentX;
     yOffset = currentY;
 
-    const badge = document.getElementById('version-badge');
+    const badge = document.getElementById("version-badge");
     if (badge) {
       badge.style.transform = `translate(${currentX}px, ${currentY}px)`;
     }
@@ -146,14 +149,14 @@
 
   // Load saved position from localStorage
   function loadSavedPosition() {
-    const savedX = localStorage.getItem('versionBadgeX');
-    const savedY = localStorage.getItem('versionBadgeY');
-    
+    const savedX = localStorage.getItem("versionBadgeX");
+    const savedY = localStorage.getItem("versionBadgeY");
+
     if (savedX && savedY) {
       xOffset = parseInt(savedX);
       yOffset = parseInt(savedY);
-      
-      const badge = document.getElementById('version-badge');
+
+      const badge = document.getElementById("version-badge");
       if (badge) {
         badge.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
       }
@@ -162,21 +165,21 @@
 
   // Add event listeners after badge is loaded
   setTimeout(() => {
-    const badge = document.getElementById('version-badge');
+    const badge = document.getElementById("version-badge");
     if (!badge) return;
 
     // Load saved position
     loadSavedPosition();
 
     // Mouse events
-    badge.addEventListener('mousedown', dragStart);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
+    badge.addEventListener("mousedown", dragStart);
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("mouseup", dragEnd);
 
     // Touch events for mobile
-    badge.addEventListener('touchstart', dragStart);
-    document.addEventListener('touchmove', drag);
-    document.addEventListener('touchend', dragEnd);
+    badge.addEventListener("touchstart", dragStart);
+    document.addEventListener("touchmove", drag);
+    document.addEventListener("touchend", dragEnd);
   }, 200);
 </script>
 
