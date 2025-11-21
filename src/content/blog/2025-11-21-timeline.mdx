@@ -1,7 +1,10 @@
 ---
 title: Die Entwicklung von frickeldave.de
 description:
-  Eine detaillierte Timeline über die Entwicklung dieser Website durch AI-gestütztes Vibecoding mit GitHub Copilot. Von der ersten Zeile Code bis zur vollständigen Multi-Content-Plattform in nur 3 Monaten - inklusive Erkenntnisse, Statistiken und Lessons Learned für AI-basierte Softwareentwicklung.
+  Eine detaillierte Timeline über die Entwicklung dieser Website durch AI-gestütztes Vibecoding mit
+  GitHub Copilot. Von der ersten Zeile Code bis zur vollständigen Multi-Content-Plattform in nur 3
+  Monaten - inklusive Erkenntnisse, Statistiken und Lessons Learned für AI-basierte
+  Softwareentwicklung.
 date: 2025-11-21
 image: "@assets/blog/it/2025-11-21-timeline/header.png"
 imageAlt: Die Entwicklung von frickeldave.de
@@ -11,44 +14,55 @@ tags: [Vibecoding, GitHub Copilot, Astro, DevOps, AI-Entwicklung, Timeline, Stat
 hideToc: false
 ---
 
-Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecoding mit GitHub Copilot. Die Analyse basiert auf der Git-Historie mit über 300 Commits von August bis November 2025.
+Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecoding mit GitHub
+Copilot. Die Analyse basiert auf der Git-Historie mit über 300 Commits von August bis November 2025.
 
 ## Projekt-Übersicht
 
 **Startzeit des Projektes:** 14. August 2025  
-**Basis-Template:** [Astrogon von reednel](https://github.com/astrogon/astrogon) (ursprünglich 2023-2024 entwickelt)  
+**Basis-Template:** [Astrogon von reednel](https://github.com/astrogon/astrogon) (ursprünglich
+2023-2024 entwickelt)  
 **Entwicklungsmethode:** Vibecoding (AI-gestützte Entwicklung mit GitHub Copilot)  
 **Deploy-Plattform:** GitHub Pages (Static Site)
 
 ## Detaillierter Verlauf
 
 ### Initial Setup & Fork
+
 **Zeitraum:** 14. - 23. August 2025 (9 Tage)  
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Forke das Astrogon-Template und passe es für meine persönliche Multi-Content-Plattform (Blog, Docs, Recipes, DIY/Handmade) an. Implementiere Glass Morphism Design und migriere erste Content-Artikel.
+
+> Forke das Astrogon-Template und passe es für meine persönliche Multi-Content-Plattform (Blog,
+> Docs, Recipes, DIY/Handmade) an. Implementiere Glass Morphism Design und migriere erste
+> Content-Artikel.
 
 **Haupt-Commits:**
+
 - `4a84d07` (2025-08-14): Inital setup done and first tow articles implemented
 - `af73ae3` (2025-08-23): feat: Add Downloads section with categorized download management
-- `bbb4641` (2025-08-23): feat: migrate link redirect system to GitHub Pages compatible client-side solution
+- `bbb4641` (2025-08-23): feat: migrate link redirect system to GitHub Pages compatible client-side
+  solution
 
 **Features:**
+
 - Fork von Astrogon-Template
 - Donwloads Sektion
 - Erste DIY-Artikel Migration (Stoßpendel, Schlüsselanhänger)
 
 ### Linter Integration
 
-**Initiales Linter Setup (August 2025)**
-**Zeitraum:** 19. - 22. August 2025 (4 Tage)  
+**Initiales Linter Setup (August 2025)** **Zeitraum:** 19. - 22. August 2025 (4 Tage)  
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Integriere ein umfassendes Linter-System mit ESLint, Prettier, Vale und Husky Pre-Commit Hooks für Code Quality und Prose Linting.
+
+> Integriere ein umfassendes Linter-System mit ESLint, Prettier, Vale und Husky Pre-Commit Hooks für
+> Code Quality und Prose Linting.
 
 **Haupt-Commits:**
+
 - `c8a1836` (2025-08-21): Integrated ESLint and fixed all linter errors
 - `f9d24a5` (2025-08-21): feat: add Prettier integration with comprehensive configuration
 - `695a8d2` (2025-08-21): feat: integrate Vale prose linter with cross-platform installation
@@ -56,6 +70,7 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 - `bea28e4` (2025-08-22): vale finally integrated
 
 **Tools:**
+
 - ESLint (TypeScript/JS/Astro)
 - Prettier (Auto-Formatting)
 - Vale (Markdown Prose Linting)
@@ -67,32 +82,42 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Verfeinere das Linter-Setup mit vollständiger Vale-Integration für englische und deutsche Prose-Checks.
+
+> Verfeinere das Linter-Setup mit vollständiger Vale-Integration für englische und deutsche
+> Prose-Checks.
 
 **Haupt-Commits:**
+
 - `5f8dfd4b` (2025-10-01): Linter implemented
 - `345d6c27` (2025-10-01): Activate all english rules
 - `71fbb878` (2025-10-14): Basic linter integration
 
 **Refinements:**
+
 - Vale English Rules aktiviert
 - Pre-Commit Hooks optimiert
 - GitHub Actions Integration
 
 ### CI/CD - GitHub Actions
+
 **Zeitraum:** 18. August - 17. Oktober 2025 (2 Monate)  
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Implementiere GitHub Actions Workflows für automatische Deployments auf Production (main) und Development (dev) Umgebungen mit self-hosted Runner.
+
+> Implementiere GitHub Actions Workflows für automatische Deployments auf Production (main) und
+> Development (dev) Umgebungen mit self-hosted Runner.
 
 **Haupt-Commits:**
+
 - `cdd87fe` (2025-08-18): Added deploy workflow with local runner
 - `b2ba874` (2025-09-03): customized build workflows
-- `747e39c` (2025-09-03): ci: restrict deploy workflows to merged PRs into target branches; add dev branch
+- `747e39c` (2025-09-03): ci: restrict deploy workflows to merged PRs into target branches; add dev
+  branch
 - `8a1bb27` (2025-10-17): Added PR checks
 
 **Features:**
+
 - `deploy-prd.yml` - Production Deployment
 - Self-hosted Runner auf `frickeldave-main`
 - Branch Strategy: `main` (prod), `dev` (staging)
@@ -106,9 +131,12 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Migriere alle bestehenden DIY/Handmade Blog-Artikel von der alten Website zur neuen Astro-basierten Plattform. Konvertiere Inhalte zu MDX mit Frontmatter.
+
+> Migriere alle bestehenden DIY/Handmade Blog-Artikel von der alten Website zur neuen
+> Astro-basierten Plattform. Konvertiere Inhalte zu MDX mit Frontmatter.
 
 **Artikel-Migrations-Branches:**
+
 - `#26-migrate-les-passe-trappe-game`
 - `#40-migration-artikel-schatztruhe`
 - `#44-migration-artikel-betonschale`
@@ -116,6 +144,7 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 - `#51-migration-artikel-gartenschrank`
 
 **Haupt-Commits:**
+
 - `2693afb6` (2025-09-04): 2 weitere Artikel migriert
 - `d4fab75c` (2025-09-08): videostudio article is finished
 - `8c90d89d` (2025-09-17): start to write le passe trappe game
@@ -127,6 +156,7 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 - `820a0cf0` (2025-11-12): Migrated Adventskalender aus Restholz und Papier
 
 **Migrierte Artikel:**
+
 - Videostudio Setup
 - Le Passe-Trappe Game
 - Schatztruhe
@@ -143,13 +173,19 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Implementiere ein GitHub Pages-kompatibles Link-Redirect-System für Affiliate-Links und Short-URLs ohne Server-side Rendering. Verwende client-side JavaScript und JSON-Dateien.
+
+> Implementiere ein GitHub Pages-kompatibles Link-Redirect-System für Affiliate-Links und Short-URLs
+> ohne Server-side Rendering. Verwende client-side JavaScript und JSON-Dateien.
 
 **Haupt-Commits:**
-- `bcfcec3` (2025-08-23): feat: Implement comprehensive link redirect system with affiliate compliance
-- `bbb4641` (2025-08-23): feat: migrate link redirect system to GitHub Pages compatible client-side solution
+
+- `bcfcec3` (2025-08-23): feat: Implement comprehensive link redirect system with affiliate
+  compliance
+- `bbb4641` (2025-08-23): feat: migrate link redirect system to GitHub Pages compatible client-side
+  solution
 
 **Technische Details:**
+
 - `/public/data/link-mappings.json` - Zentrale Link-Registry
 - `/public/js/redirect-handler.js` - Client-side Router
 - `src/lib/redirectService.ts` - Build-time Service
@@ -163,12 +199,16 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Erstelle eine Downloads-Section mit kategorisiertem Download-Management für herunterladbare Dateien wie Laser-Vorlagen, 3D-Druck-Modelle etc.
+
+> Erstelle eine Downloads-Section mit kategorisiertem Download-Management für herunterladbare
+> Dateien wie Laser-Vorlagen, 3D-Druck-Modelle etc.
 
 **Haupt-Commits:**
+
 - `af73ae3` (2025-08-23): feat: Add Downloads section with categorized download management
 
 **Features:**
+
 - Downloads Content Collection
 - Kategorisierung von Download-Dateien
 - Download-Page mit Übersicht
@@ -181,12 +221,16 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Integriere YouTube-Videos mit Privacy Shield für DSGVO-Compliance. Videos sollen erst nach Zustimmung geladen werden.
+
+> Integriere YouTube-Videos mit Privacy Shield für DSGVO-Compliance. Videos sollen erst nach
+> Zustimmung geladen werden.
 
 **Haupt-Commits:**
+
 - `dec1a3a` (2025-08-17): YouTube Integration mit PrivacyShield
 
 **Features:**
+
 - YouTube-Component mit Privacy Shield
 - DSGVO-konforme Video-Einbettung
 - Opt-in vor Video-Laden
@@ -199,12 +243,15 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
+
 > Füge eine Portfolio-Section hinzu für IT-Projekte und professionelle Arbeiten.
 
 **Haupt-Commits:**
+
 - `83ca6485` (2025-10-10): Added portfolio
 
 **Features:**
+
 - Portfolio Collection in Content Config
 - Portfolio Page mit Projekt-Übersicht
 
@@ -216,9 +263,12 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
-> Erstelle eine dedizierte Handmade-Portfolio-Website mit Produkt-Galerie, Filter-Funktionen (Kategorien, Tags, Material), Mobile-Ansicht und Artikelnummern-System.
+
+> Erstelle eine dedizierte Handmade-Portfolio-Website mit Produkt-Galerie, Filter-Funktionen
+> (Kategorien, Tags, Material), Mobile-Ansicht und Artikelnummern-System.
 
 **Haupt-Commits:**
+
 - `2564e72f` (2025-11-05): feature: handmade page
 - `0f8c91f4` (2025-11-05): feature: Added an articleNumber and show them per Product
 - `84a41866` (2025-11-09): Added the mobile filter view
@@ -226,6 +276,7 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 - `6608d7ee` (2025-11-13): Adventskalender fertiggestellt
 
 **Features:**
+
 - Handmade Content Collection
 - Produkt-Katalog mit Filterung
 - Mobile Filter View
@@ -234,6 +285,7 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 - Image Handling Optimierung
 
 **Sub-Prompts (rekonstruiert):**
+
 1. "Erstelle die Handmade Collection mit Schema für Produkte"
 2. "Implementiere Filter-Funktionalität nach Kategorien, Tags und Material"
 3. "Baue eine responsive Mobile-Filter-Ansicht"
@@ -248,13 +300,16 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 **Status:** ✅ Abgeschlossen
 
 **Master-Prompt (rekonstruiert):**
+
 > Implementiere ein automatisches Versionierungs-System für die Website basierend auf Git-Tags.
 
 **Haupt-Commits:**
+
 - `938757e3` (2025-11-16): Added versioning
 - `89d2ace9` (2025-11-16): Added versioning
 
 **Features:**
+
 - `scripts/generate-version.ts`
 - Automatische Version-Generierung beim Build
 
@@ -262,36 +317,41 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 
 ** Entwicklungsdauer nach Teilprojekt **
 
-| Teilprojekt | Dauer | Commits | Komplexität |
-|-------------|-------|---------|-------------|
-| Initial Setup & Fork | 9 Tage | ~15 | Mittel |
-| Link-Redirect-System | 1 Tag | 3 | Hoch |
-| Linter-Integration | 4 Tage | 10+ | Hoch |
-| GitHub Actions CI/CD | 2 Monate | 15+ | Sehr Hoch |
-| Content Migration (Blog Artikel) | 10 Wochen | 25+ | Mittel |
-| Portfolio Section | 1 Tag | 1 | Niedrig |
-| Linter Enhancement & Vale | 2 Wochen | 5+ | Mittel |
-| Handmade Portfolio Website | 1 Woche | 15+ | Sehr Hoch |
-| Versioning System | 1 Tag | 2 | Niedrig |
-| Amazon Compliance | 1 Tag | 1 | Niedrig |
+| Teilprojekt                      | Dauer     | Commits | Komplexität |
+| -------------------------------- | --------- | ------- | ----------- |
+| Initial Setup & Fork             | 9 Tage    | ~15     | Mittel      |
+| Link-Redirect-System             | 1 Tag     | 3       | Hoch        |
+| Linter-Integration               | 4 Tage    | 10+     | Hoch        |
+| GitHub Actions CI/CD             | 2 Monate  | 15+     | Sehr Hoch   |
+| Content Migration (Blog Artikel) | 10 Wochen | 25+     | Mittel      |
+| Portfolio Section                | 1 Tag     | 1       | Niedrig     |
+| Linter Enhancement & Vale        | 2 Wochen  | 5+      | Mittel      |
+| Handmade Portfolio Website       | 1 Woche   | 15+     | Sehr Hoch   |
+| Versioning System                | 1 Tag     | 2       | Niedrig     |
+| Amazon Compliance                | 1 Tag     | 1       | Niedrig     |
 
 ** Vibecoding-Erkenntnisse **
 
 **Schnelle Iterationen:**
+
 - Komplexe Features wie das Link-Redirect-System wurden in 1 Tag implementiert
 - Linter-Integration mit 4 Tools in 4 Tagen
 - Handmade Portfolio mit Filter, Gallery, Mobile View in 1 Woche
 
 **Längerfristige Projekte:**
-- CI/CD Setup benötigte 2 Monate (benötigte mehrere Iterationen, Testing, Debugging, allerdings auch größere Pause)
+
+- CI/CD Setup benötigte 2 Monate (benötigte mehrere Iterationen, Testing, Debugging, allerdings auch
+  größere Pause)
 - Content Migration war kontinuierlich über 3+ Monate
 
 **Typisches Pattern:**
+
 1. Master-Prompt für Feature
 2. 3-5 Sub-Prompts für Refinements/Bugfixes
 3. Durchschnittlich 5-10 Commits pro Feature
 
 **Komplexitäts-Faktoren:**
+
 - GitHub Pages Constraints (Static-Only) → kreative Workarounds nötig
 - Cross-Platform Kompatibilität (Vale Installation)
 - Self-Hosted Runner Setup
@@ -299,18 +359,21 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 ### Lessons Learned
 
 ** Was funktionierte hervorragend: **
+
 1. **Schnelle Feature-Implementierung** durch klare Master-Prompts
 2. **Iteratives Refinement** durch Sub-Prompts
 3. **Git-basierte Dokumentation** ermöglicht Rückverfolgbarkeit
 4. **AI-gestützte Debugging** (z.B. Linter-Errors)
 
 ** Herausforderungen: **
+
 1. **GitHub Pages Constraints** → kreative Static-Only Lösungen
 2. **Lange CI/CD-Iterationen** (viele Trial-and-Error Cycles)
 3. **Content Migration** manuell zeitaufwendig
 4. **Dokumentation während Entwicklung** teilweise vergessen
 
 ** Empfehlungen für AI-basierte Entwicklung: **
+
 - ✅ Master-Prompts von Anfang an dokumentieren
 - ✅ Commit-Messages klar strukturieren
 - ✅ Branches nach Issues benennen
@@ -319,10 +382,13 @@ Diese Timeline dokumentiert die Entwicklung der gesamten Website durch Vibecodin
 
 ### Fazit
 
-In nur 3 Monaten entstand durch Vibecoding eine vollständige Multi-Content-Plattform mit über 300 Commits. Die AI-gestützte Entwicklung ermöglichte schnelle Iterationen bei komplexen Features, während längerfristige Infrastruktur-Projekte wie CI/CD mehr Zeit benötigten. 
+In nur 3 Monaten entstand durch Vibecoding eine vollständige Multi-Content-Plattform mit über 300
+Commits. Die AI-gestützte Entwicklung ermöglichte schnelle Iterationen bei komplexen Features,
+während längerfristige Infrastruktur-Projekte wie CI/CD mehr Zeit benötigten.
 
-Die Git-Historie erwies sich als wertvolle Dokumentationsquelle - jeder Commit erzählt die Geschichte eines Features. Für zukünftige Projekte ist die Empfehlung klar: Prompts dokumentieren, klare Commit-Messages schreiben und die Timeline kontinuierlich pflegen.
+Die Git-Historie erwies sich als wertvolle Dokumentationsquelle - jeder Commit erzählt die
+Geschichte eines Features. Für zukünftige Projekte ist die Empfehlung klar: Prompts dokumentieren,
+klare Commit-Messages schreiben und die Timeline kontinuierlich pflegen.
 
 **Letzte Aktualisierung:** 21. November 2025  
 **Erstellt durch:** GitHub Copilot (Vibecoding-Analyse der Git-Historie)
-
