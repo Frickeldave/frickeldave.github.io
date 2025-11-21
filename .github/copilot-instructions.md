@@ -192,3 +192,10 @@ npm run prose    # Vale markdown checks (optional)
 - **Types**: `BlogEntry`, `LinkMappings` (PascalCase)
 - **Functions**: `similerItems`, `getLinkMappings` (camelCase)
 - **CSS Classes**: Tailwind utilities + `glass`, `glass-t`, `glass-t-borderless`
+
+## Prompt Speicherung
+
+Speichere alle Prompts in .github/prompts/chats/prompts.md für zukünftige Referenz und Wiederverwendbarkeit in der Tabelle. 
+- Hinterlege das Datum, den eingegebenen Prompt und das verwendete Modell |Date|Prompt|model|. 
+- Wenn der Prompt in einer prompt-Datei gespeichert ist, verweise auf den Dateipfad anstelle des gesamten Prompts.
+- Ist der Prompt länger als 500 Zeichen, erstelle eine Datei in .github/prompts/chats/yyyy-mm-dd-<titel>.md und verweise auf diese Datei.
