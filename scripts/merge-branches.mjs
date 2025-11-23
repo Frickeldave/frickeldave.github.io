@@ -119,9 +119,10 @@ function determineTargetBranch(currentBranch, explicitTarget) {
     return explicitTarget;
   }
 
-  // Feature Branch → dev
+  // Feature Branch → dev (inkl. Issue-Branches wie "60-...")
   if (currentBranch.startsWith('feature/') || currentBranch.startsWith('fix/') || 
-      currentBranch.startsWith('docs/') || currentBranch.startsWith('chore/')) {
+      currentBranch.startsWith('docs/') || currentBranch.startsWith('chore/') ||
+      /^\d+-/.test(currentBranch)) {  // Issue-Branches wie "60-implement-feature"
     return 'dev';
   }
 
@@ -131,7 +132,7 @@ function determineTargetBranch(currentBranch, explicitTarget) {
   }
 
   log.error(`Unbekannter Branch-Type: ${currentBranch}`);
-  log.info('Unterstützte Branches: feature/*, fix/*, docs/*, chore/*, dev');
+  log.info('Unterstützte Branches: feature/*, fix/*, docs/*, chore/*, <issue-nr>-*, dev');
   process.exit(1);
 }
 
