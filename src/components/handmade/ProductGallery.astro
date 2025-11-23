@@ -55,18 +55,13 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
 
 <script>
   // Gallery interaction functionality
-  document.addEventListener("DOMContentLoaded", () => {
+  function initGallery() {
     const mainImage = document.getElementById("main-image") as HTMLImageElement;
     const thumbnailButtons = document.querySelectorAll(".thumbnail-btn");
 
     if (!mainImage || thumbnailButtons.length === 0) {
-      console.log("Gallery: Missing main image or thumbnail buttons");
       return;
     }
-
-    console.log(
-      `Gallery: Found ${thumbnailButtons.length} thumbnails and main image`
-    );
 
     // Get all image sources
     const imageSources = Array.from(thumbnailButtons).map((btn) => {
@@ -84,43 +79,47 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
 
     // Function to handle image change
     const changeImage = (index: number, btn: Element) => {
-      console.log(`Gallery: Changing to image ${index}`);
-
       // Remove active state from all thumbnails
       thumbnailButtons.forEach((b) => b.classList.remove("border-blue-500"));
 
       // Add active state to clicked thumbnail
       btn.classList.add("border-blue-500");
 
-      // Update main image
+      // Update main image with fade effect
       const imageData = imageSources[index];
-      mainImage.src = imageData.src;
-      mainImage.alt = imageData.alt;
-
-      // Add fade effect
       mainImage.style.opacity = "0";
+
       setTimeout(() => {
+        mainImage.src = imageData.src;
+        mainImage.alt = imageData.alt;
         mainImage.style.opacity = "1";
-      }, 100);
+      }, 150);
     };
 
+    // Remove any existing listeners before adding new ones
     thumbnailButtons.forEach((btn, index) => {
-      // Add both click and touchstart events for better mobile support
-      ["click", "touchstart"].forEach((eventType) => {
-        btn.addEventListener(
-          eventType,
-          (e) => {
-            // Prevent default for touchstart to avoid double-firing
-            if (e.type === "touchstart") {
-              e.preventDefault();
-            }
-            changeImage(index, btn);
-          },
-          { passive: false }
-        );
-      });
+      const handleClick = (e: Event) => {
+        e.preventDefault();
+        changeImage(index, btn);
+      };
+
+      // Remove old listener if it exists
+      (btn as HTMLElement).onclick = null;
+
+      // Add new listener
+      btn.addEventListener("click", handleClick);
     });
-  });
+  }
+
+  // Initialize on load
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initGallery);
+  } else {
+    initGallery();
+  }
+
+  // Re-initialize on Astro page transitions
+  document.addEventListener("astro:page-load", initGallery);
 </script>
 
 <style>
@@ -167,7 +166,11 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   }
 
   .main-image-container img {
-    @apply transition-opacity duration-200;
+    transition: opacity 150ms ease-in-out;
+  }
+
+  #main-image {
+    @apply h-64 w-auto object-contain md:h-96;
   }
 
   .thumbnail-btn {

@@ -1,28 +1,28 @@
 {
   "links": {
     "rollei-lumis-key-light": {
-      "targetUrl": "https://www.amazon.de/dp/B09BVLBX52",
+      "targetUrl": "https://amzn.to/4ppZrPd",
       "description": "Rollei Lumis Key Light, LED Videolicht inkl. Tischstativ Streaming Licht PC zum Ausleuchten von Video-Streams TikTok YouTube und Konferenzen Video Call Webcam Homeoffice",
       "affiliate": true,
       "category": "Videoequipment",
       "openInNewTab": true
     },
     "rollei-panel-photo-light": {
-      "targetUrl": "https://www.amazon.de/dp/B0BFR4X17H",
+      "targetUrl": "https://amzn.to/4a3f7mY",
       "description": "Rollei Lumis LED Panel Fotoleuchte, Dauerlicht Fotografie Lampe Bi Color 3200~5600K Key Light CRI 96+ TLCI 97+ für Videos Streaming Videokonferenz Filmen Aufzeichnen Webcam YouTube TikTok Podcasting",
       "affiliate": true,
       "category": "Videoequipment",
       "openInNewTab": true
     },
     "logitech-streamcam": {
-      "targetUrl": "https://www.amazon.de/dp/B07W4DHNBF",
+      "targetUrl": "https://amzn.to/49ugZ87",
       "description": "Livestream-Webcam für Youtube und Twitch, Full HD 1080p, 60 FPS, USB-C Anschluss, Gesichtserkennung durch Künstliche Intelligenz, Autofokus, vertikales Video",
       "affiliate": true,
       "category": "Videoequipment",
       "openInNewTab": true
     },
     "trust-usb-mikrofon": {
-      "targetUrl": "https://www.amazon.de/dp/B079GC95S4",
+      "targetUrl": "https://amzn.to/47VfMp7",
       "description": "Trust Gaming 22400 GXT 252 Emita Plus Studio USB Mikrofon mit Arm und Popfilter, mit Nierencharakteristik für PC, PS4 und PS5, Streaming, Podcast, Voice-over",
       "affiliate": true,
       "category": "Videoequipment",
@@ -61,27 +61,6 @@
       "description": "TouchPortal ist eine Plattform für die Verwaltung und Steuerung von Audioquellen über ein Tablet oder Handy.",
       "affiliate": false,
       "category": "Videoequipment",
-      "openInNewTab": true
-    },
-    "amazon-recommended-book": {
-      "targetUrl": "https://amzn.to/3example123",
-      "description": "Empfohlenes Buch auf Amazon",
-      "affiliate": true,
-      "category": "books",
-      "openInNewTab": true
-    },
-    "github-project": {
-      "targetUrl": "https://github.com/example/project",
-      "description": "Mein GitHub Projekt",
-      "affiliate": false,
-      "category": "development",
-      "openInNewTab": true
-    },
-    "youtube-tutorial": {
-      "targetUrl": "https://youtube.com/watch?v=example",
-      "description": "Tutorial Video",
-      "affiliate": false,
-      "category": "tutorials",
       "openInNewTab": true
     },
     "le-passe-trappe-schlag-den-raab": {
@@ -130,35 +109,35 @@
       "openInNewTab": true
     },
     "hammerschlag-hammerit": {
-      "targetUrl": "https://www.amazon.de/dp/B00I5PE1FM",
+      "targetUrl": "https://amzn.to/3K8MTN8",
       "description": "Hammerschlag Hammerit Lack in Schwarz",
       "category": "Werkzeuge",
       "affiliate": true,
       "openInNewTab": true
     },
     "leinolfirnis-isolbau": {
-      "targetUrl": "https://www.amazon.de/gp/product/B075N4YHG6",
+      "targetUrl": "https://amzn.to/3Mg0nal",
       "description": "Leinölfirnis von Isolbau für Holzschutz",
       "category": "Werkzeuge",
       "affiliate": true,
       "openInNewTab": true
     },
     "beton-pigmente-schwarz": {
-      "targetUrl": "https://www.amazon.de/dp/B06ZYQC2YH",
+      "targetUrl": "https://amzn.to/4obbi2y",
       "description": "Betonpigmente in Schwarz für Betonverarbeitung",
       "category": "Beton & Stein",
       "affiliate": true,
       "openInNewTab": true
     },
     "falke-kreisschneider": {
-      "targetUrl": "https://www.amazon.de/dp/B07C5MV47W",
+      "targetUrl": "https://amzn.to/47XPeUo",
       "description": "Falke Kreisschneider 200mm",
       "category": "Werkzeuge",
       "affiliate": true,
       "openInNewTab": true
     },
     "sekundenkleber": {
-      "targetUrl": "https://www.amazon.de/dp/B0BYJGH8SG",
+      "targetUrl": "https://amzn.to/4ptl4OH",
       "description": "Kraftprotz Sekundenkleber 50g",
       "category": "Werkzeuge",
       "affiliate": true,
@@ -200,8 +179,8 @@
       "openInNewTab": true
     },
     "amazon-bindfaden": {
-      "targetUrl": "https://www.amazon.de/dp/B077MDPFNG",
-      "description": "Natürlicher Bindfaden aus Jute für Geschenkverpackungen und Bastelarbeiten",
+      "targetUrl": "https://amzn.to/43Ms28V",
+      "description": "Rot-Weiß Bindfaden für Geschenkverpackungen und Bastelarbeiten",
       "affiliate": true,
       "category": "Basteln",
       "openInNewTab": true
