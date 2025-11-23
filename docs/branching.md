@@ -125,20 +125,72 @@ graph TD
    git commit -m "feat: neues Feature hinzugefügt"
    ```
 
-### 4. Pull Request erstellen
+### 4. Pull Request erstellen und Mergen
+
+#### Option A: Automatisiert via Script (Empfohlen)
+
+Das Projekt verfügt über ein automatisiertes Merge-Script, das PRs erstellt und merged:
+
+```bash
+# Automatische Target-Erkennung (Feature → dev, dev → main)
+npm run merge
+
+# Explizit zu dev mergen
+npm run merge:dev
+
+# Explizit zu main mergen
+npm run merge:main
+```
+
+**Features des Scripts:**
+- Erstellt automatisch PR via GitHub CLI
+- Prüft vorab ob Auto-Merge möglich ist
+- **Merge-Strategy bei Feature → dev**: Feature Branch gewinnt bei Konflikten
+- **Merge-Strategy bei dev → main**: dev Branch gewinnt bei Konflikten
+- Interaktive Konfliktauflösung bei Bedarf (Browser-basiert)
+
+**Alternative: VS Code Tasks**
+- Öffne Command Palette (`Ctrl+Shift+P`)
+- Wähle "Tasks: Run Task"
+- Wähle z.B. "Merge: Auto → dev/main"
+
+#### Option B: Manuell via GitHub CLI
 
 1. Änderungen pushen:
    ```bash
    git push origin feature/neues-feature
    ```
 
-2. Pull Request im GitHub-Interface erstellen und Reviewer zuweisen.
+2. PR erstellen und mergen:
+   ```bash
+   gh pr create --base dev --fill
+   gh pr merge --auto --merge
+   ```
+
+#### Option C: GitHub Web-Interface
+
+1. Änderungen pushen
+2. Pull Request im GitHub-Interface erstellen und Reviewer zuweisen
 
 ## Pull-Request-Richtlinien
 
 - **Beschreibung**: Geben Sie eine klare Beschreibung der Änderungen an.
-- **Reviewer**: Weisen Sie mindestens einen Reviewer zu.
+- **Reviewer**: Weisen Sie mindestens einen Reviewer zu (bei Solo-Projekten optional).
 - **Checks**: Stellen Sie sicher, dass alle automatischen Prüfungen bestanden wurden.
+
+### Merge-Strategien
+
+Das Projekt verwendet unterschiedliche Merge-Strategien je nach Workflow:
+
+| Workflow | Strategy | Beschreibung |
+|----------|----------|--------------|
+| `feature/*` → `dev` | `ours` (Feature gewinnt) | Feature-Änderungen haben Priorität |
+| `dev` → `main` | `ours` (dev gewinnt) | dev-Änderungen haben Priorität |
+
+Bei Merge-Konflikten, die nicht automatisch gelöst werden können:
+1. Script öffnet PR im Browser
+2. GitHub Conflict-Editor zur manuellen Auflösung nutzen
+3. Nach Auflösung PR manuell mergen
 
 ## Qualitätskontrollen
 

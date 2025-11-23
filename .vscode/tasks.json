@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Merge: Auto → dev/main",
+      "type": "shell",
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/merge-branches.mjs"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "detail": "Erstellt PR und merged aktuellen Branch (automatische Target-Erkennung)"
+    },
+    {
+      "label": "Merge: → dev",
+      "type": "shell",
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/merge-branches.mjs", "dev"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "detail": "Erstellt PR und merged zu dev Branch"
+    },
+    {
+      "label": "Merge: → main",
+      "type": "shell",
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/merge-branches.mjs", "main"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "detail": "Erstellt PR und merged zu main Branch"
+    }
+  ]
+}
