@@ -36,6 +36,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 It is not permitted to mirror or re-publish the content of this website. That includes, for example,
 the words and images displayed on it. Write your own blog.
 
+## Affiliate-Programme
+
+Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.
+
 ## Terms
 
 1. This site includes matters of opinion and speculation. All material is provided for informational

@@ -147,8 +147,7 @@ function showLinkInfo(link) {
           ? `
       <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
         <p class="text-sm text-yellow-700 dark:text-yellow-300">
-          <strong>Hinweis:</strong> Dies ist ein Affiliate-Link. Wenn du über diesen Link etwas kaufst, 
-          erhalte ich eine kleine Provision, ohne dass für dich zusätzliche Kosten entstehen.
+          <strong>Hinweis:</strong> Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.
         </p>
       </div>
       `

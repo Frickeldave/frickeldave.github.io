@@ -1,0 +1,112 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import ProductGallery from "@components/handmade/ProductGallery.astro";
+import ProductInfo from "@components/handmade/ProductInfo.astro";
+import type { HandmadeData } from "@/types";
+import type { ImageMetadata } from "astro";
+
+// Import handmade data
+import handmadeDataRaw from "../../../public/data/handmade.json";
+const handmadeData = handmadeDataRaw as HandmadeData;
+
+// Get the article number from the URL
+const { articleNumber } = Astro.params;
+
+// Find the product by article number
+const product = handmadeData.products.find(
+  (p) => p.articleNumber === articleNumber && p.visible
+);
+
+// If product not found, return 404
+if (!product) {
+  return Astro.redirect("/404");
+}
+
+// Generate static paths for all visible products
+export async function getStaticPaths() {
+  const handmadeDataRaw = await import("../../../public/data/handmade.json");
+  const handmadeData = handmadeDataRaw.default as HandmadeData;
+
+  return handmadeData.products
+    .filter((product) => product.visible)
+    .map((product) => ({
+      params: { articleNumber: product.articleNumber },
+    }));
+}
+
+// Import all images for this specific product
+const categoryFolder = product.category.toLowerCase().replace(/\s+/g, "-");
+
+// Get all images for this product
+const allImages = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/handmade/**/*.{png,jpg,jpeg,webp}",
+  { eager: true }
+);
+
+// Filter images for this specific product
+const productImages = Object.entries(allImages)
+  .filter(([path]) =>
+    path.includes(`/${categoryFolder}/${product.articleNumber}/`)
+  )
+  .map(([_, image]) => image.default)
+  .sort(); // Sort to ensure consistent order
+
+// Page metadata
+const title = `${product.name} - Handmade Portfolio`;
+const description = `${product.description} - Artikelnummer: ${product.articleNumber}`;
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="py-6">
+    <div class="container">
+      <!-- Breadcrumb Navigation -->
+      <nav class="mb-6" aria-label="Breadcrumb">
+        <ol
+          class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400"
+        >
+          <li>
+            <a href="/" class="hover:text-blue-600 dark:hover:text-blue-400"
+              >Home</a
+            >
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fill-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd"></path>
+            </svg>
+            <a
+              href="/handmade"
+              class="hover:text-blue-600 dark:hover:text-blue-400">Handmade</a
+            >
+          </li>
+          <li class="flex items-center">
+            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fill-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-gray-900 dark:text-white font-medium"
+              >{product.articleNumber}</span
+            >
+          </li>
+        </ol>
+      </nav>
+
+      <!-- Product Detail Layout -->
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Gallery + Main Image Section -->
+        <div class="flex-shrink-0">
+          <ProductGallery images={productImages} productName={product.name} />
+        </div>
+
+        <!-- Product Information -->
+        <div class="flex-1 min-w-0">
+          <ProductInfo product={product} />
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
