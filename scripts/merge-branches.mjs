@@ -250,11 +250,12 @@ Automatisch erstellt via \`merge-branches.mjs\`
       { silent: true, ignoreError: true }
     );
     
-    if (existingPr) {
+    if (existingPr && existingPr.length > 0) {
       log.warn(`PR existiert bereits: ${existingPr}`);
       return existingPr;
     }
     
+    log.error(`PR-Erstellung fehlgeschlagen: ${error.message}`);
     throw error;
   }
 }
