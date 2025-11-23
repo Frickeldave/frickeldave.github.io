@@ -41,14 +41,15 @@ const log = {
  */
 function exec(command, options = {}) {
   try {
-    return execSync(command, {
+    const result = execSync(command, {
       encoding: 'utf-8',
       stdio: options.silent ? 'pipe' : 'inherit',
       ...options,
-    }).trim();
+    });
+    return result ? result.toString().trim() : '';
   } catch (error) {
     if (options.ignoreError) {
-      return null;
+      return '';
     }
     throw error;
   }
