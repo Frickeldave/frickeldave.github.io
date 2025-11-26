@@ -122,10 +122,10 @@
       "affiliate": true,
       "openInNewTab": true
     },
-    "beton-pigmente-schwarz": {
-      "targetUrl": "https://amzn.to/4obbi2y",
-      "description": "Betonpigmente in Schwarz für Betonverarbeitung",
-      "category": "Beton & Stein",
+    "pnz-hartwachsoel": {
+      "targetUrl": "https://www.amazon.de/dp/B0769JYRN4",
+      "description": "PNZ Hartwachsöl für Holzoberflächenbehandlung",
+      "category": "Holzwerken",
       "affiliate": true,
       "openInNewTab": true
     },
@@ -186,24 +186,17 @@
       "openInNewTab": true
     },
     "aff-stoffkabel": {
-      "targetUrl": "https://frickeldave.de/aff_stoffkabel",
+      "targetUrl": "https://www.amazon.de/dp/B083S8BKPY",
       "description": "2-adriges Stoffkabel für Lampenbau",
       "affiliate": true,
       "category": "Elektrik",
       "openInNewTab": true
     },
     "aff-230v-metall-kippschalter": {
-      "targetUrl": "https://frickeldave.de/aff_230v_metall_kippschalter",
+      "targetUrl": "https://www.amazon.de/dp/B082B2HCNF",
       "description": "230V Metall-Kipp Schalter für Lampenprojekte",
       "affiliate": true,
       "category": "Elektrik",
-      "openInNewTab": true
-    },
-    "aff-hartwachsoel": {
-      "targetUrl": "https://frickeldave.de/aff_hartwachsöl",
-      "description": "Hartwachsöl für Holzoberflächenbehandlung",
-      "affiliate": true,
-      "category": "Holzwerken",
       "openInNewTab": true
     }
   },

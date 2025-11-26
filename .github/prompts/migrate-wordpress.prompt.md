@@ -5,18 +5,20 @@ description: 'Migrate WordPress article to Astro MDX format'
 
 ## Plan
 
-Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migriert werden. Dabei sind Metadaten, Bilder und Links entsprechend anzupassen. Folgend ist vorzugehen: 
+Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migriert werden. Dabei sind Metadaten, Bilder und Links entsprechend anzupassen. Die folgende Liste ist der Schritt-für-Schritt Plan zur Migration eines Artikels. Bitte führe alle Schritte bis zum Schritt 6 vollständig autonom aus.
 
-- In .github/prompts/prompts.md die Tabelle erweitern
-- GitHub issue erstellen (gh ist installiert, wenn nicht, bitte komplett abbrechen)
-- Branch passend zum Issue erstellen
-- Artikel migrieren
-- PR erstellen mit Verlinkung zum Issue
-- PR Review abwarten und ggf. Änderungen durchführen
-- PR mergen in dev
-- Issue schließen
-- Die Datei /docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird un dder Status aktualisiert wird
-- Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in .github/prompts/prompts.md eintragen
+1) In .github/prompts/prompts.md die Tabelle erweitern
+2) GitHub issue erstellen (gh ist installiert, wenn nicht, bitte komplett abbrechen)
+3) Branch passend zum Issue erstellen
+4) Artikel migrieren
+5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests)
+6) Lokalen Entwicklungsserver starten und Artikel manuell durch User prüfen und vervollständigen lassen
+7) PR erstellen mit Verlinkung zum Issue
+8) PR Review abwarten und ggf. Änderungen durchführen
+9) PR mergen in dev
+10) Issue schließen
+11) Die Datei /docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird un dder Status aktualisiert wird
+12) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in .github/prompts/prompts.md eintragen
 
 ## Grundsätzliche Informationen
 
@@ -97,7 +99,7 @@ Beispiel Bild rechts:
 
 # Links
 
-Wenn Links verwendet werden, ist wie folgt vorzugehen. Der Link soll mit dem RedirectLink Component eingebaut werden. Dafür ist dieser in der Datenbank unter public/data/link-mappings.json einzutragen, wenn dieser dort noch nicht existieren sollte. 
+Wenn Links verwendet werden, ist wie folgt vorzugehen. Der Link soll mit dem RedirectLink Component eingebaut werden. Dafür ist dieser in der Datenbank unter public/data/link-mappings.json einzutragen, wenn dieser dort noch nicht existieren sollte. Es igbt auch Links, die nicht diret auf amazon zeigen, sondern auf einen Zwischenlink. Diese sind in der Regel wie folgt aufgebaut: https://frickeldave.de/aff_<product>. Verfolge diese Links bitte bis zum eigentlichen Ziel und trage dieses in die Link-Mappings ein.
 
 
 Beispiel affiliate Link (wenn ein Produkt verlinkt wird, insbesondere mit Amazon als Ziel):
