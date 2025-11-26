@@ -13,6 +13,6 @@
 |2025-11-16|2025-11-16|Implementiere ein automatisches Versionierungs-System für die Website basierend auf Git-Tags.|Claude Sonnet 4.5|GitHub Copilot|Versioning system with generate-version.ts|10|Kaum Iterationen, Vorschlag wurde durch die KI erarbeitet und umgesetzt. 
 |2025-11-23|2025-11-23|[Automate merge and pull requests](./2025-11-23-auto-merge-workflow.md)|Claude Sonnet 4.5|GitHub Copilot|Not implemented|0|Hat sich völlig verrannt und war am Ende viel zu kompliziert. Daher rückgängig gemacht. 
 |2025-11-26|2025-11-26|[Migrationsplan](./2025-11-26-Vergleiche-blog-artikel-und-baue-migrationsplan.md)|Claude Sonnet 4.5|GitHub Copilot|Implemented|10|Das erste mal, dass ich gesehen habe, dass er Cloud Agents aufgerufen hat, um die Source Seite zu untersuchen.
-|2025-11-26|2025-11-26|[migrate-wordpress.prompt.md](../migrate-wordpress.prompt.md) - Lampe aus hohlen Baumstamm|Claude Sonnet 4.5|GitHub Copilot|In Progress|TBD|Migration of WordPress article to Astro MDX
+|2025-11-26|2025-11-26|[migrate-wordpress.prompt.md](../migrate-wordpress.prompt.md) - Lampe aus hohlen Baumstamm|Claude Sonnet 4.5|GitHub Copilot|Implemented|7|Migration erfolgreich, Issue #62, PR #63 erstellt
 
 |yyyy-mm-dd|yyyy-mm-dd|DESCRIPTION|MODEL|ENVIRONMENT|STATUS|RANKING|KOMMENTAR
