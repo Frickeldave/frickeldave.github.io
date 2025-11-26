@@ -1,25 +1,18 @@
-|Date|Prompt|Model|Result|Satisfaction 0-10|My comment
-|-|-|-|-|-|-|
-|2025-08-14 to 2025-08-23|Forke das Astrogon-Template und passe es für meine persönliche Multi-Content-Plattform (Blog, Docs, Recipes, DIY/Handmade) an. Implementiere Glass Morphism Design und migriere erste Content-Artikel.|GitHub Copilot|Initial setup done, first articles migrated, Downloads section|8|N bisschen zäh, aber ganz gut gepklappt
+|Start|End|Prompt|Model|Environment|Result|Satisfaction 0-10|My comment
+|-|-|-|-|-|-|-|-|
+|2025-08-14|2025-08-23|Forke das Astrogon-Template und passe es für meine persönliche Multi-Content-Plattform (Blog, Docs, Recipes, DIY/Handmade) an. Implementiere Glass Morphism Design und migriere erste Content-Artikel.|Claude Sonnet 4.5|GitHub Copilot|Initial setup done, first articles migrated, Downloads section|8|N bisschen zäh, aber ganz gut gepklappt
+|2025-08-17|2025-08-17|Integriere YouTube-Videos mit Privacy Shield für DSGVO-Compliance. Videos sollen erst nach Zustimmung geladen werden.|Claude Sonnet 4.5|GitHub Copilot|YouTube Component with Privacy Shield|9|Ein Bug noch vorhanden, Seite muss refreshed werden, mach ich später
+|2025-08-18|2025-10-17|Implementiere GitHub Actions Workflows für automatische Deployments auf Production (main) und Development (dev) Umgebungen mit self-hosted Runner.|Claude Sonnet 4.5|GitHub Copilot|CI/CD workflows with self-hosted runner|5|War extrem zähl und hat diverse Iterationen benötigt
+|2025-08-19|2025-08-22|Integriere ein umfassendes Linter-System mit ESLint, Prettier, Vale und Husky Pre-Commit Hooks für Code Quality und Prose Linting.|Claude Sonnet 4.5|GitHub Copilot|Complete linter stack integrated|9|Hat gut funktioniert, einige Dialoge notwendig
+|2025-08-23|2025-08-23|Implementiere ein GitHub Pages-kompatibles Link-Redirect-System für Affiliate-Links und Short-URLs ohne Server-side Rendering. Verwende client-side JavaScript und JSON-Dateien.|Claude Sonnet 4.5|GitHub Copilot|Client-side redirect system with JSON mappings|10|Erste komplet autark programmierte Feature
+|2025-08-23|2025-08-23|Erstelle eine Downloads-Section mit kategorisiertem Download-Management für herunterladbare Dateien wie Laser-Vorlagen, 3D-Druck-Modelle etc.|Claude Sonnet 4.5|GitHub Copilot|Downloads collection and page|9|Perfekt geklappt nach einigen Iterationen
+|2025-09-04|2025-11-12|Migriere alle bestehenden DIY/Handmade Blog-Artikel von der alten Website zur neuen Astro-basierten Plattform. Konvertiere Inhalte zu MDX mit Frontmatter.|Claude Sonnet 4.5|GitHub Copilot|25+ articles migrated (Videostudio, Le Passe-Trappe, Schatztruhe, Betonschale, Vogelfutterhaus, Gartenschrank, Adventskalender)|2| Nein so einfach leider nicht, die Mgration jedes Artikels einzeln ist notwendig. Daher wurde dieser Schritt abgebrochen.
+|2025-10-01|2025-10-14|Verfeinere das Linter-Setup mit vollständiger Vale-Integration für englische und deutsche Prosa-Checks.|Claude Sonnet 4.5|GitHub Copilot|Vale fully integrated with English and German rules|4|Hat so gar nciht geklappt für deutsch, aber deswegen weil vale das einfach nicht supported.
+|2025-10-10|2025-10-10|Füge eine Portfolio-Section hinzu für IT-Projekte und professionelle Arbeiten.|Claude Sonnet 4.5|GitHub Copilot|Portfolio collection and page|7|Hat ein paar Iterationen benötigt. Aber am Ende hat es funktioniert. Ein paar Designanpassungen und inhaltiche Ergänzugen sind noch sind noch übrig.  
+|2025-11-05|2025-11-13|Erstelle eine dedizierte Handmade-Portfolio-Website mit Produkt-Galerie, Filter-Funktionen (Kategorien, Tags, Material), Mobile-Ansicht und Artikelnummern-System.|Claude Sonnet 4.5|GitHub Copilot|Complete handmade portfolio with filters, gallery, mobile view, article numbers|7|Hat super viele Iterationen benötigt und es sind am End enoch einige Bugs übrig. 
+|2025-11-16|2025-11-16|Implementiere ein automatisches Versionierungs-System für die Website basierend auf Git-Tags.|Claude Sonnet 4.5|GitHub Copilot|Versioning system with generate-version.ts|10|Kaum Iterationen, Vorschlag wurde durch die KI erarbeitet und umgesetzt. 
+|2025-11-23|2025-11-23|[Automate merge and pull requests](./2025-11-23-auto-merge-workflow.md)|Claude Sonnet 4.5|GitHub Copilot|Not implemented|0|Hat sich völlig verrannt und war am Ende viel zu kompliziert. Daher rückgängig gemacht. 
+|2025-11-26|2025-11-26|[Migrationsplan](./2025-11-26-Vergleiche-blog-artikel-und-baue-migrationsplan.md)|Claude Sonnet 4.5|GitHub Copilot|Implemented|10|Das erste mal, dass ich gesehen habe, dass er Cloud Agents aufgerufen hat, um die Source Seite zu untersuchen.
+|2025-11-26|2025-11-26|[migrate-wordpress.prompt.md](../migrate-wordpress.prompt.md) - Lampe aus hohlen Baumstamm|Claude Sonnet 4.5|GitHub Copilot|In Progress|TBD|Migration of WordPress article to Astro MDX
 
-|2025-08-17|Integriere YouTube-Videos mit Privacy Shield für DSGVO-Compliance. Videos sollen erst nach Zustimmung geladen werden.|GitHub Copilot|YouTube Component with Privacy Shield|9|Ein Bug noch vorhanden, Seite muss refreshed werden, mach ich später
-
-|2025-08-18 to 2025-10-17|Implementiere GitHub Actions Workflows für automatische Deployments auf Production (main) und Development (dev) Umgebungen mit self-hosted Runner.|GitHub Copilot|CI/CD workflows with self-hosted runner|5|War extrem zähl und hat diverse Iterationen benötigt
-
-|2025-08-19 to 2025-08-22|Integriere ein umfassendes Linter-System mit ESLint, Prettier, Vale und Husky Pre-Commit Hooks für Code Quality und Prose Linting.|GitHub Copilot|Complete linter stack integrated|9|Hat gut funktioniert, einige Dialoge notwendig
-
-|2025-08-23|Implementiere ein GitHub Pages-kompatibles Link-Redirect-System für Affiliate-Links und Short-URLs ohne Server-side Rendering. Verwende client-side JavaScript und JSON-Dateien.|GitHub Copilot|Client-side redirect system with JSON mappings|10|Erste komplet autark programmierte Feature
-
-|2025-08-23|Erstelle eine Downloads-Section mit kategorisiertem Download-Management für herunterladbare Dateien wie Laser-Vorlagen, 3D-Druck-Modelle etc.|GitHub Copilot|Downloads collection and page|9|Perfekt geklappt nach einigen Iterationen
-
-|2025-09-04 to 2025-11-12|Migriere alle bestehenden DIY/Handmade Blog-Artikel von der alten Website zur neuen Astro-basierten Plattform. Konvertiere Inhalte zu MDX mit Frontmatter.|GitHub Copilot|25+ articles migrated (Videostudio, Le Passe-Trappe, Schatztruhe, Betonschale, Vogelfutterhaus, Gartenschrank, Adventskalender)|2| Nein so einfach leider nicht, die Mgration jedes Artikels einzeln ist notwendig. Daher wurde dieser Schritt abgebrochen.
-
-|2025-10-01 to 2025-10-14|Verfeinere das Linter-Setup mit vollständiger Vale-Integration für englische und deutsche Prosa-Checks.|GitHub Copilot|Vale fully integrated with English and German rules|4|Hat so gar nciht geklappt für deutsch, aber deswegen weil vale das einfach nicht supported.
-
-|2025-10-10|Füge eine Portfolio-Section hinzu für IT-Projekte und professionelle Arbeiten.|GitHub Copilot|Portfolio collection and page|7|Hat ein paar Iterationen benötigt. Aber am Ende hat es funktioniert. Ein paar Designanpassungen und inhaltiche Ergänzugen sind noch sind noch übrig.  
-
-|2025-11-05 to 2025-11-13|Erstelle eine dedizierte Handmade-Portfolio-Website mit Produkt-Galerie, Filter-Funktionen (Kategorien, Tags, Material), Mobile-Ansicht und Artikelnummern-System.|GitHub Copilot|Complete handmade portfolio with filters, gallery, mobile view, article numbers|7|Hat super viele Iterationen benötigt und es sind am End enoch einige Bugs übrig. 
-
-|2025-11-16|Implementiere ein automatisches Versionierungs-System für die Website basierend auf Git-Tags.|GitHub Copilot|Versioning system with generate-version.ts|10|Kaum Iterationen, Vorschlag wurde durch die KI erarbeitet und umgesetzt. 
-
-|2025-11-23|Automate merge and pull requests|Claude Sonnet 4.5|Not implemented|0|Hat sich völlig verrannt und war am Ende viel zu kompliziert. Daher rückgängig gemacht. 
+|yyyy-mm-dd|yyyy-mm-dd|DESCRIPTION|MODEL|ENVIRONMENT|STATUS|RANKING|KOMMENTAR
