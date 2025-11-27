@@ -198,6 +198,20 @@
       "affiliate": true,
       "category": "Elektrik",
       "openInNewTab": true
+    },
+    "betonschalen-formen": {
+      "targetUrl": "https://www.amazon.de/dp/B096RM55XZ",
+      "description": "SUPGOMAX DIY Silikon Form 2 Stück Beton Gießformen für Blumentöpfe",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "beton-faerbemittel-schwarz": {
+      "targetUrl": "https://www.amazon.de/dp/B06ZYQC2YH",
+      "description": "Pigment Oxidschwarz 1 kg für Beton, Estrich, Putz, Gips, Harz, Fugenmasse",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
     }
   },
   "analytics": {
