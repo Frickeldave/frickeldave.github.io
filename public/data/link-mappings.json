@@ -212,6 +212,34 @@
       "affiliate": true,
       "category": "DIY",
       "openInNewTab": true
+    },
+    "eck-anschlagscharnier": {
+      "targetUrl": "https://www.amazon.de/dp/B07MH5J8WS",
+      "description": "90° Eckscharniere aus Stahl für Küchen- und Möbeltüren mit Hydraulikdämpfer, Packung mit 10 Stück",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "schubladenschiene-vollauszug": {
+      "targetUrl": "https://www.amazon.de/dp/B084JPFQ14",
+      "description": "LANZZAS Schubladenschienen mit SoftClose und Selbsteinzug, Vollauszug mit 40 kg Belastbarkeit",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "muschelgriff-messing": {
+      "targetUrl": "https://www.amazon.de/dp/B07PBWH5N2",
+      "description": "Amazon Basics Möbelgriffe in Antik-Messing-Optik, 10,5 cm lang",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "led-sensor-schrank": {
+      "targetUrl": "https://www.amazon.de/dp/B07VS8H65H",
+      "description": "Kylewo LED-Streifen mit Bewegungsmelder für Schränke, Schlafzimmer und Küchen",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
     }
   },
   "analytics": {
