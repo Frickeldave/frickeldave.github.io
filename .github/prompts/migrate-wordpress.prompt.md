@@ -11,13 +11,13 @@ Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migrier
 2) GitHub issue erstellen (gh ist installiert, wenn nicht, bitte komplett abbrechen). Nutze als label "blog" und weise das Issue mir zu. Nutze als Titel "Migriere Blog Artikel: <Artikel Titel>" und als Beschreibung die URL des Artikels sowie eine kurze Zusammenfassung des Inhalts.
 3) Branch passend zum Issue erstellen
 4) Artikel migrieren
-5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests)
+5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
 6) Lokalen Entwicklungsserver starten und Artikel manuell durch User prüfen und vervollständigen lassen
 7) PR erstellen mit Verlinkung zum Issue
 8) PR Review abwarten und ggf. Änderungen durchführen
 9) PR mergen in dev
 10) Issue schließen
-11) Die Datei /docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird un dder Status aktualisiert wird
+11) Die Datei /docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird und der Status aktualisiert wird
 12) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in .github/prompts/prompts.md eintragen
 
 ## Grundsätzliche Informationen

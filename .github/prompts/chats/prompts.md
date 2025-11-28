@@ -14,6 +14,6 @@
 |2025-11-23|2025-11-23|[Automate merge and pull requests](./2025-11-23-auto-merge-workflow.md)|Claude Sonnet 4.5|GitHub Copilot|Not implemented|0|Hat sich völlig verrannt und war am Ende viel zu kompliziert. Daher rückgängig gemacht. 
 |2025-11-26|2025-11-26|[Migrationsplan](./2025-11-26-Vergleiche-blog-artikel-und-baue-migrationsplan.md)|Claude Sonnet 4.5|GitHub Copilot|Implemented|10|Das erste mal, dass ich gesehen habe, dass er Cloud Agents aufgerufen hat, um die Source Seite zu untersuchen.
 |2025-11-26|2025-11-26|[migrate-wordpress.prompt.md](../migrate-wordpress.prompt.md) - Lampe aus hohlen Baumstamm|Claude Sonnet 4.5|GitHub Copilot|Implemented|7|Migration erfolgreich, Issue #62, PR #63 erstellt
-|2025-11-27|2025-11-27|[migrate-wordpress.prompt.md](../migrate-wordpress.prompt.md) - Betonschalen Tic Tac Toe|Claude Sonnet 4.5|GitHub Copilot|Implemented|7|Migration erfolgreich, Issue #64, PR #65 erstellt. Artikel migriert mit Affiliate-Links und Bildern.
-
+|2025-11-27|2025-11-27|[Betonschalen Tic Tac Toe](.github/prompts/chats/2025-11-27-migrate-betonschalen-tic-tac-toe.md)|Claude Sonnet 4.5|GitHub Copilot|Implemented|7|Migration erfolgreich, Issue #64, PR #65 erstellt. Artikel migriert mit Affiliate-Links und Bildern. Aber er hat das prosa Linting geskipped, weil vale nicht installiert war.
+|2025-11-28|2025-11-28|[migrate-wordpress.prompt.md](../migrate-wordpress.prompt.md) - Katzenklo-Schrank|Claude Sonnet 4.0|GitHub Copilot|Implemented|8|Migration mit 12 Originalbildern erfolgreich. Issue #66, PR #67 erstellt. Vale prose script für Windows/Linux gefixt. Alle Linter-Tests bestanden.
 |yyyy-mm-dd|yyyy-mm-dd|DESCRIPTION|MODEL|ENVIRONMENT|STATUS|RANKING|KOMMENTAR
