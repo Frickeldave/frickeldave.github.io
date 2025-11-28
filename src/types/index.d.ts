@@ -99,6 +99,8 @@ export type HandmadeItem = {
   tags: string[];
   price: number;
   size?: string;
+  visible: boolean;
+  customizable: boolean;
 };
 
 export type HandmadeData = {

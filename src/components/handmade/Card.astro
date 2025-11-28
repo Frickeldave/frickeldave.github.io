@@ -4,6 +4,7 @@ import { Image } from "astro:assets";
 
 interface Props {
   item: HandmadeItem;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   image: any;
 }
 
@@ -18,58 +19,70 @@ const truncateDescription = (text: string, maxLength: number = 80): string => {
 const shortDescription = truncateDescription(item.description);
 ---
 
-<article
-  class="glass rounded-lg overflow-hidden shadow-lg transition-transform hover:scale-105 hover:shadow-xl h-full flex flex-col"
->
-  <div class="relative aspect-square overflow-hidden">
-    <Image
-      src={image}
-      alt={item.name}
-      class="w-full h-full object-cover"
-      loading="lazy"
-    />
-    <div class="absolute top-2 left-2">
-      <span
-        class="glass px-3 py-1 rounded-full text-xs font-semibold font-mono"
+<a href={`/handmade/${item.articleNumber}`} class="block h-full group">
+  <article
+    class="glass rounded-lg overflow-hidden shadow-lg transition-transform group-hover:scale-105 group-hover:shadow-xl h-full flex flex-col cursor-pointer"
+  >
+    <div class="relative aspect-square overflow-hidden">
+      <Image
+        src={image}
+        alt={item.name}
+        class="w-full h-full object-cover"
+        loading="lazy"
+      />
+      <div class="absolute top-2 left-2 flex gap-2 items-center">
+        <span
+          class="glass px-3 py-1 rounded-full text-xs font-semibold font-mono"
+        >
+          {item.articleNumber}
+        </span>
+        {
+          item.customizable && (
+            <span
+              class="glass px-2 py-1 rounded-full text-xs"
+              title="Personalisierbar"
+            >
+              ✨
+            </span>
+          )
+        }
+      </div>
+      <div class="absolute top-2 right-2">
+        <span class="glass px-3 py-1 rounded-full text-xs font-semibold">
+          {item.category}
+        </span>
+      </div>
+    </div>
+
+    <div class="p-6 flex flex-col flex-grow">
+      <h3 class="text-xl font-bold mb-2">{item.name}</h3>
+      <p class="text-sm opacity-80 mb-4 min-h-[3rem]">{shortDescription}</p>
+
+      <div class="flex flex-wrap gap-2 mb-4">
+        {
+          item.tags.map((tag) => (
+            <span class="glass-subtle px-2 py-1 rounded text-xs">{tag}</span>
+          ))
+        }
+      </div>
+
+      <div class="min-h-[2rem] mb-2">
+        {
+          item.size && (
+            <p class="text-sm opacity-70">
+              <strong>Größe:</strong> {item.size}
+            </p>
+          )
+        }
+      </div>
+
+      <div
+        class="flex items-center justify-between pt-4 border-t border-white/10 mt-auto"
       >
-        {item.articleNumber}
-      </span>
+        <span class="text-2xl font-bold text-accent">
+          {item.price.toFixed(2)} €
+        </span>
+      </div>
     </div>
-    <div class="absolute top-2 right-2">
-      <span class="glass px-3 py-1 rounded-full text-xs font-semibold">
-        {item.category}
-      </span>
-    </div>
-  </div>
-
-  <div class="p-6 flex flex-col flex-grow">
-    <h3 class="text-xl font-bold mb-2">{item.name}</h3>
-    <p class="text-sm opacity-80 mb-4 min-h-[3rem]">{shortDescription}</p>
-
-    <div class="flex flex-wrap gap-2 mb-4">
-      {
-        item.tags.map((tag) => (
-          <span class="glass-subtle px-2 py-1 rounded text-xs">{tag}</span>
-        ))
-      }
-    </div>
-
-    <div class="min-h-[2rem] mb-2">
-      {
-        item.size && (
-          <p class="text-sm opacity-70">
-            <strong>Größe:</strong> {item.size}
-          </p>
-        )
-      }
-    </div>
-
-    <div
-      class="flex items-center justify-between pt-4 border-t border-white/10 mt-auto"
-    >
-      <span class="text-2xl font-bold text-accent">
-        {item.price.toFixed(2)} €
-      </span>
-    </div>
-  </div>
-</article>
+  </article>
+</a>
