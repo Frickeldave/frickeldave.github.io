@@ -19,7 +19,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Lampe aus hohlen Baumstamm](https://frickeldave.de/lampe-aus-hohlen-baumstamm/) | `2022-09-09-lampe-aus-hohlen-baumstamm.mdx` | ✅ |
 | [Rustikale Truhe mit rundem Deckel selber bauen](https://frickeldave.de/rustikale-truhe-mit-rundem-deckel-selber-bauen/) | `2019-11-27-schatztruhe-aus-holz.mdx` | ✅ |
 | [Betonschalen Tic-Tac-Toe](https://frickeldave.de/betonschalen-tic-tac-toe/) | `2022-07-11-betonschalen-tic-tac-toe.mdx` | ✅ |
-| [Schlüsselbrett für Golfer](https://frickeldave.de/schluesselbrett-fuer-golfer/) | fehlt | ❌ |
+| [Schlüsselbrett für Golfer](https://frickeldave.de/schluesselbrett-fuer-golfer/) | notdo | ⛔ |
 | [Katzenklo Schrank](https://frickeldave.de/katzenklo-schrank/) | fehlt | ❌ |
 | [Pummeleinhorn – Der Mädchentraum](https://frickeldave.de/pummeleinhorn-der-madchentraum/) | fehlt | ❌ |
 | [Bananenständer](https://frickeldave.de/bananenstaender/) | fehlt | ❌ |

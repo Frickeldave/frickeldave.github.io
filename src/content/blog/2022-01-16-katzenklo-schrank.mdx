@@ -1,0 +1,234 @@
+---
+title: Katzenklo Schrank
+description:
+  Ein funktionaler DIY-Katzenklo-Schrank mit Tunnelzugang, Dreckschublade und LED-Beleuchtung -
+  praktisch und optisch ansprechend.
+slug: katzenklo-schrank
+date: 2022-01-16
+image: "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-header.png"
+imageAlt: Header image für den Blog Artikel Katzenklo Schrank
+categories: [DIY]
+author: Frickeldave
+tags: [DIY, Holzwerken, Heimwerken, Katze, Möbel]
+---
+
+import RedirectLink from "@components/common/RedirectLink.astro";
+import { Image } from "astro:assets";
+import kzks001 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-001.png";
+import kzks002 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-002.jpg";
+import kzks003 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-003.jpg";
+import kzks004 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-004.jpg";
+import kzks005 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-005.jpg";
+import kzks006 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-006.jpg";
+import kzks007 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-007.jpg";
+import kzks008 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-008.jpg";
+import kzks009 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-009.jpg";
+import kzks010 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-010.jpg";
+import kzks011 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-011.jpg";
+import kzks012 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-012.jpg";
+import kzks013 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-013.jpg";
+import kzks014 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-014.jpg";
+import kzks015 from "@assets/blog/diy/2022-01-16-katzenklo-schrank/kzks-015.jpg";
+
+Mal wieder ein Projekt für unseren Kater. Nach dem
+{/* #TODO: Check internal link */}[Katzenkratzbaum aus einem Dachbalken](https://frickeldave.github.io/blog/katzenkratzbaum-aus-dachbalken)
+musste nun auch eine anständiges Katzenklo her. Aktuell ist der Zustand eher als "Katastrophal" zu
+bezeichnen. Zwar steht die Katzentoilette im Hauswirtschaftraum, aber auch dort muss natürlich nicht
+das Katzenstreu wild durch die Gegend verstreut sein.
+
+Wir haben durchaus Tests mit geschlossenen Toiletten gemacht. Allerdings sind ich und unser Kater
+durchaus der gleichen Meinung: Ein richtiges optisches Highlight sind die alle nicht, von leicht
+zu reinigen gar nicht zu reden.
+
+## Die Planung
+
+Ich wollte das neue Katzenklo in Form eines Schrankes bauen und folgenden Anforderungen gerecht
+werden:
+
+- Es soll möglichst kein Dreck mehr durch den Kater durch den Raum geschleudert werden können (Er ist halt ne Wildsau).
+- Das ganze soll nicht offensichtlich als Katzenklo erkennbar sein. Eher soll es an ein Möbelstück erinnern.
+- Der Kater soll durch einen Tunnel auf das eigentliche Katzenklo gehen und durch den Boden möglichst alle anhängenden Dreckpartikel in eine darunterliegende Schublade abstreifen.
+- Das Katzenklo sollte etwas Abstand zum Boden haben, damit dieses nicht noch zusätzlich durch die Fußbodenheizung aufgeheizt wird.
+- Das Katzenklo muss möglichst einfach zu reinigen sein, wir wollen also nicht kopfüber da rein krabbeln.
+
+<Image src={kzks001} alt="Bauplan und Zuschnittliste für den Katzenklo-Schrank" />
+
+## Materialliste
+
+- 10 (3 benötigt) <RedirectLink id="eck-anschlagscharnier" text="Eck-Anschlag-Scharniere" /> (20€)
+- <RedirectLink id="schubladenschiene-vollauszug" text="Schubladenschiene" /> (18€)
+- 8 (1 benötigt) Starke Magnetschnapper (10€)
+- Katzenklo Unterschale (< 20€)
+- 10 (2 benötigt) <RedirectLink id="muschelgriff-messing" text="Muschelgriffe" /> (20€)
+- LED Streifen mit <RedirectLink id="led-sensor-schrank" text="Bewegungssensor" /> (20€)
+- Dazu kommt Farbe, Holz und Schrauben (4×30; 3×12)
+
+**Gesamtkosten ohne Holz: ~90€**
+
+Insgesamt wirst du wohl auf vergleichbare Kosten kommen, wie bei einem gekauften Schrank. Nur wird
+der selbstgebaute deutlich stabiler, entspricht natürlich deinem eigenen Gestaltungsideen und hat
+durchaus einige Finessen eingebaut, die du so nicht am Markt findest. Als Vergleich: Der
+"Dobar Katzenschrank Zeta" liegt bei ~80€-90€. Dieser besteht aber nur aus dem Korpus
+und 2 Türen, ohne Toilettenschale und schaut irgendwie ziemlich lieblos aus.
+
+BTW, hast du einige Materialen übrig für die nächsten Projekte.
+
+## Zuschnitt
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Du schneidest im ersten Schritt die einzelnen Teile wie auf dem Plan gezeigt zu. Das Material
+    liegt bei dir, du kannst Multiplex, MDF oder Spanplatten verwenden. Wichtig ist, dass die
+    Trägerplatten, auf die Scharniere montiert werden, nicht aus MDF bestehen. Dies ist im Plan
+    auch noch mal markiert und ich werde im weiteren Verlauf dieses Artikels noch mal darauf
+    eingehen.
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={kzks002} alt="Zugeschnittene Holzteile für den Schrank" />
+  </div>
+</div>
+
+## Schublade
+
+Ich würde empfehlen, die Schublade als erstes zu bauen. In die Seitenwand, Front und Rücken lässt du
+mit der Kreissäge oder mit einem Nutfräser eine Nut mit 7mm Tiefe ein. Du kannst natürlich den Boden
+auch einfach ein- oder aufleimen, musst dann aber beachten die Maße entsprechend anzupassen.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={kzks003} alt="Montage der Schublade mit Nutverbindungen" />
+  </div>
+  <div className="lg:w-2/3">
+    <Image src={kzks004} alt="Fertig montierte Schublade" />
+  </div>
+</div>
+
+## Korpus
+
+Nach dem gleichen Prinzip wird der Korpus verleimt. Für die Rückwand werden entsprechende Nuten
+eingelassen und alles miteinander verleimt. Die Kreithecks (links im Bild) sind hier ne riesen
+Hilfe. Hast du keine Hilfsmittel zur Verfügung, funktioniert rechtwinkliges verleimen auch mit ein
+paar Holzklötzen (rechts im Bild) und 2 Zwingen ganz gut.
+
+<Image src={kzks005} alt="Korpusmontage mit Verleimung" />
+
+Im nächsten Schritt wird die Mittelwand eingebaut. Ich habe diese stumpf eingeleimt und anschließend
+verschraubt. In diesem Fall versenke die Schrauben gut 2-3mm damit du sie sauber spachteln kannst.
+Du kannst natürlich auch in Deckel und Boden eine Nut von je 5mm einlassen und die Mittelwand
+insgesamt 1cm größer (in der Höhe) zuschneiden.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={kzks006} alt="Schrauben schön versenken" />
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={kzks007} alt="Mittelwand einbauen" />
+  </div>
+</div>
+
+Die Mittelplatte wird mit der Rückwand verschraubt. Damit ist das ganze Konstrukt jetzt endgültig
+stabilisiert und kann auch mal in der Werkstatt herum gehoben werden.
+
+Es folgt die Laufplatte im Zugangstunnel. In diese habe ich 15mm Löcher im angegebenen Abstand
+eingelassen und den Löchern noch eine Fase verpasst. Dies kannst du mit der Oberfräse oder aber mit
+einem sehr großen Senker und der Standbohrmaschine mit eingestelltem Tiefenstop machen. Auch hier
+gilt der gleichen Hinweis wie zuvor: Ich habe die Platte stumpf verleimt und verschraubt. Alternativ
+kannst du wieder links und rechts eine Nut einlassen und die Platte entsprechend breiter gestalten.
+Im Falle der stumpfen Verleimung zwingst du dir einfach 2 Leisten in der richtigen Höhen an die
+Seitenwand (oder schneidest dir Platten in der richtigen Höhe zu) auf die du die Platte auflegst.
+
+<Image src={kzks008} alt="Laufsteg mit Löchern für die Katzenpfoten einbauen" />
+
+## Einbau Toilette
+
+Die Montage der Katzentoiletten-Halteplatte erfolgt in 3 Schritten:
+
+• Als erstes werden die Schienen im Korpus montiert. • Die Trägerplatten/Leisten werden auf die
+Schienen montiert • Die Halteplatte für die Katzentoilette wird auf die montierte Trägerplatten
+geschraubt
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={kzks009} alt="Schubladenschienen montieren" />
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={kzks010} alt="Trägerplatten an Schubladenschienen anbringen" />
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={kzks011} alt="Halteplatte für Katzentoilette montieren" />
+  </div>
+</div>
+
+Weiter geht es mit der Tür. Diese lässt sich Dank der Eck-Anschlag-Scharniere super einfach
+montieren. Ich verwende hier 3 Stück, damit schließt die Tür in Kombination mit dem Magneten
+wirklich super gut (fast schon mit etwas zu viel Wumms).
+
+## Finalisierung der Montage
+
+Letzter Teil der Montage ist die Frontblende für die Schublade. Diese wird (wie die Tür) mit einer
+Fase versehen und von innen auf die Schublade geschraubt. Achte hier dabei darauf, dass die Tür ein
+paar Millimeter Platz benötigt um aufzugehen. Um den Abstand zwischen Tür und Schublade
+sicherzustellen, habe ich noch eine dünne Leiste in den Schubladen-Korpus ein geleimt (und
+geschraubt).
+
+Die von mir gewählten Griffe werden von innen verschraubt. Es gibt ganz ähnliche Griffvarianten, die
+von außen aufgeschraubt werden, dann auch nur ca. die Hälfte kosten. Schöner schaut es so aus.
+
+Zu guter letzt, sollte nicht vergessen werden, den Schrank auf der Unterseite mit Filzgleitern zu
+versehen. Zum einen schonen diese den Fußboden, zum anderen sind die paar zusätzlichen Millimeter
+auch wichtig, damit die Tür sauber aufgeht.
+
+## Lackieren
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Nun wird alles wieder auseinandergenommen und die Einzelteile lackiert. MDF muss grundsätzlich
+    grundiert werden, ansonsten würde es eine aufgetragene Farbe nahezu vollständig aufsaugen. Da
+    gibt es zig Möglichkeiten, ich nutze sehr gerne ganz normale weiße Wandfarbe. Die ist dick
+    genug, um MDF sauber zu verschließen und kann mit nahezu jedem Lack (Ausnahmen bestätigen die
+    Regel) über lackiert werden. Zudem ist einfache Wandfarbe saugünstig, vor allem dann wenn man
+    sich die Reste diverser Renovierungsarbeiten in der Bekanntschaft zusammenschnorrt ;-).
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={kzks012} alt="Der lackierte Schrank" />
+  </div>
+</div>
+
+Nach dem Lackieren und austrocknen wird der Schrank wieder wie zuvor montiert. Einzige zusätzliche
+Aktion ist noch das Einkleben des batteriebetriebenen LED Streifens mit Bewegungsmelder.
+
+## Fazit
+
+Ich finde dieser Schrank ist durchaus einzigartig und durchdacht. Am Markt gibt es zwar einige
+Schränke ähnlicher Art zu kaufen, dieser zeichnet sich durch einige durchaus nützliche Details aus.
+Beim Schreiben dieses Artikels ist der Schrank gut 8 Wochen im Einsatz. Es hat einige Zeit gedauert,
+bis der Kater auch bei geschlossener Front-Tür die Toilette durch den Tunnel betreten hat, aber auch
+das funktioniert nun.
+
+**Features des DIY-Katzenklo-Schranks:**
+
+- Tunnelzugang mit Dreck-Auffangfunktion
+- Ausziehbare Toilettenschale für einfache Reinigung
+- Separate Dreckschublade
+- Automatische LED-Beleuchtung mit Bewegungsmelder
+- Unauffälliges Möbeldesign
+- Erhöhte Position verhindert zusätzliche Aufheizung
+- Stabile Konstruktion aus Holzwerkstoffen
+
+Update: Nach 2 Jahren ist der Schrank nach wie vor im Einsatz. Eine Änderung wurde durchgeführt: 
+Wenn die Schubladenschienen nicht ab und wan gereinigt werden, setzt sich dort der Dreck rein. 
+Nach 2 Jahren war die Schiene bei uns ziemlich schwergängig und ich habe mich entschieden, die 
+Schale direkt auf den Boden zu stellen. 
+
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    <Image src={kzks013} alt="Schrank mit Beleuchtung" />
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={kzks014} alt="Schrank mit Schublade" />
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={kzks015} alt="KAtzenklo von innen" />
+  </div>
+</div>

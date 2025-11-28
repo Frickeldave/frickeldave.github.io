@@ -17,7 +17,7 @@ Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migrier
 8) PR Review abwarten und ggf. Änderungen durchführen
 9) PR mergen in dev
 10) Issue schließen
-11) Die Datei /docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird un dder Status aktualisiert wird
+11) Die Datei /docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird und der Status aktualisiert wird
 12) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in .github/prompts/prompts.md eintragen
 
 ## Grundsätzliche Informationen
