@@ -21,8 +21,8 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Betonschalen Tic-Tac-Toe](https://frickeldave.de/betonschalen-tic-tac-toe/) | `2022-07-11-betonschalen-tic-tac-toe.mdx` | ✅ |
 | [Schlüsselbrett für Golfer](https://frickeldave.de/schluesselbrett-fuer-golfer/) | notdo | ⛔ |
 | [Katzenklo Schrank](https://frickeldave.de/katzenklo-schrank/) | `2022-01-16-katzenklo-schrank.mdx` | ✅ |
-| [Pummeleinhorn – Der Mädchentraum](https://frickeldave.de/pummeleinhorn-der-madchentraum/) | fehlt | ❌ |
-| [Bananenständer](https://frickeldave.de/bananenstaender/) | fehlt | ❌ |
+| [Pummeleinhorn – Der Mädchentraum](https://frickeldave.de/pummeleinhorn-der-madchentraum/) | notdo | ⛔ |
+| [Bananenständer](https://frickeldave.de/bananenstaender/) | `2021-11-24-bananenstaender.mdx` | ✅ |
 | [Restholz – Lampi der Lampenhund](https://frickeldave.de/restholz-lampi-der-lampenhund/) | fehlt | ❌ |
 | [Briefkastenhalter aus Dachbalken](https://frickeldave.de/briefkastenhalter-aus-dachbalken/) | fehlt | ❌ |
 | [Zwingenhalter als Apothekerschrank](https://frickeldave.de/zwingen-halter-als-apothekerschrank/) | fehlt | ❌ |

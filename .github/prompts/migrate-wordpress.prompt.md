@@ -14,7 +14,7 @@ Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migrier
 5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
 6) Lokalen Entwicklungsserver starten und Artikel manuell durch User prüfen und vervollständigen lassen
 7) Nochmal alle Linter Tests durchführen
-8) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird
+8) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird. Zudem lese bitte die aktuelle Version in den git tags aus und erhöhe die Patch Version um 1.
 9) PR erstellen mit Verlinkung zum Issue
 10) PR Review abwarten und ggf. Änderungen durchführen
 11) PR mergen in dev
