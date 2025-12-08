@@ -1,5 +1,26 @@
 {
   "links": {
+    "gu10-fassung": {
+      "targetUrl": "https://www.amazon.de/dp/B01N3MIRTQ",
+      "description": "GU 10 Fassungen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "gu10-8w-kaltweiss": {
+      "targetUrl": "https://www.amazon.de/dp/B07D8HMGX9",
+      "description": "GU 10 Lampen (8 Watt kaltweiß)",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "netzkabel-fussschalter": {
+      "targetUrl": "https://www.amazon.de/dp/B079S4D5MB",
+      "description": "Netzkabel mit Fußschalter",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
     "rollei-lumis-key-light": {
       "targetUrl": "https://amzn.to/4ppZrPd",
       "description": "Rollei Lumis Key Light, LED Videolicht inkl. Tischstativ Streaming Licht PC zum Ausleuchten von Video-Streams TikTok YouTube und Konferenzen Video Call Webcam Homeoffice",
