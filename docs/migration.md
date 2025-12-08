@@ -23,7 +23,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Katzenklo Schrank](https://frickeldave.de/katzenklo-schrank/) | `2022-01-16-katzenklo-schrank.mdx` | ✅ |
 | [Pummeleinhorn – Der Mädchentraum](https://frickeldave.de/pummeleinhorn-der-madchentraum/) | notdo | ⛔ |
 | [Bananenständer](https://frickeldave.de/bananenstaender/) | `2021-11-24-bananenstaender.mdx` | ✅ |
-| [Restholz – Lampi der Lampenhund](https://frickeldave.de/restholz-lampi-der-lampenhund/) | fehlt | ❌ |
+| [Restholz – Lampi der Lampenhund](https://frickeldave.de/restholz-lampi-der-lampenhund/) | `2021-10-29-restholz-lampi-der-lampenhund.mdx` | ✅ |
 | [Briefkastenhalter aus Dachbalken](https://frickeldave.de/briefkastenhalter-aus-dachbalken/) | fehlt | ❌ |
 | [Zwingenhalter als Apothekerschrank](https://frickeldave.de/zwingen-halter-als-apothekerschrank/) | fehlt | ❌ |
 | [Regalboden aus Beton und Holz](https://frickeldave.de/regalboden-aus-beton-und-holz/) | fehlt | ❌ |
