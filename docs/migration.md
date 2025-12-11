@@ -21,10 +21,10 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Betonschalen Tic-Tac-Toe](https://frickeldave.de/betonschalen-tic-tac-toe/) | `2022-07-11-betonschalen-tic-tac-toe.mdx` | ✅ |
 | [Schlüsselbrett für Golfer](https://frickeldave.de/schluesselbrett-fuer-golfer/) | notdo | ⛔ |
 | [Katzenklo Schrank](https://frickeldave.de/katzenklo-schrank/) | `2022-01-16-katzenklo-schrank.mdx` | ✅ |
-| [Pummeleinhorn – Der Mädchentraum](https://frickeldave.de/pummeleinhorn-der-madchentraum/) | fehlt | ❌ |
-| [Bananenständer](https://frickeldave.de/bananenstaender/) | fehlt | ❌ |
-| [Restholz – Lampi der Lampenhund](https://frickeldave.de/restholz-lampi-der-lampenhund/) | fehlt | ❌ |
-| [Briefkastenhalter aus Dachbalken](https://frickeldave.de/briefkastenhalter-aus-dachbalken/) | fehlt | ❌ |
+| [Pummeleinhorn – Der Mädchentraum](https://frickeldave.de/pummeleinhorn-der-madchentraum/) | notdo | ⛔ |
+| [Bananenständer](https://frickeldave.de/bananenstaender/) | `2021-11-24-bananenstaender.mdx` | ✅ |
+| [Restholz – Lampi der Lampenhund](https://frickeldave.de/restholz-lampi-der-lampenhund/) | `2021-10-29-restholz-lampi-der-lampenhund.mdx` | ✅ |
+| [Briefkastenhalter aus Dachbalken](https://frickeldave.de/briefkastenhalter-aus-dachbalken/) | `2021-10-08-briefkastenhalter-aus-dachbalken.mdx` | ✅ |
 | [Zwingenhalter als Apothekerschrank](https://frickeldave.de/zwingen-halter-als-apothekerschrank/) | fehlt | ❌ |
 | [Regalboden aus Beton und Holz](https://frickeldave.de/regalboden-aus-beton-und-holz/) | fehlt | ❌ |
 | [Schale aus Beton mit Eiche](https://frickeldave.de/schale-aus-beton/) | `2021-08-12-schale-aus-beton-mit-eiche.mdx` | ✅ |

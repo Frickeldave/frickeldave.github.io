@@ -1,5 +1,26 @@
 {
   "links": {
+    "gu10-fassung": {
+      "targetUrl": "https://www.amazon.de/dp/B01N3MIRTQ",
+      "description": "GU 10 Fassungen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "gu10-8w-kaltweiss": {
+      "targetUrl": "https://www.amazon.de/dp/B07D8HMGX9",
+      "description": "GU 10 Lampen (8 Watt kaltweiß)",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "netzkabel-fussschalter": {
+      "targetUrl": "https://www.amazon.de/dp/B079S4D5MB",
+      "description": "Netzkabel mit Fußschalter",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
     "rollei-lumis-key-light": {
       "targetUrl": "https://amzn.to/4ppZrPd",
       "description": "Rollei Lumis Key Light, LED Videolicht inkl. Tischstativ Streaming Licht PC zum Ausleuchten von Video-Streams TikTok YouTube und Konferenzen Video Call Webcam Homeoffice",
@@ -239,6 +260,41 @@
       "description": "Kylewo LED-Streifen mit Bewegungsmelder für Schränke, Schlafzimmer und Küchen",
       "affiliate": true,
       "category": "DIY",
+      "openInNewTab": true
+    },
+    "leinoel-wolfgruben": {
+      "targetUrl": "https://www.amazon.de/dp/B01GRVXCPU",
+      "description": "Wolfgruben Leinölfirnis für Holzschutz",
+      "affiliate": true,
+      "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "dewalt-holzfraesbohrer": {
+      "targetUrl": "https://www.amazon.de/dp/B0013LK0P0",
+      "description": "Dewalt Verlängerungen für Holzfräsbohrer",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "spelsberg-aufputzdose": {
+      "targetUrl": "https://www.amazon.de/dp/B001NJD7GG",
+      "description": "Spelsberg Aufputzdose für Elektroinstallationen",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "pflaster-betonfarbe": {
+      "targetUrl": "https://www.amazon.de/d/B07HYCY56Q",
+      "description": "Beton- und Pflasterfarbe",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "bosch-schlangenbohrer": {
+      "targetUrl": "https://www.amazon.de/dp/B000NDB5OE",
+      "description": "Bosch Schlangenbohrer 12mm für Holzbohrungen",
+      "affiliate": true,
+      "category": "Werkzeuge",
       "openInNewTab": true
     }
   },
