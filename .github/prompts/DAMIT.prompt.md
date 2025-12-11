@@ -7,7 +7,7 @@ description: 'Migrate WordPress article to Astro MDX format'
 
 Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migriert werden. Dabei sind Metadaten, Bilder und Links entsprechend anzupassen. Die folgende Liste ist der Schritt-für-Schritt Plan zur Migration eines Artikels. Bitte führe alle Schritte bis zum Schritt 6 vollständig autonom aus.
 
-1) In .github/prompts/prompts.md die Tabelle erweitern
+1) In .github/prompts/chats/prompts.md die Tabelle erweitern
 2) GitHub issue erstellen (gh ist installiert, wenn nicht, bitte komplett abbrechen). Das issue soll das Label "Blog" tragen und den Titel "Migriere Artikel: <Artikel Titel>"
 3) Branch aus dem dev-branch passend zum Issue erstellen und alle aktuell offenen Änderungen mit in den neuen Branch übernehmen
 4) Artikel migrieren
