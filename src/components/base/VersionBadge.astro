@@ -15,14 +15,33 @@
 <div id="version-badge" class="version-badge"></div>
 
 <script>
+  // Determine environment from URL
+  function getEnvironment(): "local" | "dev" | "production" {
+    const hostname = window.location.hostname;
+
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "local";
+    }
+    if (
+      hostname === "frickeldave.github.io" ||
+      hostname === "frickeldave.de" ||
+      hostname === "www.frickeldave.de"
+    ) {
+      return "production";
+    }
+    return "dev";
+  }
+
   // Load version info and render badge
   async function loadVersionInfo() {
     try {
       const response = await fetch("/version.json");
       const versionInfo = await response.json();
 
+      const environment = getEnvironment();
+
       // Only show in non-production environments
-      if (versionInfo.environment === "production") {
+      if (environment === "production") {
         return;
       }
 
@@ -30,8 +49,7 @@
       if (!badge) return;
 
       // Build badge content
-      const envColor =
-        versionInfo.environment === "local" ? "bg-blue-500" : "bg-green-500";
+      const envColor = environment === "local" ? "bg-blue-500" : "bg-green-500";
       const buildDate = new Date(versionInfo.buildTime).toLocaleString(
         "de-DE",
         {
@@ -47,7 +65,7 @@
         <div class="glass p-2 rounded-lg shadow-lg text-xs space-y-1">
           <div class="flex items-center gap-2">
             <span class="${envColor} text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-              ${versionInfo.environment}
+              ${environment}
             </span>
             <span class="font-mono font-bold text-gray-900 dark:text-gray-100">${versionInfo.version}</span>
           </div>

@@ -1,6 +1,7 @@
 ---
 agent: 'agent'
 description: 'Migrate WordPress article to Astro MDX format'
+model: Claude Sonnet 4.5 (copilot)
 ---
 
 ## Plan
@@ -8,17 +9,19 @@ description: 'Migrate WordPress article to Astro MDX format'
 Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migriert werden. Dabei sind Metadaten, Bilder und Links entsprechend anzupassen. Die folgende Liste ist der Schritt-für-Schritt Plan zur Migration eines Artikels. Bitte führe alle Schritte bis zum Schritt 6 vollständig autonom aus.
 
 1) In .github/prompts/chats/prompts.md die Tabelle erweitern
-2) GitHub issue erstellen (gh ist installiert, wenn nicht, bitte komplett abbrechen). Das issue soll das Label "Blog" tragen und den Titel "Migriere Artikel: <Artikel Titel>"
-3) Branch aus dem dev-branch passend zum Issue erstellen und alle aktuell offenen Änderungen mit in den neuen Branch übernehmen
+2) GitHub issue erstellen (gh ist installiert, wenn nicht, bitte komplett abbrechen). Nutze als label "blog" und weise das Issue mir zu. Nutze als Titel "Migriere Blog Artikel: <Artikel Titel>" und als Beschreibung die URL des Artikels sowie eine kurze Zusammenfassung des Inhalts.
+3) Aus dem dev-Branch heraus einen neuen Branch passend zum Issue erstellen. Alle aktuell offenen Änderungen müssen mit in den neuen Branch übernommen werden. 
 4) Artikel migrieren
-5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests)
+5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
 6) Lokalen Entwicklungsserver starten und Artikel manuell durch User prüfen und vervollständigen lassen
-7) PR erstellen mit Verlinkung zum Issue
-8) PR Review abwarten und ggf. Änderungen durchführen
-9) PR mergen in dev
-10) Issue schließen
-11) Die Datei /docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird un dder Status aktualisiert wird
-12) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in .github/prompts/prompts.md eintragen
+5) Lokale Tests durchführen (Astro build und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
+8) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird. Zudem lese bitte die aktuelle Version in den git tags aus und erhöhe die Patch Version um 1.
+9) PR erstellen mit Verlinkung zum Issue
+10) PR Review abwarten und ggf. Änderungen durchführen
+11) PR mergen in dev
+12) Issue schließen
+13) Die Datei ./docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird und der Status aktualisiert wird
+13) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in ./.github/prompts/chats/prompts.md eintragen
 
 ## Grundsätzliche Informationen
 
@@ -30,8 +33,7 @@ Bilder werden lokal im Verzeichnis src/assets/blog/<category>/<dateiname>/ abgel
 
 Da ich die Header Images alles neu generieren möchte, kopiere bitte das Bild src/assets/placeholder-header.png in den entsprechenden Ordner und benenne es in dkot-header.png um.
 
-
-# Header / Frontmatter
+## Header / Frontmatter
 
 ```markdown
 
@@ -64,9 +66,14 @@ import { Image } from "astro:assets";
 import dkot001 from "@assets/blog/<category>/dkot-001.png";
 ```
 
-# Bilder
+## Bilder
 
-Bitte füge auch die Bilder lokal ein, indem du sie in den Ordner src/assets/blog/<category>/<dateiname> kopierst und die Bildpfade im Artikel entsprechend anpasst. Durch einen Unfall in OneDrive, was die Quelle für den Wordpress Blog war, sind die Bilder nicht mehr korrekt verlinkt. Diese gilt es neu zu verlinken. In diesem Fall importiere bitte die Bilder im MDX, lege sie aber nicht in src/assets/blog... ab, sondern kopiere die Datei src/assets/placeholder-blog-image.png für jedes korrupte Bild. Benenne die Bilder nach dem Schema <identifier>-001.png (z.B. dkot-001.png, dkot-002.png).
+Bitte füge auch die Bilder lokal ein, indem du sie in den Ordner src/assets/blog/<category>/<dateiname> kopierst und die Bildpfade im Artikel entsprechend anpasst. Durch einen Unfall in OneDrive, was die Quelle für den Wordpress Blog war, sind die Bilder nicht mehr korrekt verlinkt. Diese gilt es neu zu verlinken. 
+Hier gibt es 2 Möglichekten. Frage den Benutzer in jedem Fall zu Beginn nach dem lokalen Pfad für die Bilder. 
+1) Wenn der Benutzer einen Pfad angibt, dann nutze diesen Pfad um die Originalbilder zu kopieren und entsprechend zu verlinken.
+2) Wenn der Benutzer keinen Pfad angibt, dann kopiere die Datei src/assets/placeholder-blog-image.png für jedes korrupte Bild.
+
+Benenne die Bilder nach dem Schema <identifier>-001.png (z.B. dkot-001.png, dkot-002.png) und importiere bitte die Bilder im MDX an der richtigen Stelle.
 
 Um etwas Abwechslung reinzubringen, ordne die Bilder manchmal links vom Text, manchmal rechts vom Text an. Wenn es ein breites Bild ist, dann einfach mit Textfluss. Beispiel Bild links:
 
@@ -97,7 +104,7 @@ Beispiel Bild rechts:
 
 ```
 
-# Links
+## Links
 
 Wenn Links verwendet werden, ist wie folgt vorzugehen. Der Link soll mit dem RedirectLink Component eingebaut werden. Dafür ist dieser in der Datenbank unter public/data/link-mappings.json einzutragen, wenn dieser dort noch nicht existieren sollte. Es igbt auch Links, die nicht diret auf amazon zeigen, sondern auf einen Zwischenlink. Diese sind in der Regel wie folgt aufgebaut: https://frickeldave.de/aff_<product>. Verfolge diese Links bitte bis zum eigentlichen Ziel und trage dieses in die Link-Mappings ein.
 

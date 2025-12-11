@@ -296,6 +296,20 @@
       "affiliate": true,
       "category": "Werkzeuge",
       "openInNewTab": true
+    },
+    "wolfcraft-zwingen": {
+      "targetUrl": "https://www.amazon.de/dp/B001S2R462",
+      "description": "Wolfcraft Schraubzwingen mit gummiertem Griff - verschiedene Größen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "teleskopschienen24": {
+      "targetUrl": "https://www.teleskopschienen24.de/",
+      "description": "Teleskopschienen24 - Schubladenschienen und Vollauszüge in verschiedenen Tragkräften",
+      "affiliate": false,
+      "category": "Werkzeuge",
+      "openInNewTab": true
     }
   },
   "analytics": {
