@@ -25,10 +25,10 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Bananenständer](https://frickeldave.de/bananenstaender/) | `2021-11-24-bananenstaender.mdx` | ✅ |
 | [Restholz – Lampi der Lampenhund](https://frickeldave.de/restholz-lampi-der-lampenhund/) | `2021-10-29-restholz-lampi-der-lampenhund.mdx` | ✅ |
 | [Briefkastenhalter aus Dachbalken](https://frickeldave.de/briefkastenhalter-aus-dachbalken/) | `2021-10-08-briefkastenhalter-aus-dachbalken.mdx` | ✅ |
-| [Zwingenhalter als Apothekerschrank](https://frickeldave.de/zwingen-halter-als-apothekerschrank/) | fehlt | ❌ |
-| [Regalboden aus Beton und Holz](https://frickeldave.de/regalboden-aus-beton-und-holz/) | fehlt | ❌ |
+| [Zwingenhalter als Apothekerschrank](https://frickeldave.de/zwingen-halter-als-apothekerschrank/) | `2021-09-19-zwingenhalter-als-apothekerschrank.mdx` | ✅ |
+| [Regalboden aus Beton und Holz](https://frickeldave.de/regalboden-aus-beton-und-holz/) | notdo | ⛔ |
 | [Schale aus Beton mit Eiche](https://frickeldave.de/schale-aus-beton/) | `2021-08-12-schale-aus-beton-mit-eiche.mdx` | ✅ |
-| [Bierträger oder "Männerhandtasche"](https://frickeldave.de/biertraeger-oder-maennerhandtasche/) | fehlt | ❌ |
+| [Bierträger oder "Männerhandtasche"](https://frickeldave.de/biertraeger-oder-maennerhandtasche/) | `2021-07-27-biertraeger-oder-maennerhandtasche.mdx` | ✅ |
 | [Deichselkiste für den PKW-Anhänger](https://frickeldave.de/deichselkiste-fuer-den-pkw-anhaenger/) | fehlt | ❌ |
 | [Kopfhörerhalter mit LED und Epoxy](https://frickeldave.de/kopfhoererhalter-mit-led-und-epoxy/) | fehlt | ❌ |
 | [Unterschrank für Hobel mit Späneabscheidung](https://frickeldave.de/unterschrank-fuer-hobel-mit-spaeneabscheidung/) | fehlt | ❌ |
@@ -117,11 +117,11 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 (+ 6 Serie/Landing-Pages = 97 URLs)
-- **Migriert:** 11 Artikel
-- **Fehlend:** 80 Artikel
+- **Migriert:** 18 Artikel
+- **Fehlend:** 73 Artikel
 - **Serien/Landing-Pages:** 6 (separat zu behandeln)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~12% (11/91)
+- **Migrations-Quote:** ~20% (18/91)
 
 ## Migrierte Artikel im Detail
 
@@ -130,14 +130,21 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 3. ✅ DevOps – Bring was Liebe ins Business (2021-01-12)
 4. ✅ 7 Meinungen zum Thema DevOps (2021-05-05)
 5. ✅ Schale aus Beton mit Eiche (2021-08-12)
-6. ✅ Das DevOps Stoßpendel (2021-12-01)
-7. ✅ Adventskalender aus Papier und Restholz (2022-10-27)
-8. ✅ DevOps Kultur, Organisation und Technologie (2022-10-27)
-9. ✅ Le Passe Trappe Flitzpuck (2022-11-16)
-10. ✅ Bau dein Video Studio für 500€ (2023-08-17)
-11. ✅ Vogelfutterhaus (2023-11-24)
-12. ✅ Personalisierte Schlüsselanhänger (2024-09-14)
-13. ✅ Die Entwicklung von frickeldave.de (2025-11-21) - NEU
+6. ✅ Zwingenhalter als Apothekerschrank (2021-09-19)
+7. ✅ Briefkastenhalter aus Dachbalken (2021-10-08)
+8. ✅ Restholz - Lampi der Lampenhund (2021-10-29)
+9. ✅ Bananenständer (2021-11-24)
+10. ✅ Das DevOps Stoßpendel (2021-12-01)
+11. ✅ Katzenklo Schrank (2022-01-16)
+12. ✅ Betonschalen Tic-Tac-Toe (2022-07-11)
+13. ✅ Lampe aus hohlen Baumstamm (2022-09-09)
+14. ✅ Adventskalender aus Papier und Restholz (2022-10-27)
+15. ✅ DevOps Kultur, Organisation und Technologie (2022-10-27)
+16. ✅ Le Passe Trappe Flitzpuck (2022-11-16)
+17. ✅ Bau dein Video Studio für 500€ (2023-08-17)
+18. ✅ Vogelfutterhaus (2023-11-24)
+19. ✅ Personalisierte Schlüsselanhänger (2024-09-14)
+20. ✅ Die Entwicklung von frickeldave.de (2025-11-21) - NEU
 
 ## Serien/Landing-Pages
 
