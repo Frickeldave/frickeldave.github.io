@@ -26,9 +26,9 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Restholz – Lampi der Lampenhund](https://frickeldave.de/restholz-lampi-der-lampenhund/) | `2021-10-29-restholz-lampi-der-lampenhund.mdx` | ✅ |
 | [Briefkastenhalter aus Dachbalken](https://frickeldave.de/briefkastenhalter-aus-dachbalken/) | `2021-10-08-briefkastenhalter-aus-dachbalken.mdx` | ✅ |
 | [Zwingenhalter als Apothekerschrank](https://frickeldave.de/zwingen-halter-als-apothekerschrank/) | `2021-09-19-zwingenhalter-als-apothekerschrank.mdx` | ✅ |
-| [Regalboden aus Beton und Holz](https://frickeldave.de/regalboden-aus-beton-und-holz/) | fehlt | ❌ |
+| [Regalboden aus Beton und Holz](https://frickeldave.de/regalboden-aus-beton-und-holz/) | notdo | ⛔ |
 | [Schale aus Beton mit Eiche](https://frickeldave.de/schale-aus-beton/) | `2021-08-12-schale-aus-beton-mit-eiche.mdx` | ✅ |
-| [Bierträger oder "Männerhandtasche"](https://frickeldave.de/biertraeger-oder-maennerhandtasche/) | fehlt | ❌ |
+| [Bierträger oder "Männerhandtasche"](https://frickeldave.de/biertraeger-oder-maennerhandtasche/) | `2021-07-27-biertraeger-oder-maennerhandtasche.mdx` | ✅ |
 | [Deichselkiste für den PKW-Anhänger](https://frickeldave.de/deichselkiste-fuer-den-pkw-anhaenger/) | fehlt | ❌ |
 | [Kopfhörerhalter mit LED und Epoxy](https://frickeldave.de/kopfhoererhalter-mit-led-und-epoxy/) | fehlt | ❌ |
 | [Unterschrank für Hobel mit Späneabscheidung](https://frickeldave.de/unterschrank-fuer-hobel-mit-spaeneabscheidung/) | fehlt | ❌ |
