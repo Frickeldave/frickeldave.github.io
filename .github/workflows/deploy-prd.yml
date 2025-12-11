@@ -27,6 +27,8 @@ jobs:
 
       - name: Checkout your repository using git
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for tags
 
       - name: Install, build, and upload your site
         uses: withastro/action@v3

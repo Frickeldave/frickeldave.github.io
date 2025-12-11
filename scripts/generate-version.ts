@@ -6,17 +6,13 @@ import { join } from "path";
 /**
  * Version Generator für Frickeldave GitHub Pages
  * 
- * Generiert automatisch Versionsnummern basierend auf:
- * - Git Branch
- * - Git Commit Hash
- * - Build Environment (local/dev/prod)
+ * Generiert automatisch Versionsnummern basierend auf Git Tags
  * 
  * Output: public/version.json
  */
 
 interface VersionInfo {
   version: string;
-  environment: "local" | "dev" | "production";
   branch: string;
   commit: string;
   buildTime: string;
@@ -30,19 +26,6 @@ function execCommand(command: string, fallback = "unknown"): string {
     console.warn(`Warning: Could not execute "${command}", using fallback: ${fallback}`);
     return fallback;
   }
-}
-
-function getEnvironment(): "local" | "dev" | "production" {
-  const context = process.env.CONTEXT || process.env.NODE_ENV || "local";
-  
-  // Cloudflare Pages / GitHub Actions Environment Detection
-  if (context === "production" || process.env.CF_PAGES_BRANCH === "main") {
-    return "production";
-  }
-  if (context === "dev" || process.env.CF_PAGES_BRANCH === "dev") {
-    return "dev";
-  }
-  return "local";
 }
 
 function getGitBranch(): string {
@@ -81,40 +64,20 @@ function getGitCommit(): string {
 
 function getLatestGitTag(): string {
   const tag = execCommand("git describe --tags --abbrev=0", "v0.0.0");
-  return tag.startsWith("v") ? tag.substring(1) : tag;
+  return tag.startsWith("v") ? tag : `v${tag}`;
 }
 
 function generateVersion(): VersionInfo {
-  const environment = getEnvironment();
   const branch = getGitBranch();
   const commit = getGitCommit();
   const buildTime = new Date().toISOString();
   const buildTimestamp = Date.now();
-
-  let version: string;
-
-  switch (environment) {
-    case "production":
-      // Production: Use Git tag (e.g., v1.3.5)
-      version = `v${getLatestGitTag()}`;
-      break;
-    
-    case "dev":
-      // Dev: Use Git tag + dev suffix (e.g., v1.3.0-dev-a1b2c3d)
-      version = `v${getLatestGitTag()}-dev-${commit}`;
-      break;
-    
-    case "local":
-    default:
-      // Local: Branch + commit (e.g., v0.0.0-dev-54-handmade-a1b2c3d)
-      const safeBranch = branch.replace(/[^a-zA-Z0-9-]/g, "-");
-      version = `v0.0.0-dev-${safeBranch}-${commit}`;
-      break;
-  }
+  
+  // Always use the latest git tag as version
+  const version = getLatestGitTag();
 
   return {
     version,
-    environment,
     branch,
     commit,
     buildTime,
@@ -128,7 +91,6 @@ function main() {
   const versionInfo = generateVersion();
   
   console.log(`   Version: ${versionInfo.version}`);
-  console.log(`   Environment: ${versionInfo.environment}`);
   console.log(`   Branch: ${versionInfo.branch}`);
   console.log(`   Commit: ${versionInfo.commit}`);
   console.log(`   Build Time: ${versionInfo.buildTime}`);
