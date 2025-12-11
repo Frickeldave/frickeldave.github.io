@@ -18,11 +18,15 @@
   // Determine environment from URL
   function getEnvironment(): "local" | "dev" | "production" {
     const hostname = window.location.hostname;
-    
+
     if (hostname === "localhost" || hostname === "127.0.0.1") {
       return "local";
     }
-    if (hostname === "frickeldave.github.io" || hostname === "frickeldave.de" || hostname === "www.frickeldave.de") {
+    if (
+      hostname === "frickeldave.github.io" ||
+      hostname === "frickeldave.de" ||
+      hostname === "www.frickeldave.de"
+    ) {
       return "production";
     }
     return "dev";
@@ -33,7 +37,7 @@
     try {
       const response = await fetch("/version.json");
       const versionInfo = await response.json();
-      
+
       const environment = getEnvironment();
 
       // Only show in non-production environments
@@ -45,8 +49,7 @@
       if (!badge) return;
 
       // Build badge content
-      const envColor =
-        environment === "local" ? "bg-blue-500" : "bg-green-500";
+      const envColor = environment === "local" ? "bg-blue-500" : "bg-green-500";
       const buildDate = new Date(versionInfo.buildTime).toLocaleString(
         "de-DE",
         {
