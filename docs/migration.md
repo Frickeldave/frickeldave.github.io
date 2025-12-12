@@ -32,87 +32,86 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Deichselkiste für den PKW-Anhänger](https://frickeldave.de/deichselkiste-fuer-den-pkw-anhaenger/) | `2021-06-16-deichselkiste-fuer-den-pkw-anhaenger.mdx` | ✅ |
 | [Kopfhörerhalter mit LED und Epoxy](https://frickeldave.de/kopfhoererhalter-mit-led-und-epoxy/) | fehlt | ❌ |
 | [Unterschrank für Hobel mit Späneabscheidung](https://frickeldave.de/unterschrank-fuer-hobel-mit-spaeneabscheidung/) | fehlt | ❌ |
-| [Brett Bit – Bithalter aus Holz und Epoxy](https://frickeldave.de/brett-bit-bithalter-aus-holz-und-epoxy/) | fehlt | ❌ |
+| [Brett Bit – Bithalter aus Holz und Epoxy](https://frickeldave.de/brett-bit-bithalter-aus-holz-und-epoxy/) | notdo | ⛔ |
 | [Teeschrank mit Fronten aus Epoxidharz](https://frickeldave.de/teeschrank-mit-epoxidharzfronten/) | fehlt | ❌ |
 | [Katzenkratzbaum aus Dachbalken](https://frickeldave.de/katzenkratzbaum-aus-dachbalken/) | fehlt | ❌ |
-| [Lightbox zur Fotografie von Schmuck](https://frickeldave.de/lightbox-zur-fotografie-von-schmuck/) | fehlt | ❌ |
-| [Mobile Werkstatt für Epoxidharzschmuck](https://frickeldave.de/mobile-werkstatt-fuer-epoxidharzschmuck/) | fehlt | ❌ |
+| [Lightbox zur Fotografie von Schmuck](https://frickeldave.de/lightbox-zur-fotografie-von-schmuck/) | notdo | ⛔ |
+| [Mobile Werkstatt für Epoxidharzschmuck](https://frickeldave.de/mobile-werkstatt-fuer-epoxidharzschmuck/) | notdo | ⛔ |
 | [Kaminumbau](https://frickeldave.de/kaminumbau/) | fehlt | ❌ |
-| [Müsliboxen](https://frickeldave.de/muesliboxen/) | fehlt | ❌ |
+| [Müsliboxen](https://frickeldave.de/muesliboxen/) | notdo | ⛔ |
 | [Mehlbox für 5kg Mehlsäcke](https://frickeldave.de/mehlbox-fuer-5kg-mehlsaecke/) | fehlt | ❌ |
 | [Schrankumbau für IKEA Sortera Papiereimer](https://frickeldave.de/schrankumbau-fuer-ikea-sortera-papiereimer/) | fehlt | ❌ |
 | [Herdabdeckplatten aus Holz und Epoxidharz](https://frickeldave.de/herdabdeckplatten-aus-holz-und-epoxidharz/) | fehlt | ❌ |
-| [Absaugverteiler](https://frickeldave.de/absaugverteiler/) | fehlt | ❌ |
-| [Blastgates / Sperrschieber für die Absauganlage](https://frickeldave.de/blastgates-sperrschieber-fuer-die-absauganlage/) | fehlt | ❌ |
+| [Absaugverteiler](https://frickeldave.de/absaugverteiler/) | notdo | ⛔ |
+| [Blastgates / Sperrschieber für die Absauganlage](https://frickeldave.de/blastgates-sperrschieber-fuer-die-absauganlage/) | notdo | ⛔ |
 | [Absaugverrohrung und Stromverteilung](https://frickeldave.de/absaugverrohrung-und-stromverteilung/) | fehlt | ❌ |
 | [Gartenschrank für die Terrasse](https://frickeldave.de/gartenschrank-fuer-die-terrasse/) | `2020-06-18-gartenschrank-fuer-die-terrasse.mdx` | ✅ |
 | [Kinderhändelampe](https://frickeldave.de/kinderhaendelampe/) | fehlt | ❌ |
 | [Getränkekistenhalter (mit Plan)](https://frickeldave.de/halter-fuer-getraenkekisten-mit-plan/) | fehlt | ❌ |
 | [Kabelkanal aus Holz](https://frickeldave.de/kabelkanal-aus-holz/) | fehlt | ❌ |
-| [Garage #0: Günstigen Unterstand bauen](https://frickeldave.de/unterstand-bauen/) | fehlt | ❌ |
+| [Garage #0: Günstigen Unterstand bauen](https://frickeldave.de/unterstand-bauen/) | notdo | ⛔ |
 | [Monitorpanels für Besprechungsräume #3](https://frickeldave.de/monitorpanels-fuer-besprechungsraeume-3/) | fehlt | ❌ |
 | [ZLH150_3 Charity challenge](https://frickeldave.de/zlh150_3-charity-challenge/) | fehlt | ❌ |
 | [Monitorpanels für Besprechungsräume #2](https://frickeldave.de/monitorpanels-fur-besprechungsraume-2/) | fehlt | ❌ |
 | [Bohrtisch für die Standbohrmaschine](https://frickeldave.de/bohrtisch-fuer-die-standbohrmaschine/) | fehlt | ❌ |
-| [Bohrerhalter](https://frickeldave.de/bohrerhalter/) | fehlt | ❌ |
+| [Bohrerhalter](https://frickeldave.de/bohrerhalter/) | notdo | ⛔ |
 | [Sterngriffe selber bauen](https://frickeldave.de/sterngriffe-selber-bauen/) | fehlt | ❌ |
-| [Schublade für Meßwerkzeuge](https://frickeldave.de/schublade-fuer-messwerkzeuge/) | fehlt | ❌ |
+| [Schublade für Meßwerkzeuge](https://frickeldave.de/schublade-fuer-messwerkzeuge/) | notdo | ⛔ |
 | [Schatztruhe aus Holz](https://frickeldave.de/schatztruhe-aus-holz/) | `2019-11-27-schatztruhe-aus-holz.mdx` | ✅ |
-| [Akku organizer](https://frickeldave.de/akku-organizer/) | fehlt | ❌ |
+| [Akku organizer](https://frickeldave.de/akku-organizer/) | notdo | ⛔ |
 | [Monitorpanels für Besprechungsräume #1](https://frickeldave.de/monitor-panel-fuer-besprechungsraeume-1/) | fehlt | ❌ |
 | [DIY Lattenrost](https://frickeldave.de/diy-lattenrost/) | fehlt | ❌ |
-| [Laterne aus Nußbaumholz selber bauen](https://frickeldave.de/laterne-aus-nussbaumholz-selber-bauen/) | fehlt | ❌ |
+| [Laterne aus Nußbaumholz selber bauen](https://frickeldave.de/laterne-aus-nussbaumholz-selber-bauen/) | notdo | ⛔ |
 | [Magnetische Topfuntersetzer #2](https://frickeldave.de/topfuntersetzer-edeledition/) | fehlt | ❌ |
-| [Einfacher Werkbankschrank](https://frickeldave.de/werkstattbau-1-einfacher-werkbankschrank/) | fehlt | ❌ |
-| [Schiebeschlitten für die Tischkreissäge](https://frickeldave.de/schiebeschlitten-fuer-die-tischkreissaege/) | fehlt | ❌ |
-| [Smarte Steckdosensäule im Garten](https://frickeldave.de/smarte-steckdosensaeule-im-garten/) | fehlt | ❌ |
-| [Einen Bachlauf aus Beton im Garten #3](https://frickeldave.de/einen-bachlauf-aus-beton-im-garten-3/) | fehlt | ❌ |
-| [Einen Bachlauf aus Beton im Garten #2](https://frickeldave.de/einen-bachlauf-aus-beton-im-garten-2/) | fehlt | ❌ |
-| [Einen Bachlauf aus Beton im Garten #1](https://frickeldave.de/einen-bachlauf-aus-beton-im-garten-1/) | fehlt | ❌ |
-| [Gartenbewässerung automatisieren #2 – Die Umsetzung](https://frickeldave.de/gartenbewaesserung-automatisieren-2-die-umsetzung/) | fehlt | ❌ |
-| [Gartenbewässerung automatisieren #1 – Die Planung](https://frickeldave.de/gartenbewaesserung-automatisieren-1-die-planung/) | fehlt | ❌ |
+| [Einfacher Werkbankschrank](https://frickeldave.de/werkstattbau-1-einfacher-werkbankschrank/) | notdo | ⛔ |
+| [Schiebeschlitten für die Tischkreissäge](https://frickeldave.de/schiebeschlitten-fuer-die-tischkreissaege/) | notdo | ⛔ |
+| [Smarte Steckdosensäule im Garten](https://frickeldave.de/smarte-steckdosensaeule-im-garten/) | notdo | ⛔ |
+| [Einen Bachlauf aus Beton im Garten #3](https://frickeldave.de/einen-bachlauf-aus-beton-im-garten-3/) | notdo | ⛔ |
+| [Einen Bachlauf aus Beton im Garten #2](https://frickeldave.de/einen-bachlauf-aus-beton-im-garten-2/) | notdo | ⛔ |
+| [Einen Bachlauf aus Beton im Garten #1](https://frickeldave.de/einen-bachlauf-aus-beton-im-garten-1/) | notdo | ⛔ |
+| [Gartenbewässerung automatisieren #2 – Die Umsetzung](https://frickeldave.de/gartenbewaesserung-automatisieren-2-die-umsetzung/) | notdo | ⛔ |
+| [Gartenbewässerung automatisieren #1 – Die Planung](https://frickeldave.de/gartenbewaesserung-automatisieren-1-die-planung/) | notdo | ⛔ |
 | [Garage #1: Fundament](https://frickeldave.de/garage-1-fundament/) | fehlt | ❌ |
 | [Herz zu Muttertag basteln](https://frickeldave.de/herz-zu-muttertag-basteln/) | fehlt | ❌ |
-| [Drechselbank bauen Teil 4/4 – Der Motor](https://frickeldave.de/drechselbank-bauen-teil-4-4-der-motor/) | fehlt | ❌ |
-| [Drechselbank bauen Teil 3/4 – Werkzeugauflage](https://frickeldave.de/drechselbank-bauen-teil-3-4-werkzeugauflage/) | fehlt | ❌ |
-| [Drechselbank bauen Teil 2/4 – Spindelstock](https://frickeldave.de/drechselbank-bauen-teil-2-4-spindelstock/) | fehlt | ❌ |
-| [Drechselbank bauen Teil 1/4 – Intro und der Reitstock](https://frickeldave.de/drechselbank-bauen-teil-1-x-intro-und-der-reitstock/) | fehlt | ❌ |
+| [Drechselbank bauen Teil 4/4 – Der Motor](https://frickeldave.de/drechselbank-bauen-teil-4-4-der-motor/) | notdo | ⛔ |
+| [Drechselbank bauen Teil 3/4 – Werkzeugauflage](https://frickeldave.de/drechselbank-bauen-teil-3-4-werkzeugauflage/) | notdo | ⛔ |
+| [Drechselbank bauen Teil 2/4 – Spindelstock](https://frickeldave.de/drechselbank-bauen-teil-2-4-spindelstock/) | notdo | ⛔ |
+| [Drechselbank bauen Teil 1/4 – Intro und der Reitstock](https://frickeldave.de/drechselbank-bauen-teil-1-x-intro-und-der-reitstock/) | notdo | ⛔ |
 | [Relais-Schaltung für die Blastgates der Absauganlage](https://frickeldave.de/relais-schaltung-fur-die-blastgates-der-absauganlage/) | fehlt | ❌ |
-| [Schneidbrett für die Brotbox](https://frickeldave.de/schneidbrett-fuer-die-brotbox/) | fehlt | ❌ |
-| [Ganz einfacher Batteriehalter](https://frickeldave.de/batteriehalter-fuer-meine-wii/) | fehlt | ❌ |
-| [Brotkasten mit Fingerzinken](https://frickeldave.de/brotkasten-mit-fingerzinken/) | fehlt | ❌ |
-| [Provisorischer Frästisch](https://frickeldave.de/provisorischer-fraestisch/) | fehlt | ❌ |
-| [LED Lampe in Unterschranklampe umgebaut](https://frickeldave.de/led-lampe-in-unterschranklampe-umgebaut/) | fehlt | ❌ |
-| [3D Drucker mit Octoprint steuern](https://frickeldave.de/3d-drucker-mit-octoprint-steuern/) | fehlt | ❌ |
+| [Schneidbrett für die Brotbox](https://frickeldave.de/schneidbrett-fuer-die-brotbox/) | notdo | ⛔ |
+| [Ganz einfacher Batteriehalter](https://frickeldave.de/batteriehalter-fuer-meine-wii/) | notdo | ⛔ |
+| [Brotkasten mit Fingerzinken](https://frickeldave.de/brotkasten-mit-fingerzinken/) | notdo | ⛔ |
+| [Provisorischer Frästisch](https://frickeldave.de/provisorischer-fraestisch/) | notdo | ⛔ |
+| [LED Lampe in Unterschranklampe umgebaut](https://frickeldave.de/led-lampe-in-unterschranklampe-umgebaut/) | notdo | ⛔ |
+| [3D Drucker mit Octoprint steuern](https://frickeldave.de/3d-drucker-mit-octoprint-steuern/) | notdo | ⛔ |
 | [3D Druckerschrank als IKEA-Hack](https://frickeldave.de/3d-druckerschrank-als-ikea-hack/) | fehlt | ❌ |
-| [Creality Ender 3 V2 3D Drucker](https://frickeldave.de/creality-ender-3-v2-3d-drucker/) | fehlt | ❌ |
-| [Artillery Hornet 3D Drucker](https://frickeldave.de/artillery-hornet-3d-drucker/) | fehlt | ❌ |
-| [DOAG, Cloudland und der Partybus](https://frickeldave.de/doag-cloudland-und-der-partybus/) | fehlt | ❌ |
+| [Creality Ender 3 V2 3D Drucker](https://frickeldave.de/creality-ender-3-v2-3d-drucker/) | notdo | ⛔ |
+| [Artillery Hornet 3D Drucker](https://frickeldave.de/artillery-hornet-3d-drucker/) | notdo | ⛔ |
+| [DOAG, Cloudland und der Partybus](https://frickeldave.de/doag-cloudland-und-der-partybus/) | notdo | ⛔ |
 | [Bau dein Video Studio für 500€](https://frickeldave.de/bau-dein-video-studio-fuer-500e/) | `2023-08-17-low-cost-videostudio.mdx` | ✅ |
-| [DevOps in Enterprise Umgebungen #2 (CI/CD und Geschwindigkeit)](https://frickeldave.de/devops-und-ci-cd/) | fehlt | ❌ |
-| [Raspberry PI Lichtschalter für Shelly Geräte](https://frickeldave.de/raspbery-pi-als-lichtschalter-fur-shelly-gerate/) | fehlt | ❌ |
+| [DevOps in Enterprise Umgebungen #2 (CI/CD und Geschwindigkeit)](https://frickeldave.de/devops-und-ci-cd/) | `2022-10-27-devops-kultur-organisation-und-technologie.mdx` | ✅ |
+| [Raspberry PI Lichtschalter für Shelly Geräte](https://frickeldave.de/raspbery-pi-als-lichtschalter-fur-shelly-gerate/) | notdo | ⛔ |
 | [DevOps in Enterprise Umgebungen #1 (Kultur, Organisation und Technologie)](https://frickeldave.de/devops-in-enterprise-umgebungen/) | `2022-10-27-devops-kultur-organisation-und-technologie.mdx` | ✅ |
-| [VSCode ohne Admin-Rechte](https://frickeldave.de/vscode-ohne-admin-rechte/) | fehlt | ❌ |
+| [VSCode ohne Admin-Rechte](https://frickeldave.de/vscode-ohne-admin-rechte/) | notdo | ⛔ |
 | [Das DevOps Stoßpendel](https://frickeldave.de/devops-und-das-stosspendel/) | `2021-12-01-das-devops-stosspendel.mdx` | ✅ |
 | [7 Meinungen zum Thema DevOps](https://frickeldave.de/7-meinungen-zum-thema-devops/) | `2021-05-05-sieben-meinungen-zum-thema-devops.mdx` | ✅ |
-| [Icons automatisch erstellen](https://frickeldave.de/icons-automatisch-erstellen/) | fehlt | ❌ |
-| [#5: Build Workflow mit docker](https://frickeldave.de/5-build-workflow-mit-docker/) | fehlt | ❌ |
+| [Icons automatisch erstellen](https://frickeldave.de/icons-automatisch-erstellen/) | notdo | ⛔ |
+| [#5: Build Workflow mit docker](https://frickeldave.de/5-build-workflow-mit-docker/) | notdo | ⛔ |
 | [DevOps – Bring was Liebe ins Business](https://frickeldave.de/devops-bring-was-liebe-ins-business/) | `2021-01-12-bring-was-liebe-ins-business.mdx` | ✅ |
-| [#4. Integrieren einer Datenbank in die Spring Boot API](https://frickeldave.de/datenbank-in-die-spring-boot-api-integrieren/) | fehlt | ❌ |
-| [#3: Bauen einer einfachen Spring Boot API](https://frickeldave.de/bauen_einer_einfachen_spring_boot_anwendung/) | fehlt | ❌ |
-| [#2: Spring Boot in VSCode und Docker](https://frickeldave.de/spring-boot-in-vscode-und-docker/) | fehlt | ❌ |
+| [#4. Integrieren einer Datenbank in die Spring Boot API](https://frickeldave.de/datenbank-in-die-spring-boot-api-integrieren/) | notdo | ⛔ |
+| [#3: Bauen einer einfachen Spring Boot API](https://frickeldave.de/bauen_einer_einfachen_spring_boot_anwendung/) | notdo | ⛔ |
+| [#2: Spring Boot in VSCode und Docker](https://frickeldave.de/spring-boot-in-vscode-und-docker/) | notdo | ⛔ |
 | [#1: WSL2, Docker und VSCode](https://frickeldave.de/it_1_wsl2_docker_vscode/) | fehlt | ❌ |
-| [Sicherer Umgang mit dem Internet für Kinder](https://frickeldave.de/internet4kids/) | fehlt | ❌ |
-| [2-Faktor Authentifizierung](https://frickeldave.de/2-faktor-authentifizierung/) | fehlt | ❌ |
-| [Docker Connection über SSH](https://frickeldave.de/docker-connection-ueber-ssh/) | fehlt | ❌ |
-| [Start](https://frickeldave.de/start/) | fehlt | ❌ |
-| [Absauganlage](https://frickeldave.de/absauganlage/) | fehlt (Serie/Landing-Page) | 🔄 |
-| [Bachlauf aus Beton](https://frickeldave.de/bachlauf-aus-beton/) | fehlt (Serie/Landing-Page) | 🔄 |
-| [Bauen eines Monitorpanel mit ambient light](https://frickeldave.de/bauen-eines-monitorpanel-mit-ambient-light/) | fehlt (Serie/Landing-Page) | 🔄 |
-| [Magnetische Topfuntersetzer](https://frickeldave.de/magnetische-topfuntersetzer/) | fehlt (Serie/Landing-Page) | 🔄 |
-| [Drechselbank](https://frickeldave.de/drechselbank/) | fehlt (Serie/Landing-Page) | 🔄 |
-| [Java Entwicklung mit Visual Studio Code, Spring Boot und Docker](https://frickeldave.de/java-entwicklung-mit-visual-studio-code-spring-boot-und-docker/) | fehlt (Serie/Landing-Page) | 🔄 |
-| **Timeline-Artikel (Neu im Repo)** | `2025-11-21-timeline.mdx` | ✅ (Neu) |
+| [Sicherer Umgang mit dem Internet für Kinder](https://frickeldave.de/internet4kids/) | notdo | ⛔ |
+| [2-Faktor Authentifizierung](https://frickeldave.de/2-faktor-authentifizierung/) | notdo | ⛔ |
+| [Docker Connection über SSH](https://frickeldave.de/docker-connection-ueber-ssh/) | notdo | ⛔ |
+| [Start](https://frickeldave.de/start/) | notdo | ⛔ |
+| [Absauganlage](https://frickeldave.de/absauganlage/) | notdo | ⛔ |
+| [Bachlauf aus Beton](https://frickeldave.de/bachlauf-aus-beton/) | notdo | ⛔ |
+| [Bauen eines Monitorpanel mit ambient light](https://frickeldave.de/bauen-eines-monitorpanel-mit-ambient-light/) | notdo | ⛔ |
+| [Magnetische Topfuntersetzer](https://frickeldave.de/magnetische-topfuntersetzer/) | notdo | ⛔ |
+| [Drechselbank](https://frickeldave.de/drechselbank/) | notdo | ⛔ |
+| [Java Entwicklung mit Visual Studio Code, Spring Boot und Docker](https://frickeldave.de/java-entwicklung-mit-visual-studio-code-spring-boot-und-docker/) | notdo | ⛔ |
 
 ## Statistik
 
