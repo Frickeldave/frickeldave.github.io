@@ -1,5 +1,12 @@
 {
   "links": {
+    "ali-bastler-kopfhoererhalter": {
+      "targetUrl": "https://www.youtube.com/watch?v=A_-ePQXHGwI&t=2s",
+      "description": "Kopfhörerhalter von Ali dem Bastler",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
     "gu10-fassung": {
       "targetUrl": "https://www.amazon.de/dp/B01N3MIRTQ",
       "description": "GU 10 Fassungen",

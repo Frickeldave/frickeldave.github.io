@@ -1,7 +1,7 @@
 ---
 agent: 'agent'
 description: 'Migrate WordPress article to Astro MDX format'
-model: Claude Sonnet 4.5 (copilot)
+model: Gemini 3 Pro (Preview)
 ---
 
 ## Plan
@@ -69,7 +69,7 @@ import dkot001 from "@assets/blog/<category>/dkot-001.png";
 ## Bilder
 
 Bitte füge auch die Bilder lokal ein, indem du sie in den Ordner src/assets/blog/<category>/<dateiname> kopierst und die Bildpfade im Artikel entsprechend anpasst. Durch einen Unfall in OneDrive, was die Quelle für den Wordpress Blog war, sind die Bilder nicht mehr korrekt verlinkt. Diese gilt es neu zu verlinken. 
-Hier gibt es 2 Möglichekten. Frage den Benutzer in jedem Fall zu Beginn nach dem lokalen Pfad für die Bilder. 
+Hier gibt es 2 Möglichkeiten. Frage den Benutzer in jedem Fall zu Beginn nach dem lokalen Pfad für die Bilder. 
 1) Wenn der Benutzer einen Pfad angibt, dann nutze diesen Pfad um die Originalbilder zu kopieren und entsprechend zu verlinken.
 2) Wenn der Benutzer keinen Pfad angibt, dann kopiere die Datei src/assets/placeholder-blog-image.png für jedes korrupte Bild.
 
