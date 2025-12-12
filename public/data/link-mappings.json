@@ -317,6 +317,20 @@
       "affiliate": false,
       "category": "Werkzeuge",
       "openInNewTab": true
+    },
+    "sikaflex522": {
+      "targetUrl": "https://www.amazon.de/dp/B09N7FVNFF",
+      "description": "Sikaflex-522 Dichtstoff - UV- und säurebeständig",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "u-buegel-ladungssicherung": {
+      "targetUrl": "https://www.amazon.de/s?k=u+b%C3%BCgel+anh%C3%A4nger",
+      "description": "U-Bügel für Anhänger - zur Ladungssicherung und Befestigung",
+      "affiliate": false,
+      "category": "Heimwerken",
+      "openInNewTab": true
     }
   },
   "analytics": {
