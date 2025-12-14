@@ -1,7 +1,7 @@
 ---
 agent: 'agent'
 description: 'Migrate WordPress article to Astro MDX format'
-model: Gemini 3 Pro (Preview)
+model: GPT-5.1-Codex (Preview) (copilot)
 ---
 
 ## Plan
