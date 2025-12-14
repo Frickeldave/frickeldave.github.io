@@ -1,7 +1,7 @@
 ---
 agent: 'agent'
 description: 'Migrate WordPress article to Astro MDX format'
-model: GPT-5.1-Codex (Preview) (copilot)
+model: Claude Sonnet 4.5 (copilot)
 ---
 
 ## Plan
