@@ -55,7 +55,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Monitorpanels für Besprechungsräume #2](https://frickeldave.de/monitorpanels-fur-besprechungsraume-2/) | fehlt | ❌ |
 | [Bohrtisch für die Standbohrmaschine](https://frickeldave.de/bohrtisch-fuer-die-standbohrmaschine/) | notdo | ⛔ |
 | [Bohrerhalter](https://frickeldave.de/bohrerhalter/) | notdo | ⛔ |
-| [Sterngriffe selber bauen](https://frickeldave.de/sterngriffe-selber-bauen/) | fehlt | ❌ |
+| [Sterngriffe selber bauen](https://frickeldave.de/sterngriffe-selber-bauen/) | `2019-12-19-sterngriffe-selber-bauen.mdx` | ✅ |
 | [Schublade für Meßwerkzeuge](https://frickeldave.de/schublade-fuer-messwerkzeuge/) | notdo | ⛔ |
 | [Schatztruhe aus Holz](https://frickeldave.de/schatztruhe-aus-holz/) | `2019-11-27-schatztruhe-aus-holz.mdx` | ✅ |
 | [Akku organizer](https://frickeldave.de/akku-organizer/) | notdo | ⛔ |
@@ -116,11 +116,11 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 (+ 6 Serie/Landing-Pages = 97 URLs)
-- **Migriert:** 21 Artikel
-- **Fehlend:** 72 Artikel
+- **Migriert:** 22 Artikel
+- **Fehlend:** 71 Artikel
 - **Serien/Landing-Pages:** 6 (separat zu behandeln)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~23% (21/91)
+- **Migrations-Quote:** ~24% (22/91)
 
 ## Migrierte Artikel im Detail
 
@@ -146,6 +146,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 1. ✅ Personalisierte Schlüsselanhänger (2024-09-14)
 1. ✅ Die Entwicklung von frickeldave.de (2025-11-21) - NEU
 1. ✅ Absaugverrohrung und Stromverteilung (2020-08-30)
+1. ✅ Sterngriffe selber bauen (2019-12-19)
 
 ## Serien/Landing-Pages
 
