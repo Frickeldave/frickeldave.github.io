@@ -366,6 +366,13 @@
       "affiliate": true,
       "category": "Heimwerken",
       "openInNewTab": true
+    },
+    "micha-youtube-sterngriffe": {
+      "targetUrl": "https://www.youtube.com/watch?v=gjoFMs5nDQw",
+      "description": "Micha's YouTube Video: Sterngriffe mit 5 Griffmulden herstellen",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
     }
   },
   "analytics": {
