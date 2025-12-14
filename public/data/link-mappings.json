@@ -366,13 +366,6 @@
       "affiliate": true,
       "category": "Heimwerken",
       "openInNewTab": true
-    },
-    "ikea-moebel-oel": {
-      "targetUrl": "https://www.ikea.com/de/de/search/?q=m%C3%B6bel%C3%B6l",
-      "description": "IKEA Möbelöl für Holzoberflächen",
-      "affiliate": false,
-      "category": "Heimwerken",
-      "openInNewTab": true
     }
   },
   "analytics": {

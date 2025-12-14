@@ -14,14 +14,15 @@ Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migrier
 4) Artikel migrieren
 5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
 6) Lokalen Entwicklungsserver starten und Artikel manuell durch User prüfen und vervollständigen lassen
-5) Lokale Tests durchführen (Astro build und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
-8) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird. Zudem lese bitte die aktuelle Version in den git tags aus und erhöhe die Patch Version um 1.
-9) PR erstellen mit Verlinkung zum Issue
-10) PR Review abwarten und ggf. Änderungen durchführen
-11) PR mergen in dev
-12) Issue schließen
-13) Die Datei ./docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird und der Status aktualisiert wird
-13) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in ./.github/prompts/chats/prompts.md eintragen
+7) Nach User-Review: Finale Linter-Prüfung ausführen (npm run format:check && npm run lint:check && npm run prose) um CI/CD-Probleme zu vermeiden. Bei Fehlern: npm run format && npm run lint ausführen und committen.
+8) Finalen Production Build durchführen (npm run build) und auf Erfolg prüfen
+9) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird. Zudem lese bitte die aktuelle Version in den git tags aus und erhöhe die Patch Version um 1.
+10) PR erstellen mit Verlinkung zum Issue
+11) PR Review abwarten und ggf. Änderungen durchführen
+12) PR mergen in dev
+13) Issue schließen
+14) Die Datei ./docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird und der Status aktualisiert wird
+15) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in ./.github/prompts/chats/prompts.md eintragen
 
 ## Grundsätzliche Informationen
 
