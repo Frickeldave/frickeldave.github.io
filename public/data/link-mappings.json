@@ -331,6 +331,27 @@
       "affiliate": false,
       "category": "Heimwerken",
       "openInNewTab": true
+    },
+    "holzbastler-absaug-tipps": {
+      "targetUrl": "https://www.youtube.com/watch?v=YksRdGRtAk0",
+      "description": "Holzbastler Video zur Absaugverrohrung und Werkstattplanung",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "holzer-einbausteckdosen": {
+      "targetUrl": "https://www.amazon.de/gp/product/B07CMG665T/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1",
+      "description": "Holzer Einbausteckdosen in verschiedenen Farben für Werkstätten",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "brandschutz-impraegnierung": {
+      "targetUrl": "https://www.amazon.de/dp/B004P8OT6E",
+      "description": "Brandschutzimprägnierung für Holzkanäle und Werkstatteinrichtungen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
     }
   },
   "analytics": {

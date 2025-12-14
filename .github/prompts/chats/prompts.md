@@ -25,4 +25,5 @@
 |2025-12-11|2025-12-11|[migrate-wordpress.prompt.md](../migrate-wordpress.prompt.md) - Zwingenhalter als Apothekerschrank|Claude Sonnet 4|GitHub Copilot|Implemented|8|Migration erfolgreich, Issue #78, PR #79 erstellt. 9 Bilder von OneDrive, 2 neue Links (wolfcraft-zwingen, teleskopschienen24). Vollständige Ausführung aller Schritte 1-6 autonom. Version v0.7.2 tagged.
 |2025-12-11|2025-12-11|[DAMIT.prompt.md](../DAMIT.prompt.md) - Bierträger oder Männerhandtasche|Claude Sonnet 4.5|GitHub Copilot|Implemented|6|Migration erfolgreich, Issue #81, PR #82 erstellt. Bilder schlecht zugeordnet, Linter Errors am Ende noch vorhanden. 
 |2025-12-12|2025-12-12|[DAMIT.prompt.md](../DAMIT.prompt.md) - Deichselkiste für den PKW-Anhänger|Claude Sonnet 4.5|GitHub Copilot|In Progress|TBD|Migration gestartet mit Platzhalter-Bildern
+|2025-12-13|2025-12-14|[DAMIT.prompt.md](../DAMIT.prompt.md) - Absaugverrohrung und Stromverteilung|GPT-5.1-Codex (Preview)|GitHub Copilot|Implemented|0|Migration abgeschlossen, Issue #92 umgesetzt
 |yyyy-mm-dd|yyyy-mm-dd|DESCRIPTION|MODEL|ENVIRONMENT|STATUS|RANKING|KOMMENTAR

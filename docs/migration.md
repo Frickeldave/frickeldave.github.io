@@ -44,16 +44,16 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Herdabdeckplatten aus Holz und Epoxidharz](https://frickeldave.de/herdabdeckplatten-aus-holz-und-epoxidharz/) | fehlt | ❌ |
 | [Absaugverteiler](https://frickeldave.de/absaugverteiler/) | notdo | ⛔ |
 | [Blastgates / Sperrschieber für die Absauganlage](https://frickeldave.de/blastgates-sperrschieber-fuer-die-absauganlage/) | notdo | ⛔ |
-| [Absaugverrohrung und Stromverteilung](https://frickeldave.de/absaugverrohrung-und-stromverteilung/) | fehlt | ❌ |
+| [Absaugverrohrung und Stromverteilung](https://frickeldave.de/absaugverrohrung-und-stromverteilung/) | `2020-08-30-absaugverrohrung-und-stromverteilung.mdx` | ✅ |
 | [Gartenschrank für die Terrasse](https://frickeldave.de/gartenschrank-fuer-die-terrasse/) | `2020-06-18-gartenschrank-fuer-die-terrasse.mdx` | ✅ |
 | [Kinderhändelampe](https://frickeldave.de/kinderhaendelampe/) | fehlt | ❌ |
-| [Getränkekistenhalter (mit Plan)](https://frickeldave.de/halter-fuer-getraenkekisten-mit-plan/) | fehlt | ❌ |
+| [Getränkekistenhalter (mit Plan)](https://frickeldave.de/halter-fuer-getraenkekisten-mit-plan/) | notdo | ⛔ |
 | [Kabelkanal aus Holz](https://frickeldave.de/kabelkanal-aus-holz/) | fehlt | ❌ |
 | [Garage #0: Günstigen Unterstand bauen](https://frickeldave.de/unterstand-bauen/) | notdo | ⛔ |
 | [Monitorpanels für Besprechungsräume #3](https://frickeldave.de/monitorpanels-fuer-besprechungsraeume-3/) | fehlt | ❌ |
 | [ZLH150_3 Charity challenge](https://frickeldave.de/zlh150_3-charity-challenge/) | fehlt | ❌ |
 | [Monitorpanels für Besprechungsräume #2](https://frickeldave.de/monitorpanels-fur-besprechungsraume-2/) | fehlt | ❌ |
-| [Bohrtisch für die Standbohrmaschine](https://frickeldave.de/bohrtisch-fuer-die-standbohrmaschine/) | fehlt | ❌ |
+| [Bohrtisch für die Standbohrmaschine](https://frickeldave.de/bohrtisch-fuer-die-standbohrmaschine/) | notdo | ⛔ |
 | [Bohrerhalter](https://frickeldave.de/bohrerhalter/) | notdo | ⛔ |
 | [Sterngriffe selber bauen](https://frickeldave.de/sterngriffe-selber-bauen/) | fehlt | ❌ |
 | [Schublade für Meßwerkzeuge](https://frickeldave.de/schublade-fuer-messwerkzeuge/) | notdo | ⛔ |
@@ -116,35 +116,36 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 (+ 6 Serie/Landing-Pages = 97 URLs)
-- **Migriert:** 19 Artikel
+- **Migriert:** 21 Artikel
 - **Fehlend:** 72 Artikel
 - **Serien/Landing-Pages:** 6 (separat zu behandeln)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~21% (19/91)
+- **Migrations-Quote:** ~23% (21/91)
 
 ## Migrierte Artikel im Detail
 
 1. ✅ Schatztruhe aus Holz (2019-11-27)
-2. ✅ Gartenschrank für die Terrasse (2020-06-18)
-3. ✅ DevOps – Bring was Liebe ins Business (2021-01-12)
-4. ✅ 7 Meinungen zum Thema DevOps (2021-05-05)
-5. ✅ Deichselkiste für den PKW-Anhänger (2021-06-16)
-6. ✅ Schale aus Beton mit Eiche (2021-08-12)
-7. ✅ Zwingenhalter als Apothekerschrank (2021-09-19)
-8. ✅ Briefkastenhalter aus Dachbalken (2021-10-08)
-9. ✅ Restholz - Lampi der Lampenhund (2021-10-29)
-10. ✅ Bananenständer (2021-11-24)
-11. ✅ Das DevOps Stoßpendel (2021-12-01)
-12. ✅ Katzenklo Schrank (2022-01-16)
-13. ✅ Betonschalen Tic-Tac-Toe (2022-07-11)
-14. ✅ Lampe aus hohlen Baumstamm (2022-09-09)
-15. ✅ Adventskalender aus Papier und Restholz (2022-10-27)
-16. ✅ DevOps Kultur, Organisation und Technologie (2022-10-27)
-17. ✅ Le Passe Trappe Flitzpuck (2022-11-16)
-18. ✅ Bau dein Video Studio für 500€ (2023-08-17)
-19. ✅ Vogelfutterhaus (2023-11-24)
-19. ✅ Personalisierte Schlüsselanhänger (2024-09-14)
-20. ✅ Die Entwicklung von frickeldave.de (2025-11-21) - NEU
+1. ✅ Gartenschrank für die Terrasse (2020-06-18)
+1. ✅ DevOps – Bring was Liebe ins Business (2021-01-12)
+1. ✅ 7 Meinungen zum Thema DevOps (2021-05-05)
+1. ✅ Deichselkiste für den PKW-Anhänger (2021-06-16)
+1. ✅ Schale aus Beton mit Eiche (2021-08-12)
+1. ✅ Zwingenhalter als Apothekerschrank (2021-09-19)
+1. ✅ Briefkastenhalter aus Dachbalken (2021-10-08)
+1. ✅ Restholz - Lampi der Lampenhund (2021-10-29)
+1. ✅ Bananenständer (2021-11-24)
+1. ✅ Das DevOps Stoßpendel (2021-12-01)
+1. ✅ Katzenklo Schrank (2022-01-16)
+1. ✅ Betonschalen Tic-Tac-Toe (2022-07-11)
+1. ✅ Lampe aus hohlen Baumstamm (2022-09-09)
+1. ✅ Adventskalender aus Papier und Restholz (2022-10-27)
+1. ✅ DevOps Kultur, Organisation und Technologie (2022-10-27)
+1. ✅ Le Passe Trappe Flitzpuck (2022-11-16)
+1. ✅ Bau dein Video Studio für 500€ (2023-08-17)
+1. ✅ Vogelfutterhaus (2023-11-24)
+1. ✅ Personalisierte Schlüsselanhänger (2024-09-14)
+1. ✅ Die Entwicklung von frickeldave.de (2025-11-21) - NEU
+1. ✅ Absaugverrohrung und Stromverteilung (2020-08-30)
 
 ## Serien/Landing-Pages
 
