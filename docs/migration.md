@@ -46,7 +46,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Blastgates / Sperrschieber für die Absauganlage](https://frickeldave.de/blastgates-sperrschieber-fuer-die-absauganlage/) | notdo | ⛔ |
 | [Absaugverrohrung und Stromverteilung](https://frickeldave.de/absaugverrohrung-und-stromverteilung/) | `2020-08-30-absaugverrohrung-und-stromverteilung.mdx` | ✅ |
 | [Gartenschrank für die Terrasse](https://frickeldave.de/gartenschrank-fuer-die-terrasse/) | `2020-06-18-gartenschrank-fuer-die-terrasse.mdx` | ✅ |
-| [Kinderhändelampe](https://frickeldave.de/kinderhaendelampe/) | fehlt | ❌ |
+| [Kinderhändelampe](https://frickeldave.de/kinderhaendelampe/) | `2020-05-20-kinderhaendelampe.mdx` | ✅ |
 | [Getränkekistenhalter (mit Plan)](https://frickeldave.de/halter-fuer-getraenkekisten-mit-plan/) | notdo | ⛔ |
 | [Kabelkanal aus Holz](https://frickeldave.de/kabelkanal-aus-holz/) | fehlt | ❌ |
 | [Garage #0: Günstigen Unterstand bauen](https://frickeldave.de/unterstand-bauen/) | notdo | ⛔ |

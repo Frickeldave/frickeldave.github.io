@@ -352,6 +352,20 @@
       "affiliate": true,
       "category": "Heimwerken",
       "openInNewTab": true
+    },
+    "belly-deluxe": {
+      "targetUrl": "https://www.bellydeluxe.de/",
+      "description": "Bellydeluxe.de - Babyausstattung und Geschenkartikel",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "led-streifen-1m": {
+      "targetUrl": "https://www.amazon.de/s?k=led+streifen+1m",
+      "description": "LED-Streifen 1m für indirekte Beleuchtung",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
     }
   },
   "analytics": {
