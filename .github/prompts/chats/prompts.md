@@ -28,4 +28,5 @@
 |2025-12-13|2025-12-14|[DAMIT.prompt.md](../DAMIT.prompt.md) - Absaugverrohrung und Stromverteilung|GPT-5.1-Codex (Preview)|GitHub Copilot|Implemented|6|Migration abgeschlossen, Issue #92 umgesetzt. Bewertung im prompt nicht eingetragen.
 |2025-12-14|2025-12-14|[DAMIT.prompt.md](../DAMIT.prompt.md) - Kinderhändelampe|Claude Sonnet 4.5|GitHub Copilot|Implemented|8|Migration erfolgreich, Issue #94, PR #95 erstellt. 15 Bilder, 6 neue Links, Version v0.12.1 tagged. Alle 15 Workflow-Schritte vollständig ausgeführt.
 |2025-12-14|2025-12-14|[DAMIT.prompt.md](../DAMIT.prompt.md) - Sterngriffe selber bauen|Claude Sonnet 4.5|GitHub Copilot|Implemented|8|Migration erfolgreich, Issue #96, PR #97 erstellt. 12 Platzhalter-Bilder (Header + 11 Content), 1 neuer Link (micha-youtube-sterngriffe). Alle 15 Workflow-Schritte vollständig ausgeführt. Version v0.13.1 tagged.
+|2025-12-14|2025-12-14|[DAMIT.prompt.md](../DAMIT.prompt.md) - Unterschrank für Hobel mit Späneabscheidung|Claude Sonnet 4.5|GitHub Copilot|In Progress|TBD|Migration gestartet mit Platzhalter-Bildern
 |yyyy-mm-dd|yyyy-mm-dd|DESCRIPTION|MODEL|ENVIRONMENT|STATUS|RANKING|KOMMENTAR

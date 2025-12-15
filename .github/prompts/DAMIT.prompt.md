@@ -13,16 +13,19 @@ Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migrier
 3) Aus dem dev-Branch heraus einen neuen Branch passend zum Issue erstellen. Alle aktuell offenen Änderungen müssen mit in den neuen Branch übernommen werden. 
 4) Artikel migrieren
 5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
-6) Lokalen Entwicklungsserver starten und Artikel manuell durch User prüfen und vervollständigen lassen
-7) Nach User-Review: Finale Linter-Prüfung ausführen (npm run format:check && npm run lint:check && npm run prose) um CI/CD-Probleme zu vermeiden. Bei Fehlern: npm run format && npm run lint ausführen und committen.
-8) Finalen Production Build durchführen (npm run build) und auf Erfolg prüfen
-9) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird. Zudem lese bitte die aktuelle Version in den git tags aus und erhöhe die Patch Version um 1.
-10) PR erstellen mit Verlinkung zum Issue
-11) PR Review abwarten und ggf. Änderungen durchführen
-12) PR mergen in dev
-13) Issue schließen
-14) Die Datei ./docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird und der Status aktualisiert wird
-15) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in ./.github/prompts/chats/prompts.md eintragen
+6) Einen prompt für die Erstellung des header Images erstellen und diesen im Chat ausgeben. Der Inhalt des Prompts ist im Abschnitt "Bildgenerierung Header" beschrieben.
+6) Sterte eine lokalen Entwicklungsserver, damit ich den Artikel manuell prüfen und vervollständigen lassen
+7) Nach User-Review: Fordere den Benutzer im Chat auf, alle Platzhalter Bilder zu löschen und
+lass dir die Löschung der Bilder bestätigen. 
+8) Finale Linter-Prüfung ausführen (npm run format:check && npm run lint:check && npm run prose) um CI/CD-Probleme zu vermeiden. Bei Fehlern: npm run format && npm run lint ausführen und committen.
+9) Finalen Production Build durchführen (npm run build) und auf Erfolg prüfen
+10) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird. Zudem lese bitte die aktuelle Version in den git tags aus und erhöhe die Patch Version um 1.
+11) PR erstellen mit Verlinkung zum Issue
+12) PR Review abwarten und ggf. Änderungen durchführen
+13) PR mergen in dev
+14) Issue schließen
+15) Die Datei ./docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird, sollte er fehlen und der Status aktualisiert wird. Zudem aktualisiere die Statistik am Ende der Datei.
+16) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in ./.github/prompts/chats/prompts.md eintragen
 
 ## Grundsätzliche Informationen
 
@@ -104,6 +107,14 @@ Beispiel Bild rechts:
 </div>
 
 ```
+
+## Bildgenerierung Header
+
+Nach der Migration des Artikels, erstelle bitte einen Prompt für die Bildgenerierung des Header Images. Der Prompt soll im Chat ausgegeben werden, damit ich diesen kopieren und in mein Bildgenerierungstool einfügen kann. Hier der prompt:
+
+Generiere bitte folgendes Bild im Format 1536×1024: Eine fotorealistische, hochwertige Illustration im Steampunk-Stil. Die Farbpalette soll die Farben #07CEE0 (Türkis), #575760 (Dunkelgrau) und #363D46 (Schiefergrau-Blau) enthalten, um einen Wiedererkennungswert zu schaffen – ohne sie ausschließlich zu verwenden. Das Bild soll dynamisch, inspirierend und technisch anspruchsvoll wirken, mit komplexen Steampunk-Maschinen, Menschen im Look des industriellen Revolution und leuchtenden Elementen und einem Gefühl von Innovation und Teamarbeit. Realistische Lichtverhältnisse und metallische Texturen. Baue bitte zusätzlich mein Logo möglichst unauffällig und dezent aus der Datei "Logo_Flat-Black-2000.jpg" mit in das Bild ein. Der Inhalt des Bildes soll sich um das folgende Thema drehen:
+
+<EINFÜGEN EINER ARTIKELZUSAMMENFASSUNG HIER>
 
 ## Links
 
