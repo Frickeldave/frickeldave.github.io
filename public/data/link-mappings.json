@@ -422,6 +422,27 @@
       "affiliate": true,
       "category": "Werkzeuge",
       "openInNewTab": true
+    },
+    "herdabdeckplatten-epoxy": {
+      "targetUrl": "https://frickeldave.github.io/blog/herdabdeckplatten-aus-holz-und-epoxidharz/",
+      "description": "Herdabdeckplatten aus Holz und Epoxidharz",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": false
+    },
+    "jonas-winkler-mdf": {
+      "targetUrl": "https://www.youtube.com/watch?v=tGdllFHbmew&t=19s",
+      "description": "Jonas Winkler: MDF-Verleimung und verschiedene Verbindungstechniken",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "drechselholz-laschinger": {
+      "targetUrl": "https://www.drechselholz-laschinger.de/Drechselholz/Nussbaum/",
+      "description": "Drechselholz Laschinger - Nussbaum Drechselrohlinge",
+      "affiliate": false,
+      "category": "Holz",
+      "openInNewTab": true
     }
   },
   "analytics": {

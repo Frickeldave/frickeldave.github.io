@@ -33,7 +33,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Kopfhörerhalter mit LED und Epoxy](https://frickeldave.de/kopfhoererhalter-mit-led-und-epoxy/) | `2021-05-18-kopfhoererhalter-mit-led-und-epoxy.mdx` | ✅ |
 | [Unterschrank für Hobel mit Späneabscheidung](https://frickeldave.de/unterschrank-fuer-hobel-mit-spaeneabscheidung/) | `2021-04-28-unterschrank-fuer-hobel-mit-spaeneabscheidung.mdx` | ✅ |
 | [Brett Bit – Bithalter aus Holz und Epoxy](https://frickeldave.de/brett-bit-bithalter-aus-holz-und-epoxy/) | notdo | ⛔ |
-| [Teeschrank mit Fronten aus Epoxidharz](https://frickeldave.de/teeschrank-mit-epoxidharzfronten/) | fehlt | ❌ |
+| [Teeschrank mit Fronten aus Epoxidharz](https://frickeldave.de/teeschrank-mit-epoxidharzfronten/) | `2021-04-01-teeschrank-mit-epoxidharzfronten.mdx` | ✅ |
 | [Katzenkratzbaum aus Dachbalken](https://frickeldave.de/katzenkratzbaum-aus-dachbalken/) | fehlt | ❌ |
 | [Lightbox zur Fotografie von Schmuck](https://frickeldave.de/lightbox-zur-fotografie-von-schmuck/) | notdo | ⛔ |
 | [Mobile Werkstatt für Epoxidharzschmuck](https://frickeldave.de/mobile-werkstatt-fuer-epoxidharzschmuck/) | notdo | ⛔ |
@@ -116,9 +116,9 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 Artikel
-- **Migriert:** 24 Artikel (✅)
-- **Fehlend (noch zu migrieren):** 19 Artikel (❌)
+- **Migriert:** 25 Artikel (✅)
+- **Fehlend (noch zu migrieren):** 18 Artikel (❌)
 - **Nicht migriert (notdo):** 48 Artikel (⛔)
 - **Serien/Landing-Pages:** 6 (separat zu behandeln, als notdo markiert)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~26% (24/91) | ~56% von geplanten Artikeln (24/43)
+- **Migrations-Quote:** ~27% (25/91) | ~58% von geplanten Artikeln (25/43)
