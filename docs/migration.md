@@ -30,8 +30,8 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Schale aus Beton mit Eiche](https://frickeldave.de/schale-aus-beton/) | `2021-08-12-schale-aus-beton-mit-eiche.mdx` | ✅ |
 | [Bierträger oder "Männerhandtasche"](https://frickeldave.de/biertraeger-oder-maennerhandtasche/) | `2021-07-27-biertraeger-oder-maennerhandtasche.mdx` | ✅ |
 | [Deichselkiste für den PKW-Anhänger](https://frickeldave.de/deichselkiste-fuer-den-pkw-anhaenger/) | `2021-06-16-deichselkiste-fuer-den-pkw-anhaenger.mdx` | ✅ |
-| [Kopfhörerhalter mit LED und Epoxy](https://frickeldave.de/kopfhoererhalter-mit-led-und-epoxy/) | fehlt | ❌ |
-| [Unterschrank für Hobel mit Späneabscheidung](https://frickeldave.de/unterschrank-fuer-hobel-mit-spaeneabscheidung/) | fehlt | ❌ |
+| [Kopfhörerhalter mit LED und Epoxy](https://frickeldave.de/kopfhoererhalter-mit-led-und-epoxy/) | `2021-05-18-kopfhoererhalter-mit-led-und-epoxy.mdx` | ✅ |
+| [Unterschrank für Hobel mit Späneabscheidung](https://frickeldave.de/unterschrank-fuer-hobel-mit-spaeneabscheidung/) | `2021-04-28-unterschrank-fuer-hobel-mit-spaeneabscheidung.mdx` | ✅ |
 | [Brett Bit – Bithalter aus Holz und Epoxy](https://frickeldave.de/brett-bit-bithalter-aus-holz-und-epoxy/) | notdo | ⛔ |
 | [Teeschrank mit Fronten aus Epoxidharz](https://frickeldave.de/teeschrank-mit-epoxidharzfronten/) | fehlt | ❌ |
 | [Katzenkratzbaum aus Dachbalken](https://frickeldave.de/katzenkratzbaum-aus-dachbalken/) | fehlt | ❌ |
@@ -115,76 +115,10 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 
 ## Statistik
 
-- **Gesamt Original-Artikel:** 91 (+ 6 Serie/Landing-Pages = 97 URLs)
-- **Migriert:** 22 Artikel
-- **Fehlend:** 71 Artikel
-- **Serien/Landing-Pages:** 6 (separat zu behandeln)
+- **Gesamt Original-Artikel:** 91 Artikel
+- **Migriert:** 24 Artikel (✅)
+- **Fehlend (noch zu migrieren):** 19 Artikel (❌)
+- **Nicht migriert (notdo):** 48 Artikel (⛔)
+- **Serien/Landing-Pages:** 6 (separat zu behandeln, als notdo markiert)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~24% (22/91)
-
-## Migrierte Artikel im Detail
-
-1. ✅ Schatztruhe aus Holz (2019-11-27)
-1. ✅ Gartenschrank für die Terrasse (2020-06-18)
-1. ✅ DevOps – Bring was Liebe ins Business (2021-01-12)
-1. ✅ 7 Meinungen zum Thema DevOps (2021-05-05)
-1. ✅ Deichselkiste für den PKW-Anhänger (2021-06-16)
-1. ✅ Schale aus Beton mit Eiche (2021-08-12)
-1. ✅ Zwingenhalter als Apothekerschrank (2021-09-19)
-1. ✅ Briefkastenhalter aus Dachbalken (2021-10-08)
-1. ✅ Restholz - Lampi der Lampenhund (2021-10-29)
-1. ✅ Bananenständer (2021-11-24)
-1. ✅ Das DevOps Stoßpendel (2021-12-01)
-1. ✅ Katzenklo Schrank (2022-01-16)
-1. ✅ Betonschalen Tic-Tac-Toe (2022-07-11)
-1. ✅ Lampe aus hohlen Baumstamm (2022-09-09)
-1. ✅ Adventskalender aus Papier und Restholz (2022-10-27)
-1. ✅ DevOps Kultur, Organisation und Technologie (2022-10-27)
-1. ✅ Le Passe Trappe Flitzpuck (2022-11-16)
-1. ✅ Bau dein Video Studio für 500€ (2023-08-17)
-1. ✅ Vogelfutterhaus (2023-11-24)
-1. ✅ Personalisierte Schlüsselanhänger (2024-09-14)
-1. ✅ Die Entwicklung von frickeldave.de (2025-11-21) - NEU
-1. ✅ Absaugverrohrung und Stromverteilung (2020-08-30)
-1. ✅ Sterngriffe selber bauen (2019-12-19)
-
-## Serien/Landing-Pages
-
-Diese Seiten sind Übersichtsseiten für mehrteilige Artikel-Serien und müssen separat behandelt werden:
-
-1. 🔄 [Absauganlage](https://frickeldave.de/absauganlage/) - Sammlung von ~7 Einzelartikeln
-2. 🔄 [Bachlauf aus Beton](https://frickeldave.de/bachlauf-aus-beton/) - 3 Teile + 1 Extra
-3. 🔄 [Bauen eines Monitorpanel mit ambient light](https://frickeldave.de/bauen-eines-monitorpanel-mit-ambient-light/) - 3 Teile
-4. 🔄 [Magnetische Topfuntersetzer](https://frickeldave.de/magnetische-topfuntersetzer/) - 3 Editionen
-5. 🔄 [Drechselbank](https://frickeldave.de/drechselbank/) - 4 Teile
-6. 🔄 [Java Entwicklung mit Visual Studio Code, Spring Boot und Docker](https://frickeldave.de/java-entwicklung-mit-visual-studio-code-spring-boot-und-docker/) - 5 Teile
-
-## Priorisierung für Migration
-
-### Hohe Priorität (beliebte/wichtige Artikel)
-
-1. Magnetische Topfuntersetzer (Serie)
-2. Absauganlage (Serie - viele Einzelartikel)
-3. Drechselbank (Serie)
-4. Bachlauf aus Beton (Serie)
-5. Monitorpanel mit ambient light (Serie)
-6. Java/Spring Boot Entwicklung (Serie)
-
-### Mittlere Priorität (DIY-Projekte)
-
-- Katzenkratzbaum aus Dachbalken
-- Epoxidharz-Projekte (Schlüsselbrett, Kopfhörerhalter, Teeschrank, etc.)
-- Werkstatt-Organisation (Absaugverteiler, Blastgates, Bohrerhalter, etc.)
-- Lampen-Projekte
-
-### Niedrige Priorität
-
-- Ältere, kleinere Projekte
-- Sehr spezifische Nischen-Artikel
-
-## Hinweise zur Migration
-
-- Die meisten migrierten Artikel stammen aus den Jahren 2019-2024
-- DevOps-Artikel sind gut vertreten (5 von 11 migrierten Artikeln)
-- DIY/Holzwerken-Artikel dominieren die fehlenden Artikel
-- Serien-Artikel benötigen besondere Aufmerksamkeit wegen der Navigation zwischen Teilen
+- **Migrations-Quote:** ~26% (24/91) | ~56% von geplanten Artikeln (24/43)

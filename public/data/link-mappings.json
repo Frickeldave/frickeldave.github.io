@@ -373,6 +373,55 @@
       "affiliate": false,
       "category": "DIY",
       "openInNewTab": true
+    },
+    "philipp-konter-spaeneofen": {
+      "targetUrl": "https://www.youtube.com/watch?v=Fm1ZbJpm_n4",
+      "description": "Philipp Konter: Spänenofen bauen",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "philipp-konter-spaeneabscheider-1": {
+      "targetUrl": "https://www.youtube.com/watch?v=N72OuKBiZbQ",
+      "description": "Philipp Konter: Späneabscheider Teil 1",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "philipp-konter-spaeneabscheider-2": {
+      "targetUrl": "https://www.youtube.com/watch?v=RP_k4rBAzYA",
+      "description": "Philipp Konter: Späneabscheider Teil 2",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "abenteuer-handarbeit-spaeneabscheider": {
+      "targetUrl": "https://www.youtube.com/watch?v=rUPSAa-VZLM",
+      "description": "Abenteuer Handarbeit: Späneabscheider Video",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "rollen-75kg": {
+      "targetUrl": "https://www.amazon.de/dp/B01IHJJUEC",
+      "description": "Schwerlastrollen 75kg Tragkraft für mobile Werkstattmöbel",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "vc-dichtungsband": {
+      "targetUrl": "https://www.amazon.de/dp/B07P8KZ7LK",
+      "description": "Dichtschnur 6mm für luftdichte Verbindungen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "absaugschlauch-75mm": {
+      "targetUrl": "https://www.amazon.de/dp/B07M6B3X5W",
+      "description": "Absaugschlauch 50mm für Werkstatt-Absauganlagen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
     }
   },
   "analytics": {
