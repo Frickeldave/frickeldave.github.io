@@ -200,10 +200,31 @@
       "openInNewTab": true
     },
     "oli-natura-hartwachsoel": {
-      "targetUrl": "https://frickeldave.de/aff_hartwachsöl",
+      "targetUrl": "https://www.amazon.de/gp/product/B01EYF758Q",
       "description": "Oli Natura Hartwachsöl für die Holzoberflächenbehandlung",
       "affiliate": true,
       "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "hartwachsoel": {
+      "targetUrl": "https://www.amazon.de/gp/product/B01EYF758Q",
+      "description": "Hartwachsöl für die Holzoberflächenbehandlung",
+      "affiliate": true,
+      "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "nobel-hobel-works-runde-scheibe-herstellen": {
+      "targetUrl": "https://www.youtube.com/watch?v=NHAtgxtNej4",
+      "description": "Nobel Hobel Works - Runde Platte an der Kreissäge fertigen",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "truppe-youtube": {
+      "targetUrl": "https://www.youtube.com/watch?v=q1SWJnXVdBk",
+      "description": "Truppe - Alternative Methoden zum Kreissägen",
+      "affiliate": false,
+      "category": "DIY",
       "openInNewTab": true
     },
     "amazon-bindfaden": {
@@ -423,25 +444,11 @@
       "category": "Werkzeuge",
       "openInNewTab": true
     },
-    "herdabdeckplatten-epoxy": {
-      "targetUrl": "https://frickeldave.github.io/blog/herdabdeckplatten-aus-holz-und-epoxidharz/",
-      "description": "Herdabdeckplatten aus Holz und Epoxidharz",
-      "affiliate": false,
-      "category": "DIY",
-      "openInNewTab": false
-    },
     "jonas-winkler-mdf": {
       "targetUrl": "https://www.youtube.com/watch?v=tGdllFHbmew&t=19s",
       "description": "Jonas Winkler: MDF-Verleimung und verschiedene Verbindungstechniken",
       "affiliate": false,
       "category": "YouTube",
-      "openInNewTab": true
-    },
-    "drechselholz-laschinger": {
-      "targetUrl": "https://www.drechselholz-laschinger.de/Drechselholz/Nussbaum/",
-      "description": "Drechselholz Laschinger - Nussbaum Drechselrohlinge",
-      "affiliate": false,
-      "category": "Holz",
       "openInNewTab": true
     }
   },
