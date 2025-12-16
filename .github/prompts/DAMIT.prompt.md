@@ -8,25 +8,25 @@ model: Claude Sonnet 4.5 (copilot)
 
 Es sollen alte Artikel von einer WordPress Seite in das Astro MDX Format migriert werden. Dabei sind Metadaten, Bilder und Links entsprechend anzupassen. Die folgende Liste ist der Schritt-für-Schritt Plan zur Migration eines Artikels. Bitte führe alle Schritte bis zum Schritt 6 vollständig autonom aus.
 
-1) In .github/prompts/chats/prompts.md die Tabelle erweitern
-2) GitHub issue erstellen (gh ist installiert, wenn nicht, bitte komplett abbrechen). Nutze als label "blog" und weise das Issue mir zu. Nutze als Titel "Migriere Blog Artikel: <Artikel Titel>" und als Beschreibung die URL des Artikels sowie eine kurze Zusammenfassung des Inhalts.
-3) Aus dem dev-Branch heraus einen neuen Branch passend zum Issue erstellen. Alle aktuell offenen Änderungen müssen mit in den neuen Branch übernommen werden. 
-4) Migriere den Artikel gemäß der Spezifikation in den folgenden Abschnitten. Nutze dabei die URL ${input:url} als Quelle. Verwende bitte die Original Texte ohne da einzugreifen. Einzige Ausnahme ist die Korrektur von Rechtschreibfehlern. 
-5) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
-6) Einen prompt für die Erstellung des header Images erstellen und diesen im Chat ausgeben. Der Inhalt des Prompts ist im Abschnitt "Bildgenerierung Header" beschrieben.
-6) Sterte eine lokalen Entwicklungsserver, damit ich den Artikel manuell prüfen und vervollständigen lassen
-7) Nach User-Review: Fordere den Benutzer im Chat auf, alle Platzhalter Bilder zu löschen und
+1) Lese den Quellartikel. Nutze dabei die URL ${input:url} als Quelle. Verwende Invoke-WebRequest oder curl um den Inhalt zu lesen um das Cookie Banner zu umgehen. 
+2) In .github/prompts/chats/prompts.md die Tabelle erweitern
+3) GitHub issue erstellen (gh ist installiert, wenn nicht, bitte komplett abbrechen). Nutze als label "blog" und weise das Issue mir zu. Nutze als Titel "Migriere Blog Artikel: <Artikel Titel>" und als Beschreibung die URL des Artikels sowie eine kurze Zusammenfassung des Inhalts.
+4) Aus dem dev-Branch heraus einen neuen Branch passend zum Issue erstellen. Alle aktuell offenen Änderungen müssen mit in den neuen Branch übernommen werden. 
+5) Migriere den Artikel gemäß der Spezifikation in den folgenden Abschnitten. Verwende bitte die Original Texte ohne sie zu verändern. Einzige Ausnahme ist die Korrektur von Rechtschreibfehlern. 
+6) Lokale Tests durchführen (Astro build, Bilder, Links und Linter Tests). Die Linter Issues bitte automatisch beheben lassen, wenn möglich, beim prosa linter dann bitte nachkorrigieren. Wenn Linter mal nicht funktioniert weil Voraussetzungen fehlen, dann bitte nicht einfach weitermachen sondern installieren.
+7) Einen prompt für die Erstellung des header Images erstellen und diesen im Chat ausgeben. Der Inhalt des Prompts ist im Abschnitt "Bildgenerierung Header" beschrieben.
+8) Sterte eine lokalen Entwicklungsserver, damit ich den Artikel manuell prüfen und vervollständigen lassen
+9) Nach User-Review: Fordere den Benutzer im Chat auf, alle Platzhalter Bilder zu löschen und
 lass dir die Löschung der Bilder bestätigen. 
-8) Finale Linter-Prüfung ausführen (npm run format:check && npm run lint:check && npm run prose) um CI/CD-Probleme zu vermeiden. Bei Fehlern: npm run format && npm run lint ausführen und committen.
-9) Finalen Production Build durchführen (npm run build) und auf Erfolg prüfen
-10) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird. Zudem lese bitte die aktuelle Version in den git tags aus und erhöhe die Patch Version um 1.
-11) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in ./.github/prompts/chats/prompts.md eintragen
-12) Alle Änderungen commiten und pushen
-13) PR erstellen mit Verlinkung zum Issue
-14) Warte nun die Pull Request Checks ab. Wenn alles grün ist und der PR automatisch gemerged werden kann, merge den  PR in den dev Branch.
-15) Issue schließen
-16) Die Datei ./docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird, sollte er fehlen und der Status aktualisiert wird. Zudem aktualisiere die Statistik am Ende der Datei.
-
+9) Finale Linter-Prüfung ausführen (npm run format:check && npm run lint:check && npm run prose) um CI/CD-Probleme zu vermeiden. Bei Fehlern: npm run format && npm run lint ausführen und committen.
+10) Finalen Production Build durchführen (npm run build) und auf Erfolg prüfen
+11) Die Version erhöhen, indem das Script ./scripts/generate-version.ts ausgeführt wird. Zudem lese bitte die aktuelle Version in den git tags aus und erhöhe die Patch Version um 1.
+12) Die Datei ./docs/migration.md aktualisieren, indem der neue Artikel New(Repo) dort eingetragen wird, sollte er fehlen und der Status aktualisiert wird. Zudem aktualisiere die Statistik am Ende der Datei.
+13) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in ./.github/prompts/chats/prompts.md eintragen
+14) Alle Änderungen commiten und pushen
+15) PR erstellen mit Verlinkung zum Issue
+16) Warte nun die Pull Request Checks ab. Wenn alles grün ist und der PR automatisch gemerged werden kann, merge den  PR in den dev Branch.
+17) Issue schließen
 
 ## Grundsätzliche Informationen
 
