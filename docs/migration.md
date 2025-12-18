@@ -37,7 +37,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Katzenkratzbaum aus Dachbalken](https://frickeldave.de/katzenkratzbaum-aus-dachbalken/) | `2021-03-05-katzenkratzbaum-aus-dachbalken.mdx` | ✅ |
 | [Lightbox zur Fotografie von Schmuck](https://frickeldave.de/lightbox-zur-fotografie-von-schmuck/) | notdo | ⛔ |
 | [Mobile Werkstatt für Epoxidharzschmuck](https://frickeldave.de/mobile-werkstatt-fuer-epoxidharzschmuck/) | notdo | ⛔ |
-| [Kaminumbau](https://frickeldave.de/kaminumbau/) | fehlt | ❌ |
+| [Kaminumbau](https://frickeldave.de/kaminumbau/) | `2021-02-05-kaminumbau.mdx` | ✅ |
 | [Müsliboxen](https://frickeldave.de/muesliboxen/) | notdo | ⛔ |
 | [Mehlbox für 5kg Mehlsäcke](https://frickeldave.de/mehlbox-fuer-5kg-mehlsaecke/) | fehlt | ❌ |
 | [Schrankumbau für IKEA Sortera Papiereimer](https://frickeldave.de/schrankumbau-fuer-ikea-sortera-papiereimer/) | fehlt | ❌ |
