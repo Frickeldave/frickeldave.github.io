@@ -116,9 +116,9 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 Artikel
-- **Migriert:** 26 Artikel (✅)
-- **Fehlend (noch zu migrieren):** 17 Artikel (❌)
+- **Migriert:** 27 Artikel (✅)
+- **Fehlend (noch zu migrieren):** 16 Artikel (❌)
 - **Nicht migriert (notdo):** 48 Artikel (⛔)
 - **Serien/Landing-Pages:** 6 (separat zu behandeln, als notdo markiert)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~29% (26/91) | ~61% von geplanten Artikeln (26/43)
+- **Migrations-Quote:** ~30% (27/91) | ~63% von geplanten Artikeln (27/43)
