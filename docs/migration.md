@@ -37,7 +37,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Katzenkratzbaum aus Dachbalken](https://frickeldave.de/katzenkratzbaum-aus-dachbalken/) | `2021-03-05-katzenkratzbaum-aus-dachbalken.mdx` | ✅ |
 | [Lightbox zur Fotografie von Schmuck](https://frickeldave.de/lightbox-zur-fotografie-von-schmuck/) | notdo | ⛔ |
 | [Mobile Werkstatt für Epoxidharzschmuck](https://frickeldave.de/mobile-werkstatt-fuer-epoxidharzschmuck/) | notdo | ⛔ |
-| [Kaminumbau](https://frickeldave.de/kaminumbau/) | fehlt | ❌ |
+| [Kaminumbau](https://frickeldave.de/kaminumbau/) | `2021-02-05-kaminumbau.mdx` | ✅ |
 | [Müsliboxen](https://frickeldave.de/muesliboxen/) | notdo | ⛔ |
 | [Mehlbox für 5kg Mehlsäcke](https://frickeldave.de/mehlbox-fuer-5kg-mehlsaecke/) | fehlt | ❌ |
 | [Schrankumbau für IKEA Sortera Papiereimer](https://frickeldave.de/schrankumbau-fuer-ikea-sortera-papiereimer/) | fehlt | ❌ |
@@ -116,9 +116,9 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 Artikel
-- **Migriert:** 26 Artikel (✅)
-- **Fehlend (noch zu migrieren):** 17 Artikel (❌)
+- **Migriert:** 27 Artikel (✅)
+- **Fehlend (noch zu migrieren):** 16 Artikel (❌)
 - **Nicht migriert (notdo):** 48 Artikel (⛔)
 - **Serien/Landing-Pages:** 6 (separat zu behandeln, als notdo markiert)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~29% (26/91) | ~61% von geplanten Artikeln (26/43)
+- **Migrations-Quote:** ~30% (27/91) | ~63% von geplanten Artikeln (27/43)

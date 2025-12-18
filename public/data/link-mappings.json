@@ -450,6 +450,76 @@
       "affiliate": false,
       "category": "YouTube",
       "openInNewTab": true
+    },
+    "mdf-spachtel": {
+      "targetUrl": "https://www.amazon.de/dp/B0057A35PU",
+      "description": "MDF Spachtel für Holzreparaturen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "moebelgriff-480": {
+      "targetUrl": "https://www.amazon.de/dp/B081LJ7DK5",
+      "description": "Möbelgriff 480mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "moebelgriff-380": {
+      "targetUrl": "https://www.amazon.de/dp/B081LJQX1D",
+      "description": "Möbelgriff 380mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "vollauszuege-300": {
+      "targetUrl": "https://www.amazon.de/dp/B07Q5T6WYK",
+      "description": "Vollauszüge 300mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "vollauszuege-250": {
+      "targetUrl": "https://www.amazon.de/dp/B07Q5T6JYC",
+      "description": "Vollauszüge 250mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "led-streifen-5m": {
+      "targetUrl": "https://www.amazon.de/dp/B017IH628G",
+      "description": "LED Streifen 5m für indirekte Beleuchtung",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "neodym-15x4": {
+      "targetUrl": "https://www.amazon.de/dp/B07KS633V5",
+      "description": "15x4mm Neodymmagneten extra stark",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "einhell-fuehrungsschiene": {
+      "targetUrl": "https://www.amazon.de/dp/B07HFPDSF5",
+      "description": "Einhell Führungsschiene 2m für Handkreissäge",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "einhell-handkreissaege": {
+      "targetUrl": "https://www.amazon.de/dp/B0853SGR52",
+      "description": "Einhell Handkreissäge TE-CS 150",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "einhell-handkreissaege-gross": {
+      "targetUrl": "https://www.amazon.de/dp/B083X4K8S8",
+      "description": "Einhell Handkreissäge TP-CS 190",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
     }
   },
   "analytics": {
