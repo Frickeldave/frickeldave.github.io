@@ -200,10 +200,31 @@
       "openInNewTab": true
     },
     "oli-natura-hartwachsoel": {
-      "targetUrl": "https://frickeldave.de/aff_hartwachsöl",
+      "targetUrl": "https://www.amazon.de/gp/product/B01EYF758Q",
       "description": "Oli Natura Hartwachsöl für die Holzoberflächenbehandlung",
       "affiliate": true,
       "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "hartwachsoel": {
+      "targetUrl": "https://www.amazon.de/gp/product/B01EYF758Q",
+      "description": "Hartwachsöl für die Holzoberflächenbehandlung",
+      "affiliate": true,
+      "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "nobel-hobel-works-runde-scheibe-herstellen": {
+      "targetUrl": "https://www.youtube.com/watch?v=NHAtgxtNej4",
+      "description": "Nobel Hobel Works - Runde Platte an der Kreissäge fertigen",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "truppe-youtube": {
+      "targetUrl": "https://www.youtube.com/watch?v=q1SWJnXVdBk",
+      "description": "Truppe - Alternative Methoden zum Kreissägen",
+      "affiliate": false,
+      "category": "DIY",
       "openInNewTab": true
     },
     "amazon-bindfaden": {
@@ -330,6 +351,174 @@
       "description": "U-Bügel für Anhänger - zur Ladungssicherung und Befestigung",
       "affiliate": false,
       "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "holzbastler-absaug-tipps": {
+      "targetUrl": "https://www.youtube.com/watch?v=YksRdGRtAk0",
+      "description": "Holzbastler Video zur Absaugverrohrung und Werkstattplanung",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "holzer-einbausteckdosen": {
+      "targetUrl": "https://www.amazon.de/gp/product/B07CMG665T/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1",
+      "description": "Holzer Einbausteckdosen in verschiedenen Farben für Werkstätten",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "brandschutz-impraegnierung": {
+      "targetUrl": "https://www.amazon.de/dp/B004P8OT6E",
+      "description": "Brandschutzimprägnierung für Holzkanäle und Werkstatteinrichtungen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "belly-deluxe": {
+      "targetUrl": "https://www.bellydeluxe.de/",
+      "description": "Bellydeluxe.de - Babyausstattung und Geschenkartikel",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "led-streifen-1m": {
+      "targetUrl": "https://www.amazon.de/s?k=led+streifen+1m",
+      "description": "LED-Streifen 1m für indirekte Beleuchtung",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "micha-youtube-sterngriffe": {
+      "targetUrl": "https://www.youtube.com/watch?v=gjoFMs5nDQw",
+      "description": "Micha's YouTube Video: Sterngriffe mit 5 Griffmulden herstellen",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "philipp-konter-spaeneofen": {
+      "targetUrl": "https://www.youtube.com/watch?v=Fm1ZbJpm_n4",
+      "description": "Philipp Konter: Spänenofen bauen",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "philipp-konter-spaeneabscheider-1": {
+      "targetUrl": "https://www.youtube.com/watch?v=N72OuKBiZbQ",
+      "description": "Philipp Konter: Späneabscheider Teil 1",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "philipp-konter-spaeneabscheider-2": {
+      "targetUrl": "https://www.youtube.com/watch?v=RP_k4rBAzYA",
+      "description": "Philipp Konter: Späneabscheider Teil 2",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "abenteuer-handarbeit-spaeneabscheider": {
+      "targetUrl": "https://www.youtube.com/watch?v=rUPSAa-VZLM",
+      "description": "Abenteuer Handarbeit: Späneabscheider Video",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "rollen-75kg": {
+      "targetUrl": "https://www.amazon.de/dp/B01IHJJUEC",
+      "description": "Schwerlastrollen 75kg Tragkraft für mobile Werkstattmöbel",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "vc-dichtungsband": {
+      "targetUrl": "https://www.amazon.de/dp/B07P8KZ7LK",
+      "description": "Dichtschnur 6mm für luftdichte Verbindungen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "absaugschlauch-75mm": {
+      "targetUrl": "https://www.amazon.de/dp/B07M6B3X5W",
+      "description": "Absaugschlauch 50mm für Werkstatt-Absauganlagen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "jonas-winkler-mdf": {
+      "targetUrl": "https://www.youtube.com/watch?v=tGdllFHbmew&t=19s",
+      "description": "Jonas Winkler: MDF-Verleimung und verschiedene Verbindungstechniken",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "mdf-spachtel": {
+      "targetUrl": "https://www.amazon.de/dp/B0057A35PU",
+      "description": "MDF Spachtel für Holzreparaturen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "moebelgriff-480": {
+      "targetUrl": "https://www.amazon.de/dp/B081LJ7DK5",
+      "description": "Möbelgriff 480mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "moebelgriff-380": {
+      "targetUrl": "https://www.amazon.de/dp/B081LJQX1D",
+      "description": "Möbelgriff 380mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "vollauszuege-300": {
+      "targetUrl": "https://www.amazon.de/dp/B07Q5T6WYK",
+      "description": "Vollauszüge 300mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "vollauszuege-250": {
+      "targetUrl": "https://www.amazon.de/dp/B07Q5T6JYC",
+      "description": "Vollauszüge 250mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "led-streifen-5m": {
+      "targetUrl": "https://www.amazon.de/dp/B017IH628G",
+      "description": "LED Streifen 5m für indirekte Beleuchtung",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "neodym-15x4": {
+      "targetUrl": "https://www.amazon.de/dp/B07KS633V5",
+      "description": "15x4mm Neodymmagneten extra stark",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "einhell-fuehrungsschiene": {
+      "targetUrl": "https://www.amazon.de/dp/B07HFPDSF5",
+      "description": "Einhell Führungsschiene 2m für Handkreissäge",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "einhell-handkreissaege": {
+      "targetUrl": "https://www.amazon.de/dp/B0853SGR52",
+      "description": "Einhell Handkreissäge TE-CS 150",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "einhell-handkreissaege-gross": {
+      "targetUrl": "https://www.amazon.de/dp/B083X4K8S8",
+      "description": "Einhell Handkreissäge TP-CS 190",
+      "affiliate": true,
+      "category": "Werkzeuge",
       "openInNewTab": true
     }
   },
