@@ -520,6 +520,13 @@
       "affiliate": true,
       "category": "Werkzeuge",
       "openInNewTab": true
+    },
+    "moebelgriffe-muschel-messing": {
+      "targetUrl": "https://www.amazon.de/dp/B07PBWH5N2",
+      "description": "Möbelgriffe Messing",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
     }
   },
   "analytics": {

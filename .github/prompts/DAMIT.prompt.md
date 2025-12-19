@@ -119,7 +119,7 @@ Generiere bitte folgendes Bild im Format 1536×1024: Eine fotorealistische, hoch
 
 ## Links
 
-Wenn Links verwendet werden, ist wie folgt vorzugehen. Der Link soll mit dem RedirectLink Component eingebaut werden. Dafür ist dieser in der Datenbank unter public/data/link-mappings.json einzutragen, wenn dieser dort noch nicht existieren sollte. Es igbt auch Links, die nicht diret auf amazon zeigen, sondern auf einen Zwischenlink. Diese sind in der Regel wie folgt aufgebaut: https://frickeldave.de/aff_<product>. Verfolge diese Links bitte bis zum eigentlichen Ziel und trage dieses in die Link-Mappings ein.
+Wenn Links verwendet werden, ist wie folgt vorzugehen. Der Link soll mit dem RedirectLink Component eingebaut werden. Dafür ist dieser in der Datenbank unter ./public/data/link-mappings.json einzutragen, wenn dieser dort noch nicht existieren sollte. Es gibt auch Links, die nicht diret auf amazon zeigen, sondern auf einen Zwischenlink. Diese sind in der Regel wie folgt aufgebaut: https://frickeldave.de/aff_<product>. Verfolge diese Links bitte bis zum eigentlichen Ziel und trage dieses in die Link-Mappings ein.
 
 
 Beispiel affiliate Link (wenn ein Produkt verlinkt wird, insbesondere mit Amazon als Ziel):
