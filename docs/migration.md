@@ -39,7 +39,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Mobile Werkstatt für Epoxidharzschmuck](https://frickeldave.de/mobile-werkstatt-fuer-epoxidharzschmuck/) | notdo | ⛔ |
 | [Kaminumbau](https://frickeldave.de/kaminumbau/) | `2021-02-05-kaminumbau.mdx` | ✅ |
 | [Müsliboxen](https://frickeldave.de/muesliboxen/) | notdo | ⛔ |
-| [Mehlbox für 5kg Mehlsäcke](https://frickeldave.de/mehlbox-fuer-5kg-mehlsaecke/) | fehlt | ❌ |
+| [Mehlbox für 5kg Mehlsäcke](https://frickeldave.de/mehlbox-fuer-5kg-mehlsaecke/) | `2020-12-21-mehlbox-fuer-5kg-mehlsaecke.mdx` | ✅ |
 | [Schrankumbau für IKEA Sortera Papiereimer](https://frickeldave.de/schrankumbau-fuer-ikea-sortera-papiereimer/) | fehlt | ❌ |
 | [Herdabdeckplatten aus Holz und Epoxidharz](https://frickeldave.de/herdabdeckplatten-aus-holz-und-epoxidharz/) | fehlt | ❌ |
 | [Absaugverteiler](https://frickeldave.de/absaugverteiler/) | notdo | ⛔ |
@@ -101,7 +101,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [#4. Integrieren einer Datenbank in die Spring Boot API](https://frickeldave.de/datenbank-in-die-spring-boot-api-integrieren/) | notdo | ⛔ |
 | [#3: Bauen einer einfachen Spring Boot API](https://frickeldave.de/bauen_einer_einfachen_spring_boot_anwendung/) | notdo | ⛔ |
 | [#2: Spring Boot in VSCode und Docker](https://frickeldave.de/spring-boot-in-vscode-und-docker/) | notdo | ⛔ |
-| [#1: WSL2, Docker und VSCode](https://frickeldave.de/it_1_wsl2_docker_vscode/) | fehlt | ❌ |
+| [#1: WSL2, Docker und VSCode](https://frickeldave.de/it_1_wsl2_docker_vscode/) | notdo | ⛔ |
 | [Sicherer Umgang mit dem Internet für Kinder](https://frickeldave.de/internet4kids/) | notdo | ⛔ |
 | [2-Faktor Authentifizierung](https://frickeldave.de/2-faktor-authentifizierung/) | notdo | ⛔ |
 | [Docker Connection über SSH](https://frickeldave.de/docker-connection-ueber-ssh/) | notdo | ⛔ |
@@ -116,9 +116,9 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 Artikel
-- **Migriert:** 27 Artikel (✅)
-- **Fehlend (noch zu migrieren):** 16 Artikel (❌)
+- **Migriert:** 28 Artikel (✅)
+- **Fehlend (noch zu migrieren):** 15 Artikel (❌)
 - **Nicht migriert (notdo):** 48 Artikel (⛔)
 - **Serien/Landing-Pages:** 6 (separat zu behandeln, als notdo markiert)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~30% (27/91) | ~63% von geplanten Artikeln (27/43)
+- **Migrations-Quote:** ~31% (28/91) | ~65% von geplanten Artikeln (28/43)
