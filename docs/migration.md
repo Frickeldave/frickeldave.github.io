@@ -40,7 +40,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Kaminumbau](https://frickeldave.de/kaminumbau/) | `2021-02-05-kaminumbau.mdx` | ✅ |
 | [Müsliboxen](https://frickeldave.de/muesliboxen/) | notdo | ⛔ |
 | [Mehlbox für 5kg Mehlsäcke](https://frickeldave.de/mehlbox-fuer-5kg-mehlsaecke/) | `2020-12-21-mehlbox-fuer-5kg-mehlsaecke.mdx` | ✅ |
-| [Schrankumbau für IKEA Sortera Papiereimer](https://frickeldave.de/schrankumbau-fuer-ikea-sortera-papiereimer/) | fehlt | ❌ |
+| [Schrankumbau für IKEA Sortera Papiereimer](https://frickeldave.de/schrankumbau-fuer-ikea-sortera-papiereimer/) | `2020-11-09-schrankumbau-ikea-sortera.mdx` | ✅ |
 | [Herdabdeckplatten aus Holz und Epoxidharz](https://frickeldave.de/herdabdeckplatten-aus-holz-und-epoxidharz/) | fehlt | ❌ |
 | [Absaugverteiler](https://frickeldave.de/absaugverteiler/) | notdo | ⛔ |
 | [Blastgates / Sperrschieber für die Absauganlage](https://frickeldave.de/blastgates-sperrschieber-fuer-die-absauganlage/) | notdo | ⛔ |
@@ -116,9 +116,9 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 Artikel
-- **Migriert:** 28 Artikel (✅)
-- **Fehlend (noch zu migrieren):** 15 Artikel (❌)
+- **Migriert:** 29 Artikel (✅)
+- **Fehlend (noch zu migrieren):** 14 Artikel (❌)
 - **Nicht migriert (notdo):** 48 Artikel (⛔)
 - **Serien/Landing-Pages:** 6 (separat zu behandeln, als notdo markiert)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~31% (28/91) | ~65% von geplanten Artikeln (28/43)
+- **Migrations-Quote:** ~32% (29/91) | ~67% von geplanten Artikeln (29/43)

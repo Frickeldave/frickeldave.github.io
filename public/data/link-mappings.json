@@ -527,6 +527,34 @@
       "affiliate": true,
       "category": "Heimwerken",
       "openInNewTab": true
+    },
+    "ikea-sortera": {
+      "targetUrl": "https://www.amazon.de/dp/B00GMMBZAO",
+      "description": "IKEA Sortera Papiercontainer mit Deckel",
+      "affiliate": true,
+      "category": "Haushalt",
+      "openInNewTab": true
+    },
+    "eckzwingen": {
+      "targetUrl": "https://www.amazon.de/dp/B0836W5HT1/",
+      "description": "Eckmontagewinkel für Holzarbeiten",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "buendigfraeser": {
+      "targetUrl": "https://www.amazon.de/dp/B09FG91R8K",
+      "description": "Bündigfräser mit Kugellager",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "tafelfarbe": {
+      "targetUrl": "https://www.amazon.de/dp/B00I2P52F8",
+      "description": "Tafelfarbe schwarz",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
     }
   },
   "analytics": {
