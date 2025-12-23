@@ -25,7 +25,7 @@ lass dir die Löschung der Bilder bestätigen.
 13) Mich abschliessend fragen, wie zufrieden ich auf einer Skala von 0-10 bin und entsprechend in die Tabelle in ./.github/prompts/chats/prompts.md eintragen
 14) Alle Änderungen commiten und pushen
 15) PR erstellen mit Verlinkung zum Issue
-16) Warte nun die Pull Request Checks ab. Wenn alles grün ist und der PR automatisch gemerged werden kann, merge den  PR in den dev Branch.
+16) Warte nun die Pull Request Checks ab, dass kann auch shcon mal 5-10 Minuten dauern. Prüfe alle 30 Sekunden den Status. Wenn alles grün ist und der PR automatisch gemerged werden kann, merge den  PR in den dev Branch.
 17) Issue schließen
 
 ## Grundsätzliche Informationen
