@@ -555,6 +555,41 @@
       "affiliate": true,
       "category": "Heimwerken",
       "openInNewTab": true
+    },
+    "ersatzteilshop-youtube": {
+      "targetUrl": "https://www.youtube.com/watch?v=pDJ2kjESZY8",
+      "description": "Ersatzteilshop - YouTube Video zum Ceranfeld-Tausch",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "dipon-epoxidharz": {
+      "targetUrl": "https://www.amazon.de/dp/B08CHPJD3R",
+      "description": "Epoxidharz",
+      "affiliate": true,
+      "category": "Epoxidharz",
+      "openInNewTab": true
+    },
+    "epoxy-alcohol-ink": {
+      "targetUrl": "https://www.amazon.de/dp/B07YHH741G",
+      "description": "Alcohol Ink zum Färben von Epoxidharz",
+      "affiliate": true,
+      "category": "Epoxidharz",
+      "openInNewTab": true
+    },
+    "pp-klebeband": {
+      "targetUrl": "https://www.amazon.de/dp/B07V22RNPL",
+      "description": "PP Paketklebeband",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "ballistol-silikonoel": {
+      "targetUrl": "https://www.amazon.de/dp/B00CSRVO4Y",
+      "description": "Ballistol Silikon-Öl",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
     }
   },
   "analytics": {
