@@ -1,0 +1,364 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+
+const title = "Datenschutzerklärung";
+const description =
+  "Datenschutzerklärung von Frickeldave - Informationen über Datenerhebung, -verarbeitung und Ihre Rechte gemäß DSGVO";
+const currentYear = new Date().getFullYear();
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="section">
+    <div class="container">
+      <div class="row justify-center">
+        <div class="lg:col-10">
+          <div class="glass p-8 rounded-lg">
+            <h1 class="text-4xl font-bold mb-6">Datenschutzerklärung</h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-8">
+              Stand: {currentYear} | Gültig für frickeldave.de
+            </p>
+
+            <section class="mb-8">
+              <p class="mb-4">
+                Verantwortlich für die Datenverarbeitung auf dieser Website:
+                <a href="/impressum" class="text-primary hover:underline"
+                  >Siehe Impressum</a
+                >
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">
+                1. Allgemeines zur Datenverarbeitung
+              </h2>
+              <h3 class="text-xl font-semibold mb-3">
+                2.1 Grundsatz der Datensparsamkeit
+              </h3>
+              <p class="mb-4">
+                Wir erheben und verarbeiten personenbezogene Daten unserer
+                Nutzer grundsätzlich nur, soweit dies zur Bereitstellung einer
+                funktionsfähigen Website erforderlich ist. Die Erhebung und
+                Verarbeitung personenbezogener Daten erfolgt regelmäßig nur nach
+                Einwilligung des Nutzers oder wenn die Verarbeitung durch
+                gesetzliche Vorschriften erlaubt ist.
+              </p>
+
+              <h3 class="text-xl font-semibold mb-3">2.2 Rechtsgrundlage</h3>
+              <p class="mb-4">
+                Die Verarbeitung Ihrer Daten erfolgt auf Grundlage der
+                EU-Datenschutz-Grundverordnung (DSGVO) sowie des
+                Bundesdatenschutzgesetzes (BDSG):
+              </p>
+              <ul class="list-disc pl-6 space-y-2 mb-4">
+                <li>
+                  Art. 6 Abs. 1 lit. a DSGVO - Verarbeitung mit Einwilligung
+                </li>
+                <li>
+                  Art. 6 Abs. 1 lit. b DSGVO - Verarbeitung zur
+                  Vertragserfüllung
+                </li>
+                <li>
+                  Art. 6 Abs. 1 lit. f DSGVO - Verarbeitung zur Wahrung
+                  berechtigter Interessen
+                </li>
+              </ul>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">
+                2. Erfasste Daten beim Websitebesuch
+              </h2>
+              <h3 class="text-xl font-semibold mb-3">2.1 Hosting</h3>
+              <p class="mb-4">
+                Diese Website wird auf <strong>GitHub Pages</strong> gehostet.
+                GitHub Pages ist ein Dienst der GitHub, Inc., 88 Colin P. Kelly
+                Jr. Street, San Francisco, CA 94107, USA.
+              </p>
+              <p class="mb-4">
+                Bei jedem Aufruf unserer Website erfasst GitHub Pages
+                automatisch Informationen in sogenannten Server-Log-Dateien, die
+                Ihr Browser automatisch übermittelt:
+              </p>
+              <ul class="list-disc pl-6 space-y-2 mb-4">
+                <li>IP-Adresse des zugreifenden Rechners</li>
+                <li>Datum und Uhrzeit der Anfrage</li>
+                <li>Zeitzonendifferenz zur Greenwich Mean Time (GMT)</li>
+                <li>Inhalt der Anforderung (konkrete Seite)</li>
+                <li>Zugriffsstatus/HTTP-Statuscode</li>
+                <li>jeweils übertragene Datenmenge</li>
+                <li>Website, von der die Anforderung kommt (Referrer)</li>
+                <li>Browser und Betriebssystem</li>
+              </ul>
+              <p class="mb-4">
+                Diese Daten werden von GitHub gespeichert und verarbeitet.
+                Weitere Informationen finden Sie in der <a
+                  href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-primary hover:underline"
+                  >Datenschutzerklärung von GitHub</a
+                >.
+              </p>
+              <p class="mb-4">
+                <strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. f DSGVO
+                (berechtigtes Interesse an der ordnungsgemäßen Bereitstellung
+                und Sicherheit der Website)
+              </p>
+
+              <h3 class="text-xl font-semibold mb-3">
+                2.2 Cloudflare Analytics
+              </h3>
+              <p class="mb-4">
+                Diese Website nutzt <strong>Cloudflare Web Analytics</strong>
+                 zur Analyse des Nutzerverhaltens. Cloudflare Web Analytics ist
+                ein Dienst der Cloudflare, Inc., 101 Townsend St, San Francisco,
+                CA 94107, USA.
+              </p>
+              <p class="mb-4">
+                <strong>Besonderheit:</strong> Cloudflare Web Analytics arbeitet
+
+                <strong>vollständig cookiefrei</strong> und ohne Verwendung von
+                Fingerprinting-Technologien. Es werden keine personenbezogenen
+                Daten gespeichert, die eine Identifikation einzelner Nutzer
+                ermöglichen.
+              </p>
+              <p class="mb-4">Erfasste anonymisierte Daten umfassen:</p>
+              <ul class="list-disc pl-6 space-y-2 mb-4">
+                <li>Anzahl der Seitenaufrufe</li>
+                <li>Besuchte Seiten (ohne Nutzer-IDs)</li>
+                <li>Verweisende Websites (Referrer)</li>
+                <li>
+                  Geräteinformationen (Browser, Betriebssystem, Gerätetyp)
+                </li>
+                <li>Geografische Herkunft (Land, nicht präziser)</li>
+                <li>Verweildauer auf der Website (aggregiert)</li>
+              </ul>
+              <p class="mb-4">
+                <strong>Wichtig:</strong> Es werden keine IP-Adressen
+                gespeichert oder weitergegeben. Cloudflare Analytics ist
+                DSGVO-konform und benötigt keine Cookie-Banner oder
+                Einwilligungen.
+              </p>
+              <p class="mb-4">
+                Weitere Informationen finden Sie in der <a
+                  href="https://www.cloudflare.com/privacypolicy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-primary hover:underline"
+                  >Datenschutzerklärung von Cloudflare</a
+                >.
+              </p>
+              <p class="mb-4">
+                <strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. f DSGVO
+                (berechtigtes Interesse an der Analyse und Optimierung der
+                Website)
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">3. Cookies</h2>
+              <p class="mb-4">
+                Diese Website verwendet <strong>keine Cookies</strong> für
+                Tracking-, Analyse- oder Werbezwecke. Lediglich technisch
+                notwendige Session-Cookies können zum Einsatz kommen, um die
+                Funktionsfähigkeit der Website sicherzustellen (z.B.
+                Theme-Einstellungen).
+              </p>
+              <p class="mb-4">
+                Technisch notwendige Cookies werden automatisch gelöscht, sobald
+                Sie Ihren Browser schließen oder die entsprechende Funktion
+                beendet wird.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">
+                4. Kontaktaufnahme per E-Mail
+              </h2>
+              <p class="mb-4">
+                Bei Kontaktaufnahme per E-Mail werden die von Ihnen
+                übermittelten Daten (z.B. Name, E-Mail-Adresse, Nachrichtentext)
+                gespeichert, um Ihre Anfrage zu bearbeiten.
+              </p>
+              <p class="mb-4">
+                <strong>Zweck:</strong> Beantwortung Ihrer Anfrage und
+                Kommunikation im Zusammenhang mit Ihrem Anliegen.
+              </p>
+              <p class="mb-4">
+                <strong>Speicherdauer:</strong> Die Daten werden gelöscht,
+                sobald sie für die Bearbeitung Ihrer Anfrage nicht mehr
+                erforderlich sind, oder auf Ihren Wunsch hin. Gesetzliche
+                Aufbewahrungspflichten bleiben unberührt.
+              </p>
+              <p class="mb-4">
+                <strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. a DSGVO
+                (Einwilligung), Art. 6 Abs. 1 lit. b DSGVO (Vertragsanbahnung)
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">
+                5. Weitergabe von Daten an Dritte
+              </h2>
+              <p class="mb-4">
+                Eine Weitergabe Ihrer personenbezogenen Daten an Dritte erfolgt
+                nur:
+              </p>
+              <ul class="list-disc pl-6 space-y-2 mb-4">
+                <li>
+                  Wenn Sie ausdrücklich eingewilligt haben (Art. 6 Abs. 1 lit. a
+                  DSGVO)
+                </li>
+                <li>
+                  Wenn dies zur Erfüllung vertraglicher Pflichten erforderlich
+                  ist (Art. 6 Abs. 1 lit. b DSGVO)
+                </li>
+                <li>
+                  Wenn eine gesetzliche Verpflichtung besteht (Art. 6 Abs. 1
+                  lit. c DSGVO)
+                </li>
+                <li>
+                  Wenn dies zur Wahrung berechtigter Interessen erforderlich ist
+                  und Ihre Interessen nicht überwiegen (Art. 6 Abs. 1 lit. f
+                  DSGVO)
+                </li>
+              </ul>
+              <p class="mb-4">
+                <strong>Hinweis zu Drittstaaten:</strong> GitHub (USA) und
+                Cloudflare (USA) verarbeiten Daten teilweise in den USA. Beide
+                Unternehmen haben sich dem EU-US Data Privacy Framework
+                unterworfen, das einen angemessenen Datenschutz gewährleistet.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">6. Ihre Rechte</h2>
+              <p class="mb-4">
+                Sie haben gegenüber uns folgende Rechte hinsichtlich der Sie
+                betreffenden personenbezogenen Daten:
+              </p>
+              <ul class="list-disc pl-6 space-y-2 mb-4">
+                <li>
+                  <strong>Recht auf Auskunft</strong> (Art. 15 DSGVO) - Sie
+                  können Auskunft über Ihre von uns verarbeiteten
+                  personenbezogenen Daten verlangen
+                </li>
+                <li>
+                  <strong>Recht auf Berichtigung</strong> (Art. 16 DSGVO) - Sie
+                  können die Berichtigung unrichtiger oder Vervollständigung
+                  Ihrer bei uns gespeicherten Daten verlangen
+                </li>
+                <li>
+                  <strong>Recht auf Löschung</strong> (Art. 17 DSGVO) - Sie
+                  können die Löschung Ihrer bei uns gespeicherten Daten
+                  verlangen, soweit nicht gesetzliche Aufbewahrungspflichten
+                  oder andere Rechtfertigungsgründe entgegenstehen
+                </li>
+                <li>
+                  <strong>Recht auf Einschränkung der Verarbeitung</strong>
+                  (Art. 18 DSGVO) - Sie können die Einschränkung der
+                  Verarbeitung Ihrer Daten verlangen
+                </li>
+                <li>
+                  <strong>Recht auf Datenübertragbarkeit</strong> (Art. 20
+                  DSGVO) - Sie können verlangen, dass wir Ihnen Ihre Daten in
+                  einem strukturierten, gängigen und maschinenlesbaren Format
+                  zur Verfügung stellen
+                </li>
+                <li>
+                  <strong>Widerspruchsrecht</strong> (Art. 21 DSGVO) - Sie
+                  können der Verarbeitung Ihrer Daten aus Gründen, die sich aus
+                  Ihrer besonderen Situation ergeben, widersprechen
+                </li>
+                <li>
+                  <strong>Widerrufsrecht</strong> - Sie können eine erteilte
+                  Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen
+                </li>
+              </ul>
+              <p class="mb-4">
+                Zur Ausübung Ihrer Rechte wenden Sie sich bitte an die im
+                <a href="/impressum" class="text-primary hover:underline">Impressum</a> genannten Kontaktdaten.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">
+                7. Beschwerderecht bei einer Aufsichtsbehörde
+              </h2>
+              <p class="mb-4">
+                Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde
+                über die Verarbeitung Ihrer personenbezogenen Daten zu
+                beschweren.
+              </p>
+              <p class="mb-4">Die für uns zuständige Aufsichtsbehörde ist:</p>
+              <p class="mb-4">
+                <strong
+                  >Bayerisches Landesamt für Datenschutzaufsicht (BayLDA)</strong
+                ><br />
+                 Promenade 18<br />
+                 91522 Ansbach<br />
+                 Deutschland<br />
+                <a
+                  href="https://www.lda.bayern.de"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-primary hover:underline">www.lda.bayern.de</a
+                >
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">8. Datensicherheit</h2>
+              <p class="mb-4">
+                Wir verwenden geeignete technische und organisatorische
+                Sicherheitsmaßnahmen, um Ihre Daten gegen zufällige oder
+                vorsätzliche Manipulationen, Verlust, Zerstörung oder den
+                Zugriff unberechtigter Personen zu schützen.
+              </p>
+              <p class="mb-4">Unsere Sicherheitsmaßnahmen umfassen:</p>
+              <ul class="list-disc pl-6 space-y-2 mb-4">
+                <li>
+                  <strong>SSL/TLS-Verschlüsselung</strong> - Alle
+                  Datenübertragungen zwischen Ihrem Browser und unserer Website
+                  sind verschlüsselt
+                </li>
+                <li>
+                  <strong>GitHub Pages Security</strong> - Hosting auf einer
+                  sicheren Plattform mit DDoS-Schutz und automatischen
+                  Sicherheitsupdates
+                </li>
+                <li>
+                  <strong>Regelmäßige Updates</strong> - Wir halten unsere
+                  Website und verwendete Technologien stets auf dem aktuellen
+                  Stand
+                </li>
+              </ul>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="text-2xl font-semibold mb-4">
+                9. Änderung dieser Datenschutzerklärung
+              </h2>
+              <p class="mb-4">
+                Wir behalten uns vor, diese Datenschutzerklärung anzupassen,
+                damit sie stets den aktuellen rechtlichen Anforderungen
+                entspricht oder um Änderungen unserer Leistungen in der
+                Datenschutzerklärung umzusetzen (z.B. bei der Einführung neuer
+                Services).
+              </p>
+              <p class="mb-4">
+                Für Ihren erneuten Besuch gilt dann die neue
+                Datenschutzerklärung. Wir empfehlen Ihnen, diese Seite
+                regelmäßig zu besuchen, um über Änderungen informiert zu
+                bleiben.
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Letzte Aktualisierung: {currentYear}
+              </p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
