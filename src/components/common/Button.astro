@@ -5,6 +5,7 @@ interface Props {
   newtab?: boolean;
   type?: "primary" | "secondary";
   color?: string;
+  colorScheme?: "cyan" | "purple" | "green" | "amber" | "red";
   hoverInvert?: boolean;
   glass?: boolean;
 }
@@ -15,9 +16,24 @@ const {
   newtab = false,
   type = "primary",
   color,
+  colorScheme = "cyan",
   hoverInvert = false,
   glass = true,
 }: Props = Astro.props;
+
+// Define gradient classes based on color scheme
+const gradientClasses = {
+  cyan: "from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600",
+  purple:
+    "from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600",
+  green: "from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600",
+  amber:
+    "from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600",
+  red: "from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600",
+};
+
+const gradientClass =
+  color || `bg-gradient-to-r ${gradientClasses[colorScheme]}`;
 ---
 
 {
@@ -42,7 +58,7 @@ const {
     >
       <div
         class={`
-    ${color ? color : "bg-bg-t dark:bg-darkmode-bg-t"}
+    ${gradientClass}
     ${type == "primary" ? "p-0.5 rounded-md" : "p-[1.5px] rounded-sm"}`}
       >
         <div
@@ -52,7 +68,7 @@ const {
         >
           <div
             class={`text-transparent bg-clip-text
-        ${color ? color : "bg-bg-t dark:bg-darkmode-bg-t"}
+        ${gradientClass}
         ${type == "primary" ? "font-bold" : ""}
         ${hoverInvert ? "group-hover:text-txt-p dark:group-hover:text-darkmode-txt-p" : ""}`}
           >

@@ -47,7 +47,7 @@ const years = [
   title="News - Aktuelles von Frickeldave"
   description="Aktuelle Neuigkeiten, Updates und Ankündigungen von Frickeldave. Neue Produkte, Blog-Artikel und mehr."
 >
-  <PageHeader title="News" />
+  <PageHeader title="News" colorScheme="red" />
 
   <!-- Mobile Filter Bar (visible only on small screens) -->
   <section class="lg:hidden section py-2">
@@ -145,13 +145,15 @@ const years = [
                       />
                     </div>
                     <div class="p-6 flex flex-col flex-grow">
-                      <div class="mb-3 flex items-center gap-2 text-sm opacity-70">
+                      <div class="mb-3 flex items-center gap-2 text-sm text-red-500">
                         <FaRegCalendarAlt className="inline-block" />
                         <time datetime={item.date}>
                           {formatNewsDate(item.date)}
                         </time>
                       </div>
-                      <h2 class="mb-3 text-xl font-bold">{item.title}</h2>
+                      <h2 class="mb-3 text-xl font-bold text-red-600 dark:text-red-400">
+                        {item.title}
+                      </h2>
                       <p class="text-base opacity-90 flex-grow">{item.text}</p>
                     </div>
                   </article>

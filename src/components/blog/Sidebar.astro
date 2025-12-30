@@ -21,7 +21,9 @@ const { tags, categories, allCategories }: Props = Astro.props;
     <div>
       <h4 class="mb-2">
         <a href="/blog/categories">
-          <FaRegFolder className={"mr-1 -mt-1.5 inline-block"} />
+          <FaRegFolder
+            className={"mr-1 -mt-1.5 inline-block text-purple-500"}
+          />
            Categories
         </a>
       </h4>
@@ -48,7 +50,7 @@ const { tags, categories, allCategories }: Props = Astro.props;
     <div>
       <h4 class="mb-2">
         <a href="/blog/tags">
-          <FaHashtag className={"mr-1 -mt-1.5 inline-block"} />
+          <FaHashtag className={"mr-1 -mt-1.5 inline-block text-purple-500"} />
            Tags
         </a>
       </h4>
@@ -62,6 +64,7 @@ const { tags, categories, allCategories }: Props = Astro.props;
                   label={tag}
                   link={`/blog/tags/${lowerHumanize(tag)}`}
                   type="secondary"
+                  colorScheme="purple"
                 />
               </li>
             );
