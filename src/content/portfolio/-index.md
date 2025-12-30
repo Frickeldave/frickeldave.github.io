@@ -127,7 +127,7 @@ publications:
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.informatik-aktuell.de/management-und-recht/digitalisierung/symbiose-von-informatik-und-handwerk.html"
     blogUrl: "#TODO"
-    year: "2023"
+    year: "2024"
     publisher: "Informatik Aktuell"
 
   - title: "Linting für NodeJS Projekte auf Basis von Astro"
@@ -136,7 +136,7 @@ publications:
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html"
     blogUrl: "#TODO"
-    year: "2024"
+    year: "2025"
     publisher: "Heise Developer"
 
 # Professional Summary
