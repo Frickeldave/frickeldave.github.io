@@ -1,106 +1,205 @@
 ---
 import type { PortfolioEntry } from "@/types";
+import { Image } from "astro:assets";
+import {
+  FaInstagram,
+  FaLinkedinIn,
+  FaGithub,
+  FaEnvelope,
+  FaGlobe,
+} from "react-icons/fa";
 
 interface Props {
   entry: PortfolioEntry;
 }
 
 const { entry } = Astro.props;
-const { name, jobTitle, tagline, location, email, linkedin, github, summary } =
-  entry.data;
+const {
+  name,
+  location,
+  email,
+  linkedin,
+  github,
+  instagram,
+  profileImage,
+  socialLinks,
+} = entry.data;
+
+// Build social links from both sources (without website - already on site)
+const allSocialLinks = [
+  ...(instagram
+    ? [{ name: "Instagram", url: instagram, icon: "instagram" }]
+    : []),
+  ...(linkedin ? [{ name: "LinkedIn", url: linkedin, icon: "linkedin" }] : []),
+  ...(github ? [{ name: "GitHub", url: github, icon: "github" }] : []),
+  ...(email ? [{ name: "E-Mail", url: `mailto:${email}`, icon: "email" }] : []),
+  ...(socialLinks || []),
+];
+
+const getIcon = (icon: string | undefined) => {
+  switch (icon) {
+    case "instagram":
+      return FaInstagram;
+    case "linkedin":
+      return FaLinkedinIn;
+    case "github":
+      return FaGithub;
+    case "email":
+      return FaEnvelope;
+    case "website":
+      return FaGlobe;
+    default:
+      return FaGlobe;
+  }
+};
 ---
 
 <section class="section-sm container">
   <div class="row justify-center">
     <div class="col-12">
-      <!-- Hero Section -->
-      <div class="glass rounded-xl p-8 lg:p-12 mb-8">
-        <div class="row items-center">
-          <div class="col-12 lg:col-8">
-            <div class="mb-6">
-              <h1
-                class="text-4xl lg:text-6xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4"
-              >
-                {name}
-              </h1>
-              <h2
-                class="text-xl lg:text-2xl text-txt-p dark:text-darkmode-txt-p mb-4 font-light"
-              >
-                {jobTitle}
-              </h2>
+      <!-- Hero Section with Profile - Top Row -->
+      <div class="glass rounded-2xl p-6 lg:p-10 mb-6 overflow-hidden">
+        <div class="flex flex-col lg:flex-row items-center gap-8">
+          <!-- Left: Profile Image & Name (33%) -->
+          <div class="w-full lg:w-1/3 flex flex-col items-center text-center">
+            <div class="relative mb-4">
               {
-                tagline && (
-                  <p class="text-lg text-txt-p dark:text-darkmode-txt-p mb-4 italic">
-                    {tagline}
-                  </p>
-                )
-              }
-              <div class="flex items-center space-x-4 mb-6">
-                {
-                  location && (
-                    <span class="glass-t px-3 py-1 rounded-full text-sm text-txt-p dark:text-darkmode-txt-p">
-                      📍 {location}
-                    </span>
-                  )
-                }
-              </div>
-              <p
-                class="text-lg text-txt-p dark:text-darkmode-txt-p leading-relaxed mb-6"
-              >
-                {summary}
-              </p>
-            </div>
-
-            <!-- Contact Buttons -->
-            <div class="flex flex-wrap gap-4">
-              {
-                email && (
-                  <a
-                    href={`mailto:${email}`}
-                    class="btn btn-primary glass-btn"
-                    aria-label="Send Email"
-                  >
-                    📧 Contact Me
-                  </a>
-                )
-              }
-              {
-                linkedin && (
-                  <a
-                    href={linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="btn btn-outline glass-btn"
-                    aria-label="LinkedIn Profile"
-                  >
-                    💼 LinkedIn
-                  </a>
-                )
-              }
-              {
-                github && (
-                  <a
-                    href={github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="btn btn-outline glass-btn"
-                    aria-label="GitHub Profile"
-                  >
-                    🚀 GitHub
-                  </a>
+                profileImage ? (
+                  <div class="relative">
+                    <div class="absolute -inset-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 opacity-75 blur-lg animate-pulse" />
+                    <Image
+                      src={profileImage}
+                      alt={name || "Profile"}
+                      width={220}
+                      height={220}
+                      class="relative w-44 h-44 lg:w-52 lg:h-52 rounded-full object-cover border-4 border-white/20 shadow-2xl"
+                    />
+                  </div>
+                ) : (
+                  <div class="glass rounded-full w-44 h-44 lg:w-52 lg:h-52 flex items-center justify-center border-4 border-white/20">
+                    <span class="text-7xl">👨‍💻</span>
+                  </div>
                 )
               }
             </div>
-          </div>
-
-          <div class="col-12 lg:col-4 text-center">
-            <!-- Profile Image Placeholder -->
-            <div
-              class="glass rounded-full w-48 h-48 mx-auto mb-4 flex items-center justify-center"
+            <h2
+              class="text-xl lg:text-2xl font-bold text-txt-h dark:text-darkmode-txt-h"
             >
-              <span class="text-6xl">👨‍💻</span>
+              {name}
+            </h2>
+            {
+              location && (
+                <span class="inline-flex items-center gap-1 mt-2 glass-t px-3 py-1 rounded-full text-sm text-txt-p dark:text-darkmode-txt-p">
+                  📍 {location}
+                </span>
+              )
+            }
+          </div>
+
+          <!-- Right: Greeting & Roles (66%) -->
+          <div class="w-full lg:w-2/3">
+            {/* Greeting Title */}
+            <h1
+              class="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-transparent mb-4"
+            >
+              Hey, ich bin Frickeldave! 👋
+            </h1>
+
+            {/* Role Tags */}
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span
+                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-amber-500/30"
+                >💼 Managing IT-Consultant</span
+              >
+              <span
+                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-orange-500/30"
+                >🚀 DevOps Evangelist</span
+              >
+              <span
+                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-red-500/30"
+                >🤖 KI Enthusiast</span
+              >
+              <span
+                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-amber-500/30"
+                >🛠️ DIY Maker</span
+              >
+              <span
+                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-orange-500/30"
+                >🖨️ 3D Printing Fanatic</span
+              >
+              <span
+                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-red-500/30"
+                >🪵 Woodworking Hobbyist</span
+              >
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Frickeln Definition Box -->
+      <div class="glass rounded-xl p-6 mb-6 border-l-4 border-amber-500">
+        <p
+          class="text-lg italic text-txt-p dark:text-darkmode-txt-p leading-relaxed"
+        >
+          <strong class="text-amber-500">Frickeln:</strong> „Sich an einer
+          relativ kleinteiligen Sache, die man verbessern, um- oder ausbauen
+          möchte, handwerklich oder technisch betätigen."
+        </p>
+      </div>
+
+      <!-- Intro Text Section -->
+      <div class="glass rounded-xl p-6 lg:p-8 mb-8">
+        <div class="prose prose-lg max-w-none">
+          <p
+            class="text-base lg:text-lg text-txt-p dark:text-darkmode-txt-p leading-relaxed mb-4"
+          >
+            Ich bin Frickeldave – dein Experte für DIY-Projekte, handgemachte
+            Kreationen und IT-Lösungen. Mit einer Leidenschaft für das Tüfteln
+            und Verbessern bringe ich kreative Ideen und technische Expertise
+            zusammen, um einzigartige Projekte zu realisieren. Ob Holzarbeiten,
+            3D-Druck oder komplexe DevOps-, KI und Cloud-Technologien – ich
+            teile mein Wissen und meine Erfahrungen, um dich zu inspirieren und
+            zu unterstützen.
+          </p>
+          <p
+            class="text-base lg:text-lg text-txt-p dark:text-darkmode-txt-p leading-relaxed"
+          >
+            Diese Erfahrung im handwerklichen Bereich überträgt sich auch auf
+            meine IT-Projekte, bei denen Präzision, Kreativität und
+            Problemlösungsfähigkeiten gefragt sind. Auf dieser Seite findest du
+            eine Auswahl meiner Arbeiten sowie Einblicke in meine Fähigkeiten
+            und Leidenschaften.
+          </p>
+        </div>
+      </div>
+
+      <!-- Social Links Section -->
+      <div class="glass rounded-xl p-6 mb-8">
+        <h3
+          class="text-xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4 text-center"
+        >
+          Vernetze dich mit mir
+        </h3>
+        <div class="flex flex-wrap justify-center gap-4">
+          {
+            allSocialLinks.map((link) => {
+              const IconComponent = getIcon(link.icon);
+              return (
+                <a
+                  href={link.url}
+                  target={link.url.startsWith("mailto:") ? "_self" : "_blank"}
+                  rel="noopener noreferrer"
+                  class="group flex items-center gap-3 glass-t px-5 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-gradient-to-r hover:from-amber-500/20 hover:to-orange-500/20"
+                  aria-label={link.name}
+                >
+                  <IconComponent className="text-xl text-amber-500 group-hover:text-amber-400 transition-colors" />
+                  <span class="text-txt-p dark:text-darkmode-txt-p font-medium">
+                    {link.name}
+                  </span>
+                </a>
+              );
+            })
+          }
         </div>
       </div>
     </div>
@@ -108,15 +207,17 @@ const { name, jobTitle, tagline, location, email, linkedin, github, summary } =
 </section>
 
 <style>
-  .glass-btn {
-    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+  .animate-pulse {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  .btn-primary {
-    @apply border-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white;
-  }
-
-  .btn-outline {
-    @apply border-2 border-gray-300 text-txt-p hover:bg-gray-100 dark:border-gray-600 dark:text-darkmode-txt-p dark:hover:bg-gray-800;
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.8;
+    }
   }
 </style>
