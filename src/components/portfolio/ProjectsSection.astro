@@ -48,7 +48,7 @@ const getStatusColor = (status: string | undefined) => {
                   <div class="flex-1">
                     <h3
                       class="text-xl lg:text-2xl font-semibold text-txt-h dark:text-darkmode-txt-h mb-2 
-                             group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                             group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors"
                     >
                       {project.title}
                     </h3>
@@ -86,7 +86,7 @@ const getStatusColor = (status: string | undefined) => {
                     <ul class="space-y-2">
                       {project.content.map((item) => (
                         <li class="flex items-start">
-                          <span class="text-blue-500 mr-2 mt-1">▸</span>
+                          <span class="text-amber-500 mr-2 mt-1">▸</span>
                           <span class="text-sm text-txt-p dark:text-darkmode-txt-p">
                             {item}
                           </span>
@@ -117,7 +117,7 @@ const getStatusColor = (status: string | undefined) => {
                       target="_blank"
                       rel="noopener noreferrer"
                       class="flex items-center space-x-2 glass-t px-3 py-2 rounded 
-                           hover:bg-blue-600 hover:text-white transition-all duration-300"
+                           hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 hover:text-white transition-all duration-300"
                       aria-label="View Live Demo"
                     >
                       <FaExternalLinkAlt className="w-4 h-4" />

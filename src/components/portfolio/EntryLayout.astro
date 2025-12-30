@@ -2,11 +2,13 @@
 import type { PortfolioEntry } from "@/types";
 import BaseLayout from "@components/base/BaseLayout.astro";
 import HeroSection from "./HeroSection.astro";
+import HandmadeSection from "./HandmadeSection.astro";
+import PublicationsSection from "./PublicationsSection.astro";
+import PodcastSection from "./PodcastSection.astro";
 import SkillsSection from "./SkillsSection.astro";
 import ExperienceSection from "./ExperienceSection.astro";
 import ProjectsSection from "./ProjectsSection.astro";
 import EducationSection from "./EducationSection.astro";
-import ContactSection from "./ContactSection.astro";
 
 interface Props {
   entry: PortfolioEntry;
@@ -17,8 +19,17 @@ const { title, description } = entry.data;
 ---
 
 <BaseLayout title={title} description={description}>
-  <!-- Hero Section -->
+  <!-- Hero Section with Intro and Social Links -->
   <HeroSection entry={entry} />
+
+  <!-- Handmade Portfolio Carousel -->
+  <HandmadeSection entry={entry} />
+
+  <!-- Publications Carousel -->
+  <PublicationsSection entry={entry} />
+
+  <!-- Podcast Section -->
+  <PodcastSection />
 
   <!-- Skills Section -->
   <SkillsSection entry={entry} />
@@ -31,9 +42,6 @@ const { title, description } = entry.data;
 
   <!-- Education & Achievements Section -->
   <EducationSection entry={entry} />
-
-  <!-- Contact Section -->
-  <ContactSection entry={entry} />
 </BaseLayout>
 
 <style>
