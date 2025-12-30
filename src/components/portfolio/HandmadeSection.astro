@@ -1,0 +1,148 @@
+---
+import type { PortfolioEntry } from "@/types";
+import { Image } from "astro:assets";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { handmadeProjects } = entry.data;
+
+// Categories we want to show
+const categories = ["Holzwerken", "Epoxidharz", "Laser", "3D-Druck"];
+
+// Group projects by category
+const projectsByCategory = categories.reduce(
+  (acc, category) => {
+    acc[category] = (handmadeProjects || []).filter(
+      (p) => p.category === category
+    );
+    return acc;
+  },
+  {} as Record<string, typeof handmadeProjects>
+);
+
+// Select one random project from each category
+const selectedProjects = categories
+  .map((category) => {
+    const categoryProjects = projectsByCategory[category];
+    if (categoryProjects && categoryProjects.length > 0) {
+      const randomIndex = Math.floor(Math.random() * categoryProjects.length);
+      return categoryProjects[randomIndex];
+    }
+    return null;
+  })
+  .filter((p) => p !== null);
+
+// Category icons
+const getCategoryIcon = (category: string | undefined) => {
+  switch (category) {
+    case "Holzwerken":
+      return "🪵";
+    case "Epoxidharz":
+      return "💎";
+    case "Laser":
+      return "⚡";
+    case "3D-Druck":
+      return "🖨️";
+    default:
+      return "🛠️";
+  }
+};
+---
+
+{
+  selectedProjects && selectedProjects.length > 0 && (
+    <section class="section-sm container">
+      <div class="row justify-center">
+        <div class="col-12">
+          <div class="glass rounded-2xl p-6 lg:p-10">
+            {/* Section Header */}
+            <div class="text-center mb-8">
+              <h2 class="text-2xl lg:text-3xl font-bold text-txt-h dark:text-darkmode-txt-h mb-3">
+                🛠️ Handmade Portfolio
+              </h2>
+              <p class="text-txt-p dark:text-darkmode-txt-p opacity-80 max-w-2xl mx-auto">
+                Hier siehst du eine zufällige Auswahl von DIY Projekten aus den
+                Bereichen Holzwerken, Laser, Epoxidharz und 3D-Druck.
+              </p>
+            </div>
+
+            {/* 4-Column Grid */}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {selectedProjects.map((project) => (
+                <a
+                  href={project?.blogUrl || "#"}
+                  class="group block no-underline"
+                >
+                  <div class="glass-t h-full overflow-hidden rounded-xl transition-all duration-300 hover:scale-[1.03] hover:shadow-xl">
+                    {/* Image */}
+                    <div class="aspect-video overflow-hidden">
+                      {project?.image ? (
+                        <Image
+                          src={project.image}
+                          alt={project.title}
+                          width={400}
+                          height={225}
+                          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div class="h-full w-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+                          <span class="text-4xl">
+                            {getCategoryIcon(project?.category)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div class="p-4">
+                      {/* Category Badge */}
+                      <span class="mb-2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                        {getCategoryIcon(project?.category)} {project?.category}
+                      </span>
+
+                      {/* Title */}
+                      <h4 class="mb-2 text-base font-bold text-txt-h dark:text-darkmode-txt-h line-clamp-1">
+                        {project?.title}
+                      </h4>
+
+                      {/* Description */}
+                      <p class="text-sm text-txt-p dark:text-darkmode-txt-p opacity-80 line-clamp-2">
+                        {project?.description}
+                      </p>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div class="text-center mt-8">
+              <a
+                href="/blog/categories/diy"
+                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium transition-all duration-300 hover:from-amber-600 hover:to-orange-600 hover:scale-105 hover:shadow-lg"
+              >
+                Alle DIY-Projekte ansehen
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
