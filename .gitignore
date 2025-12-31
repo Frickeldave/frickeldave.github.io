@@ -55,6 +55,9 @@ dist/
 .output/
 .json/
 
+# Auto-generated version file (generated at build time)
+public/version.json
+
 # Wrangler output
 .wrangler/
 

@@ -1,0 +1,400 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+import NewsSidebar from "@components/news/Sidebar.astro";
+import { FaRegCalendarAlt } from "react-icons/fa";
+
+// Import news data
+import newsDataRaw from "../../public/data/news.json";
+import placeholderNewsImage from "@/assets/placeholder-news.png";
+
+type NewsItem = {
+  visible: boolean;
+  date: string;
+  title: string;
+  text: string;
+  imageUrl: string;
+};
+
+type NewsData = {
+  news: NewsItem[];
+};
+
+const newsData = newsDataRaw as NewsData;
+
+// Filter visible news and sort by date
+const visibleNews = newsData.news
+  .filter((item) => item.visible)
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+// Format date helper
+const formatNewsDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("de-DE", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+// Get unique years for filtering
+const years = [
+  ...new Set(visibleNews.map((item) => new Date(item.date).getFullYear())),
+].sort((a, b) => b - a);
+---
+
+<BaseLayout
+  title="News - Aktuelles von Frickeldave"
+  description="Aktuelle Neuigkeiten, Updates und Ankündigungen von Frickeldave. Neue Produkte, Blog-Artikel und mehr."
+>
+  <PageHeader title="News" colorScheme="red" />
+
+  <!-- Mobile Filter Bar (visible only on small screens) -->
+  <section class="lg:hidden section py-2">
+    <div class="container">
+      <div class="glass rounded-lg p-4 space-y-4">
+        <!-- Search Row -->
+        <div class="flex gap-2">
+          <input
+            type="text"
+            id="mobile-search-input"
+            placeholder="Suche nach News..."
+            class="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm placeholder-white/70 focus:outline-none focus:border-blue-400"
+          />
+        </div>
+
+        <!-- Year Filter Toggle -->
+        <div class="flex gap-2">
+          <button
+            id="mobile-years-toggle"
+            class="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 flex items-center justify-between"
+          >
+            <span>Jahr filtern</span>
+            <svg
+              class="w-4 h-4 transform transition-transform"
+              id="mobile-years-arrow"
+            >
+              <path
+                stroke="currentColor"
+                stroke-width="2"
+                d="M6 9l6 6 6-6"
+                fill="none"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Years Dropdown (initially hidden) -->
+        <div id="mobile-years-dropdown" class="hidden">
+          <div class="grid grid-cols-3 gap-2">
+            {
+              years.map((year) => (
+                <button
+                  class="mobile-year-filter px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 text-center"
+                  data-year={year}
+                >
+                  {year}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- Results Count and Clear Button -->
+        <div
+          class="flex justify-between items-center pt-2 border-t border-white/20"
+        >
+          <div id="mobile-results-count" class="text-sm opacity-70">
+            {visibleNews.length} von {visibleNews.length} News
+          </div>
+          <button
+            id="mobile-clear-filters"
+            class="px-3 py-1 bg-red-500/20 border border-red-400/30 rounded text-sm hover:bg-red-500/30 transition-all duration-200"
+          >
+            Filter zurücksetzen
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="flex container">
+      <div class="row px-0 mx-0 w-full">
+        <!-- News Grid -->
+        <div class="col-12 lg:col-8 lg:p-0">
+          <div
+            id="news-grid"
+            class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+          >
+            {
+              visibleNews.map((item, _index) => (
+                <div
+                  class="news-card"
+                  data-title={item.title.toLowerCase()}
+                  data-text={item.text.toLowerCase()}
+                  data-date={item.date}
+                  data-year={new Date(item.date).getFullYear()}
+                >
+                  <article class="glass overflow-hidden rounded-lg h-full flex flex-col">
+                    <div class="aspect-video overflow-hidden">
+                      <img
+                        src={placeholderNewsImage.src}
+                        alt={item.title}
+                        class="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                      <div class="mb-3 flex items-center gap-2 text-sm text-red-500">
+                        <FaRegCalendarAlt className="inline-block" />
+                        <time datetime={item.date}>
+                          {formatNewsDate(item.date)}
+                        </time>
+                      </div>
+                      <h2 class="mb-3 text-xl font-bold text-red-600 dark:text-red-400">
+                        {item.title}
+                      </h2>
+                      <p class="text-base opacity-90 flex-grow">{item.text}</p>
+                    </div>
+                  </article>
+                </div>
+              ))
+            }
+          </div>
+
+          <!-- No Results Message -->
+          <div
+            id="no-results"
+            class="hidden text-center py-12 glass rounded-lg"
+          >
+            <p class="text-xl opacity-70">
+              Keine News gefunden. Versuche andere Filter.
+            </p>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div
+          class="hidden lg:col-4 lg:flex max-h-static_sidemenu sticky p-0 pl-4 top-[4rem]"
+        >
+          <NewsSidebar years={years} totalNews={visibleNews.length} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Client-side filtering logic for news
+    (() => {
+      let selectedYear: number | null = null;
+      let searchQuery = "";
+      let isInitialized = false;
+
+      // Get news cards (cached after first call)
+      function getNewsCards() {
+        const newsGrid = document.getElementById("news-grid");
+        return newsGrid ? newsGrid.querySelectorAll(".news-card") : [];
+      }
+
+      function filterAndSort() {
+        const newsCards = getNewsCards();
+        const totalNews = newsCards.length;
+        let visibleCount = 0;
+
+        newsCards.forEach((card) => {
+          const cardElement = card as HTMLElement;
+          const title = cardElement.dataset.title || "";
+          const text = cardElement.dataset.text || "";
+          const year = parseInt(cardElement.dataset.year || "0");
+
+          // Check search query
+          const matchesSearch =
+            searchQuery === "" ||
+            title.includes(searchQuery.toLowerCase()) ||
+            text.includes(searchQuery.toLowerCase());
+
+          // Check year filter
+          const matchesYear = selectedYear === null || year === selectedYear;
+
+          if (matchesSearch && matchesYear) {
+            cardElement.style.display = "";
+            visibleCount++;
+          } else {
+            cardElement.style.display = "none";
+          }
+        });
+
+        // Update results count (both desktop and mobile)
+        const countText = `${visibleCount} von ${totalNews} News`;
+        const resultsCount = document.getElementById("results-count");
+        const mobileResultsCount = document.getElementById(
+          "mobile-results-count"
+        );
+        if (resultsCount) resultsCount.textContent = countText;
+        if (mobileResultsCount) mobileResultsCount.textContent = countText;
+
+        // Show/hide no results message
+        const noResults = document.getElementById("no-results");
+        const newsGrid = document.getElementById("news-grid");
+        if (noResults) {
+          noResults.classList.toggle("hidden", visibleCount > 0);
+        }
+        if (newsGrid) {
+          newsGrid.classList.toggle("hidden", visibleCount === 0);
+        }
+      }
+
+      // Update year button styles
+      function updateYearButtonStyles() {
+        document
+          .querySelectorAll(".year-filter, .mobile-year-filter")
+          .forEach((btn) => {
+            const btnYear = parseInt((btn as HTMLElement).dataset.year || "0");
+            if (selectedYear === btnYear) {
+              btn.classList.add("bg-white/40", "border-white/60");
+            } else {
+              btn.classList.remove("bg-white/40", "border-white/60");
+            }
+          });
+      }
+
+      // Clear all filters
+      function clearAllFilters() {
+        searchQuery = "";
+        selectedYear = null;
+
+        // Clear search inputs
+        const searchInput = document.getElementById(
+          "search-input"
+        ) as HTMLInputElement;
+        const mobileSearchInput = document.getElementById(
+          "mobile-search-input"
+        ) as HTMLInputElement;
+        if (searchInput) searchInput.value = "";
+        if (mobileSearchInput) mobileSearchInput.value = "";
+
+        // Clear year button styles
+        updateYearButtonStyles();
+
+        filterAndSort();
+      }
+
+      // Handle year button click
+      function handleYearClick(target: HTMLElement) {
+        const year = parseInt(target.dataset.year || "0");
+        console.log(
+          "Year button clicked:",
+          year,
+          "Current selectedYear:",
+          selectedYear
+        );
+
+        if (selectedYear === year) {
+          selectedYear = null;
+        } else {
+          selectedYear = year;
+        }
+
+        console.log("New selectedYear:", selectedYear);
+        updateYearButtonStyles();
+        filterAndSort();
+      }
+
+      // Handle search input
+      function handleSearchInput(value: string) {
+        searchQuery = value;
+
+        // Sync both search inputs
+        const searchInput = document.getElementById(
+          "search-input"
+        ) as HTMLInputElement;
+        const mobileSearchInput = document.getElementById(
+          "mobile-search-input"
+        ) as HTMLInputElement;
+        if (searchInput && searchInput.value !== value)
+          searchInput.value = value;
+        if (mobileSearchInput && mobileSearchInput.value !== value)
+          mobileSearchInput.value = value;
+
+        filterAndSort();
+      }
+
+      function setupEventListeners() {
+        if (isInitialized) return;
+        isInitialized = true;
+
+        console.log("Setting up news filter event listeners...");
+
+        // Global click handler using event delegation
+        document.addEventListener("click", (e) => {
+          const target = e.target as HTMLElement;
+
+          // Use closest() to find the button even if click is on child element
+          const yearButton = target.closest(
+            ".year-filter, .mobile-year-filter"
+          ) as HTMLElement;
+          if (yearButton) {
+            e.preventDefault();
+            handleYearClick(yearButton);
+            return;
+          }
+
+          // Check for clear filters button
+          const clearButton = target.closest(
+            "#clear-filters, #mobile-clear-filters"
+          );
+          if (clearButton) {
+            e.preventDefault();
+            clearAllFilters();
+            return;
+          }
+        });
+
+        // Global input handler for search fields
+        document.addEventListener("input", (e) => {
+          const target = e.target as HTMLInputElement;
+
+          if (
+            target.id === "search-input" ||
+            target.id === "mobile-search-input"
+          ) {
+            handleSearchInput(target.value);
+          }
+        });
+
+        // Mobile years toggle
+        document.addEventListener("click", (e) => {
+          const target = e.target as HTMLElement;
+          const toggle = target.closest("#mobile-years-toggle");
+          if (toggle) {
+            const dropdown = document.getElementById("mobile-years-dropdown");
+            const arrow = document.getElementById("mobile-years-arrow");
+            if (dropdown) dropdown.classList.toggle("hidden");
+            if (arrow) arrow.classList.toggle("rotate-180");
+          }
+        });
+
+        console.log("News filter event listeners set up successfully");
+      }
+
+      function initialize() {
+        console.log("Initializing news filters...");
+        setupEventListeners();
+        filterAndSort();
+        console.log("News filters initialized");
+      }
+
+      // Initialize when DOM is ready
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initialize);
+      } else {
+        initialize();
+      }
+
+      // Re-run filterAndSort on Astro page transitions (event listeners persist)
+      document.addEventListener("astro:page-load", () => {
+        filterAndSort();
+      });
+    })();
+  </script>
+</BaseLayout>

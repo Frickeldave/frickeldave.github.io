@@ -27,7 +27,7 @@ const { experience } = entry.data;
             {experience.map((job, _index) => (
               <div class="glass rounded-lg p-6 lg:p-8 relative">
                 {/* Timeline Indicator */}
-                <div class="absolute left-0 top-6 w-1 h-16 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full hidden lg:block" />
+                <div class="absolute left-0 top-6 w-1 h-16 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full hidden lg:block" />
 
                 <div class="lg:pl-8">
                   <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
@@ -35,7 +35,7 @@ const { experience } = entry.data;
                       <h3 class="text-xl lg:text-2xl font-semibold text-txt-h dark:text-darkmode-txt-h mb-2">
                         {job.position}
                       </h3>
-                      <h4 class="text-lg font-medium text-blue-600 dark:text-blue-400 mb-2">
+                      <h4 class="text-lg font-medium text-amber-600 dark:text-amber-400 mb-2">
                         {job.company}
                       </h4>
                     </div>
@@ -59,7 +59,7 @@ const { experience } = entry.data;
                       <ul class="space-y-2">
                         {job.responsibilities.map((responsibility) => (
                           <li class="flex items-start">
-                            <span class="text-blue-500 mr-3 mt-1">▸</span>
+                            <span class="text-amber-500 mr-3 mt-1">▸</span>
                             <span class="text-txt-p dark:text-darkmode-txt-p">
                               {responsibility}
                             </span>

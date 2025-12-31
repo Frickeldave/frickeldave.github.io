@@ -1,0 +1,112 @@
+{
+  "products": [
+    {
+      "articleNumber": "3DA8F3",
+      "name": "Weihnachtsbaum Deko",
+      "description": "Festlicher 3D-gedruckter Weihnachtsbaum mit LED-Beleuchtung. Perfekt für die Weihnachtsdekoration.",
+      "category": "3D-Druck",
+      "tags": ["Weihnachten", "Dekoration", "LED"],
+      "price": 15.99,
+      "size": "15cm x 10cm",
+      "visible": true,
+      "customizable": false
+    },
+    {
+      "articleNumber": "WO52K9",
+      "name": "Schneidebrett Eiche",
+      "description": "Handgefertigtes Schneidebrett aus massiver Eiche. Perfekt für die Küche.",
+      "category": "Holz",
+      "tags": ["Küche", "Geschenke"],
+      "price": 45.00,
+      "size": "40cm x 25cm x 2cm",
+      "visible": true,
+      "customizable": true
+    },
+    {
+      "articleNumber": "LAH7M4",
+      "name": "Osterhasen Familie",
+      "description": "Lasergeschnittene Osterhasen aus Birkenholz. Set mit 3 verschiedenen Größen.",
+      "category": "Laser",
+      "tags": ["Ostern", "Dekoration", "Familie"],
+      "price": 22.50,
+      "size": "10-20cm Höhe",
+      "visible": true,
+      "customizable": false
+    },
+    {
+      "articleNumber": "EPR6N8",
+      "name": "River Table Couchtisch",
+      "description": "Einzigartiger Epoxidharz River Table mit blauem Flussmuster. Handgemacht aus Nussbaum.",
+      "category": "Epoxidharz",
+      "tags": ["Möbel", "Wohnzimmer"],
+      "price": 299.00,
+      "size": "80cm x 50cm x 45cm",
+      "visible": true,
+      "customizable": true
+    },
+    {
+      "articleNumber": "3DG4V7",
+      "name": "Personalisierte Geschenkbox",
+      "description": "3D-gedruckte Geschenkbox mit individueller Gravur. Ideal für besondere Anlässe.",
+      "category": "3D-Druck",
+      "tags": ["Geschenke", "Personalisiert"],
+      "price": 12.99,
+      "visible": true,
+      "customizable": true
+    },
+    {
+      "articleNumber": "WOT3P5",
+      "name": "Schmuckkästchen Kirsche",
+      "description": "Handgefertigtes Schmuckkästchen aus Kirschholz mit Samteinsatz.",
+      "category": "Holz",
+      "tags": ["Geschenke", "Schmuck", "Personalisiert"],
+      "price": 65.00,
+      "size": "20cm x 15cm x 10cm",
+      "visible": true,
+      "customizable": true
+    },
+    {
+      "articleNumber": "LAW9X2",
+      "name": "Weihnachtsanhänger Set",
+      "description": "Lasergeschnittene Weihnachtsanhänger aus Holz. Set mit 12 verschiedenen Motiven.",
+      "category": "Laser",
+      "tags": ["Weihnachten", "Dekoration", "Geschenke"],
+      "price": 18.50,
+      "visible": true,
+      "customizable": false
+    },
+    {
+      "articleNumber": "EPQ8D6",
+      "name": "Untersetzer Set Ozean",
+      "description": "4er Set Epoxidharz Untersetzer mit Ozeanwellen-Design. Wasserabweisend und hitzebeständig.",
+      "category": "Epoxidharz",
+      "tags": ["Küche", "Dekoration", "Geschenke"],
+      "price": 28.00,
+      "size": "10cm Durchmesser",
+      "visible": true,
+      "customizable": false
+    },
+    {
+      "articleNumber": "3DM5B8",
+      "name": "Namensschild mit Gravur",
+      "description": "Individuelles 3D-gedrucktes Namensschild mit personalisierter Gravur. Perfekt für Türen oder Schreibtische.",
+      "category": "3D-Druck",
+      "tags": ["Geschenke", "Personalisiert", "Büro"],
+      "price": 9.99,
+      "size": "20cm x 5cm",
+      "visible": true,
+      "customizable": true
+    },
+    {
+      "articleNumber": "WON4C6",
+      "name": "Holzbrett mit Initialen",
+      "description": "Rustikales Holzbrett aus Walnuss mit eingebrannten Initialen. Ideal als Wanddekoration.",
+      "category": "Holz",
+      "tags": ["Dekoration", "Personalisiert", "Rustikal"],
+      "price": 38.00,
+      "size": "30cm x 20cm",
+      "visible": true,
+      "customizable": true
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "news": [
+    {
+      "visible": true,
+      "date": "2025-12-23",
+      "title": "Frohe Weihnachten!",
+      "text": "Wir wünschen allen Besuchern frohe Weihnachten und einen guten Rutsch ins neue Jahr! Der Shop pausiert bis zum 2. Januar. Nun folgt ein Blindtext mit jeder Menge Quatsch, einfach nur damit hier ein langer Text steht und ich testen kann, wie sich das Design der Seite dazu verhält. ",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2025-12-15",
+      "title": "Last-Minute Geschenke",
+      "text": "Noch keine Geschenkidee? Unsere digitalen Gutscheine sind sofort verfügbar und das perfekte Last-Minute Geschenk!",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2025-11-28",
+      "title": "Black Friday 2025",
+      "text": "Der größte Sale des Jahres! 40% auf alle Handmade-Produkte. Nur dieses Wochenende - nicht verpassen!",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2025-10-15",
+      "title": "Neue 3D-Drucker eingetroffen",
+      "text": "Upgrade für die Werkstatt: Mit dem neuen Bambu Lab X1C erreichen wir noch bessere Qualität bei kürzeren Druckzeiten.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2025-09-20",
+      "title": "Herbstkollektion 2025",
+      "text": "Die Herbstkollektion ist da! Neue Designs für Untersetzer, Wanddeko und personalisierte Geschenke.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2025-07-10",
+      "title": "Sommerpause beendet",
+      "text": "Wir sind zurück aus der Sommerpause! Ab sofort werden wieder alle Bestellungen bearbeitet.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2025-05-01",
+      "title": "Muttertags-Special",
+      "text": "Zum Muttertag: Personalisierte Schmuckschatullen und Bilderrahmen mit Gravur. Jetzt vorbestellen!",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2025-03-15",
+      "title": "Neuer Lasercutter",
+      "text": "Der neue xTool P2 ist installiert! Damit können wir jetzt auch größere Projekte und dickere Materialien bearbeiten.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2025-01-10",
+      "title": "Frohes Neues Jahr 2025!",
+      "text": "Ein erfolgreiches neues Jahr! Wir starten mit vielen neuen Projekten und Ideen ins Jahr 2025.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-12-20",
+      "title": "Neue Website online!",
+      "text": "Willkommen auf der neuen Website! Wir haben das Design komplett überarbeitet und viele neue Funktionen hinzugefügt.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-12-15",
+      "title": "Weihnachtsdekoration verfügbar",
+      "text": "Neue Handmade-Produkte sind jetzt verfügbar! Schaut euch unsere Weihnachtsdekoration aus dem 3D-Drucker an.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-12-10",
+      "title": "Workshop-Termine 2025",
+      "text": "Die neuen Workshop-Termine für 2025 stehen fest! Holzbearbeitung, 3D-Druck und Laserschneiden - jetzt anmelden.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-12-05",
+      "title": "Neue Laser-Projekte",
+      "text": "Entdeckt unsere neuesten Laserprojekte: Personalisierte Geschenkideen und einzigartige Dekorationen für jeden Anlass.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-11-28",
+      "title": "Black Friday Sale",
+      "text": "Großer Black Friday Sale! Bis zu 30% Rabatt auf ausgewählte Handmade-Produkte. Nur solange der Vorrat reicht.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-11-20",
+      "title": "Epoxidharz-Kollektion",
+      "text": "Die neue Epoxidharz-Kollektion ist da! River Tables, Untersetzer und einzigartige Kunstwerke aus Holz und Harz.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-11-15",
+      "title": "Blog-Update: DevOps",
+      "text": "Neuer Blogartikel: Kubernetes Best Practices für Einsteiger. Lernt die Grundlagen der Container-Orchestrierung.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-11-10",
+      "title": "Produkterweiterung",
+      "text": "Ab sofort bieten wir auch personalisierte Schneidebretter an. Perfekt als Geschenk für Hobbyköche!",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-11-05",
+      "title": "Herbst-Dekoration",
+      "text": "Herbstliche Laser-Dekoration jetzt im Shop! Kürbisse, Blätter und mehr aus hochwertigem Birkenholz.",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    },
+    {
+      "visible": true,
+      "date": "2024-10-30",
+      "title": "Halloween Special",
+      "text": "Gruselige Halloween-Dekoration aus dem 3D-Drucker. Limitierte Stückzahl - schnell sein lohnt sich!",
+      "imageUrl": "/src/assets/placeholder-news.png"
+    }
+  ]
+}

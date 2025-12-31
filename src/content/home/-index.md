@@ -1,11 +1,11 @@
 ---
-image: "@assets/astrogon-star.png"
+image: "@assets/logo/Logo_Flat-Black-2000.png"
 imageAlt: Frickeldave logo
-title: Frickeldave
-content: Ein Blog über frickeln mit Holz, Elektronik, Lasern, Software und 3D Druck.
+title: Willkommen bei Frickeldave
+content: |
+  Entdecke eine Welt voller DIY-Projekte, Handmade-Kreationen und professioneller IT-Expertise.
+  Von Holzarbeiten über 3D-Druck bis hin zu DevOps und Cloud-Technologien – hier findest du Inspiration und Wissen.
 button:
-  label: See the Code
-  link: https://github.com/Frickeldave/frickeldave.github.io
+  label: Zum Blog
+  link: /blog
 ---
-
-Test

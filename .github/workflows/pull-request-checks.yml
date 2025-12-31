@@ -7,6 +7,10 @@ jobs:
   pull-request-checks:
     runs-on: [self-hosted, frickeldave-main]
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Get whole history for all branches and tags
+
       - name: Print branch information
         run: |
           echo "Target branch: ${{ github.base_ref }}"
@@ -43,7 +47,8 @@ jobs:
           
           export NODE_OPTIONS="--max-old-space-size=8192"
           source ~/.bashrc
-          nvm install --lts
+          nvm install 24
+          nvm use 24
           npm ci || { echo "❌ Installation of dependencies failed"; exit 1; }
 
           # Run ESLint check

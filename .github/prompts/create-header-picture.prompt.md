@@ -1,0 +1,5 @@
+Generiere bitte folgendes Bild im Format 1536×1024: Eine fotorealistische, hochwertige Illustration im Steampunk-Stil. Die Farbpalette soll die Farben #07CEE0 (Türkis), #575760 (Dunkelgrau) und #363D46 (Schiefergrau-Blau) enthalten, um einen Wiedererkennungswert zu schaffen – ohne sie ausschließlich zu verwenden. Das Bild soll dynamisch, inspirierend und technisch anspruchsvoll wirken, mit komplexen Steampunk-Maschinen, Menschen im Look des industriellen Revolution und leuchtenden Elementen und einem Gefühl von Innovation und Teamarbeit. Realistische Lichtverhältnisse und metallische Texturen. Der Inhalt des Bildes soll sich um das folgende Thema drehen:
+
+Ein Halter für Schraubzwingen in Form eines Apothekerschrankes. Ein Bild des fertigen Objektes findest du anbei. Baue das Objekt bitte möglichst unverändert in das Bild ein.
+
+Baue bitte zusätzlich mein Logo möglichst unauffällig und dezent mein Logo aus der Datei "Logo_Shadow-2000.jpg" mit in das Bild ein.

@@ -1,0 +1,59 @@
+---
+import type { PortfolioEntry } from "@/types";
+import PublicationsCarousel from "./PublicationsCarousel";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { publications } = entry.data;
+
+// Transform publications for the carousel
+const publicationsWithImages = (publications || []).map((pub) => {
+  let imageUrl = "/images/placeholder-publication.png";
+
+  if (pub.image) {
+    imageUrl = typeof pub.image === "string" ? pub.image : pub.image.src;
+  }
+
+  return {
+    title: pub.title,
+    description: pub.description,
+    imageUrl,
+    publicationUrl: pub.publicationUrl,
+    blogUrl: pub.blogUrl,
+    year: pub.year,
+    publisher: pub.publisher,
+  };
+});
+---
+
+{
+  publicationsWithImages && publicationsWithImages.length > 0 && (
+    <section class="section-sm container">
+      <div class="row justify-center">
+        <div class="col-12">
+          <div class="glass rounded-2xl p-6 lg:p-10">
+            {/* Section Header */}
+            <div class="text-center mb-8">
+              <h2 class="text-2xl lg:text-3xl font-bold text-txt-h dark:text-darkmode-txt-h mb-3">
+                📚 Veröffentlichungen
+              </h2>
+              <p class="text-txt-p dark:text-darkmode-txt-p opacity-80 max-w-2xl mx-auto">
+                Meine Beiträge zu Fachzeitschriften, Büchern und
+                Online-Publikationen rund um DevOps, Cloud und IT-Themen.
+              </p>
+            </div>
+
+            {/* Carousel */}
+            <PublicationsCarousel
+              publications={publicationsWithImages}
+              client:idle
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
