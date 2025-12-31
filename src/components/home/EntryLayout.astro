@@ -2,6 +2,7 @@
 import BaseLayout from "@components/base/BaseLayout.astro";
 import { markdownify } from "@lib/textConverter";
 import Button from "@components/common/Button.astro";
+import PageHeader from "@components/common/PageHeader.astro";
 import type { HomeEntry, BlogEntry, HandmadeData } from "@/types";
 import { Image } from "astro:assets";
 import { getEntries } from "@lib/contentParser";
@@ -147,6 +148,9 @@ const tabData = [
 ---
 
 <BaseLayout title={title} description={content}>
+  <!-- Page Header with Breadcrumbs -->
+  <PageHeader title="Home" colorScheme="cyan" />
+
   <!-- Sektion 1: Hero-Bereich -->
   <section class="section pt-16 pb-12">
     <div class="container">
@@ -154,14 +158,17 @@ const tabData = [
         {
           image && (
             <div class="mb-6 flex justify-center">
-              <Image
-                class="w-48 md:w-64 rounded-full shadow-lg"
-                src={image}
-                alt={imageAlt}
-                width={256}
-                height={256}
-                loading="eager"
-              />
+              <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 rounded-full blur-xl opacity-60 animate-pulse" />
+                <Image
+                  class="relative w-48 md:w-64 rounded-full shadow-lg border-4 border-cyan-500/30"
+                  src={image}
+                  alt={imageAlt}
+                  width={256}
+                  height={256}
+                  loading="eager"
+                />
+              </div>
             </div>
           )
         }
@@ -180,11 +187,18 @@ const tabData = [
                 label={button.label}
                 link={button.link}
                 hoverInvert
-                color=""
+                colorScheme="cyan"
+                glass={false}
               />
             )
           }
-          <Button label="Handmade Shop" link="/handmade" hoverInvert color="" />
+          <Button
+            label="Handmade Shop"
+            link="/handmade"
+            hoverInvert
+            colorScheme="cyan"
+            glass={false}
+          />
         </div>
       </div>
     </div>
@@ -200,7 +214,13 @@ const tabData = [
         <NewsCarousel news={visibleNews} client:idle />
       </div>
       <div class="text-center mt-8">
-        <Button label="Alle News ansehen" link="/news" hoverInvert color="" />
+        <Button
+          label="Alle News ansehen"
+          link="/news"
+          hoverInvert
+          colorScheme="cyan"
+          glass={false}
+        />
       </div>
     </div>
   </section>
@@ -238,7 +258,8 @@ const tabData = [
           label="Alle Produkte ansehen"
           link="/handmade"
           hoverInvert
-          color=""
+          colorScheme="cyan"
+          glass={false}
         />
       </div>
     </div>

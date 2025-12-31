@@ -1,6 +1,7 @@
 ---
 import type { PortfolioEntry } from "@/types";
 import BaseLayout from "@components/base/BaseLayout.astro";
+import PageHeader from "@components/common/PageHeader.astro";
 import HeroSection from "./HeroSection.astro";
 import HandmadeSection from "./HandmadeSection.astro";
 import PublicationsSection from "./PublicationsSection.astro";
@@ -19,6 +20,9 @@ const { title, description } = entry.data;
 ---
 
 <BaseLayout title={title} description={description}>
+  <!-- Page Header with Breadcrumbs -->
+  <PageHeader title="Portfolio" colorScheme="amber" />
+
   <!-- Hero Section with Intro and Social Links -->
   <HeroSection entry={entry} />
 

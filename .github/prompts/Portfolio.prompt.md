@@ -66,13 +66,13 @@ Diese Erfahrung im handwerklichen Bereich überträgt sich auch auf meine IT-Pro
 4. **Portfolio Veröffentlichungen**: Ein Karussell mit Bildern und Beschreibungen meiner Veröffentlichungen. Jeder Eintrag soll ein Bild und einen kurzen zusammenfassenden Text (maximal 2 Sätze) enthalten sowie einen Link zur jeweiligen Veröffentlichung sowie ein Link zu einem dazugehörigen Blog-Artikel. Die Blog Artikel existieren noch nicht, daher trage erstmal Platzhalter mit #TODO ein. 
 Folgende Veröffentlichungen gibt es aktuell von mit: 
 
-|Kategorie|Titel|Link|Bild|
-|---|---|---|---|
-|DIY| Testartikel über den Creality K2 Drucker| https://www.heise.de/select/make/2025/3/2512010252016731760| src\assets\placeholder-publications.png
-|IT| Ist dein DevOps Qi im Einklang| https://www.informatik-aktuell.de/entwicklung/methoden/devops-ist-euer-qi-im-einklang.html| src\assets\placeholder-publications.png
-|IT| Der definitige Guide in die ESP32 Welt| https://www.informatik-aktuell.de/entwicklung/methoden/der-definitive-guide-in-die-esp32-welt.html| src\assets\placeholder-publications.png
-|IT| Symbiose von Handwerk und IT| https://www.informatik-aktuell.de/management-und-recht/digitalisierung/symbiose-von-informatik-und-handwerk.html| src\assets\placeholder-publications.png
-|IT| Linting für NodeJS Projekte auf Basis von Astro| https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html| src\assets\placeholder-publications.png
+|Kategorie|Titel|Erscheinungsjahr|Link|Bild|
+|---|---|---|---|---|
+|DIY| Testartikel über den Creality K2 Drucker|2025| https://www.heise.de/select/make/2025/3/2512010252016731760| src\assets\placeholder-publications.png
+|IT| Ist dein DevOps Qi im Einklang|2024| https://www.informatik-aktuell.de/entwicklung/methoden/devops-ist-euer-qi-im-einklang.html| src\assets\placeholder-publications.png
+|IT| Der definitige Guide in die ESP32 Welt|2024| https://www.informatik-aktuell.de/entwicklung/methoden/der-definitive-guide-in-die-esp32-welt.html| src\assets\placeholder-publications.png
+|IT| Symbiose von Handwerk und IT|2024| https://www.informatik-aktuell.de/management-und-recht/digitalisierung/symbiose-von-informatik-und-handwerk.html| src\assets\placeholder-publications.png
+|IT| Linting für NodeJS Projekte auf Basis von Astro|2025| https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html| src\assets\placeholder-publications.png
 
 5. **Podcast Host**:
 
