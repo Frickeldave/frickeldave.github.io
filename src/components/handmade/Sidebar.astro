@@ -55,7 +55,7 @@ const { categories, allTags, totalProducts } = Astro.props;
           categories.map((category) => (
             <li>
               <button
-                class="category-filter w-full text-left px-3 py-1.5 rounded-lg bg-white/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 transition-all text-sm"
+                class="category-filter w-full text-left px-3 py-1.5 rounded-lg glass-t hover:bg-white/20 transition-all text-sm"
                 data-category={category}
               >
                 {category}
@@ -81,7 +81,7 @@ const { categories, allTags, totalProducts } = Astro.props;
         {
           allTags.map((tag) => (
             <button
-              class="tag-filter px-2 py-1 rounded-lg text-xs bg-white/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 transition-all"
+              class="tag-filter px-2 py-1 rounded-lg glass-t text-xs hover:bg-white/20 transition-all"
               data-tag={tag}
             >
               {tag}
@@ -142,7 +142,7 @@ const { categories, allTags, totalProducts } = Astro.props;
   <div class="glass rounded-lg p-4 m-2 intersect:animate-fadeLeft opacity-0">
     <button
       id="clear-filters"
-      class="w-full px-3 py-2 rounded-lg glass-subtle hover:bg-white/20 transition-all text-sm"
+      class="w-full px-3 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg text-sm transition-all duration-300 hover:scale-105"
     >
       Filter zurücksetzen
     </button>

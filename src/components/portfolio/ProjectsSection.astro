@@ -103,12 +103,11 @@ const getStatusColor = (status: string | undefined) => {
                       href={project.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="flex items-center space-x-2 glass-t px-3 py-2 rounded 
-                           hover:bg-gray-800 hover:text-white transition-all duration-300"
+                      class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium transition-all duration-300 hover:scale-105"
                       aria-label="View on GitHub"
                     >
-                      <FaGithub className="w-4 h-4" />
-                      <span class="text-sm">Code</span>
+                      <FaGithub className="w-4 h-4 text-white" />
+                      <span>Code</span>
                     </a>
                   )}
                   {project.demo && (
@@ -116,12 +115,11 @@ const getStatusColor = (status: string | undefined) => {
                       href={project.demo}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="flex items-center space-x-2 glass-t px-3 py-2 rounded 
-                           hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 hover:text-white transition-all duration-300"
+                      class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium transition-all duration-300 hover:scale-105"
                       aria-label="View Live Demo"
                     >
-                      <FaExternalLinkAlt className="w-4 h-4" />
-                      <span class="text-sm">Demo</span>
+                      <FaExternalLinkAlt className="w-4 h-4 text-white" />
+                      <span>Demo</span>
                     </a>
                   )}
                 </div>

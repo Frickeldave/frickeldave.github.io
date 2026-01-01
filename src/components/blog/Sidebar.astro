@@ -1,7 +1,6 @@
 ---
 import { lowerHumanize, upperHumanize } from "@lib/textConverter";
 import { FaRegFolder, FaHashtag } from "react-icons/fa";
-import Button from "@components/common/Button.astro";
 import { ScrollArea } from "@components/common/shortcodes/ScrollArea";
 
 interface Props {
@@ -34,9 +33,12 @@ const { tags, categories, allCategories }: Props = Astro.props;
             const count = allCategories.filter((c) => c === category).length;
             return (
               <li>
-                <a class="" href={`/blog/categories/${category}`}>
+                <a
+                  class="block w-full text-left px-3 py-1.5 rounded-lg glass-t hover:bg-white/20 transition-all text-sm"
+                  href={`/blog/categories/${category}`}
+                >
                   {upperHumanize(category)}{" "}
-                  <div class="inline-block pl-1">({count})</div>
+                  <span class="opacity-60">({count})</span>
                 </a>
               </li>
             );
@@ -55,22 +57,20 @@ const { tags, categories, allCategories }: Props = Astro.props;
         </a>
       </h4>
       <hr class="mb-2 -mt-1" />
-      <ul>
+      <div class="flex flex-wrap gap-2">
         {
           tags.map((tag: string) => {
             return (
-              <li class="inline-block m-1">
-                <Button
-                  label={tag}
-                  link={`/blog/tags/${lowerHumanize(tag)}`}
-                  type="secondary"
-                  colorScheme="purple"
-                />
-              </li>
+              <a
+                class="px-2 py-1 rounded-lg glass-t text-xs hover:bg-white/20 transition-all"
+                href={`/blog/tags/${lowerHumanize(tag)}`}
+              >
+                {tag}
+              </a>
             );
           })
         }
-      </ul>
+      </div>
     </div>
   </div>
 </ScrollArea>

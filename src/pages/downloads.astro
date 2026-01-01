@@ -70,18 +70,26 @@ const totalDownloads = entry.data.downloads?.length || 0;
 
 <script>
   // Wait for DOM and React components to be ready
+  let isInitialized = false;
+
   function initializeDownloadsSearch() {
+    // Prevent multiple initializations
+    if (isInitialized) return;
+
     const searchInput = document.getElementById(
       "search-input"
     ) as HTMLInputElement;
     const resultsCount = document.getElementById("results-count");
     const clearFiltersBtn = document.getElementById("clear-filters");
 
-    if (!searchInput) {
+    if (!searchInput || !resultsCount || !clearFiltersBtn) {
       // Retry after a short delay if elements aren't ready yet
       setTimeout(initializeDownloadsSearch, 100);
       return;
     }
+
+    // Mark as initialized
+    isInitialized = true;
 
     function getDownloadCards() {
       const grid = document.getElementById("downloads-grid");
@@ -117,13 +125,12 @@ const totalDownloads = entry.data.downloads?.length || 0;
 
     function clearFilters() {
       if (searchInput) searchInput.value = "";
-      // Call filterDownloads to reset everything properly
-      setTimeout(() => filterDownloads(), 10);
+      filterDownloads();
     }
 
     // Event listeners
-    searchInput?.addEventListener("input", filterDownloads);
-    clearFiltersBtn?.addEventListener("click", clearFilters);
+    searchInput.addEventListener("input", filterDownloads);
+    clearFiltersBtn.addEventListener("click", clearFilters);
 
     // Initial update
     filterDownloads();

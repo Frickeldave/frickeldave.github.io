@@ -6,7 +6,6 @@ interface Props {
   type?: "primary" | "secondary";
   color?: string;
   colorScheme?: "cyan" | "purple" | "green" | "amber" | "red";
-  hoverInvert?: boolean;
   glass?: boolean;
 }
 
@@ -17,8 +16,7 @@ const {
   type = "primary",
   color,
   colorScheme = "cyan",
-  hoverInvert = false,
-  glass = true,
+  glass = false,
 }: Props = Astro.props;
 
 // Define gradient classes based on color scheme
@@ -54,27 +52,13 @@ const gradientClass =
     <a
       href={link}
       target={`${newtab ? "_blank" : ""}`}
-      class={`no-underline inline-block group intersect:animate-fadeLeft opacity-0 ${hoverInvert ? "hover:opacity-100" : ""}`}
+      class={`no-underline inline-block intersect:animate-fadeLeft opacity-0`}
     >
       <div
-        class={`
-    ${gradientClass}
-    ${type == "primary" ? "p-0.5 rounded-md" : "p-[1.5px] rounded-sm"}`}
+        class={`${gradientClass} text-white font-bold transition-all duration-300 hover:scale-105
+      ${type == "primary" ? "px-4 py-2 rounded-md" : "px-2 py-0.5 rounded-sm text-sm"}`}
       >
-        <div
-          class={`bg-bg-p dark:bg-darkmode-bg-p
-      ${type == "primary" ? "px-4 py-2 rounded-md" : "px-2 py-0.5 rounded-sm"}
-      ${hoverInvert ? "group-hover:bg-opacity-0" : ""}`}
-        >
-          <div
-            class={`text-transparent bg-clip-text
-        ${gradientClass}
-        ${type == "primary" ? "font-bold" : ""}
-        ${hoverInvert ? "group-hover:text-txt-p dark:group-hover:text-darkmode-txt-p" : ""}`}
-          >
-            {label}
-          </div>
-        </div>
+        {label}
       </div>
     </a>
   )
