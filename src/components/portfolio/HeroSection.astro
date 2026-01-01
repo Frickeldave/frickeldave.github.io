@@ -189,13 +189,11 @@ const getIcon = (icon: string | undefined) => {
                   href={link.url}
                   target={link.url.startsWith("mailto:") ? "_self" : "_blank"}
                   rel="noopener noreferrer"
-                  class="group flex items-center gap-3 glass-t px-5 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-gradient-to-r hover:from-amber-500/20 hover:to-orange-500/20"
+                  class="group flex items-center gap-3 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   aria-label={link.name}
                 >
-                  <IconComponent className="text-xl text-amber-500 group-hover:text-amber-400 transition-colors" />
-                  <span class="text-txt-p dark:text-darkmode-txt-p font-medium">
-                    {link.name}
-                  </span>
+                  <IconComponent className="text-xl text-white" />
+                  <span>{link.name}</span>
                 </a>
               );
             })

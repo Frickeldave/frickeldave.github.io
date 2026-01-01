@@ -18,37 +18,31 @@ const platforms = [
     name: "Spotify",
     url: "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB",
     icon: FaSpotify,
-    color: "from-amber-500 to-orange-500",
   },
   {
     name: "Apple",
     url: "https://podcasts.apple.com/de/podcast/doag-voices/id1847181531",
     icon: FaApple,
-    color: "from-gray-600 to-gray-800",
   },
   {
     name: "Amazon",
     url: "https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices",
     icon: FaAmazon,
-    color: "from-orange-500 to-amber-600",
   },
   {
     name: "Deezer",
     url: "https://www.deezer.com/de/show/1002294232",
     icon: FaMusic,
-    color: "from-amber-400 to-orange-400",
   },
   {
     name: "podcast.de",
     url: "https://www.podcast.de/podcast/3651714/doag-voices",
     icon: FaPodcast,
-    color: "from-orange-400 to-amber-400",
   },
   {
     name: "acast",
     url: "https://shows.acast.com/doag-voices-arbeitstitel",
     icon: FaMicrophone,
-    color: "from-amber-600 to-orange-600",
   },
 ];
 ---
@@ -117,10 +111,10 @@ const platforms = [
                       href={platform.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class={`group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r ${platform.color} text-white text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg`}
+                      class="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
                       aria-label={`${platform.name} - DOAG VOICES`}
                     >
-                      <IconComponent className="text-lg" />
+                      <IconComponent className="text-lg text-white" />
                       <span>{platform.name}</span>
                     </a>
                   );
