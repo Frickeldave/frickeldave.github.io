@@ -1,0 +1,549 @@
+---
+title: Monitorpanels für Besprechungsräume - Professionelle Monitor-Panels mit LED-Beleuchtung
+description:
+  Ein umfassendes DIY-Projekt zum Bau professioneller Monitorpanels für Besprechungsräume mit
+  Raspberry Pi, LED-Beleuchtung und integrierter Technik.
+slug: monitorpanels-fuer-besprechungsraeume
+date: 2019-11-06
+image: "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-header.png"
+imageAlt: Header image für den Blog Artikel Monitorpanels für Besprechungsräume
+categories: [DIY]
+author: Frickeldave
+tags:
+  [
+    DIY,
+    Heimwerken,
+    Holzwerken,
+    Monitorpanel,
+    MDF,
+    LED,
+    Elektrik,
+    Büromöbel,
+    Kerf-Cutting,
+    Schreinerei,
+    msg-systems,
+    Automotive,
+  ]
+---
+
+import RedirectLink from "@components/common/RedirectLink.astro";
+import { Image } from "astro:assets";
+import mopb001 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-001.jpg";
+import mopb002 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-002.png";
+import mopb003 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-003.png";
+import mopb004 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-004.png";
+import mopb005 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-005.jpg";
+import mopb006 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-006.jpg";
+import mopb007 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-007.jpg";
+import mopb008video from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-008.mp4";
+import mopb008 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-008.jpg";
+import mopb009 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-009.jpg";
+import mopb010 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-010.jpg";
+import mopb011 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-011.jpg";
+import mopb012 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-012.jpg";
+import mopb013 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-013.jpg";
+import mopb014 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-014.jpg";
+import mopb015 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-015.jpg";
+import mopb016 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-016.jpg";
+import mopb017 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-017.jpg";
+import mopb018 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-018.jpg";
+import mopb019 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-019.jpg";
+import mopb020 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-020.jpg";
+import mopb021 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-021.jpg";
+import mopb022 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-022.jpg";
+import mopb023 from "@assets/blog/diy/2019-11-06-monitorpanels-fuer-besprechungsraeume/mopb-023.jpg";
+
+## Einleitung und Projekthintergrund
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-2/3">
+    Mittlerweile ist es ja normal, in Projektflächen mit 30-40 Personen zu arbeiten. Um sich schnell
+    besprechen zu können, wurde das bekannte Konzept der Besprechungsräume abgeschafft und in die
+    Projektflächen rundherum verglaste schalldichte "Cubes" aufgestellt, die man jederzeit einfach
+    nutzen kann.
+  </div>
+  <div className="lg:w-1/3">
+    <Image src={mopb001} alt="Cube mit Technik vor dem Umbau" />
+  </div>
+</div>
+
+Die Cubes können nicht gebucht werden, das Prinzip ist "first come, first serve", dafür stehen auf 6
+Projektflächen verteilt, 8 dieser Cubes (neben 4 weiteren Besprechungsräumen) zur Verfügung. Ich
+finde das ist das bisher beste Prinzip was ich kennengelernt habe. Irgendein Raum ist immer frei in
+dem man sich für eine Besprechung zurückziehen kann und einmal durch die Räume wandern geht viel
+schneller als sich durch die Outlook Resourcenplanung zu wühlen.
+
+### Die Technik dahinter – Einfach und komfortabel
+
+An den Arbeitsplätzen nutzen wir die Docking Station der tschechischen Firma
+
+<RedirectLink id="i-tec" text="i-tec" /> die ziemlich cool sind. An jedem Arbeitsplatz stehen nun 2
+Monitore mit der Docking Station verkabelt. Aktuell (Zeitpunkt dieses Artikels) basiert das auf USB
+3.1 und man hat nichts weiter zu tun als das USB Kabel und ggf. Strom einzustecken.
+
+Nun ist naheliegend, dass wir die Docking Station eben auch in die Cubes bauen. Das haben wir in der
+ersten Iterationsstufe mit einem Monitor und einer für Besprechungen optimierten
+
+<RedirectLink id="logitech-meetup" text="Logitech Webcam" /> auch getan. Die Geschichte ist echt
+komfortabel, Laptop dran, evt. Mikrofon, Sound und Kamera konfigurieren (das bekommt MS Team aber
+auch gut alleine hin) und los gehts.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    Aber klar schaut das ganze aber irgendwie auch unsexy aus. Weißes Büro, weiße Wand, Glaswände,
+    das ist schon irgendwie langweilig. Also bin ich losgetigert und habe die Werbetrommel dafür
+    gerührt, dass wir das etwas farblicher gestalten müssen. Die Hauptfarbe des Arbeitsgebers ist
+    rot, also musste irgendwas knatschrotes da rein. Da die Rückwände der Cubes wohl nicht angebohrt
+    werden dürfen, war schnell klar, da muss was freistehendes rein.
+  </div>
+  <div className="lg:w-2/3">
+    <Image src={mopb002} alt="Erste Grob-Idee" />
+  </div>
+</div>
+
+### Anforderungen
+
+Nach dem ersten Brainstorming haben wir folgende Anforderungen definiert:
+
+- Ein Holzpanel in Firmen-rot
+- Monitor direkt daran gehangen
+- Webcam auch
+- Technik dahinter versteckt
+- Irgendwie Licht (LED-Beleuchtung)
+- Das aber abschaltbar, da es vlt. auch stört
+- Nachts über wollen wir da keinen Strom vergeuden
+- Steckdosen müssen komfortabel erreichbar sein
+- Eine USB Steckdose zum reinen aufladen von Geräten wollen wir auch noch
+- Unser Geschäftsbereichslogo soll klar sichtbar werden, aber auch austauschbar um die Panel wieder
+  zu verwenden
+- Kabel sollen möglichst keine mehr sichtbar sein
+- Das ganze muss noch von einem Elektriker abgenommen werden
+
+### Detailplanung
+
+Nachdem das alles zusammen ging es an die Planung. Ich habs nicht so mit 3D Plänen auch wenn ich mir
+immer wieder vornehme, mal den
+
+<RedirectLink id="fusion-holzbastler" text="Fusion für Holzbastler Kanal" /> durchzuarbeiten. Also
+ab an Visio, das wird schon reichen ;-). Nach ein bisschen Malerei kam die erste Skizze für die
+Monitorpanels heraus.
+
+<div className="my-6">
+  <Image src={mopb003} alt="Detailskizze mit Maßen und Komponenten" />
+</div>
+
+Wir bauen 2 Typen von Monitorpanels, einen niedrigen und einen Typ der 20cm höher ist als der
+andere. Ursache dafür ist, dass in den verschiedenen Cubes auch zwei Typen von Tischen stehen. Ganz
+besonders wichtig zu beachten, ist hier wirklich mal den Tisch mit einzuzeichnen. Dessen Höhen und
+vor allem auch dessen Füße müssen ja auch zum Panel passen.
+
+## Materialliste und Kosten
+
+Mit der Skizze ging es nun weiter. Klar kann ich das nicht mehr in meiner kleinen Werkstatt bauen
+und natürlich sind die Ansprüche an ein solches freistehendes Panel in einer Firma höher, als dass
+ich das zusammengefrickelt bekomme. Zudem darf ich ohne Meisterbrief so etwas denke ich auch gar
+nicht für jemanden anderen, außer mir selber produzieren. Also einmal über die Straße zum Schreiner
+Hadersdorfer bei mir Ort, den Plan mal grob durchgequatscht und ein Angebot rausgelassen. Dann noch
+ein wenig Excel-Arbeit, Internet-Recherche und Hirnschmalz, schon stand die erste Kostenschätzung.
+
+### Materialliste (Preise netto, gerundet, pro Panel)
+
+- Schreiner: 1000€
+- Glasplatte + Schliff/Bohrungen: 120€
+- <RedirectLink id="monitorhalter-flach" text="Flach anliegender Monitorhalter" />: 14€
+- <RedirectLink id="jung-steckdosen" text="Jung AS 500 Unterputzsteckdosen" /> (4 pro Panel): 3€
+- <RedirectLink id="unterputzdosen" text="Unterputzdosen" /> (4 pro Panel): 0,83€
+- <RedirectLink id="abstandshalter-glas" text="Abstandshalter für das Glas" /> (4 pro Panel): 0,59€
+- <RedirectLink id="flachstecker" text="Flachstecker" />: 2€
+- <RedirectLink id="kabeldurchfuehrung" text="Kabeldurchführungshülsen" /> (2 pro Panel): 0,15€
+- <RedirectLink id="digitus-blindabdeckung" text="DIGITUS 19 Zoll Blindabdeckung" />: 5,90€
+- <RedirectLink id="kabelbefestigung" text="Selbstklebende Kabelbefestigungen" /> (~20 pro Panel):
+  0,12€
+- <RedirectLink id="pattex-kleber" text="Pattex One Universalkleber für den LED Streifen" />: 7€
+- <RedirectLink id="spelsberg-dose" text="Spelsberg Abox 060L Dose für die interne Verkabelung" />:
+  6,70€
+- <RedirectLink id="wago-klemmen" text="Wago Klemmen" />: 20€
+- <RedirectLink id="zeitschaltuhr-unterputz" text="Zeitschaltuhr Unterputz" />: 13€
+- <RedirectLink
+    id="evoline-steckdose"
+    text="Evoline Steckdose 3x230V, 1xUSB, 1 Schalter, 1 Kabeldurchlaß"
+  />
+  : 150€
+- LED Streifen: 30€
+- <RedirectLink id="stromkabel-3adrig" text="Stromkabel dreiadrig" />: 50€
+- Abnahme und Support durch den Elektriker: 85€
+
+**Gesamtkosten pro Panel: ca. 1200-1600€**
+
+### Wirklich teuer?
+
+Ich muss zugeben, mich hats im ersten Reflex hingesetzt. Aber schaut halt mal, was eine Wohnzimmer
+Fernsehwand kostet. Wenn man dann schaut, was Firmen verlangen die solche Monitorpanels
+professionell bauen, ist man mit dieser Lösung allemal deutlich günstiger am Start. Hier wird für
+ein einfaches schwarzes potthässliches Stahlgestell dann auch gerne mal 1400€+ verlangt. Also war
+schnell klar, diese Lösung ist nicht nur schöner und individueller als irgendein gekaufter Kram vom
+Markt. Es wird auch nicht teurer als eine fertige Lösung (und hoffentlich wertiger für den Preis 😉
+).
+
+<Image src={mopb004} alt="Erste Budget-Kalkulation" />
+
+### Glasplatte
+
+Die Glasplatten haben wir bei Troas bestellt.
+
+**Spezifikationen:**
+
+- Form: Rechteck
+- Glastyp: ESG
+- Heißlagerungstest: Nein
+- Glasart: Optiwhite
+- Motiv: Sandstrahlen mit Wunschmotiv
+- Breite: 1000mm
+- Höhe: 200mm
+- Glasstärke: 8 mm
+- ESG Stempel: auf Kante
+- Kantenbearbeitung: Polierte Kante
+- Lochbohrungen bis 20 mm Durchmesser: Ja
+- Anzahl Lochbohrungen bis 20 mm Durchmesser: 4
+
+### Unterputzdosen
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    Die Netzteile der Geräte (Dockingstation, Webcam, …) sollen in der Wand angeschlossen werden.
+    Die erste Idee war, eine Steckdosenleiste mit Querbuchsen einzubauen. Dadurch wären aber die
+    Monitorpanels viel zu dick geworden. Sind die Netzteile längs eingebaut, kommen die sich in die
+    Quere und man bräuchte eine entsprechend längere Leiste. Also haben wir beschlossen, kleine
+    Holzhalter zu bauen, die im Panel befestigt sind und in diese Steckdosen einzulassen.
+  </div>
+  <div className="lg:w-2/3">
+    <Image src={mopb005} alt="Selbstgebaute Steckdosenleisten" />
+  </div>
+</div>
+
+### Evoline Steckdosen
+
+Hier handelt es sich um Steckdosen im Modulprinzip. Ihr könnt euch eure eigene Steckdosenleiste
+zusammenkonfigurieren.
+
+- 2 Steckdosen ermöglichen den Anschluss beliebiger Geräte.
+- Ein Schalter wird genutzt um den LED Streifen unabhängig von der Zeitschaltuhr an- und
+  auszuschalten.
+- Der USB Anschluss ist zum Laden von Mobilgeräten gedacht.
+- Ein Durchlass ermöglicht die Durchführung des USB Kabels zur Dockingstation.
+
+## Zuschnitt und Vorbereitung
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={mopb006} alt="Zuschnitt mit der Handkreissäge" />
+  </div>
+  <div className="lg:w-1/2">
+Das Monitorpanel wurde im großen und ganzen aus MDF gefertigt. Die vorbeschichteten MDF Platten
+kamen im Format 4x2m an. Der Vorteil an vorbeschichteten Platten: Später beim Lackieren ist keine
+Grundierung mehr notwendig.
+
+    Selbst wenn die Formatkreissäge noch so groß ist, hier müssen erstmal handliche Stücke her. Also wurden alle Platten zusammengezwingt und mit der Handkreissäge die Frontplatten grob ausgeschnitten.
+
+    BTW: Wenn Ihr solche vorbeschichteten Platten bearbeitet, zieht bloß Handschuhe an. Die Dinger sind einfach nur sauscharf.
+
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={mopb007} alt="Formatkreissäge im Einsatz" />
+  </div>
+  <div className="lg:w-1/2">
+    Sind die Platten vorgeschnitten gehts ab auf die Formatkreissäge um die endgültigen Maße
+    herzustellen.
+  </div>
+</div>
+
+### Kanten versiegeln
+
+Nun sind die Monitorpanels für unsere Besprechungsräume in der Fläche vorbeschichtet, aber noch
+nicht die Kanten. Wir Heimwerker würden der Kante nun mit Pinsel und MDF Grundierung zu Leibe
+rücken, aber natürlich nicht der Profi. Der hat eine Maschine um die Kanten zu umleimen. Diese zieht
+das Brett durch, leimt eine Beschichtung auf die Kante auf und bringt gleich noch mittels einer
+eingebauten Fräse eine Mini-Fase an.
+
+<div className="my-6">
+  <video controls className="w-full rounded-lg" preload="metadata">
+    <source src={mopb008video} type="video/mp4" />
+    Ihr Browser unterstützt das Video-Tag nicht.
+  </video>
+</div>
+
+Der Leim ist im großen und ganzen nichts anderes als ein Heißkleber, der in Kugelform eingefüllt
+wird. Der Kantenumleimer kommt auf der Rolle daher. Sind die Kantenumleimer angebracht, haben wir
+nur noch die Überstände mit dem Stechbeitel entfernt.
+
+### Löcher anbringen
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/3">
+    Nun wurde eine Schablone für die obere Rundung angebracht, an welcher die Oberfräse entlanggeführt
+    werden kann.
+  </div>
+  <div className="lg:w-2/3">
+    <Image src={mopb008} alt="Schablone für Bohrungen und Rundungen" />
+  </div>
+</div>
+
+## Korpusmontage und Kerf-Cutting
+
+### Anfertigen der Seitenwände für den Korpus
+
+Die Seitenwände des Korpus haben eine Breite von 10cm und sind ebenfalls aus MDF gefertigt. Die
+Rückplatte haben wir natürlich nicht stumpf auf den Korpus aufgeschraubt, sondern ordentlich
+eingelassen, also ist eine Nut in der Stärke der Rückplatte notwendig.
+
+### Kerf-Cutting für Rundungen
+
+Kerf Cutting bezeichnet eine Schneidetechnik, bei der parallele, eng beieinanderliegende Einschnitte
+(Kerfs) in ein starres Material wie Holz, Acryl oder Metall gefräst, gesägt oder gelasert werden, um
+es biegsam zu machen.
+
+<div className="my-6">
+  <Image src={mopb009} alt="Kerf-Cutting Technik für die Rundung" />
+</div>
+
+Sind die Schnitte gemacht, lässt sich das MDF super in die Rundung einlegen. Nun muss an dieser
+extrem vorsichtig gehandwerkt werden, die einzelnen Lamellen brechen tatsächlich sehr schnell aus,
+solange die Rundung noch nicht eingeleimt ist.
+
+<div className="my-6">
+  <Image src={mopb010} alt="Kerf-Cutting Technik für die Rundung" />
+</div>
+
+### Anfertigen der Kabeldurchführung
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={mopb011} alt="Kabeldurchführung mit 19 Zoll Blindabdeckung" />
+  </div>
+  <div className="lg:w-1/2">
+Unten im Korpus der Monitorpanels werden die Kabel herausgeführt. Konkret sind dies ein Stromkabel
+und ein Netzwerkkabel. Um die Kabel vor Umknicken zu schützen, sind diese durch Kabelhülsen gezogen.
+Die Gewinde der Kabelhülsen sind aber zu klein um diese direkt ins Holz zu setzen. Also habe ich
+Blindabdeckungen für Netzwerkschränke bestellt, in die 2 Löcher gebohrt und diese dann in das Panel
+eingelassen werden. Die Blindabdeckung selber braucht aber auch einen Rahmen aus Holz drumherum.
+
+  </div>
+</div>
+
+Danach wurden alle Bretter zusammengezwingt und die Durchlässe für die Edelstahlfüße, die das
+gesamte Panel halten, eingesägt, indem der Bretterstapel hochkant durch die Kreissäge geführt wird.
+
+<Image src={mopb012} alt="Einsäge der Durchlässe für das Edelstahlgestell" />
+
+### Zusammenbau des Korpus
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={mopb013} alt="Montage der Seitenteile und Kabeldurchführung" />
+  </div>
+  <div className="lg:w-1/2">
+
+Nun haben wir die Seitenteile des Korpus auf die Vorderplatte geleimt. Hier sieht man schön: Auf der
+rechten Seite ist ein Loch für die Zeitschaltuhr eingelassen.
+
+Zu guter Letzt wird die Bodenplatte des Korpus eingesetzt, welche die Kabeldurchführungen
+beinhaltet. Da ja durchaus mal jemand übers Kabel stolpern kann, haben wir diese neben den
+Flachdübeln auch noch mit zusätzlichen Holzklötzchen gesichert.
+
+  </div>
+</div>
+
+### Feinarbeiten
+
+Rund um den Korpus der Monitorpanels soll ein LED Streifen eingelassen werden. Wir haben die
+Erfahrung gemacht, dass diese Streifen es nicht mögen, stark geknickt zu werden. Daher wurde an der
+90° Ecke des Korpus noch eine Ecke mit einem Multitool, einem Stechbeitel und einer Feile etwas
+abgerundet.
+
+Zu guter Letzt haben wir alle Kanten die nun durch die Bearbeitung Ihre Grundierung verloren haben
+mit einem Isolierfüller grundiert.
+
+## LED-Integration und Elektronik
+
+Als erstes der obligatorische Hinweis: Ich habe zwar alle Monitorpanels verkabelt, aber im Anschluss
+wurden alle durch einen Elektriker geprüft und abgenommen. Wenn Ihr euch mit Strom nicht auskennt,
+lasst es bitte einen ausgebildeten Elektriker machen. Ganz besonders im gewerblichen Bereich ist die
+Abnahme durch einen Elektriker Pflicht, bevor das Panel in Betrieb genommen wird.
+
+### Planung der Elektrik
+
+Ich wollte, dass der LED-Streifen von vorne abgeschaltet werden kann, wenn das Licht stört.
+Weiterhin soll das Licht auch am Abend automatisch ausgehen und am Morgen wieder an, genutzt wird
+dafür eine Unterputz Zeitschaltuhr die an der Seite in das Panel eingelassen wird.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={mopb014} alt="Montage der Seitenteile und Kabeldurchführung" />
+  </div>
+  <div className="lg:w-1/2">
+
+"Evoline" bezeichnet hier die Steckdosenleiste. Evoline Leisten sind modulweise aufgebaut und können
+frei konfiguriert werden. Das besondere am Evoline Schalter ist, dass dieser nicht wie üblich eine
+Phase unterbricht, sondern eine vollwertige Anschlussleitung (L1/PE/N) aus der Steckdose geführt
+ist, die je nach Schalterzustand eben Strom liefert oder nicht. Die Zeitschaltuhr ist hinter der
+Eveline geschaltet, dahinter dann der LED Streifen. Die Unterbrechung der Stromversorgung ist kein
+Problem, da die Zeitschaltuhr über eine Backup Batterie verfügt und Ihre Programmierung damit
+beibehält.
+
+  </div>
+</div>
+
+### Verkabelung der Monitorpanels
+
+Nun können die Steckdosen eingebaut und verkabelt werden. Die Verkabelung erfolgt einfach in Reihe.
+Die Zeitschaltuhr wird in der Seite des Panels eingelassen. In die Lochbohrung wird wieder eine
+Hohlraumdose eingelassen.
+
+Anschließend habe ich die Unterputz-Zeitschaltuhr gesetzt und schon mal ein Kabel angeschlossen.
+Alle Kabel habe ich in einer Verbindungsdose zusammengeführt und mit Wago Klemmen nach Plan
+verkabelt. Die Zeitschaltuhr braucht für Ihren eigenen Betrieb die "Phase" als auch den
+"Neutralleiter" und natürlich eine Schaltader.
+
+### Montage des LED Streifen
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={mopb015} alt="Montage der Seitenteile und Kabeldurchführung" />
+  </div>
+  <div className="lg:w-1/2">
+
+Das Netzteil und den LED-Controller habe ich unten in der Ecke des Monitorpanels eingeklebt, in der
+auch der LED Streifen startet. Für den Infrarotempfänger haben wir an einer unauffälligen Stelle ein
+Loch gerade so groß gebohrt, dass der Empfänger mit leichter Gewalt reingedrückt werden kann. Somit
+ist kein Einkleben o.ä. notwendig. Die Verbindung mit dem LED Streifen wird mit einem Stück
+Gewebeband gesichert. Zusätzlich habe ich noch einen Kabelbinder angebracht. Wichtig beim Anbringen
+des LED Streifen: Der mag das überhaupt nicht, 90° geknickt zu werden. Hier haben wir ein Stück des
+Gehäuses ausgenommen um den Streifen um die Ecke zu führen.
+
+  </div>
+</div>
+
+### Durchführung der Leitungen nach außen
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+  
+Nach außen hin sind 2 Leitungen notwendig. Ein Stromkabel sowie ein Netzwerkkabel. Beide sind mit
+Kabeldurchführungshülsen gegen Abknicken geschützt. Da ich keine Hülsen gefunden habe, die man in
+Holz hätte einlassen können, ist hier ein Blech vorgesehen, das eigentlich für die Verwendung in 19"
+Schränken vorgesehen. Aber für diesen Zweck ist das optimal geeignet. Mit einem 16mm Bohrer werden
+die Löcher vorgebohrt und die Kabel durchgezogen. Der Stecker des Netzwerkkabels muss für diesen
+Vorgang gekappt und nach dem Durchziehen wieder aufgecrimpt werden.
+
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={mopb016} alt="Kabeldurchführung" />
+
+  </div>
+</div>
+
+## Finale Montage und Installation
+
+### Lackierung und Montage
+
+Die Edelstahlfüße haben wir extra vom Metallbauer anfertigen lassen. Hier war nicht mehr zu tun, als
+diese an die Monitorpanels anzuschrauben.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+  
+Für die Lackierung wurde ein Teil der Werkstatt abgesperrt und alle außen liegenden Holzteile im Firmen-Rot lackiert.
+
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={mopb017} alt="Kabeldurchführung" />
+
+  </div>
+</div>
+
+### Fertigung der Rückplatte
+
+Auch hier bleibt nicht viel zu beschreiben. Die Rückplatten der Monitorpanels werden auf Maß
+geschnitten. Anschließend wird eine Form für die Rundung der rechten oberen Ecke manuell hergestellt
+und mit Hilfe des Kopierrings an der Oberfräse auf die Rückplatte übertragen. Hier ist wichtig zu
+beachten: Der Kopierring ist etwas größer als der Fräser, muss also bei der Anfertigung der
+Schablone beachtet werden. Alternativ kann natürlich ein Fräser mit Anlaufkugellager verwendet
+werden.
+
+### Endmontage der Monitorpanels
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+  
+Der Rest der Montage des Monitorpanels ist denkbar einfach. Der Monitor wird mit einer
+Monitorhalterung befestigt, die Webcam angeschraubt, die Evoline Steckdosenleiste in die vorgesehene
+Öffnung eingelassen und am Ende alles angeschlossen.
+
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={mopb018} alt="Kabeldurchführung" />
+
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+  
+<Image src={mopb019} alt="Kabeldurchführung" />
+
+  </div>
+  <div className="lg:w-1/2">
+  Ziel war es, ein USB Kabel aus dem Panel zu führen, über das alle IT-Geräte des Monitorpanels am
+Laptop automatisch angeschlossen sind. Zum Einsatz kommt hier eine i-Tec USB3.x Docking Station, die
+einfach eingeklebt wird und an der alle Geräte angeschlossen sind. Mit Kabelbindern die über
+Klebepads an der Rückwand befestigt sind, werden alle Kabel gesichert, so dass beim Transport in dem
+Panel nichts mehr wackeln kann.
+
+
+  </div>
+</div>
+
+## Elektriker-Abnahme und Sicherheit
+
+Last but not least: Was im privaten Bereich gemacht wird, ist natürlich jedem selbst überlassen,
+aber im gewerblichen Bereich ist die Abnahme der elektrischen Installation Pflicht. Das kann jeder
+Elektromeister machen, einfach beauftragen. Auch haben die Unternehmen oft Ihre Elektrobetriebe, die
+die Abnahme für euch durchführen können.
+
+## Fazit und Ergebnis
+
+Klar habe ich hier viel meiner Zeit und persönliche Motivation einfließen lassen. Ich bin sicher,
+jeder Holzbastler hier unter uns wird das ähnlich machen. Wenn man sich einen guten Plan macht und
+einen Schreiner und Elektriker anheuert, sind alle Voraussetzungen geschaffen, für moderates Geld
+seine Office Umgebung ungemein aufzuwerten. Und das abseits vom sonst üblichen Mainstream der
+hässlichen schwarzen Stahlgestelle. Vielleicht ist es für den einen oder anderen ein Anreiz, seinen
+Monitor zu Hause ähnlich elegant unterzubringen.
+
+Was ich aber bei der Planung auch gelernt habe: Wenn euch euer Umfeld am Arbeitsplatz nicht gefällt,
+dann macht euch Gedanken und legt los. Wahrscheinlich seid Ihr nicht die einzigen und werdet
+vielleicht weniger Widerstand bekommen als Ihr selber denkt. Fangt an euer Umfeld und euren
+Arbeitsplatz zu gestalten und zu verändern. Ihr verbringt dort ein Drittel eures Lebens. Eine
+Besprechung in einem Cube mit diesen Monitorpanels zu verbringen ist einfach viel schöner, als auf
+eine sterile weiße Wand zu schauen. Und gerade mit diesem Projekt ergab sich für mich die
+Möglichkeit, das Hobby ein wenig mit dem Beruf (und jetzt auch noch mit diesem Blog) zu verknüpfen.
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={mopb020} alt="Fertiges Panel 01" />
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={mopb021} alt="Fertiges Panel 02" />
+  </div>
+</div>
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    <Image src={mopb022} alt="Fertiges Panel 03" />
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={mopb023} alt="Fertiges Panel 04" />
+  </div>
+</div>
