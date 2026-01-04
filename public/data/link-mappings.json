@@ -115,13 +115,6 @@
       "openInNewTab": true,
       "created": "2025-09-12T12:00:00.000Z"
     },
-    "msg-systems": {
-      "targetUrl": "https://www.msg.group/automotive",
-      "description": "msg systems ag - Mein Arbeitgeber",
-      "category": "Unternehmen",
-      "affiliate": false,
-      "openInNewTab": true
-    },
     "devopscon-munich": {
       "targetUrl": "https://devopscon.io/munich/",
       "description": "DevOpsCon - IT Messe in München",
@@ -590,7 +583,135 @@
       "affiliate": true,
       "category": "Heimwerken",
       "openInNewTab": true
+    },
+    "i-tec": {
+      "targetUrl": "https://i-tec.cz/en/",
+      "description": "i-tec USB Docking Stations",
+      "affiliate": false,
+      "category": "IT",
+      "openInNewTab": true
+    },
+    "logitech-meetup": {
+      "targetUrl": "https://www.amazon.de/dp/B0DHW17HY2",
+      "description": "Logitech Meetup 2Conference Cam",
+      "affiliate": false,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "fusion-holzbastler": {
+      "targetUrl": "https://www.youtube.com/channel/UCv9SgWpu6udnNK_pLNzdFAw",
+      "description": "Fusion für Holzbastler YouTube Kanal",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "monitorhalter-flach": {
+      "targetUrl": "https://www.amazon.de/dp/B071H4GHSR",
+      "description": "Flach anliegender Monitorhalter",
+      "affiliate": true,
+      "category": "Büromöbel",
+      "openInNewTab": true
+    },
+    "jung-steckdosen": {
+      "targetUrl": "https://www.amazon.de/dp/B072SKQR6X",
+      "description": "Jung AS 500 Unterputzsteckdosen",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "unterputzdosen": {
+      "targetUrl": "https://www.amazon.de/dp/B0171U26EO",
+      "description": "Unterputzdosen für Hohlwände",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "abstandshalter-glas": {
+      "targetUrl": "https://www.amazon.de/dp/B07QGDWCV2",
+      "description": "Abstandshalter für Glasplatten",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "flachstecker": {
+      "targetUrl": "https://www.amazon.de/dp/B07K2KX1FD/",
+      "description": "Meister Flachstecker Winkelstecker",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "kabeldurchfuehrung": {
+      "targetUrl": "https://www.amazon.de/dp/B07K1ZWVVH",
+      "description": "Kabeldurchführungshülsen",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "digitus-blindabdeckung": {
+      "targetUrl": "https://www.amazon.de/dp/B001LNI1XI",
+      "description": "DIGITUS 19 Zoll Blindabdeckung",
+      "affiliate": true,
+      "category": "IT",
+      "openInNewTab": true
+    },
+    "kabelbefestigung": {
+      "targetUrl": "https://www.amazon.de/dp/B076F64VKH",
+      "description": "Selbstklebende Kabelbefestigungen",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "pattex-kleber": {
+      "targetUrl": "https://www.amazon.de/dp/B007QAYJZ4",
+      "description": "Pattex One Universalkleber",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "spelsberg-dose": {
+      "targetUrl": "https://www.amazon.de/dp/B000ONQRQO",
+      "description": "Spelsberg Abox 060L Verteilerdose",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "wago-klemmen": {
+      "targetUrl": "https://www.amazon.de/dp/B07NKFXLF7",
+      "description": "Wago Verbindungsklemmen Set",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "zeitschaltuhr-unterputz": {
+      "targetUrl": "https://www.amazon.de/dp/B00U6392OQ",
+      "description": "Zeitschaltuhr Unterputz mit Backup-Batterie",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "evoline-steckdose": {
+      "targetUrl": "http://www.evoline.com",
+      "description": "Evoline modulare Steckdosensysteme",
+      "affiliate": false,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "stromkabel-3adrig": {
+      "targetUrl": "https://www.amazon.de/dp/B071K8M6G8",
+      "description": "Stromkabel dreiadrig",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "troas-glas-shop": {
+      "targetUrl": "https://troas.shop/",
+      "description": "Glas shop Troas - Zuschnitt und Lieferung von Glasplatten",
+      "affiliate": false,
+      "category": "Glas",
+      "openInNewTab": true
     }
+
+
   },
   "analytics": {
     "totalClicks": 0,

@@ -48,21 +48,18 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Gartenschrank für die Terrasse](https://frickeldave.de/gartenschrank-fuer-die-terrasse/) | `2020-06-18-gartenschrank-fuer-die-terrasse.mdx` | ✅ |
 | [Kinderhändelampe](https://frickeldave.de/kinderhaendelampe/) | `2020-05-20-kinderhaendelampe.mdx` | ✅ |
 | [Getränkekistenhalter (mit Plan)](https://frickeldave.de/halter-fuer-getraenkekisten-mit-plan/) | notdo | ⛔ |
-| [Kabelkanal aus Holz](https://frickeldave.de/kabelkanal-aus-holz/) | fehlt | ❌ |
+| [Kabelkanal aus Holz](https://frickeldave.de/kabelkanal-aus-holz/) | notdo | ⛔ |
 | [Garage #0: Günstigen Unterstand bauen](https://frickeldave.de/unterstand-bauen/) | notdo | ⛔ |
-| [Monitorpanels für Besprechungsräume #3](https://frickeldave.de/monitorpanels-fuer-besprechungsraeume-3/) | fehlt | ❌ |
 | [ZLH150_3 Charity challenge](https://frickeldave.de/zlh150_3-charity-challenge/) | fehlt | ❌ |
-| [Monitorpanels für Besprechungsräume #2](https://frickeldave.de/monitorpanels-fur-besprechungsraume-2/) | fehlt | ❌ |
 | [Bohrtisch für die Standbohrmaschine](https://frickeldave.de/bohrtisch-fuer-die-standbohrmaschine/) | notdo | ⛔ |
 | [Bohrerhalter](https://frickeldave.de/bohrerhalter/) | notdo | ⛔ |
 | [Sterngriffe selber bauen](https://frickeldave.de/sterngriffe-selber-bauen/) | `2019-12-19-sterngriffe-selber-bauen.mdx` | ✅ |
 | [Schublade für Meßwerkzeuge](https://frickeldave.de/schublade-fuer-messwerkzeuge/) | notdo | ⛔ |
 | [Schatztruhe aus Holz](https://frickeldave.de/schatztruhe-aus-holz/) | `2019-11-27-schatztruhe-aus-holz.mdx` | ✅ |
 | [Akku organizer](https://frickeldave.de/akku-organizer/) | notdo | ⛔ |
-| [Monitorpanels für Besprechungsräume #1](https://frickeldave.de/monitor-panel-fuer-besprechungsraeume-1/) | fehlt | ❌ |
 | [DIY Lattenrost](https://frickeldave.de/diy-lattenrost/) | fehlt | ❌ |
 | [Laterne aus Nußbaumholz selber bauen](https://frickeldave.de/laterne-aus-nussbaumholz-selber-bauen/) | notdo | ⛔ |
-| [Magnetische Topfuntersetzer #2](https://frickeldave.de/topfuntersetzer-edeledition/) | fehlt | ❌ |
+| [Magnetische Topfuntersetzer #2](https://frickeldave.de/topfuntersetzer-edeledition/) | notdo | ⛔ |
 | [Einfacher Werkbankschrank](https://frickeldave.de/werkstattbau-1-einfacher-werkbankschrank/) | notdo | ⛔ |
 | [Schiebeschlitten für die Tischkreissäge](https://frickeldave.de/schiebeschlitten-fuer-die-tischkreissaege/) | notdo | ⛔ |
 | [Smarte Steckdosensäule im Garten](https://frickeldave.de/smarte-steckdosensaeule-im-garten/) | notdo | ⛔ |
@@ -74,6 +71,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Garage #1: Fundament](https://frickeldave.de/garage-1-fundament/) | fehlt | ❌ |
 | [Herz zu Muttertag basteln](https://frickeldave.de/herz-zu-muttertag-basteln/) | fehlt | ❌ |
 | [Drechselbank bauen Teil 4/4 – Der Motor](https://frickeldave.de/drechselbank-bauen-teil-4-4-der-motor/) | notdo | ⛔ |
+| [Monitorpanels für Besprechungsräume (3-teilige Serie)](https://frickeldave.de/monitor-panel-fuer-besprechungsraeume-1/) | `2019-11-06-monitorpanels-fuer-besprechungsraeume.mdx` | ✅ |
 | [Drechselbank bauen Teil 3/4 – Werkzeugauflage](https://frickeldave.de/drechselbank-bauen-teil-3-4-werkzeugauflage/) | notdo | ⛔ |
 | [Drechselbank bauen Teil 2/4 – Spindelstock](https://frickeldave.de/drechselbank-bauen-teil-2-4-spindelstock/) | notdo | ⛔ |
 | [Drechselbank bauen Teil 1/4 – Intro und der Reitstock](https://frickeldave.de/drechselbank-bauen-teil-1-x-intro-und-der-reitstock/) | notdo | ⛔ |
@@ -116,9 +114,9 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 ## Statistik
 
 - **Gesamt Original-Artikel:** 91 Artikel
-- **Migriert:** 30 Artikel (✅)
-- **Fehlend (noch zu migrieren):** 13 Artikel (❌)
-- **Nicht migriert (notdo):** 48 Artikel (⛔)
+- **Migriert:** 31 Artikel (✅)
+- **Fehlend (noch zu migrieren):** 10 Artikel (❌)
+- **Nicht migriert (notdo):** 50 Artikel (⛔)
 - **Serien/Landing-Pages:** 6 (separat zu behandeln, als notdo markiert)
 - **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~33% (30/91) | ~70% von geplanten Artikeln (30/43)
+- **Migrations-Quote:** ~34% (31/91) | ~76% von geplanten Artikeln (31/41)
