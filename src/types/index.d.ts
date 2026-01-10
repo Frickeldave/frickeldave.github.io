@@ -104,3 +104,31 @@ export type HandmadeItem = {
 export type HandmadeData = {
   products: HandmadeItem[];
 };
+
+export type SocialLinkTreeProfile = {
+  name: string;
+  handle?: string;
+  tagline?: string;
+  location?: string;
+  avatar?: string;
+  highlights?: string[];
+};
+
+export type SocialLinkTreeLink = {
+  id: string;
+  label: string;
+  url: string;
+  description?: string;
+  badge?: string;
+  icon?: string;
+  color?: string;
+};
+
+export type SocialLinkTreeData = {
+  profile: SocialLinkTreeProfile;
+  links: SocialLinkTreeLink[];
+  legal: {
+    impressum: string;
+    datenschutz: string;
+  };
+};
