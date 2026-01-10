@@ -152,16 +152,16 @@ const tabData = [
   <PageHeader title="Home" colorScheme="cyan" />
 
   <!-- Sektion 1: Hero-Bereich -->
-  <section class="section pt-16 pb-12">
+  <section class="section pb-12 pt-16">
     <div class="container">
       <div class="glass rounded-lg p-8 text-center">
         {
           image && (
             <div class="mb-6 flex justify-center">
               <div class="relative">
-                <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 rounded-full blur-xl opacity-60 animate-pulse" />
+                <div class="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 opacity-60 blur-xl" />
                 <Image
-                  class="relative w-48 md:w-64 rounded-full shadow-lg border-4 border-cyan-500/30"
+                  class="relative w-48 rounded-full border-4 border-cyan-500/30 shadow-lg md:w-64"
                   src={image}
                   alt={imageAlt}
                   width={256}
@@ -174,11 +174,11 @@ const tabData = [
         }
         <h1
           set:html={markdownify(title)}
-          class="mb-4 text-4xl md:text-5xl font-bold"
+          class="mb-4 text-4xl font-bold md:text-5xl"
         />
         <p
           set:html={markdownify(content)}
-          class="mb-8 text-lg max-w-2xl mx-auto"
+          class="mx-auto mb-8 max-w-2xl text-lg"
         />
         <div class="flex flex-wrap justify-center gap-4">
           {
@@ -207,13 +207,13 @@ const tabData = [
   <!-- Sektion 2: News -->
   <section class="section py-12" id="news-section">
     <div class="container">
-      <div class="glass rounded-lg overflow-hidden mb-6">
-        <h2 class="text-3xl font-bold text-center py-4">Aktuelles & News</h2>
+      <div class="glass mb-6 overflow-hidden rounded-lg">
+        <h2 class="py-4 text-center text-3xl font-bold">Aktuelles & News</h2>
       </div>
       <div class="px-8">
         <NewsCarousel news={visibleNews} client:idle />
       </div>
-      <div class="text-center mt-8">
+      <div class="mt-8 text-center">
         <Button
           label="Alle News ansehen"
           link="/news"
@@ -235,8 +235,8 @@ const tabData = [
   <!-- Sektion 4: Themenfelder -->
   <section class="section py-12">
     <div class="container">
-      <div class="glass rounded-lg overflow-hidden mb-6">
-        <h2 class="text-3xl font-bold text-center py-4">Entdecke die Themen</h2>
+      <div class="glass mb-6 overflow-hidden rounded-lg">
+        <h2 class="py-4 text-center text-3xl font-bold">Entdecke die Themen</h2>
       </div>
       <FeatureCards />
     </div>
@@ -245,15 +245,15 @@ const tabData = [
   <!-- Sektion 5: Produktschaufenster -->
   <section class="section py-12">
     <div class="container">
-      <div class="glass rounded-lg overflow-hidden mb-6">
-        <h2 class="text-3xl font-bold text-center py-4">
+      <div class="glass mb-6 overflow-hidden rounded-lg">
+        <h2 class="py-4 text-center text-3xl font-bold">
           Frickeldave Handmade - Unsere Produkte
         </h2>
       </div>
       <div class="px-8">
         <HandmadeCarousel products={productsWithImages} client:idle />
       </div>
-      <div class="text-center mt-8">
+      <div class="mt-8 text-center">
         <Button
           label="Alle Produkte ansehen"
           link="/handmade"

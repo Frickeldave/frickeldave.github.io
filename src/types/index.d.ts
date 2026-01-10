@@ -3,7 +3,6 @@ import type { MarkdownHeading } from "astro";
 
 export type GenericEntry = CollectionEntry<CollectionKey>;
 
-export type AboutEntry = CollectionEntry<"about">;
 export type AuthorsEntry = CollectionEntry<"authors">;
 export type BlogEntry = CollectionEntry<"blog">;
 export type DocsEntry = CollectionEntry<"docs">;
@@ -15,7 +14,6 @@ export type RecipesEntry = CollectionEntry<"recipes">;
 export type TermsEntry = CollectionEntry<"terms">;
 
 export type SearchableEntry =
-  | AboutEntry
   | AuthorsEntry
   | BlogEntry
   | DocsEntry
@@ -105,4 +103,32 @@ export type HandmadeItem = {
 
 export type HandmadeData = {
   products: HandmadeItem[];
+};
+
+export type SocialLinkTreeProfile = {
+  name: string;
+  handle?: string;
+  tagline?: string;
+  location?: string;
+  avatar?: string;
+  highlights?: string[];
+};
+
+export type SocialLinkTreeLink = {
+  id: string;
+  label: string;
+  url: string;
+  description?: string;
+  badge?: string;
+  icon?: string;
+  color?: string;
+};
+
+export type SocialLinkTreeData = {
+  profile: SocialLinkTreeProfile;
+  links: SocialLinkTreeLink[];
+  legal: {
+    impressum: string;
+    datenschutz: string;
+  };
 };

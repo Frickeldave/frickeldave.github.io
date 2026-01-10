@@ -39,11 +39,10 @@ const gradientClass =
     <a
       href={link}
       target={`${newtab ? "_blank" : ""}`}
-      class={`no-underline inline-block hover:opacity-100 ${type == "primary" ? "" : "intersect:animate-fade opacity-0"}`}
+      class={`inline-block no-underline hover:opacity-100 ${type == "primary" ? "" : "opacity-0 intersect:animate-fade"}`}
     >
       <div
-        class={`glass-t hover:bg-opacity-20 hover:backdrop-blur-none
-      ${type == "primary" ? "px-4 py-2 rounded-md font-bold intersect:animate-fade opacity-0" : "px-2 py-0.5 rounded-sm text-txt-light dark:text-darkmode-txt-light"}`}
+        class={`glass-t hover:bg-opacity-20 hover:backdrop-blur-none ${type == "primary" ? "rounded-md px-4 py-2 font-bold opacity-0 intersect:animate-fade" : "rounded-sm px-2 py-0.5 text-txt-light dark:text-darkmode-txt-light"}`}
       >
         {label}
       </div>
@@ -52,11 +51,10 @@ const gradientClass =
     <a
       href={link}
       target={`${newtab ? "_blank" : ""}`}
-      class={`no-underline inline-block intersect:animate-fadeLeft opacity-0`}
+      class={`inline-block no-underline opacity-0 intersect:animate-fadeLeft`}
     >
       <div
-        class={`${gradientClass} text-white font-bold transition-all duration-300 hover:scale-105
-      ${type == "primary" ? "px-4 py-2 rounded-md" : "px-2 py-0.5 rounded-sm text-sm"}`}
+        class={`${gradientClass} font-bold text-white transition-all duration-300 hover:scale-105 ${type == "primary" ? "rounded-md px-4 py-2" : "rounded-sm px-2 py-0.5 text-sm"}`}
       >
         {label}
       </div>

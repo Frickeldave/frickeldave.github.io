@@ -50,16 +50,16 @@ const years = [
   <PageHeader title="News" colorScheme="red" />
 
   <!-- Mobile Filter Bar (visible only on small screens) -->
-  <section class="lg:hidden section py-2">
+  <section class="section py-2 lg:hidden">
     <div class="container">
-      <div class="glass rounded-lg p-4 space-y-4">
+      <div class="glass space-y-4 rounded-lg p-4">
         <!-- Search Row -->
         <div class="flex gap-2">
           <input
             type="text"
             id="mobile-search-input"
             placeholder="Suche nach News..."
-            class="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm placeholder-white/70 focus:outline-none focus:border-blue-400"
+            class="flex-1 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm placeholder-white/70 focus:border-blue-400 focus:outline-none"
           />
         </div>
 
@@ -67,11 +67,11 @@ const years = [
         <div class="flex gap-2">
           <button
             id="mobile-years-toggle"
-            class="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 flex items-center justify-between"
+            class="flex flex-1 items-center justify-between rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm transition-all duration-200 hover:bg-white/20"
           >
             <span>Jahr filtern</span>
             <svg
-              class="w-4 h-4 transform transition-transform"
+              class="h-4 w-4 transform transition-transform"
               id="mobile-years-arrow"
             >
               <path
@@ -89,7 +89,7 @@ const years = [
             {
               years.map((year) => (
                 <button
-                  class="mobile-year-filter px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm hover:bg-white/20 transition-all duration-200 text-center"
+                  class="mobile-year-filter rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-center text-sm transition-all duration-200 hover:bg-white/20"
                   data-year={year}
                 >
                   {year}
@@ -101,14 +101,14 @@ const years = [
 
         <!-- Results Count and Clear Button -->
         <div
-          class="flex justify-between items-center pt-2 border-t border-white/20"
+          class="flex items-center justify-between border-t border-white/20 pt-2"
         >
           <div id="mobile-results-count" class="text-sm opacity-70">
             {visibleNews.length} von {visibleNews.length} News
           </div>
           <button
             id="mobile-clear-filters"
-            class="px-3 py-1 bg-red-500/20 border border-red-400/30 rounded text-sm hover:bg-red-500/30 transition-all duration-200"
+            class="rounded border border-red-400/30 bg-red-500/20 px-3 py-1 text-sm transition-all duration-200 hover:bg-red-500/30"
           >
             Filter zurücksetzen
           </button>
@@ -118,13 +118,13 @@ const years = [
   </section>
 
   <section class="section">
-    <div class="flex container">
-      <div class="row px-0 mx-0 w-full">
+    <div class="container flex">
+      <div class="row mx-0 w-full px-0">
         <!-- News Grid -->
         <div class="col-12 lg:col-8 lg:p-0">
           <div
             id="news-grid"
-            class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+            class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2"
           >
             {
               visibleNews.map((item, _index) => (
@@ -135,7 +135,7 @@ const years = [
                   data-date={item.date}
                   data-year={new Date(item.date).getFullYear()}
                 >
-                  <article class="glass overflow-hidden rounded-lg h-full flex flex-col">
+                  <article class="glass flex h-full flex-col overflow-hidden rounded-lg">
                     <div class="aspect-video overflow-hidden">
                       <img
                         src={placeholderNewsImage.src}
@@ -144,7 +144,7 @@ const years = [
                         loading="lazy"
                       />
                     </div>
-                    <div class="p-6 flex flex-col flex-grow">
+                    <div class="flex flex-grow flex-col p-6">
                       <div class="mb-3 flex items-center gap-2 text-sm text-red-500">
                         <FaRegCalendarAlt className="inline-block" />
                         <time datetime={item.date}>
@@ -154,7 +154,7 @@ const years = [
                       <h2 class="mb-3 text-xl font-bold text-red-600 dark:text-red-400">
                         {item.title}
                       </h2>
-                      <p class="text-base opacity-90 flex-grow">{item.text}</p>
+                      <p class="flex-grow text-base opacity-90">{item.text}</p>
                     </div>
                   </article>
                 </div>
@@ -165,7 +165,7 @@ const years = [
           <!-- No Results Message -->
           <div
             id="no-results"
-            class="hidden text-center py-12 glass rounded-lg"
+            class="glass hidden rounded-lg py-12 text-center"
           >
             <p class="text-xl opacity-70">
               Keine News gefunden. Versuche andere Filter.
@@ -175,7 +175,7 @@ const years = [
 
         <!-- Sidebar -->
         <div
-          class="hidden lg:col-4 lg:flex max-h-static_sidemenu sticky p-0 pl-4 top-[4rem]"
+          class="sticky top-[4rem] hidden max-h-static_sidemenu p-0 pl-4 lg:col-4 lg:flex"
         >
           <NewsSidebar years={years} totalNews={visibleNews.length} />
         </div>

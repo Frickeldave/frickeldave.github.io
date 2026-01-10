@@ -78,7 +78,7 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
 <div class="mt-2">
   {
     image && showImage && (
-      <div class="mb-8 glass rounded-lg intersect:animate-fadeDown opacity-0 intersect-no-queue">
+      <div class="glass intersect-no-queue mb-8 rounded-lg opacity-0 intersect:animate-fadeDown">
         <Image
           class="w-full rounded-lg"
           src={image}
@@ -92,7 +92,7 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
   }
   {
     showInfo && (
-      <div class="glass mb-8 p-4 rounded-lg intersect:animate-fade opacity-0 intersect-no-queue">
+      <div class="glass intersect-no-queue mb-8 rounded-lg p-4 opacity-0 intersect:animate-fade">
         <h1 set:html={markdownify(title)} class="mb-4" />
         <ul>
           {author && showAuthor && (
@@ -105,27 +105,27 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
           )}
           {date && showDate && (
             <li class="mr-1 inline-block">
-              <FaRegCalendarAlt className={"ml-2 -mt-1 inline-block"} />
+              <FaRegCalendarAlt className={"-mt-1 ml-2 inline-block"} />
               {formatDate(date)}
             </li>
           )}
           {pubDate && showPubDate && (
             <li class="mr-1 inline-block">
-              <FaRegCalendarAlt className={"ml-2 -mt-1 inline-block"} />
+              <FaRegCalendarAlt className={"-mt-1 ml-2 inline-block"} />
               Published
               {formatDate(pubDate)}
             </li>
           )}
           {modDate && showModDate && (
             <li class="mr-1 inline-block">
-              <FaRegCalendarAlt className={"ml-2 -mt-1 inline-block"} />
+              <FaRegCalendarAlt className={"-mt-1 ml-2 inline-block"} />
               Updated
               {formatDate(modDate)}
             </li>
           )}
           {complexity && complexity > 0 && showReadingTime && (
             <li class="mr-1 inline-block">
-              <FaRegClock className={"ml-2 -mt-1 inline-block"} />
+              <FaRegClock className={"-mt-1 ml-2 inline-block"} />
               {readingTime(entry.body!, complexity)}
             </li>
           )}
@@ -133,7 +133,7 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
             <li class="mr-1 inline-block">
               {categories.map((category: string, _index: number) => (
                 <a href={`/blog/categories/${slugify(category)}`}>
-                  <FaRegFolder className={"ml-2 -mt-1 inline-block"} />
+                  <FaRegFolder className={"-mt-1 ml-2 inline-block"} />
                   {upperHumanize(category)}
                 </a>
               ))}
@@ -143,7 +143,7 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
             <li class="mr-1 inline-block">
               {tags.map((tag: string, _index: number) => (
                 <a href={`/blog/tags/${slugify(tag)}`}>
-                  <FaHashtag className={"ml-2 -mt-1 inline-block"} />
+                  <FaHashtag className={"-mt-1 ml-2 inline-block"} />
                   {lowerHumanize(tag)}
                 </a>
               ))}

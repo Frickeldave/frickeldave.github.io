@@ -8,20 +8,20 @@ const { videoId, title } = Astro.props;
 ---
 
 <div
-  class="privacy-youtube relative w-full my-6"
+  class="privacy-youtube relative my-6 w-full"
   style="padding-bottom: 56.25%;"
   data-video-id={videoId}
 >
   <img
     src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
     alt="Video Vorschaubild"
-    class="absolute inset-0 w-full h-full object-cover rounded-lg"
+    class="absolute inset-0 h-full w-full rounded-lg object-cover"
   />
   <div
-    class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg"
+    class="absolute inset-0 flex items-center justify-center rounded-lg bg-black bg-opacity-50"
   >
     <button
-      class="play-button bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors"
+      class="play-button rounded-lg bg-red-600 px-6 py-3 text-white transition-colors hover:bg-red-700"
     >
       ▶️ Video laden ({title})
     </button>

@@ -58,38 +58,38 @@ const getIcon = (icon: string | undefined) => {
   <div class="row justify-center">
     <div class="col-12">
       <!-- Hero Section with Profile - Top Row -->
-      <div class="glass rounded-2xl p-6 lg:p-10 mb-6 overflow-hidden">
-        <div class="flex flex-col lg:flex-row items-center gap-8">
+      <div class="glass mb-6 overflow-hidden rounded-2xl p-6 lg:p-10">
+        <div class="flex flex-col items-center gap-8 lg:flex-row">
           <!-- Left: Profile Image & Name (33%) -->
-          <div class="w-full lg:w-1/3 flex flex-col items-center text-center">
+          <div class="flex w-full flex-col items-center text-center lg:w-1/3">
             <div class="relative mb-4">
               {
                 profileImage ? (
                   <div class="relative">
-                    <div class="absolute -inset-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 opacity-75 blur-lg animate-pulse" />
+                    <div class="absolute -inset-2 animate-pulse rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 opacity-75 blur-lg" />
                     <Image
                       src={profileImage}
                       alt={name || "Profile"}
                       width={220}
                       height={220}
-                      class="relative w-44 h-44 lg:w-52 lg:h-52 rounded-full object-cover border-4 border-white/20 shadow-2xl"
+                      class="relative h-44 w-44 rounded-full border-4 border-white/20 object-cover shadow-2xl lg:h-52 lg:w-52"
                     />
                   </div>
                 ) : (
-                  <div class="glass rounded-full w-44 h-44 lg:w-52 lg:h-52 flex items-center justify-center border-4 border-white/20">
+                  <div class="glass flex h-44 w-44 items-center justify-center rounded-full border-4 border-white/20 lg:h-52 lg:w-52">
                     <span class="text-7xl">👨‍💻</span>
                   </div>
                 )
               }
             </div>
             <h2
-              class="text-xl lg:text-2xl font-bold text-txt-h dark:text-darkmode-txt-h"
+              class="text-txt-h dark:text-darkmode-txt-h text-xl font-bold lg:text-2xl"
             >
               {name}
             </h2>
             {
               location && (
-                <span class="inline-flex items-center gap-1 mt-2 glass-t px-3 py-1 rounded-full text-sm text-txt-p dark:text-darkmode-txt-p">
+                <span class="glass-t mt-2 inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm text-txt-p dark:text-darkmode-txt-p">
                   📍 {location}
                 </span>
               )
@@ -100,35 +100,35 @@ const getIcon = (icon: string | undefined) => {
           <div class="w-full lg:w-2/3">
             {/* Greeting Title */}
             <h1
-              class="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-transparent mb-4"
+              class="mb-4 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-2xl font-bold text-transparent lg:text-4xl"
             >
               Hey, ich bin Frickeldave! 👋
             </h1>
 
             {/* Role Tags */}
-            <div class="flex flex-wrap gap-2 mb-4">
+            <div class="mb-4 flex flex-wrap gap-2">
               <span
-                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-amber-500/30"
+                class="glass-t rounded-full border border-amber-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
                 >💼 Managing IT-Consultant</span
               >
               <span
-                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-orange-500/30"
+                class="glass-t rounded-full border border-orange-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
                 >🚀 DevOps Evangelist</span
               >
               <span
-                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-red-500/30"
+                class="glass-t rounded-full border border-red-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
                 >🤖 KI Enthusiast</span
               >
               <span
-                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-amber-500/30"
+                class="glass-t rounded-full border border-amber-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
                 >🛠️ DIY Maker</span
               >
               <span
-                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-orange-500/30"
+                class="glass-t rounded-full border border-orange-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
                 >🖨️ 3D Printing Fanatic</span
               >
               <span
-                class="glass-t px-4 py-2 rounded-full text-sm font-medium text-txt-p dark:text-darkmode-txt-p border border-red-500/30"
+                class="glass-t rounded-full border border-red-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
                 >🪵 Woodworking Hobbyist</span
               >
             </div>
@@ -137,21 +137,21 @@ const getIcon = (icon: string | undefined) => {
       </div>
 
       <!-- Frickeln Definition Box -->
-      <div class="glass rounded-xl p-6 mb-6 border-l-4 border-amber-500">
+      <div class="glass mb-6 rounded-xl border-l-4 border-amber-500 p-6">
         <p
-          class="text-lg italic text-txt-p dark:text-darkmode-txt-p leading-relaxed"
+          class="text-lg italic leading-relaxed text-txt-p dark:text-darkmode-txt-p"
         >
-          <strong class="text-amber-500">Frickeln:</strong> „Sich an einer
-          relativ kleinteiligen Sache, die man verbessern, um- oder ausbauen
-          möchte, handwerklich oder technisch betätigen."
+          <strong class="text-amber-500">Frickeln:</strong> „Sich an einer relativ
+          kleinteiligen Sache, die man verbessern, um- oder ausbauen möchte, handwerklich
+          oder technisch betätigen."
         </p>
       </div>
 
       <!-- Intro Text Section -->
-      <div class="glass rounded-xl p-6 lg:p-8 mb-8">
+      <div class="glass mb-8 rounded-xl p-6 lg:p-8">
         <div class="prose prose-lg max-w-none">
           <p
-            class="text-base lg:text-lg text-txt-p dark:text-darkmode-txt-p leading-relaxed mb-4"
+            class="mb-4 text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
           >
             Ich bin Frickeldave – dein Experte für DIY-Projekte, handgemachte
             Kreationen und IT-Lösungen. Mit einer Leidenschaft für das Tüfteln
@@ -162,7 +162,7 @@ const getIcon = (icon: string | undefined) => {
             zu unterstützen.
           </p>
           <p
-            class="text-base lg:text-lg text-txt-p dark:text-darkmode-txt-p leading-relaxed"
+            class="text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
           >
             Diese Erfahrung im handwerklichen Bereich überträgt sich auch auf
             meine IT-Projekte, bei denen Präzision, Kreativität und
@@ -174,9 +174,9 @@ const getIcon = (icon: string | undefined) => {
       </div>
 
       <!-- Social Links Section -->
-      <div class="glass rounded-xl p-6 mb-8">
+      <div class="glass mb-8 rounded-xl p-6">
         <h3
-          class="text-xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4 text-center"
+          class="text-txt-h dark:text-darkmode-txt-h mb-4 text-center text-xl font-bold"
         >
           Vernetze dich mit mir
         </h3>
@@ -189,7 +189,7 @@ const getIcon = (icon: string | undefined) => {
                   href={link.url}
                   target={link.url.startsWith("mailto:") ? "_self" : "_blank"}
                   rel="noopener noreferrer"
-                  class="group flex items-center gap-3 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  class="group flex items-center gap-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-3 font-medium text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
                   aria-label={link.name}
                 >
                   <IconComponent className="text-xl text-white" />

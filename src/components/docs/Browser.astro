@@ -12,10 +12,10 @@ const { menu, currentPage } = Astro.props;
 
 {
   menu.length > 0 && (
-    <div class="relative glass rounded-lg p-4 my-2 w-full intersect:animate-fadeRight opacity-0">
+    <div class="glass relative my-2 w-full rounded-lg p-4 opacity-0 intersect:animate-fadeRight">
       <ScrollArea className="h-full" client:only="react">
-        <h2 class="text-2xl border-none">Documents</h2>
-        <ul class="list-none m-0">
+        <h2 class="border-none text-2xl">Documents</h2>
+        <ul class="m-0 list-none">
           {menu.map((item) => (
             <li class="ml-0">
               <a
@@ -25,7 +25,7 @@ const { menu, currentPage } = Astro.props;
                 {item.title}
               </a>
               {item.children.length > 0 && (
-                <ul class="list-none m-0">
+                <ul class="m-0 list-none">
                   {item.children.map((child) => (
                     <li class="ml-4">
                       <a

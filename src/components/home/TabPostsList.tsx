@@ -51,12 +51,11 @@ const TabPostsList: React.FC<Props> = ({ tabs, title }) => {
               role="tab"
               aria-selected={activeTab === index}
               tabIndex={activeTab === index ? 0 : -1}
-              className={`cursor-pointer px-6 py-3 text-lg font-medium transition-colors
-                ${
-                  activeTab === index
-                    ? "border-b-2 border-txt-p text-txt-p dark:border-darkmode-txt-p dark:text-darkmode-txt-p"
-                    : "text-txt-s hover:text-txt-p dark:text-darkmode-txt-s dark:hover:text-darkmode-txt-p"
-                }`}
+              className={`cursor-pointer px-6 py-3 text-lg font-medium transition-colors ${
+                activeTab === index
+                  ? "border-b-2 border-txt-p text-txt-p dark:border-darkmode-txt-p dark:text-darkmode-txt-p"
+                  : "text-txt-s hover:text-txt-p dark:text-darkmode-txt-s dark:hover:text-darkmode-txt-p"
+              }`}
               onClick={() => setActiveTab(index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
             >

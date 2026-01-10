@@ -1,0 +1,222 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+import fs from "node:fs/promises";
+import path from "node:path";
+import type { SocialLinkTreeData } from "@/types";
+
+const title = "Social Link Tree";
+const description =
+  "Alle wichtigen Links für Instagram: Website, YouTube, Impressum und Datenschutz.";
+
+const SOCIAL_LINK_TREE_PATH = path.join(
+  process.cwd(),
+  "public/social-link-tree.json"
+);
+
+const fileContents = await fs.readFile(SOCIAL_LINK_TREE_PATH, "utf-8");
+const linkTreeData = JSON.parse(fileContents) as SocialLinkTreeData;
+const { profile, links, legal } = linkTreeData;
+
+const colorTokens = {
+  default: {
+    card: "bg-white/5 hover:bg-white/10",
+    ring: "ring-white/10 hover:ring-white/30",
+    badge: "bg-white/10 text-white/80",
+    icon: "text-white",
+  },
+  emerald: {
+    card: "bg-emerald-500/5 hover:bg-emerald-500/15",
+    ring: "ring-emerald-400/40 hover:ring-emerald-300/70",
+    badge: "bg-emerald-400/20 text-emerald-100",
+    icon: "text-emerald-200",
+  },
+  rose: {
+    card: "bg-rose-500/5 hover:bg-rose-500/15",
+    ring: "ring-rose-400/40 hover:ring-rose-300/70",
+    badge: "bg-rose-400/20 text-rose-100",
+    icon: "text-rose-200",
+  },
+  sky: {
+    card: "bg-sky-500/5 hover:bg-sky-500/15",
+    ring: "ring-sky-400/40 hover:ring-sky-300/70",
+    badge: "bg-sky-400/20 text-sky-100",
+    icon: "text-sky-200",
+  },
+  amber: {
+    card: "bg-amber-500/5 hover:bg-amber-500/15",
+    ring: "ring-amber-400/40 hover:ring-amber-300/70",
+    badge: "bg-amber-400/20 text-amber-100",
+    icon: "text-amber-200",
+  },
+} as const;
+
+const enrichedLinks = links.map((link) => {
+  const palette =
+    colorTokens[link.color as keyof typeof colorTokens] ?? colorTokens.default;
+
+  const initials = link.label
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("")
+    .slice(0, 2);
+
+  const isExternal = /^https?:\/\//i.test(link.url);
+
+  return {
+    ...link,
+    palette,
+    initials: initials || link.label.at(0)?.toUpperCase() || "·",
+    isExternal,
+  };
+});
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader title="Social Link Tree" />
+
+  <section class="section">
+    <div class="container">
+      <div class="row justify-center">
+        <div class="lg:col-10">
+          <!-- Profile Card -->
+          <div
+            class="glass mb-6 rounded-lg p-8 opacity-0 intersect:animate-fadeUp"
+          >
+            <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
+              {
+                profile.avatar ? (
+                  <img
+                    src={profile.avatar}
+                    alt={`Avatar von ${profile.name}`}
+                    width="112"
+                    height="112"
+                    loading="lazy"
+                    class="h-28 w-28 rounded-2xl border border-white/20 object-cover shadow-lg"
+                  />
+                ) : (
+                  <div class="flex h-28 w-28 items-center justify-center rounded-2xl border border-white/20 bg-white/5 text-4xl font-semibold">
+                    {profile.name.at(0)}
+                  </div>
+                )
+              }
+
+              <div class="flex-1">
+                <h2 class="text-3xl font-semibold tracking-tight">
+                  {profile.name}
+                </h2>
+                {
+                  profile.handle && (
+                    <p class="mt-1 text-lg text-white/70">{profile.handle}</p>
+                  )
+                }
+                {
+                  profile.tagline && (
+                    <p class="mt-4 text-base text-white/80">
+                      {profile.tagline}
+                    </p>
+                  )
+                }
+                <div class="mt-4 flex flex-wrap gap-3">
+                  {
+                    profile.highlights?.map((highlight) => (
+                      <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
+                        {highlight}
+                      </span>
+                    ))
+                  }
+                  {
+                    profile.location && (
+                      <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+                        {profile.location}
+                      </span>
+                    )
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Links List -->
+          <div class="mb-6 space-y-4">
+            {
+              enrichedLinks.map((link) => (
+                <a
+                  href={link.url}
+                  target={link.isExternal ? "_blank" : undefined}
+                  rel={link.isExternal ? "noopener noreferrer" : undefined}
+                  class={`glass group flex items-center justify-between gap-4 rounded-lg p-4 opacity-0 transition duration-300 hover:bg-white/20 intersect:animate-fadeUp ${link.palette.card} ${link.palette.ring}`}
+                >
+                  <div class="flex items-center gap-4">
+                    <div
+                      class={`flex h-16 w-16 items-center justify-center rounded-lg border border-white/10 text-xl font-semibold tracking-wide ${link.palette.icon}`}
+                    >
+                      {link.initials}
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-3">
+                        <p class="text-lg font-semibold">{link.label}</p>
+                        {link.badge && (
+                          <span
+                            class={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${link.palette.badge}`}
+                          >
+                            {link.badge}
+                          </span>
+                        )}
+                      </div>
+                      {link.description && (
+                        <p class="mt-1 text-sm text-white/70">
+                          {link.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <svg
+                    class="h-6 w-6 text-white/70 transition group-hover:translate-x-1 group-hover:text-white"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="M13 6l6 6-6 6" />
+                  </svg>
+                </a>
+              ))
+            }
+          </div>
+
+          <!-- Legal Footer -->
+          <div
+            class="glass rounded-lg p-4 text-center text-sm text-white/70 opacity-0 intersect:animate-fadeUp"
+          >
+            <div class="flex flex-wrap items-center justify-center gap-3">
+              <span>Pflichtangaben:</span>
+              <a
+                href={legal.impressum}
+                class="underline-offset-4 hover:text-white hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Impressum
+              </a>
+              <span class="text-white/40">•</span>
+              <a
+                href={legal.datenschutz}
+                class="underline-offset-4 hover:text-white hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Datenschutz
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

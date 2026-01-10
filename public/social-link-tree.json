@@ -1,0 +1,65 @@
+{
+  "profile": {
+    "name": "Frickeldave",
+    "handle": "@frickeldave.de",
+    "tagline": "DIY · Handmade · Tech Content",
+    "location": "Hörgertshausen, Bayern",
+    "avatar": "/favicon/android-chrome-192x192.png",
+    "highlights": [
+      "Holz & 3D-Druck",
+      "Smart Home",
+      "Community Tutorials"
+    ]
+  },
+  "links": [
+    {
+      "id": "website_old",
+      "label": "Website alt",
+      "url": "https://frickeldave.de",
+      "description": "Alle Projekte, Rezepte, Downloads und Blogposts",
+      "badge": "Start hier",
+      "icon": "globe",
+      "color": "emerald"
+    },
+    {
+      "id": "website_new",
+      "label": "Website neu",
+      "url": "https://frickeldave.github.io",
+      "description": "Alle Projekte, Rezepte, Downloads und Blogposts",
+      "badge": "Start hier",
+      "icon": "globe",
+      "color": "emerald"
+    },
+    {
+      "id": "youtube",
+      "label": "YouTube",
+      "url": "https://www.youtube.com/@davidkoenig09",
+      "description": "Neue Videos zu DIY, Smart Home & Tools",
+      "badge": "Video",
+      "icon": "youtube",
+      "color": "rose"
+    },
+    {
+      "id": "impressum",
+      "label": "Impressum",
+      "url": "https://frickeldave.github.io/impressum",
+      "description": "Pflichtangaben gemäß § 5 DDG",
+      "badge": "Rechtliches",
+      "icon": "scale",
+      "color": "sky"
+    },
+    {
+      "id": "datenschutz",
+      "label": "Datenschutz",
+      "url": "https://frickeldave.github.io/datenschutz",
+      "description": "Erfahre, wie ich deine Daten schütze",
+      "badge": "DSGVO",
+      "icon": "shield",
+      "color": "amber"
+    }
+  ],
+  "legal": {
+    "impressum": "https://frickeldave.github.io/impressum",
+    "datenschutz": "https://frickeldave.github.io/datenschutz"
+  }
+}
