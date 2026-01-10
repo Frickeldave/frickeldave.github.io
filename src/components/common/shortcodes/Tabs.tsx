@@ -47,9 +47,7 @@ const Tabs = ({ children }: { children: React.ReactElement }) => {
           (item: { name: string; children: string }, index: number) => (
             <li
               key={index}
-              className={`my-0 cursor-pointer border-b-[3px] border-border px-8 pb-1 pt-2 text-lg text-txt-s dark:border-darkmode-border dark:text-darkmode-txt-s 
-                ${index === active && "border-b-[3px] border-txt-p text-txt-p dark:border-darkmode-txt-p dark:text-darkmode-txt-p"}
-              `}
+              className={`my-0 cursor-pointer border-b-[3px] border-border px-8 pb-1 pt-2 text-lg text-txt-s dark:border-darkmode-border dark:text-darkmode-txt-s ${index === active && "border-b-[3px] border-txt-p text-txt-p dark:border-darkmode-txt-p dark:text-darkmode-txt-p"} `}
               role="tab"
               tabIndex={index === active ? 0 : -1}
               onKeyDown={(event) => handleKeyDown(event, index)}

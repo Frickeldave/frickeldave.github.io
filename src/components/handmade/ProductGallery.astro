@@ -22,7 +22,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
         displayImages.map((image, index) => (
           <button
             type="button"
-            class="thumbnail-btn glass rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 focus:border-blue-500 transition-colors"
+            class="thumbnail-btn glass overflow-hidden rounded-md border-2 border-transparent transition-colors hover:border-blue-500 focus:border-blue-500"
             data-image-index={index}
           >
             <Image
@@ -40,13 +40,13 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   <!-- Right Side: Main Image Display -->
   <div class="main-image-container flex-1">
     <div
-      class="main-image-wrapper glass rounded-lg overflow-hidden inline-block"
+      class="main-image-wrapper glass inline-block overflow-hidden rounded-lg"
     >
       <Image
         src={displayImages[0]}
         alt={`${productName} - Hauptbild`}
         id="main-image"
-        class="h-64 md:h-96 w-auto object-contain"
+        class="h-64 w-auto object-contain md:h-96"
         loading="eager"
       />
     </div>

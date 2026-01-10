@@ -33,8 +33,8 @@ const {
 >
   <PageHeader title={entryIndex.data.title} colorScheme="purple" />
   <section class="section">
-    <div class="flex container">
-      <div class="row px-0 mx-0 w-full">
+    <div class="container flex">
+      <div class="row mx-0 w-full px-0">
         <!-- blog posts -->
         <div class="col-12 lg:col-8 lg:p-0">
           {
@@ -52,7 +52,7 @@ const {
         </div>
         <!-- sidebar -->
         <div
-          class="hidden lg:col-4 lg:flex max-h-static_sidemenu sticky p-0 pl-4 top-[4rem]"
+          class="sticky top-[4rem] hidden max-h-static_sidemenu p-0 pl-4 lg:col-4 lg:flex"
         >
           <BlogSidebar
             tags={tags}

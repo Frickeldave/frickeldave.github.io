@@ -21,7 +21,7 @@ const { taxon, entries }: Props = Astro.props;
         <div class="row">
           {
             entries.map((entry) => (
-              <div class="py-2 md:py-4 md:col-6">
+              <div class="py-2 md:col-6 md:py-4">
                 <BlogCard entry={entry} />
               </div>
             ))
