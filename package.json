@@ -9,7 +9,7 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "dev": "npm run generate-version && astro dev",
+    "dev": "npm run generate-version && astro dev --host 0.0.0.0",
     "build": "astro build",
     "prebuild": "npm run generate-version",
     "postbuild": "pagefind --site dist",
