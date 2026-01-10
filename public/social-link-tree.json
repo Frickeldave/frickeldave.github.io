@@ -13,8 +13,8 @@
   },
   "links": [
     {
-      "id": "website",
-      "label": "Website",
+      "id": "website_old",
+      "label": "Website alt",
       "url": "https://frickeldave.de",
       "description": "Alle Projekte, Rezepte, Downloads und Blogposts",
       "badge": "Start hier",
@@ -22,8 +22,17 @@
       "color": "emerald"
     },
     {
+      "id": "website_new",
+      "label": "Website neu",
+      "url": "https://frickeldave.github.io",
+      "description": "Alle Projekte, Rezepte, Downloads und Blogposts",
+      "badge": "Start hier",
+      "icon": "globe",
+      "color": "emerald"
+    },
+    {
       "id": "youtube",
-      "label": "YouTube Kanal",
+      "label": "YouTube",
       "url": "https://www.youtube.com/@davidkoenig09",
       "description": "Neue Videos zu DIY, Smart Home & Tools",
       "badge": "Video",
@@ -33,8 +42,8 @@
     {
       "id": "impressum",
       "label": "Impressum",
-      "url": "https://frickeldave.de/impressum",
-      "description": "Pflichtangaben gemäß §5 TMG",
+      "url": "https://frickeldave.github.io/impressum",
+      "description": "Pflichtangaben gemäß § 5 DDG",
       "badge": "Rechtliches",
       "icon": "scale",
       "color": "sky"
@@ -42,7 +51,7 @@
     {
       "id": "datenschutz",
       "label": "Datenschutz",
-      "url": "https://frickeldave.de/datenschutz",
+      "url": "https://frickeldave.github.io/datenschutz",
       "description": "Erfahre, wie ich deine Daten schütze",
       "badge": "DSGVO",
       "icon": "shield",
@@ -50,7 +59,7 @@
     }
   ],
   "legal": {
-    "impressum": "https://frickeldave.de/impressum",
-    "datenschutz": "https://frickeldave.de/datenschutz"
+    "impressum": "https://frickeldave.github.io/impressum",
+    "datenschutz": "https://frickeldave.github.io/datenschutz"
   }
 }
