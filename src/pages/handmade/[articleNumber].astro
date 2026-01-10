@@ -70,7 +70,7 @@ const description = `${product.description} - Artikelnummer: ${product.articleNu
             >
           </li>
           <li class="flex items-center">
-            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="mx-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fill-rule="evenodd"
                 d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
@@ -82,13 +82,13 @@ const description = `${product.description} - Artikelnummer: ${product.articleNu
             >
           </li>
           <li class="flex items-center">
-            <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="mx-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fill-rule="evenodd"
                 d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
                 clip-rule="evenodd"></path>
             </svg>
-            <span class="text-gray-900 dark:text-white font-medium"
+            <span class="font-medium text-gray-900 dark:text-white"
               >{product.articleNumber}</span
             >
           </li>
@@ -96,14 +96,14 @@ const description = `${product.description} - Artikelnummer: ${product.articleNu
       </nav>
 
       <!-- Product Detail Layout -->
-      <div class="flex flex-col lg:flex-row gap-6">
+      <div class="flex flex-col gap-6 lg:flex-row">
         <!-- Gallery + Main Image Section -->
         <div class="flex-shrink-0">
           <ProductGallery images={productImages} productName={product.name} />
         </div>
 
         <!-- Product Information -->
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0 flex-1">
           <ProductInfo product={product} />
         </div>
       </div>

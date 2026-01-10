@@ -59,18 +59,18 @@ const getCategoryIcon = (category: string | undefined) => {
         <div class="col-12">
           <div class="glass rounded-2xl p-6 lg:p-10">
             {/* Section Header */}
-            <div class="text-center mb-8">
-              <h2 class="text-2xl lg:text-3xl font-bold text-txt-h dark:text-darkmode-txt-h mb-3">
+            <div class="mb-8 text-center">
+              <h2 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-2xl font-bold lg:text-3xl">
                 🛠️ Handmade Portfolio
               </h2>
-              <p class="text-txt-p dark:text-darkmode-txt-p opacity-80 max-w-2xl mx-auto">
+              <p class="mx-auto max-w-2xl text-txt-p opacity-80 dark:text-darkmode-txt-p">
                 Hier siehst du eine zufällige Auswahl von DIY Projekten aus den
                 Bereichen Holzwerken, Laser, Epoxidharz und 3D-Druck.
               </p>
             </div>
 
             {/* 4-Column Grid */}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {selectedProjects.map((project) => (
                 <a
                   href={project?.blogUrl || "#"}
@@ -88,7 +88,7 @@ const getCategoryIcon = (category: string | undefined) => {
                           class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <div class="h-full w-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+                        <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-500/20 to-orange-500/20">
                           <span class="text-4xl">
                             {getCategoryIcon(project?.category)}
                           </span>
@@ -104,12 +104,12 @@ const getCategoryIcon = (category: string | undefined) => {
                       </span>
 
                       {/* Title */}
-                      <h4 class="mb-2 text-base font-bold text-txt-h dark:text-darkmode-txt-h line-clamp-1">
+                      <h4 class="text-txt-h dark:text-darkmode-txt-h mb-2 line-clamp-1 text-base font-bold">
                         {project?.title}
                       </h4>
 
                       {/* Description */}
-                      <p class="text-sm text-txt-p dark:text-darkmode-txt-p opacity-80 line-clamp-2">
+                      <p class="line-clamp-2 text-sm text-txt-p opacity-80 dark:text-darkmode-txt-p">
                         {project?.description}
                       </p>
                     </div>
@@ -119,14 +119,14 @@ const getCategoryIcon = (category: string | undefined) => {
             </div>
 
             {/* CTA */}
-            <div class="text-center mt-8">
+            <div class="mt-8 text-center">
               <a
                 href="/blog/categories/diy"
-                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium transition-all duration-300 hover:from-amber-600 hover:to-orange-600 hover:scale-105 hover:shadow-lg"
+                class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 font-medium text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
               >
                 Alle DIY-Projekte ansehen
                 <svg
-                  class="w-4 h-4"
+                  class="h-4 w-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

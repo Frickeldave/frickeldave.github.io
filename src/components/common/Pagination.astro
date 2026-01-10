@@ -44,7 +44,7 @@ if (pageIDs) {
 {
   pageCount > 1 && (
     <nav class="flex items-center justify-center pb-8">
-      <div class="row glass rounded-md p-2 m-2 space-x-2 intersect:animate-fadeUp opacity-0">
+      <div class="glass row m-2 space-x-2 rounded-md p-2 opacity-0 intersect:animate-fadeUp">
         {/* previous */}
         {prevPage ? (
           <a
@@ -66,7 +66,7 @@ if (pageIDs) {
         {pageIDs ? (
           <div
             aria-current="page"
-            class="col rounded px-4 py-2 text-txt-p  dark:text-darkmode-txt-p"
+            class="col rounded px-4 py-2 text-txt-p dark:text-darkmode-txt-p"
           >
             {pageIndex + 1}
           </div>
@@ -75,7 +75,7 @@ if (pageIDs) {
             pagination === pageIndex ? (
               <span
                 aria-current="page"
-                class="col rounded px-4 py-2 font-semibold text-txt-p dark:text-darkmode-txt-p border border-txt-light dark:border-darkmode-txt-light"
+                class="col rounded border border-txt-light px-4 py-2 font-semibold text-txt-p dark:border-darkmode-txt-light dark:text-darkmode-txt-p"
               >
                 {pagination}
               </span>
