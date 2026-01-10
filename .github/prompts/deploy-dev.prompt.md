@@ -25,4 +25,4 @@ Führe dabei die folgenden Schritte aus:
 11. Warte bis alle PR Checks erfolgreich sind.
 12. Merge den PR in den Development-Branch (dev). Sollte das nicht möglich sein, berichte mir darüber.
 13. Ist der Merge erfolgreich, wird das Deployment in der dev-Umgebung automatisch durch den Job https://github.com/Frickeldave/HomeNet/actions/workflows/host-waltraud.yaml ausgelöst. Bitte überprüfe nun auch den Status dieses Jobs und berichte mir, ob das Deployment erfolgreich war. Dass kann schon mal ein paar Minuten dauern.
-14. Frage mich, ob der Feature-Branch gelöscht werden soll, und lösche ihn gegebenenfalls. 
+14. Frage mich, ob der Feature-Branch gelöscht werden soll, und lösche ihn gegebenenfalls.

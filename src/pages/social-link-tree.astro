@@ -71,31 +71,49 @@ const enrichedLinks = links.map((link) => {
   };
 });
 ---
+
 <BaseLayout title={title} description={description}>
-  <section class="relative min-h-screen overflow-hidden bg-slate-950 text-white">
+  <section
+    class="relative min-h-screen overflow-hidden bg-slate-950 text-white"
+  >
     <div class="pointer-events-none absolute inset-0 -z-10">
-      <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_60%)]"></div>
-      <div class="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top,_rgba(244,114,182,0.18),_transparent_65%)]"></div>
-      <div class="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"></div>
+      <div
+        class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_60%)]"
+      >
+      </div>
+      <div
+        class="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top,_rgba(244,114,182,0.18),_transparent_65%)]"
+      >
+      </div>
+      <div
+        class="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"
+      >
+      </div>
     </div>
 
-    <div class="relative mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-16 sm:px-6 lg:px-0">
-      <div class="glass relative overflow-hidden rounded-3xl border border-white/15 p-8 backdrop-blur-xl">
+    <div
+      class="relative mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-16 sm:px-6 lg:px-0"
+    >
+      <div
+        class="glass relative overflow-hidden rounded-3xl border border-white/15 p-8 backdrop-blur-xl"
+      >
         <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
-          {profile.avatar ? (
-            <img
-              src={profile.avatar}
-              alt={`Avatar von ${profile.name}`}
-              width="112"
-              height="112"
-              loading="lazy"
-              class="h-28 w-28 rounded-2xl border border-white/20 object-cover shadow-lg"
-            />
-          ) : (
-            <div class="flex h-28 w-28 items-center justify-center rounded-2xl border border-white/20 bg-white/5 text-4xl font-semibold">
-              {profile.name.at(0)}
-            </div>
-          )}
+          {
+            profile.avatar ? (
+              <img
+                src={profile.avatar}
+                alt={`Avatar von ${profile.name}`}
+                width="112"
+                height="112"
+                loading="lazy"
+                class="h-28 w-28 rounded-2xl border border-white/20 object-cover shadow-lg"
+              />
+            ) : (
+              <div class="flex h-28 w-28 items-center justify-center rounded-2xl border border-white/20 bg-white/5 text-4xl font-semibold">
+                {profile.name.at(0)}
+              </div>
+            )
+          }
 
           <div class="flex-1">
             <p class="text-sm uppercase tracking-[0.3em] text-white/60">
@@ -104,74 +122,92 @@ const enrichedLinks = links.map((link) => {
             <h1 class="mt-3 text-4xl font-semibold tracking-tight">
               {profile.name}
             </h1>
-            {profile.handle && (
-              <p class="mt-1 text-lg text-white/70">{profile.handle}</p>
-            )}
-            {profile.tagline && (
-              <p class="mt-4 text-base text-white/80">{profile.tagline}</p>
-            )}
+            {
+              profile.handle && (
+                <p class="mt-1 text-lg text-white/70">{profile.handle}</p>
+              )
+            }
+            {
+              profile.tagline && (
+                <p class="mt-4 text-base text-white/80">{profile.tagline}</p>
+              )
+            }
             <div class="mt-4 flex flex-wrap gap-3">
-              {profile.highlights?.map((highlight) => (
-                <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
-                  {highlight}
-                </span>
-              ))}
-              {profile.location && (
-                <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white/60">
-                  {profile.location}
-                </span>
-              )}
+              {
+                profile.highlights?.map((highlight) => (
+                  <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
+                    {highlight}
+                  </span>
+                ))
+              }
+              {
+                profile.location && (
+                  <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+                    {profile.location}
+                  </span>
+                )
+              }
             </div>
           </div>
         </div>
       </div>
 
       <ul class="space-y-4">
-        {enrichedLinks.map((link) => (
-          <li>
-            <a
-              href={link.url}
-              target={link.isExternal ? "_blank" : undefined}
-              rel={link.isExternal ? "noopener noreferrer" : undefined}
-              class={`group flex items-center justify-between gap-4 rounded-2xl border border-white/5 p-4 transition duration-300 ${link.palette.card} ${link.palette.ring}`}
-            >
-              <div class="flex items-center gap-4">
-                <div class={`flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 text-xl font-semibold tracking-wide ${link.palette.icon}`}>
-                  {link.initials}
-                </div>
-                <div>
-                  <div class="flex items-center gap-3">
-                    <p class="text-xl font-semibold">{link.label}</p>
-                    {link.badge && (
-                      <span class={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${link.palette.badge}`}>
-                        {link.badge}
-                      </span>
+        {
+          enrichedLinks.map((link) => (
+            <li>
+              <a
+                href={link.url}
+                target={link.isExternal ? "_blank" : undefined}
+                rel={link.isExternal ? "noopener noreferrer" : undefined}
+                class={`group flex items-center justify-between gap-4 rounded-2xl border border-white/5 p-4 transition duration-300 ${link.palette.card} ${link.palette.ring}`}
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class={`flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 text-xl font-semibold tracking-wide ${link.palette.icon}`}
+                  >
+                    {link.initials}
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <p class="text-xl font-semibold">{link.label}</p>
+                      {link.badge && (
+                        <span
+                          class={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${link.palette.badge}`}
+                        >
+                          {link.badge}
+                        </span>
+                      )}
+                    </div>
+                    {link.description && (
+                      <p class="mt-1 text-sm text-white/70">
+                        {link.description}
+                      </p>
                     )}
                   </div>
-                  {link.description && (
-                    <p class="mt-1 text-sm text-white/70">{link.description}</p>
-                  )}
                 </div>
-              </div>
-              <svg
-                class="h-6 w-6 text-white/70 transition group-hover:translate-x-1 group-hover:text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M5 12h14" />
-                <path d="M13 6l6 6-6 6" />
-              </svg>
-            </a>
-          </li>
-        ))}
+                <svg
+                  class="h-6 w-6 text-white/70 transition group-hover:translate-x-1 group-hover:text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                  <path d="M13 6l6 6-6 6" />
+                </svg>
+              </a>
+            </li>
+          ))
+        }
       </ul>
 
-      <footer class="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-center text-sm text-white/70 sm:flex-row sm:justify-between sm:text-left">
+      <footer
+        class="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-center text-sm text-white/70 sm:flex-row sm:justify-between sm:text-left"
+      >
         <span>Pflichtangaben & rechtliche Links</span>
         <div class="flex flex-wrap items-center justify-center gap-3">
           <a
