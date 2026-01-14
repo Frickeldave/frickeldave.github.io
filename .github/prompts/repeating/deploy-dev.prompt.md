@@ -1,10 +1,10 @@
 ---
 agent: 'agent'
-description: 'Deploy changes to dev and production environments.'
+description: 'Deploy changes to dev environments.'
 model: Auto (copilot)
 ---
 
-Deploye die Änderungen. Checke als erstes ob alle prerequsites erfüllt sind. Dies sind die folgenden:
+Deploye die Änderungen. Checke als erstes ob alle prerequsites erfüllt sind. Dies sind die folgenden: 
 
 - npm muss installiert sein. 
 - git muss installiert sein.
@@ -12,7 +12,7 @@ Deploye die Änderungen. Checke als erstes ob alle prerequsites erfüllt sind. D
 
 Führe dabei die folgenden Schritte aus:
 
-1. Analysiere alle offnenen Änderungen im Repository und verstehe worum es geht.
+1. Analysiere alle offenen Änderungen im Repository und verstehe worum es geht.
 2. Sollte aktuell der dev oder main Branch aktiv sein, wechsle zu einem neuen Feature-Branch basierend auf dev und übernimm alle aktuell offenen Änderungen. Der Name sollte aus deiner Analyse aus Schritt 1 abgeleitet werden.
 3. Führe den linter aus und behebe alle gefundenen Probleme.
 4. Führe prettier aus, um den Code zu formatieren.

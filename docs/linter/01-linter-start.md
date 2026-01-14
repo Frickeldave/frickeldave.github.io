@@ -24,10 +24,10 @@ einbaust und mit Husky Git Hooks automatisierst.
 
 More details: 
 
-[husky](./husky.md)
-[eslint](./eslint.md)
-[prettier](./prettier.md)
-[vale](./vale.md)
+- [Husky](./02-linter-husky.md)
+- [ESLint](./03-linter-eslint.md)
+- [Prettier](./04-prettier.md)
+- [Vale](./05-linter-vale.md)
 
 ## Wie die Tools zusammenarbeiten
 
