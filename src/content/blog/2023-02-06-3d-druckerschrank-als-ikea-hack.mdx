@@ -1,0 +1,292 @@
+---
+title: 3D Druckerschrank als IKEA-Hack
+description:
+  Ein IKEA PLATSA Schrank wird zum perfekten 3D Druckerschrank mit Belüftung, LED-Beleuchtung und
+  Stauraum
+slug: 3d-druckerschrank-als-ikea-hack
+date: 2023-02-06
+image: "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-header.png"
+imageAlt: Header image für den Blog Artikel 3D Druckerschrank als IKEA-Hack
+categories: [3D Druck]
+author: Frickeldave
+tags: [3D Druck, DIY, IKEA Hack, Platsa, Enclosure, Heimwerken]
+---
+
+import RedirectLink from "@components/common/RedirectLink.astro";
+import { Image } from "astro:assets";
+import tdih001 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-001.jpg";
+import tdih002 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-002.jpg";
+import tdih003 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-003.jpg";
+import tdih004 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-004.jpg";
+import tdih005 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-005.jpg";
+import tdih006 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-006.png";
+import tdih007 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-007.jpg";
+import tdih008 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-008.jpg";
+import tdih009 from "@assets/blog/3d-druck/2023-02-06-3d-druckerschrank-als-ikea-hack/3dih-009.jpg";
+
+3D Drucker sind wirklich praktische Teile, aber man kann nicht behaupten, sie gehen als
+Design-Objekt durch. Neben der Optik gibt es einige gute Gründe, warum du einen 3D Druckerschrank
+bauen solltest. Es gibt zwar schon diverse Artikel im Web, wie du deinen Schrank bauen solltest,
+aber es gibt natürlich auch immer etwas daran auszusetzen. Die meistverbreitete Lösung ist die
+Nutzung eines oder zweier IKEA Lack-Tische, die mit selbst gedruckten Haltern verbunden und mit
+Plexiglas verkleidet werden. Aber erstens schauen diese Lösungen in der Regel auch nicht
+"wohnzimmertauglich" aus, zweitens sind zwar die Tische selber günstig, aber das notwendige Filament
+und vor allem die Plexiglasscheiben machen das Projekt wieder so teuer, dass ich auch gleich was
+Vernünftiges hinstellen kann.
+
+Die Idee und Vorlage für diesen Artikel habe ich aus dem Make-Magazin 3/2018. Allerdings war mir
+persönlich diese Anleitung etwas zu kompliziert und "overengineered" und so habe ich mir überlegt,
+wie es einfacher gehen kann.
+
+## Gründe für einen 3D Drucker Schrank
+
+Bevor wir an den eigentlichen Bau des Schrankes gehen, vielleicht noch ein paar Gedanken zum "wieso"
+und "warum" eines 3D Drucker Schrankes.
+
+- Wie schon geschrieben, ein 3D Drucker ist nicht gerade eine Augenweide. Ein Schrank sorgt für eine
+  unauffällige Optik.
+- Durch einen Schrank wird die Geruchsbelästigung deutlich reduziert, durch den Einbau eines
+  Aktivkohlefilters nahezu neutralisiert.
+- Auch die Geräusche die ein Drucker erzeugt, lassen sich durch einen solchen Schrank deutlich
+  reduzieren.
+- Neben dem 3D Drucker bietet der Schrank noch weiteren Stauraum für Filament, Werkzeug und Zubehör.
+- Es lässt sich die Webcam nebst Octo-Pi perfekt mit unterbringen.
+- Die Temperatur bleibt gleichmäßig stabil, störend kühle Luftströme durch offene Türen oder Fenster
+  haben weniger Einfluss auf das Werkstück/Druckbett.
+- In meinem Schrank herrschen während des Drucks ca. 28°-35°, was die notwendige Heizleistung für
+  das Druckbett etwas reduzieren sollte und somit weniger Stromkosten anfallen.
+
+Du siehst, die Frage ist nicht, **ob** du einen Schrank baust, die Frage ist **wann** beginnst du
+damit ;-).
+
+## Materialien und Kosten für einen 3D Druckerschrank
+
+Ich beschreibe hier eine Lösung auf Basis eines IKEA Schrankes. Du kannst natürlich auch jeden
+anderen Vitrinenschrank nutzen. Getestet habe ich diesen Schrank mit einem Innenmaß von ca. 560 mm x
+530 mm x 600 mm für den Artillery Hornet 3D und den Creality Ender 3 V2. Hier schon mal die
+Einkaufsliste:
+
+| Material                                                                                         | Preis           |
+| ------------------------------------------------------------------------------------------------ | --------------- |
+| 1 x IKEA PLATSA Korpus weiß, 60cm x 55cm x 120cm (Gibt es auch als Variante mit 180cm Höhe)      | 50€             |
+| 1 x IKEA SINDVIK Vitrinentür 60cm x 64cm                                                         | 30€             |
+| 1 x IKEA HJÄLPA Scharniere 2x                                                                    | je nachdem 1-4€ |
+| 2 oder 3 x IKEA Schubladen FONNES 60cm x 57cm x 20cm mit Front (optional)                        | 63€             |
+| 1 oder 2 x IKEA HJÄLPA Boden 60cm x 55cm                                                         | 7€              |
+| 2 x <RedirectLink id="3denc_luefter" text="USB-powered Lüfter 2x" />                             | 16€             |
+| 1 x <RedirectLink id="3denc_kohlefilter" text="Aktivkohlefilter" />                              | 10€             |
+| 1 x <RedirectLink id="3denc_10pol_kabel" text="10-poliges Verlängerungskabel" />                 | 7€              |
+| 1 x <RedirectLink id="3denc_thermometer" text="Thermometer digital mit großem Display" />        | 9€              |
+| 1 x <RedirectLink id="3denc_ledstripe" text="LED Streifen (USB)" />                              | 15€             |
+| 1 x <RedirectLink id="3denc_steckdosenleiste" text="Steckdosenleiste mit USB und Wandmontage" /> | 15€             |
+| 1 x MDF 5mm Platte                                                                               | 2€              |
+| 1 x Raspberry Pi 3 oder 4 mit Netzteil (optional)                                                | 50€             |
+| 1 x <RedirectLink id="3denc_usb_hd_webcam" text="HD Webcam" /> (optional)                        | 17€             |
+| Holzschrauben, Unterlegscheiben, sonstige Materialien                                            | 2€              |
+| **Gesamtkosten**                                                                                 | **~300€**       |
+
+Du siehst, der Schrank ist nicht unbedingt günstig, in meinem Fall war er sogar teurer als der
+Drucker selber. Stehst du noch vor dem Kauf eines 3D Druckers, überleg auch mal ruhig, ob du nicht
+gleich zu einem Drucker greifst mit Einhausung.
+
+**Nachtrag:** Weiterhin siehst du bei den Schubladen und dem Boden, dass es die Option gibt, einmal
+3 Schubladen mit einem Boden oder 2 Schubladen mit 2 Böden zu verbauen. Der Hintergrund: Dadurch
+dass die Vitrinentür nur im Maß 60×64 verfügbar ist, ist der Korpus insgesamt 4cm zu klein für 3
+Schubladen (64cm Vitrinentür, 3×20cm Schubladenfront). Möchtest du drei Schubladen verbauen, musst
+du eine Front um 4 cm kürzen (die Schublade passt dann aber trotzdem) und mit Kantenumleimer die
+Schnittstelle wieder zu machen. Möchtest du den Aufwand nicht treiben, baue nur 2 Schubladen ein und
+einen zweiten Boden unterhalb der Vitrinentür. Sozusagen als leeres Regalfach.
+
+Neben den Materialien benötigst du noch einige Werkzeuge. Normalerweise liste ich diese in meinen
+Artikeln ja nicht gesondert auf, aber da sich dieser Inhalt auch an Leute richten soll, die keine
+volle Werkstatt zur Verfügung haben, will ich hier mal eine Ausnahme machen.
+
+- Akkuschrauber
+- Heißklebepistole
+- Schraubendreher
+- Zange
+- Lochbohrer/<RedirectLink id="FalkeKreisschneider" text="Kreisschneider" />
+- Optional: Kantenumleimer, Bügeleisen und Teppichmesser
+
+## Aufbau des 3D Druckerschrank
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    Hier soll es ja nicht um den Bau eines Schrankes gehen, sondern um die Besonderheiten bei der
+Gestaltung eines 3D Drucker Enclosure/Schrank. Ergo, baust du den Schrank deiner Wahl einfach nach
+Bedienungsanleitung auf. Ich habe hier den IKEA PLATSA Schrank gewählt, mit 3 Schubladen
+ausgestattet und die oberste Schublade um 4cm gekürzt.
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={tdih001} alt="Fertig aufgebauter Schrank" />
+  </div>
+</div>
+
+Die Vitrinen-Tür in Glas ist ein entscheidendes Feature. Trotz des Einbaus in einen Schrank sollte
+der 3D Drucker während des Betriebs immer im Blick behalten werden.
+
+Eine Idee die mir noch während des Artikels gekommen ist: Möchtest du das Innenleben des 3D
+Druckerschranks verstecken wenn der Drucker nicht in Betrieb ist, kannst du von innen ein Plissee an
+der Tür befestigen, diese gibt es auch in den passenden Maßen. Ich habe dir hier mal keines
+verlinkt, da es nur eine Idee ist und ich das nicht selber ausprobiert habe.
+
+### Innenbeleuchtung
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    Nun kümmern wir uns um die Innenbeleuchtung. Eigentlich ist das gar kein Hexenwerk. Du klebst die
+    LED Streifen ein und schaust dabei zu, dass du mit dem Anschlusskabel bei deinem USB Anschluss
+    landest.
+
+    Anmerkung: In diesem Bild siehst du noch ein Netzteil oben an der Decke und eine Aufputzdose. Dies
+    entfällt natürlich wenn du die oben verlinkten USB-powered Streifen verwendest.
+    Die Ursache für den starken Blaustich ist die falsch eingestellte Handy-Kamera, Ziel ist natürlich
+    eine möglichst hell-weiße Ausleuchtung.
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={tdih002} alt="LED Beleuchtung" />
+  </div>
+</div>
+
+Überlege dir vorher wo du die Webcam hinhängen möchtest. Versuche dann im Blickbereich der Kamera
+keine LED Streifen zu montieren, um Gegenlicht zu vermeiden. Wichtig ist, dass der Druckbereich
+ausgeleuchtet ist, also das Licht vor allem von der Seite der Webcam und von oben kommt.
+
+Wenn das mit dem LED Streifen nicht anders hinzubekommen ist, musst du ihn an den entsprechenden
+Stellen überkleben. 
+
+### Belüftung integrieren
+
+
+Ein wichtiger Punkt ist, die Wärme aus dem Gehäuse raus zu bekommen, ohne aber kalte Luftströme über
+das Druckobjekt zu leiten und somit das Ergebnis negativ zu beeinflussen. Wir wollen also die Luft
+möglichst um den Drucker herum leiten.
+
+Um dies zu bewerkstelligen wird eine 5mm Platte (hier HDF) mit den Maßen 46cm x 46cm sowie 4 Leisten
+mit 27cm x 1,3cm zugeschnitten. Diese werden wie im Bild gezeigt im Kreuz aufgeklebt (Wem Leim zu
+lange dauert, es geht auch Sekundenkleber) und dann mit Moosgummistreifen beklebt.
+
+<div className="my-6">
+  <Image src={tdih003} alt="Platte unterhalb des 3D Druckers" />
+</div>
+
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    Nun wird ein passendes Loch in den Boden der Bodenplatte im 3D Druckerschrank geschnitten. Am
+    exaktesten gelingt dies mit einem <RedirectLink id="FalkeKreisschneider" text="Kreisschneider" />.
+
+    Leider ist das Gehäuse des Lüfters ein bisschen im Weg um diesen bündig einzulassen. Ich habe das
+    vorsichtig mit einer Zange weggebrochen, damit der Lüfter dann perfekt in das Loch passt.
+
+    Achte darauf, dass dieser Lüfter Luft von unten einsaugen, also in den Schrank befördern soll.
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={tdih004} alt="Lüfter unten" />
+  </div>
+</div>
+
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    Nun wird im Deckel des Schranks ebenfalls ein Loch gebohrt und der zweite der USB-Lüfter von unten
+dagegen geschraubt. Dieser saugt die warme Luft ab und befördert sie aus dem Schrank hinaus. Oben
+auf dem Schrank habe ich den Aktivkohlefilter (ebenfalls mit 2 Schrauben) befestigt.
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={tdih005} alt="Lüfter oben" />
+  </div>
+</div>
+
+Eine Abdichtung am Filter ist nicht notwendig, es reicht diesen einfach oben aufzusetzen, ich
+betreibe den Drucker bei mir im Büro und man bemerkt keine störenden Dämpfe mehr (Ganz im Gegenteil
+dazu, wenn man den Filter testweise mal weg lässt). Nichtsdestotrotz empfehle ich (besonders wenn du
+dich lange im gleichen Raum aufhältst) regelmäßiges Lüften. Das kannst du ja jetzt dank des
+Schrankes auch tun, ohne das Druckergebnis zu gefährden.
+
+Jetzt wird die HDF Platte mit den Abstandhaltern mittig auf den Lüfter gelegt und mit 2
+Holzschrauben an der Bodenplatte verschraubt, damit diese nicht verrutschen kann.
+
+Somit ist nun sichergestellt, dass der Luftstrom seitlich am Drucker nach oben steigt.
+
+<div className="my-6">
+  <Image src={tdih006} alt="Skizze der Luftströme" />
+</div>
+
+Anschließend führst du die Kabel der USB-Lüfter links im Schrank zu den USB Anschlüssen der
+Steckdose und achtest dabei darauf, dass die Stärke-Einstellung für die Lüfter gut erreichbar ist.
+Bei mir ist der 3D Drucker im Keller positioniert und hat eine nahezu gleichbleibende Temperatur und
+die Lüfter laufen daher auf der niedrigsten Stufe. Solltest du aber merken, dass die Temperatur auf
+über 40° ansteigt kannst du die Lüfter auch hochdrehen. Meiner Meinung nach sollte aber die
+niedrigste Stufe reichen, ansonsten mal überlegen ob der Standort richtig ist.
+
+### Temperaturkontrolle
+
+Um die Temperatur im Schrank zu überwachen, wird das
+<RedirectLink id="3denc_thermometer" text="digitale Thermometer" /> an der Außenseite des Schranks
+befestigt. Der Sensor kommt durch ein kleines Loch ins Innere.
+
+Damit hast du die Temperatur jederzeit im Blick und kannst bei Bedarf die Lüftergeschwindigkeit
+anpassen.
+
+### Sonstige Anpassungen
+
+<div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
+  <div className="lg:w-1/2">
+    Die <RedirectLink id="3denc_steckdosenleiste" text="Steckdosenleiste mit USB" /> wird an der
+Innenseite montiert. Hier werden der Drucker, der Raspberry Pi (falls vorhanden) und die USB-Geräte
+(Lüfter, LED) angeschlossen.
+  </div>
+  <div className="lg:w-1/2">
+    <Image src={tdih008} alt="Verkabelung im Schrank" />
+  </div>
+</div>
+
+Falls du wie ich einen Ender 3 V2 hast, kannst du das LCD-Display mit dem
+<RedirectLink id="3denc_10pol_kabel" text="10-poligen Verlängerungskabel" /> nach außen verlegen.
+Damit musst du nicht jedes Mal die Tür öffnen, um den Drucker zu bedienen.
+
+### OctoPi (oder ähnlich)
+
+Wenn du deinen Drucker fernsteuern möchtest, kannst du einen Raspberry Pi mit OctoPrint
+installieren. Die <RedirectLink id="3denc_usb_hd_webcam" text="HD Webcam" /> wird dann so
+positioniert, dass sie eine gute Sicht auf das Druckbett hat.
+
+Mit OctoPrint kannst du den Drucker komplett fernsteuern, den Fortschritt überwachen und sogar
+Zeitraffer-Videos deiner Drucke erstellen.
+
+## Mögliche Erweiterungen
+
+Je nachdem wie du den Schrank nutzen möchtest, gibt es noch einige Erweiterungsmöglichkeiten:
+
+- **Filament-Trockner**: Einige Filamente benötigen eine trockene Lagerung. Du könntest einen
+  kleinen Trockenbox-Bereich integrieren.
+- **Zusätzliche Beleuchtung**: Für bessere Webcam-Aufnahmen kannst du weitere LED-Streifen
+  anbringen.
+- **Werkzeughalter**: An den Innenseiten der Schranktüren kannst du kleine Halter für Spachtel,
+  Zangen und anderes Werkzeug anbringen.
+- **Spulenhalter**: Wenn du mehrere Filament-Spulen nutzt, können Halterungen an der Innenseite des
+  Schranks hilfreich sein.
+
+## Fazit
+
+Der 3D Druckerschrank ist zwar nicht günstig, aber er bietet viele Vorteile: bessere Druckergebnisse
+durch stabile Temperatur, deutlich weniger Lärm und Geruch, und dazu noch Stauraum für Filament und
+Zubehör. Für mich hat sich die Investition auf jeden Fall gelohnt!
+
+<div className="my-6">
+  <Image src={tdih009} alt="Fertiger 3D Druckerschrank in Betrieb" />
+</div>
+
+## 2023-01 Update nach einem halben Jahr
+
+Mittlerweile nutze ich den Schrank seit einem halben Jahr intensiv und bin nach wie vor sehr
+zufrieden. Ein paar Erkenntnisse die ich in der Zeit gesammelt habe:
+
+- Die Lüfter auf niedrigster Stufe reichen völlig aus. Ich habe sie mal testweise hochgedreht, aber
+  das bringt keinen Vorteil.
+- Der Aktivkohlefilter sollte alle 3-4 Monate gewechselt werden, je nach Nutzungsintensität.
+- Die Temperatur im Schrank liegt konstant zwischen 28-35°C während des Drucks, was perfekt ist.
+- Durch den Schrank sind die Druckergebnisse deutlich besser geworden, besonders bei ABS und PETG.
+- Die Geräuschreduzierung ist enorm. Der Drucker steht jetzt im Büro und stört überhaupt nicht mehr.
+

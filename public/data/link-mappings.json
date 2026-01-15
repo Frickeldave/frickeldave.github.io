@@ -765,6 +765,62 @@
       "affiliate": true,
       "category": "Elektrik",
       "openInNewTab": true
+    },
+    "3denc_luefter": {
+      "targetUrl": "https://www.amazon.de/dp/B081SYD24Z",
+      "description": "USB-powered Lüfter für 3D Druckerschrank",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_kohlefilter": {
+      "targetUrl": "https://www.amazon.de/dp/B07P57RJKH",
+      "description": "Aktivkohlefilter für 3D Druckerschrank",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_10pol_kabel": {
+      "targetUrl": "https://www.amazon.de/dp/B07D3DYHPR",
+      "description": "10-poliges Verlängerungskabel für LCD Display",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_thermometer": {
+      "targetUrl": "https://www.amazon.de/dp/B09PQY19M2",
+      "description": "Digitales Thermometer mit großem Display",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_ledstripe": {
+      "targetUrl": "https://www.amazon.de/dp/B09PZZ6MTJ",
+      "description": "LED Streifen USB für 3D Druckerschrank",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_steckdosenleiste": {
+      "targetUrl": "https://www.amazon.de/dp/B07JMVSJHV",
+      "description": "Steckdosenleiste mit USB und Wandmontage",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_usb_hd_webcam": {
+      "targetUrl": "https://www.amazon.de/dp/B08L9D6Y8B",
+      "description": "HD Webcam für OctoPrint",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "FalkeKreisschneider": {
+      "targetUrl": "https://www.amazon.de/dp/B07C5MV47W",
+      "description": "Falke Kreisschneider für Lochbohrungen",
+      "affiliate": true,
+      "category": "Werkzeug",
+      "openInNewTab": true
     }
   },
   "analytics": {
