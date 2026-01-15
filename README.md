@@ -16,27 +16,46 @@
 The frickeldave site is a mix of personal blog, portfolio, IT topics, diy topics and everything else
 i want to write about. Also it's a place for experimenting with astro and starlight.
 
-## Technology
+### Tech Stack
 
-Frickeldave is based on [Astro](https://astro.build/) and uses the Astro theme
-[Astrogon](https://github.com/astrogon/astrogon). This is a rapidly-customizable multipurpose
-website template built using Astro JS, Tailwind, and a sprinkle of React.
+This blog is built with modern web technologies:
 
-## My changes
+- **[Astro](https://astro.build/)** - A lightweight static site generator that ships zero JavaScript by default
+- **[Tailwind CSS](https://tailwindcss.com/)** - A utility-first CSS framework for rapid UI development
+- **[TypeScript](https://www.typescriptlang.org/)** - Adds static typing to JavaScript for better code quality
+- **[Astrogon Theme](https://github.com/astrogon/astrogon)** - A clean and minimal theme for Starlight documentation
+- **[MDX](https://mdxjs.com/)** - Markdown with embedded JSX components for rich content
+- **[GitHub Pages](https://pages.github.com/)** - Free hosting and deployment via GitHub Actions  
 
-Following you'll find the documentation of everything i added additional to astrogon
+## Features
 
-- [A link redirection system useful for general link management and affiliate links](./docs/link-redirect-system.md)
-- [A youtube components with a "First click before show" mode](./docs/)
 
-## How to contribute
+## Documentation
 
-You are welcome to contribute to the frickeldave project. 
+### Onboarding & Setup
+- [Onboarding](./docs/10-onboard.md)
+- [Branching Strategy](./docs/11-branching.md)
+- [Categories and Tags](./docs/12-categories-and-tags.md)
+- [Structure](./docs/13-structure.md)
+- [Versioning](./docs/14-versioning.md)
 
-- [Contribution](./docs/contribute.md)
-- [prompts](./docs/prompts.md)
-- [tags-categories](./docs/tags-categories.md)
-- [ideas](./docs/ideas.md)
+### Design
+- [Design System](./docs/20-design-system.md)
+
+### Development
+- [Migration from WordPress](./docs/30-migration-from-wordpress.md)
+- [Prompt Summary](./docs/31-prompt-summary.md)
+
+### Custom Features
+- [Redirects System](./docs/features/fr001-redirects.md)
+- [Versioning Feature](./docs/features/fr002-versioning.md)
+
+### Linting & Code Quality
+- [Linter Setup](./docs/linter/01-linter-start.md)
+- [Husky Integration](./docs/linter/02-linter-husky.md)
+- [ESLint Configuration](./docs/linter/03-linter-eslint.md)
+- [Prettier Formatting](./docs/linter/04-prettier.md)
+- [Vale Linter](./docs/linter/05-linter-vale.md)
 
 ## License
 

@@ -709,6 +709,13 @@
       "affiliate": false,
       "category": "Glas",
       "openInNewTab": true
+    },
+    "stiftung-warentest-lattenrost": {
+      "targetUrl": "https://www.youtube.com/watch?v=_yr8g8bhNPY",
+      "description": "Stiftung Warentest Tutorial zum Selbstbau eines Lattenrosts",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
     }
 
 

@@ -1,14 +1,14 @@
-# Blog-Migration von frickeldave.de
+# Blog Migration from frickeldave.de
 
-Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPress-Seite (frickeldave.de) zur neuen Astro-basierten Seite in diesem Repository.
+This table shows the migration status of all blog articles from the old WordPress site (frickeldave.de) to the new Astro-based site in this repository.
 
-## Status-Legende
+## Status Legend
 
-- ✅ = Artikel wurde migriert
-- ❌ = Artikel fehlt noch
-- 🔄 = Artikel ist Serie/Landing-Page (keine Einzelartikel-Migration notwendig)
+- ✅ = Article migrated
+- ❌ = Article still missing
+- 🔄 = Article is series/landing page (no individual article migration needed)
 
-## Migrations-Tabelle
+## Migration Table
 
 | Original (frickeldave.de) | New (Repo) | Status |
 |---------------------------|------------|--------|
@@ -57,7 +57,7 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Schublade für Meßwerkzeuge](https://frickeldave.de/schublade-fuer-messwerkzeuge/) | notdo | ⛔ |
 | [Schatztruhe aus Holz](https://frickeldave.de/schatztruhe-aus-holz/) | `2019-11-27-schatztruhe-aus-holz.mdx` | ✅ |
 | [Akku organizer](https://frickeldave.de/akku-organizer/) | notdo | ⛔ |
-| [DIY Lattenrost](https://frickeldave.de/diy-lattenrost/) | fehlt | ❌ |
+| [DIY Lattenrost](https://frickeldave.de/diy-lattenrost/) | `2019-10-24-diy-lattenrost.mdx` | ✅ |
 | [Laterne aus Nußbaumholz selber bauen](https://frickeldave.de/laterne-aus-nussbaumholz-selber-bauen/) | notdo | ⛔ |
 | [Magnetische Topfuntersetzer #2](https://frickeldave.de/topfuntersetzer-edeledition/) | notdo | ⛔ |
 | [Einfacher Werkbankschrank](https://frickeldave.de/werkstattbau-1-einfacher-werkbankschrank/) | notdo | ⛔ |
@@ -111,12 +111,12 @@ Diese Tabelle zeigt den Migrationsstatus aller Blog-Artikel von der alten WordPr
 | [Drechselbank](https://frickeldave.de/drechselbank/) | notdo | ⛔ |
 | [Java Entwicklung mit Visual Studio Code, Spring Boot und Docker](https://frickeldave.de/java-entwicklung-mit-visual-studio-code-spring-boot-und-docker/) | notdo | ⛔ |
 
-## Statistik
+## Statistics
 
-- **Gesamt Original-Artikel:** 91 Artikel
-- **Migriert:** 31 Artikel (✅)
-- **Fehlend (noch zu migrieren):** 10 Artikel (❌)
-- **Nicht migriert (notdo):** 50 Artikel (⛔)
-- **Serien/Landing-Pages:** 6 (separat zu behandeln, als notdo markiert)
-- **Neue Artikel (nur im Repo):** 1 (Timeline)
-- **Migrations-Quote:** ~34% (31/91) | ~76% von geplanten Artikeln (31/41)
+- **Total Original Articles:** 91 articles
+- **Migrated:** 32 articles (✅)
+- **Missing (yet to be migrated):** 9 articles (❌)
+- **Not migrated (notdo):** 50 articles (⛔)
+- **Series/Landing Pages:** 6 (separate handling, marked as notdo)
+- **New Articles (repository only):** 1 (Timeline)
+- **Migration Rate:** ~35% (32/91) | ~78% of planned articles (32/41)
