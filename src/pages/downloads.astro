@@ -1,45 +1,38 @@
 ---
 import type { DownloadsEntry } from "../types";
 import BaseLayout from "../components/base/BaseLayout.astro";
+import PageHeader from "../components/common/PageHeader.astro";
+import Button from "../components/common/Button.astro";
+import DownloadsSidebar from "../components/downloads/Sidebar.astro";
 import { getIndex } from "../lib/contentParser";
-import { render } from "astro:content";
 
 const entry = (await getIndex("downloads")) as DownloadsEntry;
-const { Content } = await render(entry);
+const totalDownloads = entry.data.downloads?.length || 0;
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.description}>
-  <section class="section-sm">
-    <div class="container">
-      <div class="row justify-center">
-        <div class="md:col-10 lg:col-8">
-          <div class="glass rounded-lg p-8 mb-8 text-center">
-            <h1 class="h2 mb-4">{entry.data.title}</h1>
-            {
-              entry.data.description && (
-                <p class="text-lg text-txt-s dark:text-darkmode-txt-s mb-6">
-                  {entry.data.description}
-                </p>
-              )
-            }
-          </div>
+  <PageHeader title={entry.data.title} colorScheme="green" />
 
-          <div class="glass rounded-lg p-8 mb-8">
-            <Content />
-          </div>
-
+  <section class="section">
+    <div class="container flex">
+      <div class="row mx-0 w-full px-0">
+        <!-- Downloads Grid -->
+        <div class="col-12 lg:col-8 lg:p-0">
           {
             entry.data.downloads && entry.data.downloads.length > 0 && (
-              <div class="glass rounded-lg p-8">
-                <h2 class="h4 mb-6">Available Downloads</h2>
-                <div class="grid gap-6 md:grid-cols-2">
-                  {entry.data.downloads.map((download) => (
-                    <div class="border rounded-lg p-4">
-                      <h3 class="font-semibold mb-2">{download.title}</h3>
-                      <p class="text-sm text-gray-600 mb-3">
+              <div id="downloads-grid" class="mb-8 grid gap-6 md:grid-cols-2">
+                {entry.data.downloads.map((download) => (
+                  <div
+                    class="download-card"
+                    data-title={download.title.toLowerCase()}
+                    data-description={download.description.toLowerCase()}
+                  >
+                    <div class="glass flex h-full flex-col rounded-lg p-4">
+                      <h3 class="mb-2 font-semibold">{download.title}</h3>
+                      <p class="mb-3 flex-grow text-sm">
                         {download.description}
                       </p>
-                      <div class="text-xs text-gray-500 mb-3">
+                      <div class="mb-3 text-xs text-txt-light dark:text-darkmode-txt-light">
                         {download.fileSize && (
                           <span>Size: {download.fileSize}</span>
                         )}
@@ -50,21 +43,103 @@ const { Content } = await render(entry);
                           <span class="ml-4">v{download.version}</span>
                         )}
                       </div>
-                      <a
-                        href={download.fileUrl}
-                        download
-                        class="btn btn-primary btn-sm"
-                      >
-                        Download
-                      </a>
+                      <Button
+                        label="Download"
+                        link={download.fileUrl}
+                        colorScheme="green"
+                        glass={false}
+                      />
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             )
           }
+        </div>
+
+        <!-- Sidebar -->
+        <div
+          class="sticky top-[4rem] hidden max-h-static_sidemenu p-0 pl-4 lg:col-4 lg:flex"
+        >
+          <DownloadsSidebar totalDownloads={totalDownloads} />
         </div>
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  // Wait for DOM and React components to be ready
+  let isInitialized = false;
+
+  function initializeDownloadsSearch() {
+    // Prevent multiple initializations
+    if (isInitialized) return;
+
+    const searchInput = document.getElementById(
+      "search-input"
+    ) as HTMLInputElement;
+    const resultsCount = document.getElementById("results-count");
+    const clearFiltersBtn = document.getElementById("clear-filters");
+
+    if (!searchInput || !resultsCount || !clearFiltersBtn) {
+      // Retry after a short delay if elements aren't ready yet
+      setTimeout(initializeDownloadsSearch, 100);
+      return;
+    }
+
+    // Mark as initialized
+    isInitialized = true;
+
+    function getDownloadCards() {
+      const grid = document.getElementById("downloads-grid");
+      return grid ? grid.querySelectorAll(".download-card") : [];
+    }
+
+    function filterDownloads() {
+      const searchTerm = searchInput?.value.toLowerCase() || "";
+      const cards = getDownloadCards();
+      let visibleCount = 0;
+
+      cards.forEach((card) => {
+        const title = (card as HTMLElement).dataset.title || "";
+        const description = (card as HTMLElement).dataset.description || "";
+
+        const matchesSearch =
+          !searchTerm ||
+          title.includes(searchTerm) ||
+          description.includes(searchTerm);
+
+        if (matchesSearch) {
+          (card as HTMLElement).style.display = "";
+          visibleCount++;
+        } else {
+          (card as HTMLElement).style.display = "none";
+        }
+      });
+
+      if (resultsCount) {
+        resultsCount.textContent = `${visibleCount} von ${cards.length} Downloads`;
+      }
+    }
+
+    function clearFilters() {
+      if (searchInput) searchInput.value = "";
+      filterDownloads();
+    }
+
+    // Event listeners
+    searchInput.addEventListener("input", filterDownloads);
+    clearFiltersBtn.addEventListener("click", clearFilters);
+
+    // Initial update
+    filterDownloads();
+  }
+
+  // Start initialization when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeDownloadsSearch);
+  } else {
+    initializeDownloadsSearch();
+  }
+</script>

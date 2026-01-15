@@ -36,14 +36,14 @@ const {
   <section class="section">
     <div class="container">
       <div class="row justify-center">
-        <article class="lg:col-10 flex flex-wrap content-start">
+        <article class="flex flex-wrap content-start lg:col-10">
           <!-- Title -->
-          <h1 set:html={title} class="p-2 col basis-full min-w-72" />
+          <h1 set:html={title} class="col min-w-72 basis-full p-2" />
           <!-- Cover Photo -->
           {
             image && (
-              <div class="col basis-2/3 p-2 min-w-72">
-                <div class="glass rounded-lg intersect:animate-fadeDown opacity-0">
+              <div class="col min-w-72 basis-2/3 p-2">
+                <div class="glass rounded-lg opacity-0 intersect:animate-fadeDown">
                   <Image
                     class="w-full rounded-lg"
                     src={image}
@@ -57,16 +57,16 @@ const {
             )
           }
           <!-- About -->
-          <section class="col basis-1/3 p-2 min-w-72">
+          <section class="col min-w-72 basis-1/3 p-2">
             <div
-              class="glass rounded-lg p-2 h-full intersect:animate-fadeUp opacity-0"
+              class="glass h-full rounded-lg p-2 opacity-0 intersect:animate-fadeUp"
             >
               <!-- Author -->
               {
                 author && (
                   <div class="m-4">
                     <a href={`/authors/${slugify(author.id)}`}>
-                      <FaRegUserCircle className={"mr-2 -mt-1 inline-block"} />
+                      <FaRegUserCircle className={"-mt-1 mr-2 inline-block"} />
                       {upperHumanize(author.id)}
                     </a>
                   </div>
@@ -76,7 +76,7 @@ const {
               {
                 prepTime && (
                   <div class="m-4">
-                    <FaRegClock className={"mr-2 -mt-1 inline-block"} />
+                    <FaRegClock className={"-mt-1 mr-2 inline-block"} />
                     {prepTime + " minutes"}
                   </div>
                 )
@@ -85,7 +85,7 @@ const {
               {
                 servings && (
                   <div class="m-4">
-                    <FaUtensils className={"mr-2 -mt-1 inline-block"} />
+                    <FaUtensils className={"-mt-1 mr-2 inline-block"} />
                     {servings === 1 ? "1 serving" : servings + " servings"}
                   </div>
                 )
@@ -94,7 +94,7 @@ const {
               {
                 diet && (
                   <div class="m-4">
-                    <FaSeedling className={"mr-2 -mt-1 inline-block"} />
+                    <FaSeedling className={"-mt-1 mr-2 inline-block"} />
                     {diet}
                   </div>
                 )
@@ -117,8 +117,8 @@ const {
           <!-- Ingredients -->
           {
             ingredients && (
-              <section class="col basis-1/3 p-2 min-w-72">
-                <div class="glass rounded-lg p-4 intersect:animate-fadeUp opacity-0">
+              <section class="col min-w-72 basis-1/3 p-2">
+                <div class="glass rounded-lg p-4 opacity-0 intersect:animate-fadeUp">
                   <h2 set:html="Ingredients" class="mb-2" />
                   <div class="row justify-center">
                     {ingredients.list.map((it: string, index: number) => (
@@ -139,8 +139,8 @@ const {
           <!-- Instructions -->
           {
             instructions && (
-              <section class="col basis-full p-2 min-w-72">
-                <div class="glass rounded-lg p-4 intersect:animate-fadeUp opacity-0">
+              <section class="col min-w-72 basis-full p-2">
+                <div class="glass rounded-lg p-4 opacity-0 intersect:animate-fadeUp">
                   <h2 set:html="Instructions" class="mb-2" />
                   <div class="row justify-center">
                     {instructions.map((it: string, index: number) => (
@@ -159,8 +159,8 @@ const {
           <!-- Notes -->
           {
             notes && (
-              <section class="col basis-full p-2 min-w-72">
-                <div class="glass rounded-lg p-4 intersect:animate-fadeUp opacity-0">
+              <section class="col min-w-72 basis-full p-2">
+                <div class="glass rounded-lg p-4 opacity-0 intersect:animate-fadeUp">
                   <h2 set:html="Notes" class="mb-2" />
                   <div class="row justify-center">
                     {notes.map((it: string, _index: number) => (
@@ -177,7 +177,7 @@ const {
         </article>
         <!-- Share -->
         <div
-          class="flex col-10 p-2 items-center justify-center lg:justify-end px-6"
+          class="col-10 flex items-center justify-center p-2 px-6 lg:justify-end"
         >
           <Share
             title={title}

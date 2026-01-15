@@ -2,8 +2,90 @@
 import BaseLayout from "@components/base/BaseLayout.astro";
 import { markdownify } from "@lib/textConverter";
 import Button from "@components/common/Button.astro";
-import type { HomeEntry } from "@/types";
+import PageHeader from "@components/common/PageHeader.astro";
+import type { HomeEntry, BlogEntry, HandmadeData } from "@/types";
 import { Image } from "astro:assets";
+import { getEntries } from "@lib/contentParser";
+import { formatDate } from "@lib/formatDate";
+import readingTime from "@lib/readingTime";
+import FeatureCards from "./FeatureCards.astro";
+import TabPostsList from "./TabPostsList";
+import HandmadeCarousel from "./HandmadeCarousel";
+import NewsCarousel from "./NewsCarousel";
+import { sortByDate } from "@lib/sortFunctions";
+import type { ImageMetadata } from "astro";
+
+// Import handmade data and images
+import handmadeDataRaw from "../../../public/data/handmade.json";
+import placeholderImage from "@/assets/placeholder-product-notfound.png";
+
+// Import news data and placeholder
+import newsDataRaw from "../../../public/data/news.json";
+import placeholderNewsImage from "@/assets/placeholder-news.png";
+
+const handmadeData = handmadeDataRaw as HandmadeData;
+
+type NewsItem = {
+  visible: boolean;
+  date: string;
+  title: string;
+  text: string;
+  imageUrl: string;
+};
+
+type NewsData = {
+  news: NewsItem[];
+};
+
+const newsData = newsDataRaw as NewsData;
+
+// Prepare news with image URLs for React component
+const visibleNews = newsData.news
+  .filter((item) => item.visible)
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  .slice(0, 8)
+  .map((item) => ({
+    ...item,
+    imageUrl: placeholderNewsImage.src,
+  }));
+
+// Import all handmade images using Vite's glob
+const handmadeImages = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/handmade/**/*.{png,jpg,jpeg,webp}",
+  { eager: true }
+);
+
+// Create image map
+const imageMap = Object.entries(handmadeImages).reduce(
+  (acc, [path, image]) => {
+    const relativePath = path.replace("/src/assets/handmade/", "");
+    acc[relativePath] = image.default;
+    return acc;
+  },
+  {} as Record<string, ImageMetadata>
+);
+
+// Helper to get product image
+const getProductImage = (
+  category: string,
+  articleNumber: string
+): ImageMetadata => {
+  const categoryFolder = category.toLowerCase().replace(/\s+/g, "-");
+  const imagePath = `${categoryFolder}/${articleNumber}/${articleNumber}-000.png`;
+  return imageMap[imagePath] || placeholderImage;
+};
+
+// Prepare handmade products with image URLs for React component
+const visibleProducts = handmadeData.products
+  .filter((p) => p.visible)
+  .slice(0, 8);
+const productsWithImages = visibleProducts.map((product) => {
+  const img = getProductImage(product.category, product.articleNumber);
+  return {
+    ...product,
+    imageUrl: img.src,
+  };
+});
 
 interface Props {
   entry: HomeEntry;
@@ -11,43 +93,182 @@ interface Props {
 
 const { entry } = Astro.props;
 const { image, imageAlt, title, content, button } = entry.data;
+
+// Get all blog posts for tabs
+const allPosts = (await getEntries("blog", sortByDate)) as BlogEntry[];
+
+// Helper to format post data for React component
+const formatPostData = (post: BlogEntry) => ({
+  id: post.id,
+  title: post.data.title,
+  description: post.data.description || "",
+  date: post.data.date ? formatDate(post.data.date) : undefined,
+  categories: post.data.categories || [],
+  readingTime: post.body
+    ? readingTime(post.body, post.data.complexity || 1)
+    : undefined,
+});
+
+// Filter posts by tags/categories for each tab
+const diyTags = ["diy", "handmade", "holz", "wood", "laser", "epoxidharz"];
+const itTags = [
+  "it",
+  "professional",
+  "devops",
+  "cloud",
+  "kubernetes",
+  "software",
+];
+const druckTags = ["3d-druck", "3d-printing", "3d", "druck", "printing"];
+
+const filterByTags = (posts: BlogEntry[], tags: string[]) => {
+  return posts.filter((post) => {
+    const postTags = (post.data.tags || []).map((t) => t.toLowerCase());
+    const postCategories = (post.data.categories || []).map((c) =>
+      c.toLowerCase()
+    );
+    const allPostTags = [...postTags, ...postCategories];
+    return tags.some((tag) => allPostTags.includes(tag.toLowerCase()));
+  });
+};
+
+const diyPosts = filterByTags(allPosts, diyTags)
+  .slice(0, 6)
+  .map(formatPostData);
+const itPosts = filterByTags(allPosts, itTags).slice(0, 6).map(formatPostData);
+const druckPosts = filterByTags(allPosts, druckTags)
+  .slice(0, 6)
+  .map(formatPostData);
+
+const tabData = [
+  { id: "diy", label: "DIY", posts: diyPosts },
+  { id: "it", label: "IT", posts: itPosts },
+  { id: "3d-druck", label: "3D-Druck", posts: druckPosts },
+];
 ---
 
-<BaseLayout>
-  <!-- Banner -->
-  <section class="section">
+<BaseLayout title={title} description={content}>
+  <!-- Page Header with Breadcrumbs -->
+  <PageHeader title="Home" colorScheme="cyan" />
+
+  <!-- Sektion 1: Hero-Bereich -->
+  <section class="section pb-12 pt-16">
     <div class="container">
-      <div class="row justify-center">
-        <div class="text-center lg:col-6">
-          {
-            image && (
-              <div class="blur-[0px]">
+      <div class="glass rounded-lg p-8 text-center">
+        {
+          image && (
+            <div class="mb-6 flex justify-center">
+              <div class="relative">
+                <div class="absolute inset-0 animate-pulse rounded-full bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-500 opacity-60 blur-xl" />
                 <Image
-                  class="mb-6 w-64"
+                  class="relative w-48 rounded-full border-4 border-cyan-500/30 shadow-lg md:w-64"
                   src={image}
                   alt={imageAlt}
-                  width={1024}
-                  height={1024}
+                  width={256}
+                  height={256}
                   loading="eager"
                 />
               </div>
-            )
-          }
-          <h1 set:html={markdownify(title)} class="mb-4" />
-          <p set:html={markdownify(content)} class="mb-8" />
+            </div>
+          )
+        }
+        <h1
+          set:html={markdownify(title)}
+          class="mb-4 text-4xl font-bold md:text-5xl"
+        />
+        <p
+          set:html={markdownify(content)}
+          class="mx-auto mb-8 max-w-2xl text-lg"
+        />
+        <div class="flex flex-wrap justify-center gap-4">
           {
             button && (
               <Button
                 label={button.label}
                 link={button.link}
-                newtab
                 hoverInvert
-                color=""
+                colorScheme="cyan"
+                glass={false}
               />
             )
           }
+          <Button
+            label="Handmade Shop"
+            link="/handmade"
+            hoverInvert
+            colorScheme="cyan"
+            glass={false}
+          />
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Sektion 2: News -->
+  <section class="section py-12" id="news-section">
+    <div class="container">
+      <div class="glass mb-6 overflow-hidden rounded-lg">
+        <h2 class="py-4 text-center text-3xl font-bold">Aktuelles & News</h2>
+      </div>
+      <div class="px-8">
+        <NewsCarousel news={visibleNews} client:idle />
+      </div>
+      <div class="mt-8 text-center">
+        <Button
+          label="Alle News ansehen"
+          link="/news"
+          hoverInvert
+          colorScheme="cyan"
+          glass={false}
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Sektion 3: Aktuelle Posts mit Tabs -->
+  <section class="section py-12">
+    <div class="container">
+      <TabPostsList tabs={tabData} title="Aktuelle Blog Posts" client:idle />
+    </div>
+  </section>
+
+  <!-- Sektion 4: Themenfelder -->
+  <section class="section py-12">
+    <div class="container">
+      <div class="glass mb-6 overflow-hidden rounded-lg">
+        <h2 class="py-4 text-center text-3xl font-bold">Entdecke die Themen</h2>
+      </div>
+      <FeatureCards />
+    </div>
+  </section>
+
+  <!-- Sektion 5: Produktschaufenster -->
+  <section class="section py-12">
+    <div class="container">
+      <div class="glass mb-6 overflow-hidden rounded-lg">
+        <h2 class="py-4 text-center text-3xl font-bold">
+          Frickeldave Handmade - Unsere Produkte
+        </h2>
+      </div>
+      <div class="px-8">
+        <HandmadeCarousel products={productsWithImages} client:idle />
+      </div>
+      <div class="mt-8 text-center">
+        <Button
+          label="Alle Produkte ansehen"
+          link="/handmade"
+          hoverInvert
+          colorScheme="cyan"
+          glass={false}
+        />
+      </div>
+    </div>
+  </section>
 </BaseLayout>
+
+<style>
+  /* Hide news section if empty - handled by React component returning null */
+  #news-section:has(.news-carousel:empty) {
+    display: none;
+  }
+</style>

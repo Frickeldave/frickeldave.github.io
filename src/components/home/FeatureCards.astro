@@ -1,0 +1,81 @@
+---
+import { FaTools, FaLaptopCode, FaUser, FaHammer } from "react-icons/fa";
+
+type FeatureCard = {
+  icon: string;
+  title: string;
+  description: string;
+  link: string;
+  linkLabel: string;
+};
+
+const featureCards: FeatureCard[] = [
+  {
+    icon: "tools",
+    title: "DIY & Handmade",
+    description: "Holzarbeiten, Laserprojekte und Epoxidharz-Kreationen",
+    link: "/blog/categories/diy",
+    linkLabel: "DIY-Projekte entdecken",
+  },
+  {
+    icon: "laptop",
+    title: "Professional IT",
+    description: "DevOps, Cloud, Kubernetes und moderne Softwareentwicklung",
+    link: "/blog/categories/it",
+    linkLabel: "IT-Beiträge lesen",
+  },
+  {
+    icon: "user",
+    title: "Portfolio",
+    description: "Meine professionelle Laufbahn und Fähigkeiten",
+    link: "/portfolio",
+    linkLabel: "Portfolio ansehen",
+  },
+  {
+    icon: "hammer",
+    title: "Frickeldave Handmade",
+    description: "Handgefertigte Produkte und Kleingewerbe-Projekte",
+    link: "/handmade",
+    linkLabel: "Produkte entdecken",
+  },
+];
+
+const getIcon = (iconName: string) => {
+  switch (iconName) {
+    case "tools":
+      return FaTools;
+    case "laptop":
+      return FaLaptopCode;
+    case "user":
+      return FaUser;
+    case "hammer":
+      return FaHammer;
+    default:
+      return FaTools;
+  }
+};
+---
+
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+  {
+    featureCards.map((card) => {
+      const IconComponent = getIcon(card.icon);
+      return (
+        <a href={card.link} class="group block h-full no-underline">
+          <div class="glass h-full rounded-lg p-6 text-center transition-all group-hover:scale-105 group-hover:shadow-lg">
+            <div class="mb-4 flex justify-center">
+              <div class="glass-t rounded-full p-4">
+                <IconComponent className="text-3xl text-txt-p dark:text-darkmode-txt-p" />
+              </div>
+            </div>
+            <h3 class="mb-2 text-xl font-bold">{card.title}</h3>
+            <p class="mb-4 text-sm opacity-80">{card.description}</p>
+            <span class="text-sm font-medium text-txt-p group-hover:underline dark:text-darkmode-txt-p">
+              {card.linkLabel} →
+            </span>
+          </div>
+        </a>
+      );
+    })
+  }
+</div>

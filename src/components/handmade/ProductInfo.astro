@@ -19,21 +19,21 @@ const formatPrice = (price: number): string => {
 <div class="product-info space-y-6">
   <!-- Product Header -->
   <div
-    class="product-header glass rounded-lg p-6 border border-blue-200 dark:border-blue-800"
+    class="product-header glass rounded-lg border border-blue-200 p-6 dark:border-blue-800"
   >
     <h1
-      class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2"
+      class="mb-2 text-3xl font-bold text-gray-900 dark:text-white md:text-4xl"
     >
       {product.name}
     </h1>
-    <p class="text-lg text-gray-600 dark:text-gray-400 mb-4">
+    <p class="mb-4 text-lg text-gray-600 dark:text-gray-400">
       Artikelnummer: <span class="font-mono font-semibold"
         >{product.articleNumber}</span
       >
     </p>
     <div class="price-section">
       <span
-        class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400"
+        class="text-2xl font-bold text-blue-600 dark:text-blue-400 md:text-3xl"
       >
         {formatPrice(product.price)}
       </span>
@@ -42,17 +42,17 @@ const formatPrice = (price: number): string => {
 
   <!-- Product Description -->
   <div class="product-description glass rounded-lg p-6">
-    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+    <h2 class="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
       Beschreibung
     </h2>
-    <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+    <p class="leading-relaxed text-gray-700 dark:text-gray-300">
       {product.description}
     </p>
   </div>
 
   <!-- Product Details -->
   <div class="product-details glass rounded-lg p-6">
-    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+    <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
       Details
     </h2>
 
@@ -62,7 +62,7 @@ const formatPrice = (price: number): string => {
         <dt class="font-medium text-gray-900 dark:text-white">Kategorie:</dt>
         <dd class="text-gray-700 dark:text-gray-300">
           <span
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+            class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300"
           >
             {product.category}
           </span>
@@ -82,13 +82,13 @@ const formatPrice = (price: number): string => {
       <!-- Tags -->
       {
         product.tags && product.tags.length > 0 && (
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-            <dt class="font-medium text-gray-900 dark:text-white mb-2 sm:mb-0">
+          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+            <dt class="mb-2 font-medium text-gray-900 dark:text-white sm:mb-0">
               Tags:
             </dt>
             <dd class="flex flex-wrap gap-1">
               {product.tags.map((tag) => (
-                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                   {tag}
                 </span>
               ))}
@@ -103,11 +103,11 @@ const formatPrice = (price: number): string => {
         <dd class="text-gray-700 dark:text-gray-300">
           {
             product.customizable ? (
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+              <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300">
                 ✓ Ja
               </span>
             ) : (
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+              <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                 ✗ Nein
               </span>
             )
@@ -119,21 +119,21 @@ const formatPrice = (price: number): string => {
 
   <!-- Contact Section -->
   <div class="contact-section glass rounded-lg p-6">
-    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+    <h2 class="mb-3 text-xl font-semibold text-gray-900 dark:text-white">
       Interesse an diesem Produkt?
     </h2>
-    <p class="text-gray-700 dark:text-gray-300 mb-4">
+    <p class="mb-4 text-gray-700 dark:text-gray-300">
       Kontaktieren Sie mich für weitere Informationen oder eine individuelle
       Beratung.
     </p>
 
-    <div class="flex flex-col sm:flex-row gap-3">
+    <div class="flex flex-col gap-3 sm:flex-row">
       <a
         href="mailto:info@frickeldave.de?subject=Anfrage%20Produkt%20{product.articleNumber}%20-%20{encodeURIComponent(product.name)}"
-        class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+        class="inline-flex items-center justify-center rounded-md bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-cyan-600 hover:to-teal-600"
       >
         <svg
-          class="w-4 h-4 mr-2"
+          class="mr-2 h-4 w-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -145,12 +145,12 @@ const formatPrice = (price: number): string => {
             d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
           ></path>
         </svg>
-         E-Mail senden
+        E-Mail senden
       </a>
 
       <a
-        href="/about"
-        class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+        href="/portfolio"
+        class="inline-flex items-center justify-center rounded-md bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-cyan-600 hover:to-teal-600"
       >
         Mehr über mich
       </a>

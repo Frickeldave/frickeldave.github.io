@@ -11,18 +11,18 @@ const { title, image, imageAlt } = entry.data;
 ---
 
 <div
-  class="h-full m-2 pl-0 bg-gradient-to-br gradient rounded-lg intersect:animate-fadeUp opacity-0"
+  class="gradient m-2 h-full rounded-lg bg-gradient-to-br pl-0 opacity-0 intersect:animate-fadeUp"
 >
   <div class="glass h-full rounded-lg">
     <a
       class="group hover:opacity-100"
       href={`/docs/${entry.id.replace("/-index", "")}`}
     >
-      <div class="relative rounded-lg pb-9/16 overflow-hidden">
+      <div class="relative overflow-hidden rounded-lg pb-9/16">
         {
           image && (
             <Image
-              class="absolute object-cover w-full h-full group-hover:scale-[105%] transition-all duration-300"
+              class="absolute h-full w-full object-cover transition-all duration-300 group-hover:scale-[105%]"
               src={image}
               alt={imageAlt}
               width={1280}
@@ -32,7 +32,7 @@ const { title, image, imageAlt } = entry.data;
           )
         }
         <div
-          class="glass-t absolute text-center rounded-lg px-2 py-1 top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]"
+          class="glass-t absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%] rounded-lg px-2 py-1 text-center"
         >
           <h4 class="">
             {title}

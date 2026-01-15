@@ -53,7 +53,7 @@ if (actuallyHideNav && actuallyHideToc) {
 ---
 
 <BaseLayout title={title} image={image?.src} description={description}>
-  <section class="flex container p-4">
+  <section class="container flex p-4">
     <div class=`max-h-static_sidemenu sticky top-[5rem] mr-4 ${navClass}`>
       <DocBrowser
         menu={browserMenu}
@@ -65,7 +65,7 @@ if (actuallyHideNav && actuallyHideToc) {
         <section class="">
           <EntryHeader entry={entry} showImage showPubDate />
         </section>
-        <section class="content mb-4 glass px-4 rounded-lg">
+        <section class="content glass mb-4 rounded-lg px-4">
           <Content />
         </section>
       </article>

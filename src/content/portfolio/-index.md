@@ -1,17 +1,143 @@
 ---
 title: Portfolio
-description: David Koenig - Principal IT-Consultant & DevOps Evangelist
+description: David Koenig - Managing IT-Consultant & DevOps Evangelist
 
 # Personal Information
 name: "David Koenig"
-jobTitle: "Principal IT-Consultant & DevOps Evangelist"
+jobTitle: "Managing IT-Consultant & DevOps Evangelist"
 tagline: "Creating software is more craftsmanship than engineering."
 location: "Hörgertshausen, Bayern, Deutschland"
 email: "dave@frickeldave.de"
-linkedin: "http://linkedin.com/in/frickeldave"
+linkedin: "https://www.linkedin.com/in/frickeldave/"
 github: "https://github.com/Frickeldave"
 website: "https://frickeldave.de"
-instagram: "https://www.instagram.com/frickeldave.de"
+instagram: "https://www.instagram.com/frickeldave/"
+
+# Profile Image
+profileImage: "@assets/profile/dave02.png"
+
+# Intro Section (Frickeldave)
+intro:
+  title: "Ich bin Frickeldave"
+  content:
+    "Ich bin Frickeldave – dein Experte für DIY-Projekte, handgemachte Kreationen und IT-Lösungen.
+    Mit einer Leidenschaft für das Tüfteln und Verbessern bringe ich kreative Ideen und technische
+    Expertise zusammen, um einzigartige Projekte zu realisieren. Ob Holzarbeiten, 3D-Druck oder
+    komplexe DevOps-, KI und Cloud-Technologien – ich teile mein Wissen und meine Erfahrungen, um
+    dich zu inspirieren und zu unterstützen. Diese Erfahrung im handwerklichen Bereich überträgt
+    sich auch auf meine IT-Projekte, bei denen Präzision, Kreativität und Problemlösungsfähigkeiten
+    gefragt sind. Auf dieser Seite findest du eine Auswahl meiner Arbeiten sowie Einblicke in meine
+    Fähigkeiten und Leidenschaften."
+
+# Handmade Portfolio Projects
+handmadeProjects:
+  - title: "Schatztruhe aus Holz"
+    description:
+      "Eine rustikale Schatztruhe aus geflammtem Holz mit antiken Beschlägen - perfekt als Geschenk
+      oder Aufbewahrung."
+    image: "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-header.png"
+    blogUrl: "/blog/schatztruhe-aus-holz"
+    category: "Holzwerken"
+
+  - title: "Herdabdeckplatten aus Epoxidharz"
+    description: "Individuelle Herdabdeckplatten aus Holz und Epoxidharz mit einzigartigem Design."
+    image: "@assets/blog/diy/2020-10-19-herdabdeckplatten-aus-holz-und-epoxidharz/hahe-header.png"
+    blogUrl: "/blog/herdabdeckplatten-aus-holz-und-epoxidharz"
+    category: "Epoxidharz"
+
+  - title: "Katzenkratzbaum aus Dachbalken"
+    description:
+      "Ein massiver Kratzbaum aus recycelten Dachbalken - stabil, nachhaltig und einzigartig."
+    image: "@assets/blog/diy/2021-03-05-katzenkratzbaum-aus-dachbalken/kkad-header.png"
+    blogUrl: "/blog/katzenkratzbaum-aus-dachbalken"
+    category: "Holzwerken"
+
+  - title: "Teeschrank mit Epoxidharzfronten"
+    description:
+      "Ein eleganter Teeschrank mit leuchtenden Epoxidharz-Elementen und LED-Beleuchtung."
+    image: "@assets/blog/diy/2021-04-01-teeschrank-mit-epoxidharzfronten/tmef-header.png"
+    blogUrl: "/blog/teeschrank-mit-epoxidharzfronten"
+    category: "Epoxidharz"
+
+  - title: "Kopfhörerhalter mit LED und Epoxy"
+    description:
+      "Ein stylischer Kopfhörerhalter mit integrierter LED-Beleuchtung und Epoxidharz-Akzenten."
+    image: "@assets/blog/diy/2021-05-18-kopfhoererhalter-mit-led-und-epoxy/khle-header.png"
+    blogUrl: "/blog/kopfhoererhalter-mit-led-und-epoxy"
+    category: "Epoxidharz"
+
+  - title: "Lampi - der Lampenhund aus Restholz"
+    description: "Ein kreativer Lampenhund aus Restholz - upcycling at its best!"
+    image: "@assets/blog/diy/2021-10-29-restholz-lampi-der-lampenhund/rlld-header.png"
+    blogUrl: "/blog/restholz-lampi-der-lampenhund"
+    category: "Holzwerken"
+
+  - title: "Vogelfutterhaus"
+    description: "Ein funktionales und dekoratives Vogelfutterhaus für den Garten."
+    image: "@assets/blog/diy/2023-11-24-vogelfutterhaus/vofu-header.png"
+    blogUrl: "/blog/vogelfutterhaus"
+    category: "Holzwerken"
+
+  - title: "Personalisierte Schlüsselanhänger"
+    description:
+      "Individuelle Schlüsselanhänger mit Lasergravur - perfekt als personalisiertes Geschenk."
+    image: "@assets/blog/diy/2024-09-14-personalisierte-schluesselanhaenger/psmf-header.jpeg"
+    blogUrl: "/blog/personalisierte-schluesselanhaenger"
+    category: "Laser"
+
+  - title: "Le Passe-Trappe Spiel"
+    description:
+      "Ein handgefertigtes Geschicklichkeitsspiel mit Tennis-Thema, inkl. Furnierarbeit und 3D-Druck
+      Elementen."
+    image: "@assets/blog/diy/2022-11-16-le-passe-trappe-spiel/lpts-header.png"
+    blogUrl: "/blog/2022-11-16-le-passe-trappe-spiel"
+    category: "3D-Druck"
+
+# Publications
+publications:
+  - title: "Testartikel über den Creality K2 Drucker"
+    description: "Mein ausführlicher Testbericht zum Creality K2 3D-Drucker im Make-Magazin."
+    image: "@assets/placeholder-publications.png"
+    publicationUrl: "https://www.heise.de/select/make/2025/3/2512010252016731760"
+    blogUrl: "#TODO"
+    year: "2025"
+    publisher: "Make Magazin / Heise"
+
+  - title: "Ist dein DevOps Qi im Einklang?"
+    description:
+      "Ein Artikel über Balance und Harmonie in DevOps-Prozessen. Wie man DevOps ganzheitlich
+      betrachtet."
+    image: "@assets/placeholder-publications.png"
+    publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/devops-ist-euer-qi-im-einklang.html"
+    blogUrl: "#TODO"
+    year: "2024"
+    publisher: "Informatik Aktuell"
+
+  - title: "Der definitive Guide in die ESP32 Welt"
+    description:
+      "Ein umfassender Einstieg in die Welt der ESP32 Mikrocontroller für IoT und Smarthome."
+    image: "@assets/placeholder-publications.png"
+    publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/der-definitive-guide-in-die-esp32-welt.html"
+    blogUrl: "#TODO"
+    year: "2024"
+    publisher: "Informatik Aktuell"
+
+  - title: "Symbiose von Handwerk und IT"
+    description: "Wie sich handwerkliche Präzision und IT-Expertise gegenseitig befruchten."
+    image: "@assets/placeholder-publications.png"
+    publicationUrl: "https://www.informatik-aktuell.de/management-und-recht/digitalisierung/symbiose-von-informatik-und-handwerk.html"
+    blogUrl: "#TODO"
+    year: "2024"
+    publisher: "Informatik Aktuell"
+
+  - title: "Linting für NodeJS Projekte auf Basis von Astro"
+    description:
+      "Ein vollständiger Linting-Stack für Code-Qualität, Formatierung und Prosa-Linting."
+    image: "@assets/placeholder-publications.png"
+    publicationUrl: "https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html"
+    blogUrl: "#TODO"
+    year: "2025"
+    publisher: "Heise Developer"
 
 # Professional Summary
 summary:
@@ -72,7 +198,7 @@ currentProject:
 # Professional Experience
 experience:
   - company: "adesso SE"
-    position: "Principal IT-Consultant"
+    position: "Managing IT-Consultant"
     period: "Juni 2024 – heute"
     location: "München"
     responsibilities:

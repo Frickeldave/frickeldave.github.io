@@ -24,15 +24,6 @@ const social = z.object({
   youtube: z.string().optional(),
 });
 
-const about = defineCollection({
-  loader: glob({ pattern: "-index.{md,mdx}", base: "./src/content/about" }),
-  schema: ({ image }) =>
-    searchable.extend({
-      image: image().optional(),
-      imageAlt: z.string().default(""),
-    }),
-});
-
 const authors = defineCollection({
   loader: glob({
     pattern: "**/[^_]*.{md,mdx}",
@@ -109,58 +100,108 @@ const portfolio = defineCollection({
     pattern: "-index.{md,mdx}",
     base: "./src/content/portfolio",
   }),
-  schema: searchable.extend({
-    name: z.string().optional(),
-    jobTitle: z.string().optional(),
-    tagline: z.string().optional(),
-    location: z.string().optional(),
-    email: z.string().optional(),
-    linkedin: z.string().optional(),
-    github: z.string().optional(),
-    summary: z.string().optional(),
-    skills: z
-      .array(
-        z.object({
-          category: z.string(),
-          technologies: z.array(z.string()),
-        })
-      )
-      .optional(),
-    experience: z
-      .array(
-        z.object({
-          company: z.string(),
-          position: z.string(),
-          period: z.string(),
-          location: z.string().optional(),
-          responsibilities: z.array(z.string()).optional(),
-        })
-      )
-      .optional(),
-    projects: z
-      .array(
-        z.object({
+  schema: ({ image }) =>
+    searchable.extend({
+      name: z.string().optional(),
+      jobTitle: z.string().optional(),
+      tagline: z.string().optional(),
+      location: z.string().optional(),
+      email: z.string().optional(),
+      linkedin: z.string().optional(),
+      github: z.string().optional(),
+      instagram: z.string().optional(),
+      website: z.string().optional(),
+      summary: z.string().optional(),
+      profileImage: image().optional(),
+      intro: z
+        .object({
           title: z.string(),
-          description: z.string().optional(),
-          github: z.string().optional(),
-          demo: z.string().optional(),
-          status: z.string().optional(),
-          technologies: z.array(z.string()).optional(),
-          content: z.array(z.string()).optional(),
+          content: z.string(),
         })
-      )
-      .optional(),
-    education: z
-      .array(
-        z.object({
-          degree: z.string(),
-          institution: z.string(),
-          year: z.string(),
-        })
-      )
-      .optional(),
-    achievements: z.array(z.string()).optional(),
-  }),
+        .optional(),
+      socialLinks: z
+        .array(
+          z.object({
+            name: z.string(),
+            url: z.string(),
+            icon: z.string().optional(),
+          })
+        )
+        .optional(),
+      handmadeProjects: z
+        .array(
+          z.object({
+            title: z.string(),
+            description: z.string(),
+            image: image().optional(),
+            blogUrl: z.string().optional(),
+            category: z.string().optional(),
+          })
+        )
+        .optional(),
+      publications: z
+        .array(
+          z.object({
+            title: z.string(),
+            description: z.string(),
+            image: image().optional(),
+            publicationUrl: z.string(),
+            blogUrl: z.string().optional(),
+            year: z.string().optional(),
+            publisher: z.string().optional(),
+          })
+        )
+        .optional(),
+      skills: z
+        .array(
+          z.object({
+            category: z.string(),
+            technologies: z.array(z.string()),
+          })
+        )
+        .optional(),
+      experience: z
+        .array(
+          z.object({
+            company: z.string(),
+            position: z.string(),
+            period: z.string(),
+            location: z.string().optional(),
+            responsibilities: z.array(z.string()).optional(),
+          })
+        )
+        .optional(),
+      projects: z
+        .array(
+          z.object({
+            title: z.string(),
+            description: z.string().optional(),
+            github: z.string().optional(),
+            demo: z.string().optional(),
+            status: z.string().optional(),
+            period: z.string().optional(),
+            technologies: z.array(z.string()).optional(),
+            content: z.array(z.string()).optional(),
+          })
+        )
+        .optional(),
+      education: z
+        .array(
+          z.object({
+            degree: z.string(),
+            institution: z.string(),
+            year: z.string(),
+          })
+        )
+        .optional(),
+      achievements: z.array(z.string()).optional(),
+      personalMotto: z.string().optional(),
+      personalDescription: z.string().optional(),
+      currentProject: z.string().optional(),
+      careerJourney: z.string().optional(),
+      personalInterests: z.array(z.string()).optional(),
+      values: z.array(z.string()).optional(),
+    }),
 });
 
 const recipes = defineCollection({
@@ -215,7 +256,6 @@ const downloads = defineCollection({
 
 // Export collections
 export const collections = {
-  about,
   authors,
   blog,
   docs,

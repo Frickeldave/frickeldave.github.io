@@ -5,7 +5,7 @@ interface Props {
   newtab?: boolean;
   type?: "primary" | "secondary";
   color?: string;
-  hoverInvert?: boolean;
+  colorScheme?: "cyan" | "purple" | "green" | "amber" | "red";
   glass?: boolean;
 }
 
@@ -15,9 +15,23 @@ const {
   newtab = false,
   type = "primary",
   color,
-  hoverInvert = false,
-  glass = true,
+  colorScheme = "cyan",
+  glass = false,
 }: Props = Astro.props;
+
+// Define gradient classes based on color scheme
+const gradientClasses = {
+  cyan: "from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600",
+  purple:
+    "from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600",
+  green: "from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600",
+  amber:
+    "from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600",
+  red: "from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600",
+};
+
+const gradientClass =
+  color || `bg-gradient-to-r ${gradientClasses[colorScheme]}`;
 ---
 
 {
@@ -25,11 +39,10 @@ const {
     <a
       href={link}
       target={`${newtab ? "_blank" : ""}`}
-      class={`no-underline inline-block hover:opacity-100 ${type == "primary" ? "" : "intersect:animate-fade opacity-0"}`}
+      class={`inline-block no-underline hover:opacity-100 ${type == "primary" ? "" : "opacity-0 intersect:animate-fade"}`}
     >
       <div
-        class={`glass-t hover:bg-opacity-20 hover:backdrop-blur-none
-      ${type == "primary" ? "px-4 py-2 rounded-md font-bold intersect:animate-fade opacity-0" : "px-2 py-0.5 rounded-sm text-txt-light dark:text-darkmode-txt-light"}`}
+        class={`glass-t hover:bg-opacity-20 hover:backdrop-blur-none ${type == "primary" ? "rounded-md px-4 py-2 font-bold opacity-0 intersect:animate-fade" : "rounded-sm px-2 py-0.5 text-txt-light dark:text-darkmode-txt-light"}`}
       >
         {label}
       </div>
@@ -38,27 +51,12 @@ const {
     <a
       href={link}
       target={`${newtab ? "_blank" : ""}`}
-      class={`no-underline inline-block group intersect:animate-fadeLeft opacity-0 ${hoverInvert ? "hover:opacity-100" : ""}`}
+      class={`inline-block no-underline opacity-0 intersect:animate-fadeLeft`}
     >
       <div
-        class={`
-    ${color ? color : "bg-bg-t dark:bg-darkmode-bg-t"}
-    ${type == "primary" ? "p-0.5 rounded-md" : "p-[1.5px] rounded-sm"}`}
+        class={`${gradientClass} font-bold text-white transition-all duration-300 hover:scale-105 ${type == "primary" ? "rounded-md px-4 py-2" : "rounded-sm px-2 py-0.5 text-sm"}`}
       >
-        <div
-          class={`bg-bg-p dark:bg-darkmode-bg-p
-      ${type == "primary" ? "px-4 py-2 rounded-md" : "px-2 py-0.5 rounded-sm"}
-      ${hoverInvert ? "group-hover:bg-opacity-0" : ""}`}
-        >
-          <div
-            class={`text-transparent bg-clip-text
-        ${color ? color : "bg-bg-t dark:bg-darkmode-bg-t"}
-        ${type == "primary" ? "font-bold" : ""}
-        ${hoverInvert ? "group-hover:text-txt-p dark:group-hover:text-darkmode-txt-p" : ""}`}
-          >
-            {label}
-          </div>
-        </div>
+        {label}
       </div>
     </a>
   )

@@ -14,8 +14,8 @@ const { experience } = entry.data;
     <section class="section-sm container">
       <div class="row justify-center">
         <div class="col-12 lg:col-10">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl lg:text-4xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4">
+          <div class="mb-12 text-center">
+            <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
               Professional Experience
             </h2>
             <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
@@ -25,22 +25,22 @@ const { experience } = entry.data;
 
           <div class="space-y-8">
             {experience.map((job, _index) => (
-              <div class="glass rounded-lg p-6 lg:p-8 relative">
+              <div class="glass relative rounded-lg p-6 lg:p-8">
                 {/* Timeline Indicator */}
-                <div class="absolute left-0 top-6 w-1 h-16 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full hidden lg:block" />
+                <div class="absolute left-0 top-6 hidden h-16 w-1 rounded-full bg-gradient-to-b from-amber-500 to-orange-500 lg:block" />
 
                 <div class="lg:pl-8">
-                  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                  <div class="mb-4 flex flex-col lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <h3 class="text-xl lg:text-2xl font-semibold text-txt-h dark:text-darkmode-txt-h mb-2">
+                      <h3 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-xl font-semibold lg:text-2xl">
                         {job.position}
                       </h3>
-                      <h4 class="text-lg font-medium text-blue-600 dark:text-blue-400 mb-2">
+                      <h4 class="mb-2 text-lg font-medium text-amber-600 dark:text-amber-400">
                         {job.company}
                       </h4>
                     </div>
                     <div class="flex flex-col lg:text-right">
-                      <span class="glass-t px-3 py-1 rounded-full text-sm text-txt-p dark:text-darkmode-txt-p mb-2">
+                      <span class="glass-t mb-2 rounded-full px-3 py-1 text-sm text-txt-p dark:text-darkmode-txt-p">
                         {job.period}
                       </span>
                       {job.location && (
@@ -53,13 +53,13 @@ const { experience } = entry.data;
 
                   {job.responsibilities && job.responsibilities.length > 0 && (
                     <div class="mt-4">
-                      <h5 class="font-medium text-txt-h dark:text-darkmode-txt-h mb-3">
+                      <h5 class="text-txt-h dark:text-darkmode-txt-h mb-3 font-medium">
                         Key Responsibilities:
                       </h5>
                       <ul class="space-y-2">
                         {job.responsibilities.map((responsibility) => (
                           <li class="flex items-start">
-                            <span class="text-blue-500 mr-3 mt-1">▸</span>
+                            <span class="mr-3 mt-1 text-amber-500">▸</span>
                             <span class="text-txt-p dark:text-darkmode-txt-p">
                               {responsibility}
                             </span>

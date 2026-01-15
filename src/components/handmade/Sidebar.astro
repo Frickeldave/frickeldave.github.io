@@ -11,10 +11,10 @@ interface Props {
 const { categories, allTags, totalProducts } = Astro.props;
 ---
 
-<ScrollArea className="h-full" client:only="react">
+<ScrollArea className="h-full w-full" client:only="react">
   <!-- Results Count -->
   <div
-    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
   >
     <div class="text-sm opacity-80" id="results-count">
       {totalProducts} von {totalProducts} Produkten
@@ -23,39 +23,39 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Search -->
   <div
-    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
   >
     <div>
       <h4 class="mb-2">
-        <FaFilter className={"mr-1 -mt-1.5 inline-block"} />
-         Suche
+        <FaFilter className={"-mt-1.5 mr-1 inline-block text-cyan-500"} />
+        Suche
       </h4>
-      <hr class="mb-2 -mt-1" />
+      <hr class="-mt-1 mb-2 border-cyan-500/30" />
       <input
         type="text"
         id="search-input"
         placeholder="Suche nach Produkten..."
-        class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 focus:border-white/40 focus:outline-none transition-colors text-sm"
+        class="w-full rounded-lg border border-cyan-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-cyan-500/60 focus:outline-none"
       />
     </div>
   </div>
 
   <!-- Categories -->
   <div
-    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
   >
     <div>
       <h4 class="mb-2">
-        <FaFilter className={"mr-1 -mt-1.5 inline-block"} />
-         Kategorie
+        <FaFilter className={"-mt-1.5 mr-1 inline-block text-cyan-500"} />
+        Kategorie
       </h4>
-      <hr class="mb-2 -mt-1" />
+      <hr class="-mt-1 mb-2 border-cyan-500/30" />
       <ul class="space-y-2" id="category-filters">
         {
           categories.map((category) => (
             <li>
               <button
-                class="category-filter w-full text-left px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 transition-all text-sm"
+                class="category-filter glass-t w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all hover:bg-white/20"
                 data-category={category}
               >
                 {category}
@@ -69,19 +69,19 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Tags -->
   <div
-    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
   >
     <div>
       <h4 class="mb-2">
-        <FaHashtag className={"mr-1 -mt-1.5 inline-block"} />
-         Tags
+        <FaHashtag className={"-mt-1.5 mr-1 inline-block text-cyan-500"} />
+        Tags
       </h4>
-      <hr class="mb-2 -mt-1" />
+      <hr class="-mt-1 mb-2 border-cyan-500/30" />
       <div class="flex flex-wrap gap-2" id="tag-filters">
         {
           allTags.map((tag) => (
             <button
-              class="tag-filter px-2 py-1 rounded-lg text-xs bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 transition-all"
+              class="tag-filter glass-t rounded-lg px-2 py-1 text-xs transition-all hover:bg-white/20"
               data-tag={tag}
             >
               {tag}
@@ -94,23 +94,23 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Customizable Filter -->
   <div
-    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
   >
     <div>
       <h4 class="mb-2">
-        <FaFilter className={"mr-1 -mt-1.5 inline-block"} />
-         Eigenschaften
+        <FaFilter className={"-mt-1.5 mr-1 inline-block text-cyan-500"} />
+        Eigenschaften
       </h4>
-      <hr class="mb-2 -mt-1" />
-      <label class="flex items-center gap-2 cursor-pointer">
+      <hr class="-mt-1 mb-2 border-cyan-500/30" />
+      <label class="flex cursor-pointer items-center gap-2">
         <input
           type="checkbox"
           id="customizable-filter"
-          class="w-4 h-4 rounded border-white/20 bg-white/10 checked:bg-blue-500 focus:ring-2 focus:ring-blue-400 cursor-pointer"
+          class="h-4 w-4 cursor-pointer rounded border-white/20 bg-white/10 checked:bg-blue-500 focus:ring-2 focus:ring-blue-400"
         />
-        <span class="text-sm flex items-center gap-1">
+        <span class="flex items-center gap-1 text-sm">
           <span class="text-base">✨</span>
-           Nur Personalisierbare
+          Nur Personalisierbare
         </span>
       </label>
     </div>
@@ -118,17 +118,17 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Sort -->
   <div
-    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
   >
     <div>
       <h4 class="mb-2">
-        <FaSort className={"mr-1 -mt-1.5 inline-block"} />
-         Sortierung
+        <FaSort className={"-mt-1.5 mr-1 inline-block text-cyan-500"} />
+        Sortierung
       </h4>
-      <hr class="mb-2 -mt-1" />
+      <hr class="-mt-1 mb-2 border-cyan-500/30" />
       <select
         id="sort-select"
-        class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 focus:border-white/40 focus:outline-none transition-colors text-sm dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+        class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-white/40 focus:outline-none dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
       >
         <option value="name-asc">Name (A-Z)</option>
         <option value="name-desc">Name (Z-A)</option>
@@ -139,10 +139,10 @@ const { categories, allTags, totalProducts } = Astro.props;
   </div>
 
   <!-- Clear Filters -->
-  <div class="glass rounded-lg p-4 m-2 intersect:animate-fadeLeft opacity-0">
+  <div class="glass m-2 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft">
     <button
       id="clear-filters"
-      class="w-full px-3 py-2 rounded-lg glass-subtle hover:bg-white/20 transition-all text-sm"
+      class="w-full rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-cyan-600 hover:to-teal-600"
     >
       Filter zurücksetzen
     </button>

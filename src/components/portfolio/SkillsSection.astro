@@ -14,8 +14,8 @@ const { skills } = entry.data;
     <section class="section-sm container">
       <div class="row justify-center">
         <div class="col-12">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl lg:text-4xl font-bold text-txt-h dark:text-darkmode-txt-h mb-4">
+          <div class="mb-12 text-center">
+            <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
               Technical Skills
             </h2>
             <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
@@ -23,19 +23,15 @@ const { skills } = entry.data;
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {skills.map((skillCategory) => (
-              <div class="glass rounded-lg p-6 hover:scale-105 transition-transform duration-300">
-                <h3 class="text-xl font-semibold text-txt-h dark:text-darkmode-txt-h mb-4 text-center">
+              <div class="glass rounded-lg p-6 transition-transform duration-300 hover:scale-105">
+                <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-center text-xl font-semibold">
                   {skillCategory.category}
                 </h3>
-                <div class="flex flex-wrap gap-2 justify-center">
+                <div class="flex flex-wrap justify-center gap-2">
                   {skillCategory.technologies.map((tech) => (
-                    <span
-                      class="glass-t px-3 py-1 rounded-full text-sm text-txt-p dark:text-darkmode-txt-p 
-                               hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 
-                               hover:text-white transition-all duration-300 cursor-default"
-                    >
+                    <span class="glass-t cursor-default rounded-full px-3 py-1 text-sm text-txt-p dark:text-darkmode-txt-p">
                       {tech}
                     </span>
                   ))}

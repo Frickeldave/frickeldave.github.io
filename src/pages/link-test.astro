@@ -8,18 +8,18 @@ import RedirectLink from "../components/common/RedirectLink.astro";
   description="Test des neuen Link-Redirect Systems"
 >
   <main class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-      <h1 class="text-4xl font-bold mb-8 text-center">Link-System Test</h1>
+    <div class="mx-auto max-w-4xl">
+      <h1 class="mb-8 text-center text-4xl font-bold">Link-System Test</h1>
 
-      <div class="glass rounded-lg p-8 mb-8">
-        <h2 class="text-2xl font-semibold mb-6">Test-Links</h2>
+      <div class="glass mb-8 rounded-lg p-8">
+        <h2 class="mb-6 text-2xl font-semibold">Test-Links</h2>
 
         <div class="space-y-4">
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <h3 class="font-semibold mb-2">
+          <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+            <h3 class="mb-2 font-semibold">
               Amazon Affiliate Link (mit Hinweisseite)
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
               Dieser Link zeigt die Affiliate-Hinweisseite mit 10 Sekunden
               Countdown.
             </p>
@@ -29,17 +29,17 @@ import RedirectLink from "../components/common/RedirectLink.astro";
             />
           </div>
 
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <h3 class="font-semibold mb-2">GitHub Projekt (direkter Link)</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+            <h3 class="mb-2 font-semibold">GitHub Projekt (direkter Link)</h3>
+            <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
               Dieser Link öffnet direkt ohne Hinweisseite.
             </p>
             <RedirectLink id="github-project" text="→ Mein GitHub Projekt" />
           </div>
 
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <h3 class="font-semibold mb-2">YouTube Tutorial (direkter Link)</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+            <h3 class="mb-2 font-semibold">YouTube Tutorial (direkter Link)</h3>
+            <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
               Dieser Link öffnet das YouTube-Video direkt.
             </p>
             <RedirectLink
@@ -51,15 +51,15 @@ import RedirectLink from "../components/common/RedirectLink.astro";
       </div>
 
       <div class="glass rounded-lg p-8">
-        <h2 class="text-2xl font-semibold mb-6">System-Features</h2>
+        <h2 class="mb-6 text-2xl font-semibold">System-Features</h2>
 
-        <div class="grid md:grid-cols-2 gap-6">
+        <div class="grid gap-6 md:grid-cols-2">
           <div>
-            <h3 class="font-semibold mb-3 flex items-center">
-              <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-               GitHub Pages Kompatibel
+            <h3 class="mb-3 flex items-center font-semibold">
+              <span class="mr-2 h-2 w-2 rounded-full bg-green-500"></span>
+              GitHub Pages Kompatibel
             </h3>
-            <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+            <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
               <li>• Rein client-side Lösung</li>
               <li>• Keine Server-API erforderlich</li>
               <li>• Statische JSON-Konfiguration</li>
@@ -67,11 +67,11 @@ import RedirectLink from "../components/common/RedirectLink.astro";
           </div>
 
           <div>
-            <h3 class="font-semibold mb-3 flex items-center">
-              <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-               Amazon Compliance
+            <h3 class="mb-3 flex items-center font-semibold">
+              <span class="mr-2 h-2 w-2 rounded-full bg-blue-500"></span>
+              Amazon Compliance
             </h3>
-            <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+            <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
               <li>• Affiliate-Hinweisseite</li>
               <li>• 10 Sekunden Disclosure</li>
               <li>• Compliance mit Richtlinien</li>
@@ -79,11 +79,11 @@ import RedirectLink from "../components/common/RedirectLink.astro";
           </div>
 
           <div>
-            <h3 class="font-semibold mb-3 flex items-center">
-              <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-               Click-Tracking
+            <h3 class="mb-3 flex items-center font-semibold">
+              <span class="mr-2 h-2 w-2 rounded-full bg-purple-500"></span>
+              Click-Tracking
             </h3>
-            <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+            <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
               <li>• LocalStorage-basiert</li>
               <li>• Pro-Link Statistiken</li>
               <li>• Privacy-friendly</li>
@@ -91,11 +91,11 @@ import RedirectLink from "../components/common/RedirectLink.astro";
           </div>
 
           <div>
-            <h3 class="font-semibold mb-3 flex items-center">
-              <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-               Benutzerfreundlich
+            <h3 class="mb-3 flex items-center font-semibold">
+              <span class="mr-2 h-2 w-2 rounded-full bg-orange-500"></span>
+              Benutzerfreundlich
             </h3>
-            <ul class="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+            <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
               <li>• Zurück-Navigation</li>
               <li>• Mobile-optimiert</li>
               <li>• Dark/Light Mode</li>
@@ -104,7 +104,7 @@ import RedirectLink from "../components/common/RedirectLink.astro";
         </div>
       </div>
 
-      <div class="text-center mt-8">
+      <div class="mt-8 text-center">
         <a href="/" class="text-blue-600 hover:underline"
           >← Zurück zur Startseite</a
         >

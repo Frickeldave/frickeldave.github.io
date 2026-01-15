@@ -10,15 +10,15 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
   robots="noindex, nofollow"
 >
   <main class="container mx-auto px-4 py-8">
-    <div class="max-w-2xl mx-auto">
+    <div class="mx-auto max-w-2xl">
       <!-- Loading State -->
       <div id="loading" class="glass glass-hover rounded-xl p-8 text-center">
         <div class="mb-6">
           <div
-            class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"
+            class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
           >
           </div>
-          <h1 class="text-3xl font-bold mb-2">Lade Weiterleitung...</h1>
+          <h1 class="mb-2 text-3xl font-bold">Lade Weiterleitung...</h1>
           <p class="text-gray-600 dark:text-gray-300">Einen Moment bitte...</p>
         </div>
       </div>
@@ -33,14 +33,14 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
         style="display: none;"
       >
         <div class="mb-6">
-          <div class="text-red-500 text-6xl mb-4">⚠️</div>
-          <h1 class="text-3xl font-bold mb-2">Link nicht gefunden</h1>
-          <p class="text-gray-600 dark:text-gray-300 mb-6">
+          <div class="mb-4 text-6xl text-red-500">⚠️</div>
+          <h1 class="mb-2 text-3xl font-bold">Link nicht gefunden</h1>
+          <p class="mb-6 text-gray-600 dark:text-gray-300">
             Der angeforderte Link konnte nicht gefunden werden.
           </p>
           <a
             href="/"
-            class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            class="inline-block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
           >
             Zurück zur Startseite
           </a>

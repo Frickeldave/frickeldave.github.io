@@ -1,7 +1,6 @@
 ---
 import { lowerHumanize, upperHumanize } from "@lib/textConverter";
 import { FaRegFolder, FaHashtag } from "react-icons/fa";
-import Button from "@components/common/Button.astro";
 import { ScrollArea } from "@components/common/shortcodes/ScrollArea";
 
 interface Props {
@@ -16,25 +15,30 @@ const { tags, categories, allCategories }: Props = Astro.props;
 <ScrollArea className="h-full" client:only="react">
   <!-- categories -->
   <div
-    class="glass rounded-lg p-4 m-2 mb-4 intersect:animate-fadeLeft opacity-0"
+    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
   >
     <div>
       <h4 class="mb-2">
         <a href="/blog/categories">
-          <FaRegFolder className={"mr-1 -mt-1.5 inline-block"} />
-           Categories
+          <FaRegFolder
+            className={"-mt-1.5 mr-1 inline-block text-purple-500"}
+          />
+          Categories
         </a>
       </h4>
-      <hr class="mb-2 -mt-1" />
+      <hr class="-mt-1 mb-2" />
       <ul class="space-y-2">
         {
           categories.map((category) => {
             const count = allCategories.filter((c) => c === category).length;
             return (
               <li>
-                <a class="" href={`/blog/categories/${category}`}>
+                <a
+                  class="glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all hover:bg-white/20"
+                  href={`/blog/categories/${category}`}
+                >
                   {upperHumanize(category)}{" "}
-                  <div class="inline-block pl-1">({count})</div>
+                  <span class="opacity-60">({count})</span>
                 </a>
               </li>
             );
@@ -44,30 +48,29 @@ const { tags, categories, allCategories }: Props = Astro.props;
     </div>
   </div>
   <!-- tags -->
-  <div class="glass rounded-lg p-4 m-2 intersect:animate-fadeLeft opacity-0">
+  <div class="glass m-2 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft">
     <div>
       <h4 class="mb-2">
         <a href="/blog/tags">
-          <FaHashtag className={"mr-1 -mt-1.5 inline-block"} />
-           Tags
+          <FaHashtag className={"-mt-1.5 mr-1 inline-block text-purple-500"} />
+          Tags
         </a>
       </h4>
-      <hr class="mb-2 -mt-1" />
-      <ul>
+      <hr class="-mt-1 mb-2" />
+      <div class="flex flex-wrap gap-2">
         {
           tags.map((tag: string) => {
             return (
-              <li class="inline-block m-1">
-                <Button
-                  label={tag}
-                  link={`/blog/tags/${lowerHumanize(tag)}`}
-                  type="secondary"
-                />
-              </li>
+              <a
+                class="glass-t rounded-lg px-2 py-1 text-xs transition-all hover:bg-white/20"
+                href={`/blog/tags/${lowerHumanize(tag)}`}
+              >
+                {tag}
+              </a>
             );
           })
         }
-      </ul>
+      </div>
     </div>
   </div>
 </ScrollArea>

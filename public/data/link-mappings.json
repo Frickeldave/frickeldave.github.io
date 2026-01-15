@@ -1,5 +1,12 @@
 {
   "links": {
+    "ali-bastler-kopfhoererhalter": {
+      "targetUrl": "https://www.youtube.com/watch?v=A_-ePQXHGwI&t=2s",
+      "description": "Kopfhörerhalter von Ali dem Bastler",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
     "gu10-fassung": {
       "targetUrl": "https://www.amazon.de/dp/B01N3MIRTQ",
       "description": "GU 10 Fassungen",
@@ -108,13 +115,6 @@
       "openInNewTab": true,
       "created": "2025-09-12T12:00:00.000Z"
     },
-    "msg-systems": {
-      "targetUrl": "https://www.msg.group/automotive",
-      "description": "msg systems ag - Mein Arbeitgeber",
-      "category": "Unternehmen",
-      "affiliate": false,
-      "openInNewTab": true
-    },
     "devopscon-munich": {
       "targetUrl": "https://devopscon.io/munich/",
       "description": "DevOpsCon - IT Messe in München",
@@ -193,10 +193,31 @@
       "openInNewTab": true
     },
     "oli-natura-hartwachsoel": {
-      "targetUrl": "https://frickeldave.de/aff_hartwachsöl",
+      "targetUrl": "https://www.amazon.de/gp/product/B01EYF758Q",
       "description": "Oli Natura Hartwachsöl für die Holzoberflächenbehandlung",
       "affiliate": true,
       "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "hartwachsoel": {
+      "targetUrl": "https://www.amazon.de/gp/product/B01EYF758Q",
+      "description": "Hartwachsöl für die Holzoberflächenbehandlung",
+      "affiliate": true,
+      "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "nobel-hobel-works-runde-scheibe-herstellen": {
+      "targetUrl": "https://www.youtube.com/watch?v=NHAtgxtNej4",
+      "description": "Nobel Hobel Works - Runde Platte an der Kreissäge fertigen",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "truppe-youtube": {
+      "targetUrl": "https://www.youtube.com/watch?v=q1SWJnXVdBk",
+      "description": "Truppe - Alternative Methoden zum Kreissägen",
+      "affiliate": false,
+      "category": "DIY",
       "openInNewTab": true
     },
     "amazon-bindfaden": {
@@ -258,6 +279,447 @@
     "led-sensor-schrank": {
       "targetUrl": "https://www.amazon.de/dp/B07VS8H65H",
       "description": "Kylewo LED-Streifen mit Bewegungsmelder für Schränke, Schlafzimmer und Küchen",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "leinoel-wolfgruben": {
+      "targetUrl": "https://www.amazon.de/dp/B01GRVXCPU",
+      "description": "Wolfgruben Leinölfirnis für Holzschutz",
+      "affiliate": true,
+      "category": "Holzwerken",
+      "openInNewTab": true
+    },
+    "dewalt-holzfraesbohrer": {
+      "targetUrl": "https://www.amazon.de/dp/B0013LK0P0",
+      "description": "Dewalt Verlängerungen für Holzfräsbohrer",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "spelsberg-aufputzdose": {
+      "targetUrl": "https://www.amazon.de/dp/B001NJD7GG",
+      "description": "Spelsberg Aufputzdose für Elektroinstallationen",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "pflaster-betonfarbe": {
+      "targetUrl": "https://www.amazon.de/d/B07HYCY56Q",
+      "description": "Beton- und Pflasterfarbe",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "bosch-schlangenbohrer": {
+      "targetUrl": "https://www.amazon.de/dp/B000NDB5OE",
+      "description": "Bosch Schlangenbohrer 12mm für Holzbohrungen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "wolfcraft-zwingen": {
+      "targetUrl": "https://www.amazon.de/dp/B001S2R462",
+      "description": "Wolfcraft Schraubzwingen mit gummiertem Griff - verschiedene Größen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "teleskopschienen24": {
+      "targetUrl": "https://www.teleskopschienen24.de/",
+      "description": "Teleskopschienen24 - Schubladenschienen und Vollauszüge in verschiedenen Tragkräften",
+      "affiliate": false,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "sikaflex522": {
+      "targetUrl": "https://www.amazon.de/dp/B09N7FVNFF",
+      "description": "Sikaflex-522 Dichtstoff - UV- und säurebeständig",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "u-buegel-ladungssicherung": {
+      "targetUrl": "https://www.amazon.de/s?k=u+b%C3%BCgel+anh%C3%A4nger",
+      "description": "U-Bügel für Anhänger - zur Ladungssicherung und Befestigung",
+      "affiliate": false,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "holzbastler-absaug-tipps": {
+      "targetUrl": "https://www.youtube.com/watch?v=YksRdGRtAk0",
+      "description": "Holzbastler Video zur Absaugverrohrung und Werkstattplanung",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "holzer-einbausteckdosen": {
+      "targetUrl": "https://www.amazon.de/gp/product/B07CMG665T/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1",
+      "description": "Holzer Einbausteckdosen in verschiedenen Farben für Werkstätten",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "brandschutz-impraegnierung": {
+      "targetUrl": "https://www.amazon.de/dp/B004P8OT6E",
+      "description": "Brandschutzimprägnierung für Holzkanäle und Werkstatteinrichtungen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "belly-deluxe": {
+      "targetUrl": "https://www.bellydeluxe.de/",
+      "description": "Bellydeluxe.de - Babyausstattung und Geschenkartikel",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "led-streifen-1m": {
+      "targetUrl": "https://www.amazon.de/s?k=led+streifen+1m",
+      "description": "LED-Streifen 1m für indirekte Beleuchtung",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "micha-youtube-sterngriffe": {
+      "targetUrl": "https://www.youtube.com/watch?v=gjoFMs5nDQw",
+      "description": "Micha's YouTube Video: Sterngriffe mit 5 Griffmulden herstellen",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "philipp-konter-spaeneofen": {
+      "targetUrl": "https://www.youtube.com/watch?v=Fm1ZbJpm_n4",
+      "description": "Philipp Konter: Spänenofen bauen",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "philipp-konter-spaeneabscheider-1": {
+      "targetUrl": "https://www.youtube.com/watch?v=N72OuKBiZbQ",
+      "description": "Philipp Konter: Späneabscheider Teil 1",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "philipp-konter-spaeneabscheider-2": {
+      "targetUrl": "https://www.youtube.com/watch?v=RP_k4rBAzYA",
+      "description": "Philipp Konter: Späneabscheider Teil 2",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "abenteuer-handarbeit-spaeneabscheider": {
+      "targetUrl": "https://www.youtube.com/watch?v=rUPSAa-VZLM",
+      "description": "Abenteuer Handarbeit: Späneabscheider Video",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "rollen-75kg": {
+      "targetUrl": "https://www.amazon.de/dp/B01IHJJUEC",
+      "description": "Schwerlastrollen 75kg Tragkraft für mobile Werkstattmöbel",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "vc-dichtungsband": {
+      "targetUrl": "https://www.amazon.de/dp/B07P8KZ7LK",
+      "description": "Dichtschnur 6mm für luftdichte Verbindungen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "absaugschlauch-75mm": {
+      "targetUrl": "https://www.amazon.de/dp/B07M6B3X5W",
+      "description": "Absaugschlauch 50mm für Werkstatt-Absauganlagen",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "jonas-winkler-mdf": {
+      "targetUrl": "https://www.youtube.com/watch?v=tGdllFHbmew&t=19s",
+      "description": "Jonas Winkler: MDF-Verleimung und verschiedene Verbindungstechniken",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "mdf-spachtel": {
+      "targetUrl": "https://www.amazon.de/dp/B0057A35PU",
+      "description": "MDF Spachtel für Holzreparaturen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "moebelgriff-480": {
+      "targetUrl": "https://www.amazon.de/dp/B081LJ7DK5",
+      "description": "Möbelgriff 480mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "moebelgriff-380": {
+      "targetUrl": "https://www.amazon.de/dp/B081LJQX1D",
+      "description": "Möbelgriff 380mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "vollauszuege-300": {
+      "targetUrl": "https://www.amazon.de/dp/B07Q5T6WYK",
+      "description": "Vollauszüge 300mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "vollauszuege-250": {
+      "targetUrl": "https://www.amazon.de/dp/B07Q5T6JYC",
+      "description": "Vollauszüge 250mm für Schubladen",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "led-streifen-5m": {
+      "targetUrl": "https://www.amazon.de/dp/B017IH628G",
+      "description": "LED Streifen 5m für indirekte Beleuchtung",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "neodym-15x4": {
+      "targetUrl": "https://www.amazon.de/dp/B07KS633V5",
+      "description": "15x4mm Neodymmagneten extra stark",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "einhell-fuehrungsschiene": {
+      "targetUrl": "https://www.amazon.de/dp/B07HFPDSF5",
+      "description": "Einhell Führungsschiene 2m für Handkreissäge",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "einhell-handkreissaege": {
+      "targetUrl": "https://www.amazon.de/dp/B0853SGR52",
+      "description": "Einhell Handkreissäge TE-CS 150",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "einhell-handkreissaege-gross": {
+      "targetUrl": "https://www.amazon.de/dp/B083X4K8S8",
+      "description": "Einhell Handkreissäge TP-CS 190",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "moebelgriffe-muschel-messing": {
+      "targetUrl": "https://www.amazon.de/dp/B07PBWH5N2",
+      "description": "Möbelgriffe Messing",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "ikea-sortera": {
+      "targetUrl": "https://www.amazon.de/dp/B00GMMBZAO",
+      "description": "IKEA Sortera Papiercontainer mit Deckel",
+      "affiliate": true,
+      "category": "Haushalt",
+      "openInNewTab": true
+    },
+    "eckzwingen": {
+      "targetUrl": "https://www.amazon.de/dp/B0836W5HT1/",
+      "description": "Eckmontagewinkel für Holzarbeiten",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "buendigfraeser": {
+      "targetUrl": "https://www.amazon.de/dp/B09FG91R8K",
+      "description": "Bündigfräser mit Kugellager",
+      "affiliate": true,
+      "category": "Werkzeuge",
+      "openInNewTab": true
+    },
+    "tafelfarbe": {
+      "targetUrl": "https://www.amazon.de/dp/B00I2P52F8",
+      "description": "Tafelfarbe schwarz",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "ersatzteilshop-youtube": {
+      "targetUrl": "https://www.youtube.com/watch?v=pDJ2kjESZY8",
+      "description": "Ersatzteilshop - YouTube Video zum Ceranfeld-Tausch",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "dipon-epoxidharz": {
+      "targetUrl": "https://www.amazon.de/dp/B08CHPJD3R",
+      "description": "Epoxidharz",
+      "affiliate": true,
+      "category": "Epoxidharz",
+      "openInNewTab": true
+    },
+    "epoxy-alcohol-ink": {
+      "targetUrl": "https://www.amazon.de/dp/B07YHH741G",
+      "description": "Alcohol Ink zum Färben von Epoxidharz",
+      "affiliate": true,
+      "category": "Epoxidharz",
+      "openInNewTab": true
+    },
+    "pp-klebeband": {
+      "targetUrl": "https://www.amazon.de/dp/B07V22RNPL",
+      "description": "PP Paketklebeband",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "ballistol-silikonoel": {
+      "targetUrl": "https://www.amazon.de/dp/B00CSRVO4Y",
+      "description": "Ballistol Silikon-Öl",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "i-tec": {
+      "targetUrl": "https://i-tec.cz/en/",
+      "description": "i-tec USB Docking Stations",
+      "affiliate": false,
+      "category": "IT",
+      "openInNewTab": true
+    },
+    "logitech-meetup": {
+      "targetUrl": "https://www.amazon.de/dp/B0DHW17HY2",
+      "description": "Logitech Meetup 2Conference Cam",
+      "affiliate": false,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "fusion-holzbastler": {
+      "targetUrl": "https://www.youtube.com/channel/UCv9SgWpu6udnNK_pLNzdFAw",
+      "description": "Fusion für Holzbastler YouTube Kanal",
+      "affiliate": false,
+      "category": "YouTube",
+      "openInNewTab": true
+    },
+    "monitorhalter-flach": {
+      "targetUrl": "https://www.amazon.de/dp/B071H4GHSR",
+      "description": "Flach anliegender Monitorhalter",
+      "affiliate": true,
+      "category": "Büromöbel",
+      "openInNewTab": true
+    },
+    "jung-steckdosen": {
+      "targetUrl": "https://www.amazon.de/dp/B072SKQR6X",
+      "description": "Jung AS 500 Unterputzsteckdosen",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "unterputzdosen": {
+      "targetUrl": "https://www.amazon.de/dp/B0171U26EO",
+      "description": "Unterputzdosen für Hohlwände",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "abstandshalter-glas": {
+      "targetUrl": "https://www.amazon.de/dp/B07QGDWCV2",
+      "description": "Abstandshalter für Glasplatten",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "flachstecker": {
+      "targetUrl": "https://www.amazon.de/dp/B07K2KX1FD/",
+      "description": "Meister Flachstecker Winkelstecker",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "kabeldurchfuehrung": {
+      "targetUrl": "https://www.amazon.de/dp/B07K1ZWVVH",
+      "description": "Kabeldurchführungshülsen",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "digitus-blindabdeckung": {
+      "targetUrl": "https://www.amazon.de/dp/B001LNI1XI",
+      "description": "DIGITUS 19 Zoll Blindabdeckung",
+      "affiliate": true,
+      "category": "IT",
+      "openInNewTab": true
+    },
+    "kabelbefestigung": {
+      "targetUrl": "https://www.amazon.de/dp/B076F64VKH",
+      "description": "Selbstklebende Kabelbefestigungen",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "pattex-kleber": {
+      "targetUrl": "https://www.amazon.de/dp/B007QAYJZ4",
+      "description": "Pattex One Universalkleber",
+      "affiliate": true,
+      "category": "Heimwerken",
+      "openInNewTab": true
+    },
+    "spelsberg-dose": {
+      "targetUrl": "https://www.amazon.de/dp/B000ONQRQO",
+      "description": "Spelsberg Abox 060L Verteilerdose",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "wago-klemmen": {
+      "targetUrl": "https://www.amazon.de/dp/B07NKFXLF7",
+      "description": "Wago Verbindungsklemmen Set",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "zeitschaltuhr-unterputz": {
+      "targetUrl": "https://www.amazon.de/dp/B00U6392OQ",
+      "description": "Zeitschaltuhr Unterputz mit Backup-Batterie",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "evoline-steckdose": {
+      "targetUrl": "http://www.evoline.com",
+      "description": "Evoline modulare Steckdosensysteme",
+      "affiliate": false,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "stromkabel-3adrig": {
+      "targetUrl": "https://www.amazon.de/dp/B071K8M6G8",
+      "description": "Stromkabel dreiadrig",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "troas-glas-shop": {
+      "targetUrl": "https://troas.shop/",
+      "description": "Glas shop Troas - Zuschnitt und Lieferung von Glasplatten",
+      "affiliate": false,
+      "category": "Glas",
+      "openInNewTab": true
+    },
+    "stiftung-warentest-lattenrost": {
+      "targetUrl": "https://www.youtube.com/watch?v=_yr8g8bhNPY",
+      "description": "Stiftung Warentest Tutorial zum Selbstbau eines Lattenrosts",
+      "affiliate": false,
+      "category": "DIY",
+      "openInNewTab": true
+    },
+    "drillapparat-roedeldraht": {
+      "targetUrl": "https://www.amazon.de/dp/B0869FJND2",
+      "description": "Drillapparat und Rödeldraht Set zum fixieren von Betonstahl",
       "affiliate": true,
       "category": "DIY",
       "openInNewTab": true

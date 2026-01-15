@@ -22,10 +22,13 @@ const entryDescription =
   (autodescription ? plainify(entry.body!.slice(0, descriptionLength)) : null);
 ---
 
-<div class="h-full m-2 pl-0 bg-gradient-to-br gradient rounded-lg">
-  <div class="glass h-full rounded-lg p-4 intersect:animate-fadeUp opacity-0">
+<div class="m-2 h-full rounded-lg pl-0">
+  <div class="glass h-full rounded-lg p-4 opacity-0 intersect:animate-fadeUp">
     <h4 class="mb-2">
-      <a href={`/blog/${entry.id}`}>
+      <a
+        href={`/blog/${entry.id}`}
+        class="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
+      >
         {title}
       </a>
     </h4>
@@ -34,8 +37,13 @@ const entryDescription =
         categories && (
           <li class="mr-0 inline-block">
             {categories.map((category: string, _index: number) => (
-              <a href={`/blog/categories/${slugify(category)}`}>
-                <FaRegFolder className={"ml-2 -mt-1 inline-block"} />
+              <a
+                href={`/blog/categories/${slugify(category)}`}
+                class="text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300"
+              >
+                <FaRegFolder
+                  className={"-mt-1 ml-2 inline-block text-purple-500"}
+                />
                 {upperHumanize(category)}
               </a>
             ))}
@@ -57,7 +65,7 @@ const entryDescription =
       {
         entryDate && (
           <li class="mr-0 inline-block">
-            <FaRegCalendarAlt className={"ml-2 -mt-1 inline-block"} />
+            <FaRegCalendarAlt className={"-mt-1 ml-2 inline-block"} />
             {entryDate}
           </li>
         )
@@ -65,7 +73,7 @@ const entryDescription =
       {
         complexity > 0 && (
           <li class="mr-0 inline-block">
-            <FaRegClock className={"ml-2 -mt-1 inline-block"} />
+            <FaRegClock className={"-mt-1 ml-2 inline-block"} />
             {entryReadingTime}
           </li>
         )
