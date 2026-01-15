@@ -75,7 +75,7 @@ This table shows the migration status of all blog articles from the old WordPres
 | [Drechselbank bauen Teil 3/4 – Werkzeugauflage](https://frickeldave.de/drechselbank-bauen-teil-3-4-werkzeugauflage/) | notdo | ⛔ |
 | [Drechselbank bauen Teil 2/4 – Spindelstock](https://frickeldave.de/drechselbank-bauen-teil-2-4-spindelstock/) | notdo | ⛔ |
 | [Drechselbank bauen Teil 1/4 – Intro und der Reitstock](https://frickeldave.de/drechselbank-bauen-teil-1-x-intro-und-der-reitstock/) | notdo | ⛔ |
-| [Relais-Schaltung für die Blastgates der Absauganlage](https://frickeldave.de/relais-schaltung-fur-die-blastgates-der-absauganlage/) | fehlt | ❌ |
+| [Relais-Schaltung für die Blastgates der Absauganlage](https://frickeldave.de/relais-schaltung-fur-die-blastgates-der-absauganlage/) | `2019-03-08-relais-schaltung-blastgates.mdx` | ✅ |
 | [Schneidbrett für die Brotbox](https://frickeldave.de/schneidbrett-fuer-die-brotbox/) | notdo | ⛔ |
 | [Ganz einfacher Batteriehalter](https://frickeldave.de/batteriehalter-fuer-meine-wii/) | notdo | ⛔ |
 | [Brotkasten mit Fingerzinken](https://frickeldave.de/brotkasten-mit-fingerzinken/) | notdo | ⛔ |
@@ -114,9 +114,9 @@ This table shows the migration status of all blog articles from the old WordPres
 ## Statistics
 
 - **Total Original Articles:** 91 articles
-- **Migrated:** 34 articles (✅)
-- **Missing (yet to be migrated):** 7 articles (❌)
+- **Migrated:** 35 articles (✅)
+- **Missing (yet to be migrated):** 6 articles (❌)
 - **Not migrated (notdo):** 50 articles (⛔)
 - **Series/Landing Pages:** 6 (separate handling, marked as notdo)
 - **New Articles (repository only):** 1 (Timeline)
-- **Migration Rate:** ~37% (34/91) | ~83% of planned articles (34/41)
+- **Migration Rate:** ~38% (35/91) | ~85% of planned articles (35/41)
