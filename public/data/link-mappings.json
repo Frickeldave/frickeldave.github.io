@@ -716,9 +716,14 @@
       "affiliate": false,
       "category": "DIY",
       "openInNewTab": true
+    },
+    "drillapparat-roedeldraht": {
+      "targetUrl": "https://www.amazon.de/dp/B0869FJND2",
+      "description": "Drillapparat und Rödeldraht Set zum fixieren von Betonstahl",
+      "affiliate": true,
+      "category": "DIY",
+      "openInNewTab": true
     }
-
-
   },
   "analytics": {
     "totalClicks": 0,
