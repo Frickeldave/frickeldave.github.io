@@ -113,9 +113,9 @@ volle Werkstatt zur Verfügung haben, will ich hier mal eine Ausnahme machen.
 <div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
   <div className="lg:w-1/2">
     Hier soll es ja nicht um den Bau eines Schrankes gehen, sondern um die Besonderheiten bei der
-Gestaltung eines 3D Drucker Enclosure/Schrank. Ergo, baust du den Schrank deiner Wahl einfach nach
-Bedienungsanleitung auf. Ich habe hier den IKEA PLATSA Schrank gewählt, mit 3 Schubladen
-ausgestattet und die oberste Schublade um 4cm gekürzt.
+    Gestaltung eines 3D Drucker Enclosure/Schrank. Ergo, baust du den Schrank deiner Wahl einfach
+    nach Bedienungsanleitung auf. Ich habe hier den IKEA PLATSA Schrank gewählt, mit 3 Schubladen
+    ausgestattet und die oberste Schublade um 4cm gekürzt.
   </div>
   <div className="lg:w-1/2">
     <Image src={tdih001} alt="Fertig aufgebauter Schrank" />
@@ -142,6 +142,7 @@ verlinkt, da es nur eine Idee ist und ich das nicht selber ausprobiert habe.
     entfällt natürlich wenn du die oben verlinkten USB-powered Streifen verwendest.
     Die Ursache für den starken Blaustich ist die falsch eingestellte Handy-Kamera, Ziel ist natürlich
     eine möglichst hell-weiße Ausleuchtung.
+
   </div>
   <div className="lg:w-1/2">
     <Image src={tdih002} alt="LED Beleuchtung" />
@@ -153,10 +154,9 @@ keine LED Streifen zu montieren, um Gegenlicht zu vermeiden. Wichtig ist, dass d
 ausgeleuchtet ist, also das Licht vor allem von der Seite der Webcam und von oben kommt.
 
 Wenn das mit dem LED Streifen nicht anders hinzubekommen ist, musst du ihn an den entsprechenden
-Stellen überkleben. 
+Stellen überkleben.
 
 ### Belüftung integrieren
-
 
 Ein wichtiger Punkt ist, die Wärme aus dem Gehäuse raus zu bekommen, ohne aber kalte Luftströme über
 das Druckobjekt zu leiten und somit das Ergebnis negativ zu beeinflussen. Wir wollen also die Luft
@@ -170,7 +170,6 @@ lange dauert, es geht auch Sekundenkleber) und dann mit Moosgummistreifen bekleb
   <Image src={tdih003} alt="Platte unterhalb des 3D Druckers" />
 </div>
 
-
 <div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
   <div className="lg:w-1/2">
     Nun wird ein passendes Loch in den Boden der Bodenplatte im 3D Druckerschrank geschnitten. Am
@@ -180,18 +179,19 @@ lange dauert, es geht auch Sekundenkleber) und dann mit Moosgummistreifen bekleb
     vorsichtig mit einer Zange weggebrochen, damit der Lüfter dann perfekt in das Loch passt.
 
     Achte darauf, dass dieser Lüfter Luft von unten einsaugen, also in den Schrank befördern soll.
+
   </div>
   <div className="lg:w-1/2">
     <Image src={tdih004} alt="Lüfter unten" />
   </div>
 </div>
 
-
 <div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
   <div className="lg:w-1/2">
-    Nun wird im Deckel des Schranks ebenfalls ein Loch gebohrt und der zweite der USB-Lüfter von unten
-dagegen geschraubt. Dieser saugt die warme Luft ab und befördert sie aus dem Schrank hinaus. Oben
-auf dem Schrank habe ich den Aktivkohlefilter (ebenfalls mit 2 Schrauben) befestigt.
+    Nun wird im Deckel des Schranks ebenfalls ein Loch gebohrt und der zweite der USB-Lüfter von
+    unten dagegen geschraubt. Dieser saugt die warme Luft ab und befördert sie aus dem Schrank
+    hinaus. Oben auf dem Schrank habe ich den Aktivkohlefilter (ebenfalls mit 2 Schrauben)
+    befestigt.
   </div>
   <div className="lg:w-1/2">
     <Image src={tdih005} alt="Lüfter oben" />
@@ -223,6 +223,7 @@ niedrigste Stufe reichen, ansonsten mal überlegen ob der Standort richtig ist.
 ### Temperaturkontrolle
 
 Um die Temperatur im Schrank zu überwachen, wird das
+
 <RedirectLink id="3denc_thermometer" text="digitale Thermometer" /> an der Außenseite des Schranks
 befestigt. Der Sensor kommt durch ein kleines Loch ins Innere.
 
@@ -234,8 +235,8 @@ anpassen.
 <div className="my-6 flex flex-col items-start gap-6 lg:flex-row">
   <div className="lg:w-1/2">
     Die <RedirectLink id="3denc_steckdosenleiste" text="Steckdosenleiste mit USB" /> wird an der
-Innenseite montiert. Hier werden der Drucker, der Raspberry Pi (falls vorhanden) und die USB-Geräte
-(Lüfter, LED) angeschlossen.
+    Innenseite montiert. Hier werden der Drucker, der Raspberry Pi (falls vorhanden) und die
+    USB-Geräte (Lüfter, LED) angeschlossen.
   </div>
   <div className="lg:w-1/2">
     <Image src={tdih008} alt="Verkabelung im Schrank" />
@@ -243,6 +244,7 @@ Innenseite montiert. Hier werden der Drucker, der Raspberry Pi (falls vorhanden)
 </div>
 
 Falls du wie ich einen Ender 3 V2 hast, kannst du das LCD-Display mit dem
+
 <RedirectLink id="3denc_10pol_kabel" text="10-poligen Verlängerungskabel" /> nach außen verlegen.
 Damit musst du nicht jedes Mal die Tür öffnen, um den Drucker zu bedienen.
 
@@ -289,4 +291,3 @@ zufrieden. Ein paar Erkenntnisse die ich in der Zeit gesammelt habe:
 - Die Temperatur im Schrank liegt konstant zwischen 28-35°C während des Drucks, was perfekt ist.
 - Durch den Schrank sind die Druckergebnisse deutlich besser geworden, besonders bei ABS und PETG.
 - Die Geräuschreduzierung ist enorm. Der Drucker steht jetzt im Büro und stört überhaupt nicht mehr.
-
