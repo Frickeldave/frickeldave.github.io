@@ -82,7 +82,7 @@ This table shows the migration status of all blog articles from the old WordPres
 | [Provisorischer Frästisch](https://frickeldave.de/provisorischer-fraestisch/) | notdo | ⛔ |
 | [LED Lampe in Unterschranklampe umgebaut](https://frickeldave.de/led-lampe-in-unterschranklampe-umgebaut/) | notdo | ⛔ |
 | [3D Drucker mit Octoprint steuern](https://frickeldave.de/3d-drucker-mit-octoprint-steuern/) | notdo | ⛔ |
-| [3D Druckerschrank als IKEA-Hack](https://frickeldave.de/3d-druckerschrank-als-ikea-hack/) | fehlt | ❌ |
+| [3D Druckerschrank als IKEA-Hack](https://frickeldave.de/3d-druckerschrank-als-ikea-hack/) | `2023-02-06-3d-druckerschrank-als-ikea-hack.mdx` | ✅ |
 | [Creality Ender 3 V2 3D Drucker](https://frickeldave.de/creality-ender-3-v2-3d-drucker/) | notdo | ⛔ |
 | [Artillery Hornet 3D Drucker](https://frickeldave.de/artillery-hornet-3d-drucker/) | notdo | ⛔ |
 | [DOAG, Cloudland und der Partybus](https://frickeldave.de/doag-cloudland-und-der-partybus/) | notdo | ⛔ |
@@ -114,9 +114,9 @@ This table shows the migration status of all blog articles from the old WordPres
 ## Statistics
 
 - **Total Original Articles:** 91 articles
-- **Migrated:** 35 articles (✅)
-- **Missing (yet to be migrated):** 6 articles (❌)
+- **Migrated:** 36 articles (✅)
+- **Missing (yet to be migrated):** 5 articles (❌)
 - **Not migrated (notdo):** 50 articles (⛔)
 - **Series/Landing Pages:** 6 (separate handling, marked as notdo)
 - **New Articles (repository only):** 1 (Timeline)
-- **Migration Rate:** ~38% (35/91) | ~85% of planned articles (35/41)
+- **Migration Rate:** ~40% (36/91) | ~88% of planned articles (36/41)
