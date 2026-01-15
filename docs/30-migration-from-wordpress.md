@@ -50,7 +50,7 @@ This table shows the migration status of all blog articles from the old WordPres
 | [Getränkekistenhalter (mit Plan)](https://frickeldave.de/halter-fuer-getraenkekisten-mit-plan/) | notdo | ⛔ |
 | [Kabelkanal aus Holz](https://frickeldave.de/kabelkanal-aus-holz/) | notdo | ⛔ |
 | [Garage #0: Günstigen Unterstand bauen](https://frickeldave.de/unterstand-bauen/) | notdo | ⛔ |
-| [ZLH150_3 Charity challenge](https://frickeldave.de/zlh150_3-charity-challenge/) | fehlt | ❌ |
+| [ZLH150_3 Charity challenge](https://frickeldave.de/zlh150_3-charity-challenge/) | notdo | ⛔ |
 | [Bohrtisch für die Standbohrmaschine](https://frickeldave.de/bohrtisch-fuer-die-standbohrmaschine/) | notdo | ⛔ |
 | [Bohrerhalter](https://frickeldave.de/bohrerhalter/) | notdo | ⛔ |
 | [Sterngriffe selber bauen](https://frickeldave.de/sterngriffe-selber-bauen/) | `2019-12-19-sterngriffe-selber-bauen.mdx` | ✅ |
@@ -69,7 +69,7 @@ This table shows the migration status of all blog articles from the old WordPres
 | [Gartenbewässerung automatisieren #2 – Die Umsetzung](https://frickeldave.de/gartenbewaesserung-automatisieren-2-die-umsetzung/) | notdo | ⛔ |
 | [Gartenbewässerung automatisieren #1 – Die Planung](https://frickeldave.de/gartenbewaesserung-automatisieren-1-die-planung/) | notdo | ⛔ |
 | [Garage #1: Fundament](https://frickeldave.de/garage-1-fundament/) | `2019-05-31-garage-fundament.mdx` | ✅ |
-| [Herz zu Muttertag basteln](https://frickeldave.de/herz-zu-muttertag-basteln/) | fehlt | ❌ |
+| [Herz zu Muttertag basteln](https://frickeldave.de/herz-zu-muttertag-basteln/) | `2019-05-13-herz-zu-muttertag-basteln.mdx` | ✅ |
 | [Drechselbank bauen Teil 4/4 – Der Motor](https://frickeldave.de/drechselbank-bauen-teil-4-4-der-motor/) | notdo | ⛔ |
 | [Monitorpanels für Besprechungsräume (3-teilige Serie)](https://frickeldave.de/monitor-panel-fuer-besprechungsraeume-1/) | `2019-11-06-monitorpanels-fuer-besprechungsraeume.mdx` | ✅ |
 | [Drechselbank bauen Teil 3/4 – Werkzeugauflage](https://frickeldave.de/drechselbank-bauen-teil-3-4-werkzeugauflage/) | notdo | ⛔ |
@@ -114,9 +114,9 @@ This table shows the migration status of all blog articles from the old WordPres
 ## Statistics
 
 - **Total Original Articles:** 91 articles
-- **Migrated:** 33 articles (✅)
-- **Missing (yet to be migrated):** 8 articles (❌)
+- **Migrated:** 34 articles (✅)
+- **Missing (yet to be migrated):** 7 articles (❌)
 - **Not migrated (notdo):** 50 articles (⛔)
 - **Series/Landing Pages:** 6 (separate handling, marked as notdo)
 - **New Articles (repository only):** 1 (Timeline)
-- **Migration Rate:** ~36% (33/91) | ~80% of planned articles (33/41)
+- **Migration Rate:** ~37% (34/91) | ~83% of planned articles (34/41)
