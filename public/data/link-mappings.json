@@ -723,6 +723,104 @@
       "affiliate": true,
       "category": "DIY",
       "openInNewTab": true
+    },
+    "proofwood-helmut": {
+      "targetUrl": "https://www.youtube.com/watch?v=6f3_ZJphH7M",
+      "description": "Helmut von Proofwood - Video zur Relais-Schaltung für Blastgates",
+      "affiliate": false,
+      "category": "Videoequipment",
+      "openInNewTab": true
+    },
+    "schaltkasten-6-module": {
+      "targetUrl": "https://www.amazon.de/gp/product/B00MW89PQS",
+      "description": "Schaltschrank für 6 Module",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "mini-schalter": {
+      "targetUrl": "https://www.amazon.de/gp/product/B01LWI1PKU",
+      "description": "Mini Schalter",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "12v-netzteil": {
+      "targetUrl": "https://www.amazon.de/gp/product/B00H2D6X8G",
+      "description": "12V Netzteil",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "relais-finder": {
+      "targetUrl": "https://www.amazon.de/gp/product/B000WVFX1S",
+      "description": "Relais Finder 40.52",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "schaltdraht": {
+      "targetUrl": "https://www.amazon.de/gp/product/B01ATQ2GV0",
+      "description": "Schaltdraht 0,14 mm²",
+      "affiliate": true,
+      "category": "Elektrik",
+      "openInNewTab": true
+    },
+    "3denc_luefter": {
+      "targetUrl": "https://www.amazon.de/dp/B081SYD24Z",
+      "description": "USB-powered Lüfter für 3D Druckerschrank",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_kohlefilter": {
+      "targetUrl": "https://www.amazon.de/dp/B07P57RJKH",
+      "description": "Aktivkohlefilter für 3D Druckerschrank",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_10pol_kabel": {
+      "targetUrl": "https://www.amazon.de/dp/B07D3DYHPR",
+      "description": "10-poliges Verlängerungskabel für LCD Display",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_thermometer": {
+      "targetUrl": "https://www.amazon.de/dp/B09PQY19M2",
+      "description": "Digitales Thermometer mit großem Display",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_ledstripe": {
+      "targetUrl": "https://www.amazon.de/dp/B09PZZ6MTJ",
+      "description": "LED Streifen USB für 3D Druckerschrank",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_steckdosenleiste": {
+      "targetUrl": "https://www.amazon.de/dp/B07JMVSJHV",
+      "description": "Steckdosenleiste mit USB und Wandmontage",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "3denc_usb_hd_webcam": {
+      "targetUrl": "https://www.amazon.de/dp/B08L9D6Y8B",
+      "description": "HD Webcam für OctoPrint",
+      "affiliate": true,
+      "category": "3D Druck",
+      "openInNewTab": true
+    },
+    "FalkeKreisschneider": {
+      "targetUrl": "https://www.amazon.de/dp/B07C5MV47W",
+      "description": "Falke Kreisschneider für Lochbohrungen",
+      "affiliate": true,
+      "category": "Werkzeug",
+      "openInNewTab": true
     }
   },
   "analytics": {
