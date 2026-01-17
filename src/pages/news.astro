@@ -7,6 +7,12 @@ import { FaRegCalendarAlt } from "react-icons/fa";
 // Import news data
 import newsDataRaw from "../../public/data/news.json";
 import placeholderNewsImage from "@/assets/placeholder-news.png";
+import { Image, type ImageMetadata } from "astro:assets";
+
+const newsImages = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/news/*.{jpeg,jpg,png,gif}",
+  { eager: true }
+);
 
 type NewsItem = {
   visible: boolean;
@@ -127,38 +133,48 @@ const years = [
             class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2"
           >
             {
-              visibleNews.map((item, _index) => (
-                <div
-                  class="news-card"
-                  data-title={item.title.toLowerCase()}
-                  data-text={item.text.toLowerCase()}
-                  data-date={item.date}
-                  data-year={new Date(item.date).getFullYear()}
-                >
-                  <article class="glass flex h-full flex-col overflow-hidden rounded-lg">
-                    <div class="aspect-video overflow-hidden">
-                      <img
-                        src={placeholderNewsImage.src}
-                        alt={item.title}
-                        class="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div class="flex flex-grow flex-col p-6">
-                      <div class="mb-3 flex items-center gap-2 text-sm text-red-500">
-                        <FaRegCalendarAlt className="inline-block" />
-                        <time datetime={item.date}>
-                          {formatNewsDate(item.date)}
-                        </time>
+              visibleNews.map((item, _index) => {
+                const imagePath = "/" + item.imageUrl;
+                const imageModule = newsImages[imagePath];
+                const image = imageModule
+                  ? imageModule.default
+                  : placeholderNewsImage;
+
+                return (
+                  <div
+                    class="news-card"
+                    data-title={item.title.toLowerCase()}
+                    data-text={item.text.toLowerCase()}
+                    data-date={item.date}
+                    data-year={new Date(item.date).getFullYear()}
+                  >
+                    <article class="glass flex h-full flex-col overflow-hidden rounded-lg">
+                      <div class="flex aspect-video w-full shrink-0 items-center justify-center px-2 pt-2">
+                        <Image
+                          src={image}
+                          alt={item.title}
+                          class="max-h-full max-w-full rounded-lg shadow-sm"
+                          loading="lazy"
+                        />
                       </div>
-                      <h2 class="mb-3 text-xl font-bold text-red-600 dark:text-red-400">
-                        {item.title}
-                      </h2>
-                      <p class="flex-grow text-base opacity-90">{item.text}</p>
-                    </div>
-                  </article>
-                </div>
-              ))
+                      <div class="flex flex-grow flex-col p-6">
+                        <div class="mb-3 flex items-center gap-2 text-sm text-red-500">
+                          <FaRegCalendarAlt className="inline-block" />
+                          <time datetime={item.date}>
+                            {formatNewsDate(item.date)}
+                          </time>
+                        </div>
+                        <h2 class="mb-3 text-xl font-bold text-red-600 dark:text-red-400">
+                          {item.title}
+                        </h2>
+                        <p class="flex-grow text-base opacity-90">
+                          {item.text}
+                        </p>
+                      </div>
+                    </article>
+                  </div>
+                );
+              })
             }
           </div>
 
