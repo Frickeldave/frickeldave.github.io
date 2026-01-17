@@ -1,6 +1,25 @@
 #!/usr/bin/env sh
 # Bash/Shell version of pre-commit checks
 
+# Source nvm, npm and node into the path
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Fallback: Try to find npm in common locations
+if ! command -v npm >/dev/null 2>&1; then
+  # Try common npm installation paths
+  for npm_path in \
+    "$HOME/.nvm/versions/node/$(node -v 2>/dev/null)/bin/npm" \
+    "/usr/local/bin/npm" \
+    "/usr/bin/npm" \
+    "$(which npm 2>/dev/null)"; do
+    if [ -x "$npm_path" ]; then
+      alias npm="$npm_path"
+      break
+    fi
+  done
+fi
+
 echo ""
 echo "🚀 Pre-commit Quality Checks"
 echo "=============================="
