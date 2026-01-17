@@ -1,7 +1,7 @@
 ---
 agent: 'agent'
 description: 'Deploy changes to production environment.'
-model: Auto (copilot)
+model: Claude Haiku 4.5 (copilot)
 ---
 
 Deploye die Änderungen. Checke als erstes ob alle prerequsites erfüllt sind. Dies sind die folgenden: 

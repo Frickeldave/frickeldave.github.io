@@ -114,9 +114,9 @@ This table shows the migration status of all blog articles from the old WordPres
 ## Statistics
 
 - **Total Original Articles:** 91 articles
-- **Migrated:** 36 articles (✅)
-- **Missing (yet to be migrated):** 5 articles (❌)
-- **Not migrated (notdo):** 50 articles (⛔)
-- **Series/Landing Pages:** 6 (separate handling, marked as notdo)
+- **Migrated:** 40 articles (✅)
+- **Missing (yet to be migrated):** 0 articles (❌)
+- **Not migrated (notdo):** 51 articles (⛔)
+- **Series/Landing Pages:** Included in "notdo" count
 - **New Articles (repository only):** 1 (Timeline)
-- **Migration Rate:** ~40% (36/91) | ~88% of planned articles (36/41)
+- **Migration Rate:** ~44% (40/91)
