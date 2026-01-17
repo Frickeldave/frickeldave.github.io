@@ -1,3 +1,7 @@
+# Prompt Summary - AI Conversation History
+
+Diese Datei dokumentiert alle wichtigen AI-Konversationen und deren Ergebnisse während der Entwicklung dieser Website.
+
 |Start|End|Prompt|Model|Environment|Result|Satisfaction 0-10|My comment
 |-|-|-|-|-|-|-|-|
 |2025-08-14|2025-08-23|Forke das Astrogon-Template und passe es für meine persönliche Multi-Content-Plattform (Blog, Docs, Recipes, DIY/Handmade) an. Implementiere Glass Morphism Design und migriere erste Content-Artikel.|Claude Sonnet 4.5|GitHub Copilot|Initial setup done, first articles migrated, Downloads section|8|N bisschen zäh, aber ganz gut gepklappt
@@ -43,5 +47,5 @@
 |2026-01-02|2026-01-04|[2026-01-02-DAMIT.Monitorpanels.md.md](./.github/2026-01-02-DAMIT.Monitorpanels.md) - Monitorpanels für Besprechungsräume (3 Artikel zusammengeführt)|Claude Sonnet 4.5|GitHub Copilot|Implemented|9|Migration erfolgreich, Issue #138. 3 WordPress-Artikel zusammengeführt (Teil 1-3), 23 Bilder (Header + 22 Content), 1 Video (mopb-008.mp4 Kantenumleimer), 18 neue Affiliate-Links. Alle 17 Workflow-Schritte vollständig ausgeführt. docs/migration.md aktualisiert (31 migrierte Artikel, 76% Quote).
 |2026-01-15|2026-01-15|[DAMIT.prompt.md](./.github/DAMIT.prompt.md) - Garage #1: Fundament|GPT-5.2|GitHub Copilot|Implemented|5|Migration erfolgreich, Issue #148, PR #149 gemerged. Begründung: Prettier/Formatting wurde zigfach ausgeführt; Identifier mit einer Zahl inkludiert; unnötige Zwischenfragen, ob weitergemacht werden soll; Merge PR wurde nicht automatisch gemacht.
 |2026-01-17|2026-01-17|Ich möchte gerne news direkt aus dieser JSON laden. Die Bilder sollen aus den assets geladen werden und die Bildoptimierung von astro dabei verwendet werden. Allerdings wird hier ein Platzhalter Bild geladen, anstatt dass angegebene. Kannst du das bitte korrigieren?|Claude Sonnet 4.5|GitHub Copilot|Implemented|10|
-
+|2026-01-17|2026-01-17|Auf dieser Website gibt es Shop-System, bzw. einen Produktcatalog, der ähnlich aufgebaut ist wie etsy, nur dass man hier nicht wirklich einkaufen kann, sondern nur die Produkte anschauen und eine E-Mail schreiben kann. Dieses System ist unter der URL /handmade zu finden. Analysieren nun das gesamte Repository, verstehe wie der handmade Produktcatalog funktioniert und beschreibe den in fr003-catalog.md. Dokumentiere auch alle verfügbaren Tags, Kategorieren, den Aufbau der Artikelnummer und die Beudetung aller anderen Metaeigenschaften.|Claude Sonnet 4.5|GitHub Copilot|Implemented|10|Bis auf ein paar Textelemente zu viel, ansonsten super gelaufen.
 |yyyy-mm-dd|yyyy-mm-dd|DESCRIPTION|MODEL|ENVIRONMENT|STATUS|RANKING|KOMMENTAR

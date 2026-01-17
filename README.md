@@ -49,6 +49,7 @@ This blog is built with modern web technologies:
 ### Custom Features
 - [Redirects System](./docs/features/fr001-redirects.md)
 - [Versioning Feature](./docs/features/fr002-versioning.md)
+- [Product catalog](./docs/features/fr003-catalog.md)
 
 ### Linting & Code Quality
 - [Linter Setup](./docs/linter/01-linter-start.md)
