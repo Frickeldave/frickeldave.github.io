@@ -1,197 +1,51 @@
 # Tags and catogories used in the blog
 
-diese Seite zeigt eine Statistik die die Verwendung von Tags und Kategorien in den verschiedenen Sektionen der Website aufschlüsselt. 
+diese Seite zeigt eine Statistik die die Verwendung von Tags und Kategorien in den verschiedenen Sektionen der Website aufschlüsselt.
 
 ## Statistiken
 
-> Letzte Aktualisierung: 17. Januar 2026  
+> Letzte Aktualisierung: 19. Januar 2026
 > Analysierte Blog-Einträge: 39
-> Genutzte Kategorien im Blog System: 6
-> Genutzte Tags im Blog System: 141 
-> Analysierte News Artikel: 0
-> Genutzte Kategorien im News System: 0
-> Genutzte Tags im News System: 0
-> Anaylsierte Produktkatalog Einträge: 0
-> Genutzte Kategorien im Produktkatalog: 0
-> Genutzte Tags im Produktkatalog: 0
-
-## Verwendete Kategorieren im News System
-
-| Name | Anzahl | Beschreibung |
-| ---- | ------ | ------------ |
-|      |        |              |
-
-## Verwendete Tags im News System
-
-| Name | Anzahl | Beschreibung |
-| ---- | ------ | ------------ |
-|      |        |              |
-
-## Verwendete Kategorien im Produktkatalogs
-
-| Name | Anzahl | Beschreibung |
-| ---- | ------ | ------------ |
-|      |        |              |
-
-# Verwendete Tags im Produktkatalogs
-
-| Name | Anzahl | Beschreibung |
-| ---- | ------ | ------------ |
-|      |        |              |
+> Genutzte Kategorien im Blog System: 4
+> Genutzte Tags im Blog System: 27
 
 ## Verwendete Kategorieren im Blog
 
-| Name | Anzahl | Beschreibung |
-| ---- | ------ | ------------ |
-| DIY | 31 |  |
-| IT | 5 |  |
-| DevOps | 4 |  |
-| 3D-Druck | 1 |  |
-| 3D Druck | 1 |  |
-| diy | 1 |  |
+| Name | Anzahl | Beschreibung | Blog |
+| --- | --- | --- | --- |
+| DIY | 32 |  | 2019-03-08-relais-schaltung-blastgates; 2019-05-13-herz-zu-muttertag-basteln; 2019-05-31-garage-fundament; 2019-10-24-diy-lattenrost; 2019-11-06-monitorpanels-fuer-besprechungsraeume; 2019-11-27-schatztruhe-aus-holz; 2019-12-19-sterngriffe-selber-bauen; 2020-05-20-kinderhaendelampe; 2020-06-18-gartenschrank-fuer-die-terrasse; 2020-08-30-absaugverrohrung-und-stromverteilung; 2020-10-19-herdabdeckplatten-aus-holz-und-epoxidharz; 2020-11-09-schrankumbau-ikea-sortera; 2020-12-21-mehlbox-fuer-5kg-mehlsaecke; 2021-02-05-kaminumbau; 2021-03-05-katzenkratzbaum-aus-dachbalken; 2021-04-01-teeschrank-mit-epoxidharzfronten; 2021-04-28-unterschrank-fuer-hobel-mit-spaeneabscheidung; 2021-05-18-kopfhoererhalter-mit-led-und-epoxy; 2021-06-16-deichselkiste-fuer-den-pkw-anhaenger; 2021-07-27-biertraeger-oder-maennerhandtasche; 2021-08-12-schale-aus-beton-mit-eiche; 2021-09-19-zwingenhalter-als-apothekerschrank; 2021-10-08-briefkastenhalter-aus-dachbalken; 2021-10-29-restholz-lampi-der-lampenhund; 2021-11-24-bananenstaender; 2022-01-16-katzenklo-schrank; 2022-07-11-betonschalen-tic-tac-toe; 2022-09-09-lampe-aus-hohlen-baumstamm; 2022-10-27-adventskalender-aus-papier-und-restholz; 2022-11-16-le-passe-trappe-spiel; 2023-11-24-vogelfutterhaus; 2024-09-14-personalisierte-schluesselanhaenger |
+| Holzwerken | 26 |  | 2019-03-08-relais-schaltung-blastgates; 2019-05-13-herz-zu-muttertag-basteln; 2019-10-24-diy-lattenrost; 2019-11-06-monitorpanels-fuer-besprechungsraeume; 2019-11-27-schatztruhe-aus-holz; 2019-12-19-sterngriffe-selber-bauen; 2020-05-20-kinderhaendelampe; 2020-06-18-gartenschrank-fuer-die-terrasse; 2020-08-30-absaugverrohrung-und-stromverteilung; 2020-10-19-herdabdeckplatten-aus-holz-und-epoxidharz; 2020-11-09-schrankumbau-ikea-sortera; 2020-12-21-mehlbox-fuer-5kg-mehlsaecke; 2021-02-05-kaminumbau; 2021-03-05-katzenkratzbaum-aus-dachbalken; 2021-04-01-teeschrank-mit-epoxidharzfronten; 2021-04-28-unterschrank-fuer-hobel-mit-spaeneabscheidung; 2021-05-18-kopfhoererhalter-mit-led-und-epoxy; 2021-06-16-deichselkiste-fuer-den-pkw-anhaenger; 2021-07-27-biertraeger-oder-maennerhandtasche; 2021-09-19-zwingenhalter-als-apothekerschrank; 2021-11-24-bananenstaender; 2022-01-16-katzenklo-schrank; 2022-07-11-betonschalen-tic-tac-toe; 2022-09-09-lampe-aus-hohlen-baumstamm; 2022-11-16-le-passe-trappe-spiel; 2024-09-14-personalisierte-schluesselanhaenger |
+| IT | 6 |  | 2021-01-12-bring-was-liebe-ins-business; 2021-05-05-sieben-meinungen-zum-thema-devops; 2021-12-01-das-devops-stosspendel; 2022-10-27-devops-kultur-organisation-und-technologie; 2023-08-17-low-cost-videostudio; 2025-11-21-timeline |
+| 3D-Druck | 2 |  | 2022-11-16-le-passe-trappe-spiel; 2023-02-06-3d-druckerschrank-als-ikea-hack |
 
 ## Verwendete Tags im Blog
 
-| Name | Anzahl | Beschreibung |
-| ---- | ------ | ------------ |
-| DIY | 29 |  |
-| Holzwerken | 25 |  |
-| Heimwerken | 16 |  |
-| Epoxidharz | 7 |  |
-| Beton | 6 |  |
-| Holz | 6 |  |
-| Werkstatt | 5 |  |
-| Möbel | 5 |  |
-| MDF | 5 |  |
-| DevOps | 5 |  |
-| Geschenkideen | 4 |  |
-| Küche | 4 |  |
-| Kultur | 4 |  |
-| Absauganlage | 3 |  |
-| Handwerk | 3 |  |
-| Garten | 3 |  |
-| Upcycling | 3 |  |
-| Organisation | 3 |  |
-| Technologie | 3 |  |
-| Geschenkidee | 3 |  |
-| Lampe | 2 |  |
-| Woodworking | 2 |  |
-| Schrank | 2 |  |
-| Design | 2 |  |
-| Transformation | 2 |  |
-| Lampen | 2 |  |
-| Palettenholz | 2 |  |
-| Softwareentwicklung | 2 |  |
-| Deko | 2 |  |
-| 3D Druck | 2 |  |
-| Handmade | 2 |  |
-| Anleitung | 2 |  |
-| Automation | 1 |  |
-| Blastgate | 1 |  |
-| Relais | 1 |  |
-| Elektronik | 1 |  |
-| selbermachen | 1 |  |
-| selberbauen | 1 |  |
-| Fundament | 1 |  |
-| Garage | 1 |  |
-| Zement | 1 |  |
-| Bett | 1 |  |
-| Lattenrost | 1 |  |
-| Sparen | 1 |  |
-| Monitorpanel | 1 |  |
-| LED | 1 |  |
-| Elektrik | 1 |  |
-| Büromöbel | 1 |  |
-| Kerf-Cutting | 1 |  |
-| Schreinerei | 1 |  |
-| msg-systems | 1 |  |
-| Automotive | 1 |  |
-| Schatztruhe | 1 |  |
-| Flammen | 1 |  |
-| Beschläge | 1 |  |
-| Handarbeit | 1 |  |
-| Sterngriff | 1 |  |
-| Werkzeuge | 1 |  |
-| Muttertag | 1 |  |
-| Terrassenmöbel | 1 |  |
-| Stromverteilung | 1 |  |
-| Nußbaum | 1 |  |
-| Herdabdeckplatten | 1 |  |
-| IKEA | 1 |  |
-| Schubladen | 1 |  |
-| Sortera | 1 |  |
-| Lackieren | 1 |  |
-| Team | 1 |  |
-| Motivation | 1 |  |
-| Innovation | 1 |  |
-| Leadership | 1 |  |
-| New Work | 1 |  |
-| Teamwork | 1 |  |
-| Unternehmenskultur | 1 |  |
-| Kamin | 1 |  |
-| Kaminumbau | 1 |  |
-| Ofen | 1 |  |
-| Wohnzimmer | 1 |  |
-| Katzen | 1 |  |
-| Dachbalken | 1 |  |
-| Sisal | 1 |  |
-| Möbelbau | 1 |  |
-| Nussbaum | 1 |  |
-| Hobel | 1 |  |
-| Späneabscheidung | 1 |  |
-| Epoxy | 1 |  |
-| Gaming | 1 |  |
-| Duplo | 1 |  |
-| Deichselkiste | 1 |  |
-| Deichselkasten | 1 |  |
-| Anhänger | 1 |  |
-| Werkzeugaufbewahrung | 1 |  |
-| Bier | 1 |  |
-| Bierträger | 1 |  |
-| Restholz | 1 |  |
-| Dekoration | 1 |  |
-| Design & Deko | 1 |  |
-| Einrichtung | 1 |  |
-| Halter | 1 |  |
-| Schraubzwingen | 1 |  |
-| Werkstattorganisation | 1 |  |
-| Beleuchtung | 1 |  |
-| Hauseingang | 1 |  |
-| Küchenhelfer | 1 |  |
-| Banane | 1 |  |
-| Biegen | 1 |  |
-| Katze | 1 |  |
-| Betonschalen | 1 |  |
-| Schale | 1 |  |
-| Drechseln | 1 |  |
-| Baumstamm | 1 |  |
-| Weihnachten | 1 |  |
-| Advent | 1 |  |
-| Adventskalender | 1 |  |
-| Papercraft | 1 |  |
-| Nachhaltigkeit | 1 |  |
-| Enterprise | 1 |  |
-| CICD | 1 |  |
-| Agile | 1 |  |
-| Le passe trappe | 1 |  |
-| Flitzpuck | 1 |  |
-| Brettspiel | 1 |  |
-| Gesellschaftsspiel | 1 |  |
-| Furnieren | 1 |  |
-| Tennis | 1 |  |
-| IKEA Hack | 1 |  |
-| Platsa | 1 |  |
-| Enclosure | 1 |  |
-| Vogelhaus | 1 |  |
-| Kinder | 1 |  |
-| Schlüsselanhänger | 1 |  |
-| Basteln | 1 |  |
-| Laser | 1 |  |
-| Lasergravur | 1 |  |
-| Lasercutting | 1 |  |
-| Vibecoding | 1 |  |
-| GitHub Copilot | 1 |  |
-| Astro | 1 |  |
-| AI-Entwicklung | 1 |  |
-| Timeline | 1 |  |
-| Statistik | 1 |  |
+| Name | Anzahl | Beschreibung | Blog |
+| --- | --- | --- | --- |
+| Geschenkidee | 9 |  | 2019-05-13-herz-zu-muttertag-basteln; 2019-11-27-schatztruhe-aus-holz; 2020-05-20-kinderhaendelampe; 2021-05-18-kopfhoererhalter-mit-led-und-epoxy; 2021-07-27-biertraeger-oder-maennerhandtasche; 2022-09-09-lampe-aus-hohlen-baumstamm; 2022-10-27-adventskalender-aus-papier-und-restholz; 2022-11-16-le-passe-trappe-spiel; 2024-09-14-personalisierte-schluesselanhaenger |
+| Epoxidharz | 6 |  | 2020-10-19-herdabdeckplatten-aus-holz-und-epoxidharz; 2021-02-05-kaminumbau; 2021-04-01-teeschrank-mit-epoxidharzfronten; 2021-05-18-kopfhoererhalter-mit-led-und-epoxy; 2022-09-09-lampe-aus-hohlen-baumstamm; 2024-09-14-personalisierte-schluesselanhaenger |
+| Werkstatt | 5 |  | 2019-03-08-relais-schaltung-blastgates; 2019-12-19-sterngriffe-selber-bauen; 2020-08-30-absaugverrohrung-und-stromverteilung; 2021-04-28-unterschrank-fuer-hobel-mit-spaeneabscheidung; 2021-09-19-zwingenhalter-als-apothekerschrank |
+| Upcycling | 5 |  | 2021-03-05-katzenkratzbaum-aus-dachbalken; 2021-10-08-briefkastenhalter-aus-dachbalken; 2021-10-29-restholz-lampi-der-lampenhund; 2022-09-09-lampe-aus-hohlen-baumstamm; 2022-10-27-adventskalender-aus-papier-und-restholz |
+| Beton | 4 |  | 2019-05-13-herz-zu-muttertag-basteln; 2019-05-31-garage-fundament; 2021-08-12-schale-aus-beton-mit-eiche; 2022-07-11-betonschalen-tic-tac-toe |
+| Garten | 4 |  | 2019-05-31-garage-fundament; 2020-06-18-gartenschrank-fuer-die-terrasse; 2021-10-08-briefkastenhalter-aus-dachbalken; 2023-11-24-vogelfutterhaus |
+| Möbel | 4 |  | 2019-10-24-diy-lattenrost; 2020-06-18-gartenschrank-fuer-die-terrasse; 2020-11-09-schrankumbau-ikea-sortera; 2022-01-16-katzenklo-schrank |
+| Küche | 4 |  | 2020-10-19-herdabdeckplatten-aus-holz-und-epoxidharz; 2020-11-09-schrankumbau-ikea-sortera; 2020-12-21-mehlbox-fuer-5kg-mehlsaecke; 2021-04-01-teeschrank-mit-epoxidharzfronten |
+| DevOps | 4 |  | 2021-01-12-bring-was-liebe-ins-business; 2021-05-05-sieben-meinungen-zum-thema-devops; 2021-12-01-das-devops-stosspendel; 2022-10-27-devops-kultur-organisation-und-technologie |
+| Deko | 4 |  | 2021-07-27-biertraeger-oder-maennerhandtasche; 2021-08-12-schale-aus-beton-mit-eiche; 2022-07-11-betonschalen-tic-tac-toe; 2022-09-09-lampe-aus-hohlen-baumstamm |
+| Möbelbau | 3 |  | 2019-11-06-monitorpanels-fuer-besprechungsraeume; 2021-04-01-teeschrank-mit-epoxidharzfronten; 2023-02-06-3d-druckerschrank-als-ikea-hack |
+| Lampe | 3 |  | 2020-05-20-kinderhaendelampe; 2021-05-18-kopfhoererhalter-mit-led-und-epoxy; 2022-09-09-lampe-aus-hohlen-baumstamm |
+| Kinder | 2 |  | 2019-05-13-herz-zu-muttertag-basteln; 2023-11-24-vogelfutterhaus |
+| Büro | 2 |  | 2019-11-06-monitorpanels-fuer-besprechungsraeume; 2023-08-17-low-cost-videostudio |
+| IKEA | 2 |  | 2020-11-09-schrankumbau-ikea-sortera; 2023-02-06-3d-druckerschrank-als-ikea-hack |
+| Katzen | 2 |  | 2021-03-05-katzenkratzbaum-aus-dachbalken; 2022-01-16-katzenklo-schrank |
+| Haushalt | 2 |  | 2021-11-24-bananenstaender; 2022-01-16-katzenklo-schrank |
+| Elektronik | 1 |  | 2019-03-08-relais-schaltung-blastgates |
+| Garage | 1 |  | 2019-05-31-garage-fundament |
+| Schlafzimmer | 1 |  | 2019-10-24-diy-lattenrost |
+| DIY | 1 |  | 2021-04-28-unterschrank-fuer-hobel-mit-spaeneabscheidung |
+| Auto | 1 |  | 2021-06-16-deichselkiste-fuer-den-pkw-anhaenger |
+| Lampen | 1 |  | 2021-10-29-restholz-lampi-der-lampenhund |
+| Weihnachten | 1 |  | 2022-10-27-adventskalender-aus-papier-und-restholz |
+| Spiel | 1 |  | 2022-11-16-le-passe-trappe-spiel |
+| Video | 1 |  | 2023-08-17-low-cost-videostudio |
+| Softwareentwicklung | 1 |  | 2025-11-21-timeline |
