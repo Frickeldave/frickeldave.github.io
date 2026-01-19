@@ -14,9 +14,9 @@ Führe dabei die folgenden Schritte aus:
 
 1. Analysiere alle offenen Änderungen im Repository und verstehe worum es geht.
 2. Sollte aktuell der dev oder main Branch aktiv sein, wechsle zu einem neuen Feature-Branch basierend auf dev und übernimm alle aktuell offenen Änderungen. Der Name sollte aus deiner Analyse aus Schritt 1 abgeleitet werden.
-3. Führe den linter aus und behebe alle gefundenen Probleme.
-4. Führe prettier aus, um den Code zu formatieren.
-5. Führe vale aus, um die Rechtschreibung und Grammatik zu prüfen. Behebe alle gefundenen Probleme.
+3. Führe den linter (npm run lint) aus und behebe alle gefundenen Probleme.
+4. Führe prettier (npm run format) aus, um den Code zu formatieren.
+5. Führe vale (npm run prose) aus, um die Rechtschreibung und Grammatik zu prüfen. Behebe alle gefundenen Probleme.
 6. Baue das Projekt lokal und stelle sicher, dass keine Fehler auftreten.
 7. Wenn du Änderungen aufgrund von Lintermeldungen, Prettier oder vale vorgenommen hast, fahre bitte nochmal den Dev-server hoch und lass mich prüfen ob alles funktioniert wie es soll. 
 8. Füge alle Änderungen zu git hinzu.
