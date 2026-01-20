@@ -39,6 +39,21 @@ type NewsData = {
 
 const newsData = newsDataRaw as NewsData;
 
+// Import all news images using Vite's glob
+const newsImages = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/news/*.{jpeg,jpg,png,gif}",
+  { eager: true }
+);
+
+// Helper to get news image by path
+const getNewsImage = (imageUrl: string): string => {
+  // imageUrl format: "src/assets/news/2026-01-15-wordpress-blog-migration-complete.png"
+  // Add leading slash to match glob import keys
+  const imagePath = "/" + imageUrl;
+  const matchingImage = newsImages[imagePath];
+  return matchingImage ? matchingImage.default.src : placeholderNewsImage.src;
+};
+
 // Prepare news with image URLs for React component
 const visibleNews = newsData.news
   .filter((item) => item.visible)
@@ -46,7 +61,7 @@ const visibleNews = newsData.news
   .slice(0, 8)
   .map((item) => ({
     ...item,
-    imageUrl: placeholderNewsImage.src,
+    imageUrl: getNewsImage(item.imageUrl),
   }));
 
 // Import all handmade images using Vite's glob
