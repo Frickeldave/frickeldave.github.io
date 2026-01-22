@@ -128,6 +128,14 @@ const aboutme = defineCollection({
         ])
         .optional(),
       podcast_intro: z.string().optional(),
+      podcast_platforms: z
+        .array(
+          z.object({
+            name: z.string(),
+            url: z.string(),
+          })
+        )
+        .optional(),
       // Collections
       socialLinks: z
         .array(

@@ -1,6 +1,7 @@
 ---
 import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
 import { getEntry } from "astro:content";
+import { markdownify } from "@lib/textConverter";
 
 const doagEntry = await getEntry("aboutme", "doag");
 
@@ -9,6 +10,7 @@ if (!doagEntry) {
 }
 
 const episodes = doagEntry.data.episodes || [];
+const podcastPlatforms = doagEntry.data.podcast_platforms || [];
 
 const toc = episodes.map((episode) => ({
   text: episode.title,
@@ -29,12 +31,60 @@ const toc = episodes.map((episode) => ({
       >
         🎙️ DOAG Voices Podcast
       </h1>
-      <div class="prose prose-lg max-w-none">
-        <p class="text-txt-p dark:text-darkmode-txt-p">
-          {doagEntry.data.intro}
-        </p>
-      </div>
+      <div
+        class="content prose-lg"
+        set:html={typeof doagEntry.data.intro === "string"
+          ? markdownify(doagEntry.data.intro, true)
+          : doagEntry.data.intro?.content
+            ? markdownify(doagEntry.data.intro.content, true)
+            : ""}
+      />
     </div>
+
+    {
+      doagEntry.data.podcast_intro && (
+        <div class="glass mb-6 rounded-lg p-6 lg:p-8">
+          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-2xl font-bold">
+            Über den Podcast
+          </h2>
+          <div
+            class="content prose-lg"
+            set:html={markdownify(doagEntry.data.podcast_intro, true)}
+          />
+
+          {podcastPlatforms.length > 0 && (
+            <div class="mt-6">
+              <h3 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-lg font-semibold">
+                Jetzt anhören auf:
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                {podcastPlatforms.map((platform) => {
+                  let bg;
+                  if (platform.name === "Spotify") bg = "#1DB954";
+                  else if (platform.name === "Apple Podcasts") bg = "#FA57C2";
+                  else if (platform.name === "Amazon Music") bg = "#FF9900";
+                  else if (platform.name === "Deezer") bg = "#ED311B";
+                  else if (platform.name === "Podcast.de") bg = "#0066CC";
+                  else if (platform.name === "Acast") bg = "#000000";
+                  else bg = "#777777";
+                  return (
+                    <a
+                      href={platform.url}
+                      target="_blank"
+                      rel="noopener"
+                      class="inline-block rounded px-2.5 py-0.5 text-sm text-white transition-opacity hover:opacity-80"
+                      style={{ backgroundColor: bg }}
+                    >
+                      {platform.name}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
 
     {
       episodes.map((episode) => (
@@ -51,9 +101,10 @@ const toc = episodes.map((episode) => ({
           <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
             <strong>Mit:</strong> {episode.guests}
           </p>
-          <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
-            {episode.description}
-          </p>
+          <div
+            class="content mb-4"
+            set:html={markdownify(episode.description, true)}
+          />
           <div class="mt-2 flex gap-2">
             {Object.entries(episode.links ?? {}).map(([provider, url]) => {
               let bg;
@@ -72,7 +123,7 @@ const toc = episodes.map((episode) => ({
                   href={url}
                   target="_blank"
                   rel="noopener"
-                  class="inline-block rounded px-4 py-1.5 text-white"
+                  class="inline-block rounded px-2.5 py-0.5 text-sm text-white transition-opacity hover:opacity-80"
                   style={{ backgroundColor: bg }}
                 >
                   {label}

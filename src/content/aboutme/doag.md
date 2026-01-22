@@ -228,9 +228,6 @@ episodes:
       spotify: "https://open.spotify.com/episode/2FKFEVZhoPHP0aB2d0L3b6"
       apple: "https://podcasts.apple.com/de/podcast/doag-voices-futureai-mit-dr-benjamin-linnik-und-lyubomir/id1847181531"
       amazon: "https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices"
-      deezer: "https://www.deezer.com/de/show/1002294232"
-      podcast_de: "https://www.podcast.de/podcast/3651714/archiv"
-      acast: "https://shows.acast.com/doag-voices-arbeitstitel"
 
   - id: "doag-voices-74135"
     title: "GitHub Copilot und die Zukunft der Softwareentwicklung"
