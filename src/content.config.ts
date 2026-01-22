@@ -118,13 +118,15 @@ const aboutme = defineCollection({
       website: z.string().optional(),
       summary: z.string().optional(),
       profileImage: image().optional(),
-      intro: z.union([
-        z.object({
-          title: z.string(),
-          content: z.string(),
-        }),
-        z.string()
-      ]).optional(),
+      intro: z
+        .union([
+          z.object({
+            title: z.string(),
+            content: z.string(),
+          }),
+          z.string(),
+        ])
+        .optional(),
       podcast_intro: z.string().optional(),
       // Collections
       socialLinks: z
@@ -169,14 +171,16 @@ const aboutme = defineCollection({
             guests: z.string(),
             date: z.string(),
             description: z.string(),
-            links: z.object({
-              spotify: z.string().optional(),
-              apple: z.string().optional(),
-              amazon: z.string().optional(),
-              deezer: z.string().optional(),
-              podcast_de: z.string().optional(),
-              acast: z.string().optional(),
-            }).optional(),
+            links: z
+              .object({
+                spotify: z.string().optional(),
+                apple: z.string().optional(),
+                amazon: z.string().optional(),
+                deezer: z.string().optional(),
+                podcast_de: z.string().optional(),
+                acast: z.string().optional(),
+              })
+              .optional(),
           })
         )
         .optional(),

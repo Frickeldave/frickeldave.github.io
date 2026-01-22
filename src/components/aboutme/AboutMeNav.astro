@@ -25,43 +25,52 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
 
 <nav class="space-y-6">
   <div class="glass rounded-lg p-6">
-    <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-lg font-bold">Bereiche</h3>
+    <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-lg font-bold">
+      Bereiche
+    </h3>
     <ul class="space-y-2">
-      {links.map(({ href, text }) => (
-        <li>
-          <a
-            href={href}
-            class:list={[
-              "block rounded-lg px-4 py-2 transition-colors",
-              currentPath === href || (href !== "/aboutme" && currentPath.startsWith(href))
-                ? "bg-amber-500 text-white"
-                : "text-txt-p dark:text-darkmode-txt-p hover:bg-gray-100 dark:hover:bg-gray-800",
-            ]}
-          >
-            {text}
-          </a>
-        </li>
-      ))}
+      {
+        links.map(({ href, text }) => (
+          <li>
+            <a
+              href={href}
+              class:list={[
+                "block rounded-lg px-4 py-2 transition-colors",
+                currentPath === href ||
+                (href !== "/aboutme" && currentPath.startsWith(href))
+                  ? "bg-amber-500 text-white"
+                  : "text-txt-p hover:bg-gray-100 dark:text-darkmode-txt-p dark:hover:bg-gray-800",
+              ]}
+            >
+              {text}
+            </a>
+          </li>
+        ))
+      }
     </ul>
   </div>
 
-  {toc && toc.length > 0 && (
-    <div class="glass rounded-lg p-6">
-      <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-lg font-bold">Auf dieser Seite</h3>
-      <ul class="space-y-2">
-        {toc.map((item) => (
-          <li class:list={[item.depth && item.depth > 2 && "pl-4"]}>
-            <a
-              href={`#${item.slug}`}
-              class="block text-sm text-txt-p dark:text-darkmode-txt-p hover:text-amber-500 transition-colors"
-            >
-              {item.text}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
-  
+  {
+    toc && toc.length > 0 && (
+      <div class="glass rounded-lg p-6">
+        <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-lg font-bold">
+          Auf dieser Seite
+        </h3>
+        <ul class="space-y-2">
+          {toc.map((item) => (
+            <li class:list={[item.depth && item.depth > 2 && "pl-4"]}>
+              <a
+                href={`#${item.slug}`}
+                class="block text-sm text-txt-p transition-colors hover:text-amber-500 dark:text-darkmode-txt-p"
+              >
+                {item.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
   <slot />
 </nav>

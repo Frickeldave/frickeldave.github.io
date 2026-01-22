@@ -12,7 +12,9 @@ publications:
     publisher: "Make Magazin / Heise"
 
   - title: "Ist dein DevOps Qi im Einklang?"
-    description: "Ein Artikel über Balance und Harmonie in DevOps-Prozessen. Wie man DevOps ganzheitlich betrachtet."
+    description:
+      "Ein Artikel über Balance und Harmonie in DevOps-Prozessen. Wie man DevOps ganzheitlich
+      betrachtet."
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/devops-ist-euer-qi-im-einklang.html"
     blogUrl: "#TODO"
@@ -20,7 +22,8 @@ publications:
     publisher: "Informatik Aktuell"
 
   - title: "Der definitive Guide in die ESP32 Welt"
-    description: "Ein umfassender Einstieg in die Welt der ESP32 Mikrocontroller für IoT und Smarthome."
+    description:
+      "Ein umfassender Einstieg in die Welt der ESP32 Mikrocontroller für IoT und Smarthome."
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/der-definitive-guide-in-die-esp32-welt.html"
     blogUrl: "#TODO"
@@ -36,7 +39,8 @@ publications:
     publisher: "Informatik Aktuell"
 
   - title: "Linting für NodeJS Projekte auf Basis von Astro"
-    description: "Ein vollständiger Linting-Stack für Code-Qualität, Formatierung und Prosa-Linting."
+    description:
+      "Ein vollständiger Linting-Stack für Code-Qualität, Formatierung und Prosa-Linting."
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html"
     blogUrl: "#TODO"

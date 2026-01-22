@@ -17,7 +17,9 @@ const toc = [
 
 <AboutMeLayout title={title} description={description} toc={toc}>
   <div class="glass mb-6 rounded-lg p-6 lg:p-8">
-    <h1 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
+    <h1
+      class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl"
+    >
       Projekte
     </h1>
     <p class="text-txt-p dark:text-darkmode-txt-p">
@@ -26,55 +28,90 @@ const toc = [
   </div>
 
   <div class="space-y-12">
-    {projects && (
-      <section id="it-projects">
-        <h2 class="text-txt-h dark:text-darkmode-txt-h mb-6 text-2xl font-bold">IT Projects</h2>
-        <div class="grid gap-6">
-          {projects.map(project => (
-            <div class="glass rounded-lg p-6">
-               <div class="flex justify-between items-start mb-2">
-                 <h3 class="text-xl font-bold">{project.title}</h3>
-                 {project.status && (
+    {
+      projects && (
+        <section id="it-projects">
+          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-6 text-2xl font-bold">
+            IT Projects
+          </h2>
+          <div class="grid gap-6">
+            {projects.map((project) => (
+              <div class="glass rounded-lg p-6">
+                <div class="mb-2 flex items-start justify-between">
+                  <h3 class="text-xl font-bold">{project.title}</h3>
+                  {project.status && (
                     <span class="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
                       {project.status}
                     </span>
-                 )}
-               </div>
-               <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">{project.description}</p>
-               
-               {project.technologies && (
-                 <div class="flex flex-wrap gap-2 mb-4">
-                   {project.technologies.map(tech => (
-                     <span class="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">{tech}</span>
-                   ))}
-                 </div>
-               )}
-               
-               <div class="flex gap-4">
-                 {project.demo && <a href={project.demo} target="_blank" class="text-amber-600 hover:text-amber-700 font-medium">Demo &rarr;</a>}
-                 {project.github && <a href={project.github} target="_blank" class="text-amber-600 hover:text-amber-700 font-medium">GitHub &rarr;</a>}
-               </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    )}
+                  )}
+                </div>
+                <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
+                  {project.description}
+                </p>
 
-    {handmadeProjects && (
-       <section id="handmade-diy">
-        <h2 class="text-txt-h dark:text-darkmode-txt-h mb-6 text-2xl font-bold">Handmade & DIY</h2>
-         <div class="grid gap-6 md:grid-cols-2">
-           {handmadeProjects.map(project => (
-             <div class="glass rounded-lg p-6">
-                <h3 class="text-lg font-bold mb-2">{project.title}</h3>
-                <p class="text-sm mb-4 text-txt-p dark:text-darkmode-txt-p">{project.description}</p>
-                {project.blogUrl && (
-                  <a href={project.blogUrl} class="text-amber-600 hover:text-amber-700 text-sm font-medium">Zum Blogartikel &rarr;</a>
+                {project.technologies && (
+                  <div class="mb-4 flex flex-wrap gap-2">
+                    {project.technologies.map((tech) => (
+                      <span class="rounded bg-gray-200 px-2 py-1 text-xs dark:bg-gray-700">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
                 )}
-             </div>
-           ))}
-         </div>
-       </section>
-    )}
+
+                <div class="flex gap-4">
+                  {project.demo && (
+                    <a
+                      href={project.demo}
+                      target="_blank"
+                      class="font-medium text-amber-600 hover:text-amber-700"
+                    >
+                      Demo &rarr;
+                    </a>
+                  )}
+                  {project.github && (
+                    <a
+                      href={project.github}
+                      target="_blank"
+                      class="font-medium text-amber-600 hover:text-amber-700"
+                    >
+                      GitHub &rarr;
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      handmadeProjects && (
+        <section id="handmade-diy">
+          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-6 text-2xl font-bold">
+            Handmade & DIY
+          </h2>
+          <div class="grid gap-6 md:grid-cols-2">
+            {handmadeProjects.map((project) => (
+              <div class="glass rounded-lg p-6">
+                <h3 class="mb-2 text-lg font-bold">{project.title}</h3>
+                <p class="mb-4 text-sm text-txt-p dark:text-darkmode-txt-p">
+                  {project.description}
+                </p>
+                {project.blogUrl && (
+                  <a
+                    href={project.blogUrl}
+                    class="text-sm font-medium text-amber-600 hover:text-amber-700"
+                  >
+                    Zum Blogartikel &rarr;
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
   </div>
 </AboutMeLayout>

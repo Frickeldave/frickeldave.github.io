@@ -19,12 +19,22 @@ profileImage: "@assets/profile/dave02.png"
 # Intro Section (Frickeldave)
 intro:
   title: "Ich bin Frickeldave"
-  content: "Ich bin Frickeldave – dein Experte für DIY-Projekte, handgemachte Kreationen und IT-Lösungen. Mit einer Leidenschaft für das Tüfteln und Verbessern bringe ich kreative Ideen und technische Expertise zusammen, um einzigartige Projekte zu realisieren. Ob Holzarbeiten, 3D-Druck oder komplexe DevOps-, KI und Cloud-Technologien – ich teile mein Wissen und meine Erfahrungen, um dich zu inspirieren und zu unterstützen. Diese Erfahrung im handwerklichen Bereich überträgt sich auch auf meine IT-Projekte, bei denen Präzision, Kreativität und Problemlösungsfähigkeiten gefragt sind. Auf dieser Seite findest du eine Auswahl meiner Arbeiten sowie Einblicke in meine Fähigkeiten und Leidenschaften."
+  content:
+    "Ich bin Frickeldave – dein Experte für DIY-Projekte, handgemachte Kreationen und IT-Lösungen.
+    Mit einer Leidenschaft für das Tüfteln und Verbessern bringe ich kreative Ideen und technische
+    Expertise zusammen, um einzigartige Projekte zu realisieren. Ob Holzarbeiten, 3D-Druck oder
+    komplexe DevOps-, KI und Cloud-Technologien – ich teile mein Wissen und meine Erfahrungen, um
+    dich zu inspirieren und zu unterstützen. Diese Erfahrung im handwerklichen Bereich überträgt
+    sich auch auf meine IT-Projekte, bei denen Präzision, Kreativität und Problemlösungsfähigkeiten
+    gefragt sind. Auf dieser Seite findest du eine Auswahl meiner Arbeiten sowie Einblicke in meine
+    Fähigkeiten und Leidenschaften."
 
 # Handmade Portfolio Projects
 handmadeProjects:
   - title: "Schatztruhe aus Holz"
-    description: "Eine rustikale Schatztruhe aus geflammtem Holz mit antiken Beschlägen - perfekt als Geschenk oder Aufbewahrung."
+    description:
+      "Eine rustikale Schatztruhe aus geflammtem Holz mit antiken Beschlägen - perfekt als Geschenk
+      oder Aufbewahrung."
     image: "@assets/blog/diy/2019-11-27-schatztruhe-aus-holz/shah-header.png"
     blogUrl: "/blog/schatztruhe-aus-holz"
     category: "Holzwerken"
@@ -36,19 +46,22 @@ handmadeProjects:
     category: "Epoxidharz"
 
   - title: "Katzenkratzbaum aus Dachbalken"
-    description: "Ein massiver Kratzbaum aus recycelten Dachbalken - stabil, nachhaltig und einzigartig."
+    description:
+      "Ein massiver Kratzbaum aus recycelten Dachbalken - stabil, nachhaltig und einzigartig."
     image: "@assets/blog/diy/2021-03-05-katzenkratzbaum-aus-dachbalken/kkad-header.png"
     blogUrl: "/blog/katzenkratzbaum-aus-dachbalken"
     category: "Holzwerken"
 
   - title: "Teeschrank mit Epoxidharzfronten"
-    description: "Ein eleganter Teeschrank mit leuchtenden Epoxidharz-Elementen und LED-Beleuchtung."
+    description:
+      "Ein eleganter Teeschrank mit leuchtenden Epoxidharz-Elementen und LED-Beleuchtung."
     image: "@assets/blog/diy/2021-04-01-teeschrank-mit-epoxidharzfronten/tmef-header.png"
     blogUrl: "/blog/teeschrank-mit-epoxidharzfronten"
     category: "Epoxidharz"
 
   - title: "Kopfhörerhalter mit LED und Epoxy"
-    description: "Ein stylischer Kopfhörerhalter mit integrierter LED-Beleuchtung und Epoxidharz-Akzenten."
+    description:
+      "Ein stylischer Kopfhörerhalter mit integrierter LED-Beleuchtung und Epoxidharz-Akzenten."
     image: "@assets/blog/diy/2021-05-18-kopfhoererhalter-mit-led-und-epoxy/khle-header.png"
     blogUrl: "/blog/kopfhoererhalter-mit-led-und-epoxy"
     category: "Epoxidharz"
@@ -66,13 +79,16 @@ handmadeProjects:
     category: "Holzwerken"
 
   - title: "Personalisierte Schlüsselanhänger"
-    description: "Individuelle Schlüsselanhänger mit Lasergravur - perfekt als personalisiertes Geschenk."
+    description:
+      "Individuelle Schlüsselanhänger mit Lasergravur - perfekt als personalisiertes Geschenk."
     image: "@assets/blog/diy/2024-09-14-personalisierte-schluesselanhaenger/psmf-header.jpeg"
     blogUrl: "/blog/personalisierte-schluesselanhaenger"
     category: "Laser"
 
   - title: "Le Passe-Trappe Spiel"
-    description: "Ein handgefertigtes Geschicklichkeitsspiel mit Tennis-Thema, inkl. Furnierarbeit und 3D-Druck Elementen."
+    description:
+      "Ein handgefertigtes Geschicklichkeitsspiel mit Tennis-Thema, inkl. Furnierarbeit und 3D-Druck
+      Elementen."
     image: "@assets/blog/diy/2022-11-16-le-passe-trappe-spiel/lpts-header.png"
     blogUrl: "/blog/2022-11-16-le-passe-trappe-spiel"
     category: "3D-Druck"
@@ -88,7 +104,9 @@ publications:
     publisher: "Make Magazin / Heise"
 
   - title: "Ist dein DevOps Qi im Einklang?"
-    description: "Ein Artikel über Balance und Harmonie in DevOps-Prozessen. Wie man DevOps ganzheitlich betrachtet."
+    description:
+      "Ein Artikel über Balance und Harmonie in DevOps-Prozessen. Wie man DevOps ganzheitlich
+      betrachtet."
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/devops-ist-euer-qi-im-einklang.html"
     blogUrl: "#TODO"
@@ -96,7 +114,8 @@ publications:
     publisher: "Informatik Aktuell"
 
   - title: "Der definitive Guide in die ESP32 Welt"
-    description: "Ein umfassender Einstieg in die Welt der ESP32 Mikrocontroller für IoT und Smarthome."
+    description:
+      "Ein umfassender Einstieg in die Welt der ESP32 Mikrocontroller für IoT und Smarthome."
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/der-definitive-guide-in-die-esp32-welt.html"
     blogUrl: "#TODO"
@@ -112,7 +131,8 @@ publications:
     publisher: "Informatik Aktuell"
 
   - title: "Linting für NodeJS Projekte auf Basis von Astro"
-    description: "Ein vollständiger Linting-Stack für Code-Qualität, Formatierung und Prosa-Linting."
+    description:
+      "Ein vollständiger Linting-Stack für Code-Qualität, Formatierung und Prosa-Linting."
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html"
     blogUrl: "#TODO"
@@ -120,11 +140,16 @@ publications:
     publisher: "Heise Developer"
 
 # Professional Summary
-summary: "IT-Geek, Vater, Hausbauer, Heimwerker, Entwickler, DevOps Evangelist, Technical Lead, Blogger, Maker. 26 Jahre Consultant-Erfahrung mit Fokus auf DevOps, Cloud-Infrastruktur und agile Transformation."
+summary:
+  "IT-Geek, Vater, Hausbauer, Heimwerker, Entwickler, DevOps Evangelist, Technical Lead, Blogger,
+  Maker. 26 Jahre Consultant-Erfahrung mit Fokus auf DevOps, Cloud-Infrastruktur und agile
+  Transformation."
 
 # Personal Description
 personalMotto: "Creating software is more craftsmanship than engineering."
-personalDescription: "Umtriebig, ungeduldig, kreativ, schnell, wechselhaft, laut, fröhlich, unbequem, launisch, fordernd, ironisch, aufmerksam."
+personalDescription:
+  "Umtriebig, ungeduldig, kreativ, schnell, wechselhaft, laut, fröhlich, unbequem, launisch,
+  fordernd, ironisch, aufmerksam."
 
 # Core Skills
 skills:
@@ -166,7 +191,9 @@ skills:
       - "PowerShell DSC"
 
 # Current Project
-currentProject: "Smarthome Automation basierend auf PowerShell in einer vollständig containerisierten Microservice Architektur und auf einer GitHub basierten CD Pipeline."
+currentProject:
+  "Smarthome Automation basierend auf PowerShell in einer vollständig containerisierten Microservice
+  Architektur und auf einer GitHub basierten CD Pipeline."
 
 # Professional Experience
 experience:
@@ -207,8 +234,10 @@ experience:
     period: "Januar 2022 – Dezember 2023"
     location: "Deutschland"
     responsibilities:
-      - "Leitung Backend Infrastruktur Team mit Verantwortung über Cloud/OnPrem und Provider Serverinfrastruktur mit > 5000 Devices"
-      - "Automatisierung Servermanagement mit Ansible für Windows und Linux Server in GCP und 4 Rechenzentren"
+      - "Leitung Backend Infrastruktur Team mit Verantwortung über Cloud/OnPrem und Provider
+        Serverinfrastruktur mit > 5000 Devices"
+      - "Automatisierung Servermanagement mit Ansible für Windows und Linux Server in GCP und 4
+        Rechenzentren"
       - "Implementierung CIS Benchmarks in enger Abstimmung mit CISO"
       - "Aufbau Tier-0 Zone - Ausschreibung Private Cloud-Lösung für Identitäten-Verwaltung"
       - "Servicemanagement 'Oberkante OS'"
@@ -226,7 +255,8 @@ experience:
       - "Leitung DevOps und CI/CD"
       - "Management der Build-Umgebung des Konzerns"
       - "Aufbau einer zentralen DevOps Toolchain für Automotive Kunden (Daimler, BMW, VW)"
-      - "Entwicklung einer unternehmensweiten Lösung mit Git, Build-Tools, Repository, Wiki, Sonarqube"
+      - "Entwicklung einer unternehmensweiten Lösung mit Git, Build-Tools, Repository, Wiki,
+        Sonarqube"
       - "Automatisierung der Repositories und User Management"
       - "Internes Marketing und Offshore Team Management in Indien"
       - "Fachliche Führung verschiedener Teams"
@@ -238,7 +268,8 @@ experience:
     location: "Frankfurt am Main"
     responsibilities:
       - "Product-Management, Product-Owner, Pre-Sales, Reporting"
-      - "Entwicklung eines neuen Softwaremanagement Agenten 'from Scratch' für das SCCM Addon 'Enterprise Manager for SCCM'"
+      - "Entwicklung eines neuen Softwaremanagement Agenten 'from Scratch' für das SCCM Addon
+        'Enterprise Manager for SCCM'"
       - "Aufbau einer SCCM Community mittels Blog, Live-Events und Social Media"
       - "Aufbau einer Channel-Landschaft für SCCM-basierte Produkte"
       - "Product Owner und fachliche Leitung des Entwicklungsteams"
@@ -467,7 +498,11 @@ projects:
     status: "Erfolgreich"
 
 # Career Journey
-careerJourney: "17 Jahre Consultant, 17 Jahre wohnen im Hotel, auf der Straße, in Clubs, in Bars, in Büros, in Flugzeugen, Zügen, Bussen und Autobahnen, immer viel Spaß an der Aufgabe und viel Engagement. Plötzlich Vater, Ehemann. Neue Herausforderungen, ein neuer Fokus, der vorher nie da war. Leben mit Ziel?"
+careerJourney:
+  "17 Jahre Consultant, 17 Jahre wohnen im Hotel, auf der Straße, in Clubs, in Bars, in Büros, in
+  Flugzeugen, Zügen, Bussen und Autobahnen, immer viel Spaß an der Aufgabe und viel Engagement.
+  Plötzlich Vater, Ehemann. Neue Herausforderungen, ein neuer Fokus, der vorher nie da war. Leben
+  mit Ziel?"
 
 # Personal Interests
 personalInterests:
