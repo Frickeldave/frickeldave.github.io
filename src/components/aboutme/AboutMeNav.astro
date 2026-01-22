@@ -38,7 +38,7 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
                 "glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all",
                 currentPath === href ||
                 (href !== "/aboutme" && currentPath.startsWith(href))
-                  ? "bg-amber-500/30 text-txt-h dark:text-darkmode-txt-h border-amber-500/50 shadow-sm"
+                  ? "text-txt-h dark:text-darkmode-txt-h border-amber-500/50 bg-amber-500/30 shadow-sm"
                   : "text-txt-p hover:bg-amber-500/20 dark:text-darkmode-txt-p",
               ]}
             >
@@ -61,7 +61,7 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
             <li class:list={[item.depth && item.depth > 2 && "pl-4"]}>
               <a
                 href={`#${item.slug}`}
-                class="glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all hover:bg-amber-500/20 text-txt-p dark:text-darkmode-txt-p"
+                class="glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm text-txt-p transition-all hover:bg-amber-500/20 dark:text-darkmode-txt-p"
               >
                 {item.text}
               </a>
