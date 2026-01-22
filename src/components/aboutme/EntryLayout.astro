@@ -1,0 +1,86 @@
+---
+import type { PortfolioEntry } from "@/types";
+import BaseLayout from "@components/base/BaseLayout.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+import HeroSection from "./HeroSection.astro";
+import HandmadeSection from "./HandmadeSection.astro";
+import PublicationsSection from "./PublicationsSection.astro";
+import PodcastSection from "./PodcastSection.astro";
+import SkillsSection from "./SkillsSection.astro";
+import ExperienceSection from "./ExperienceSection.astro";
+import ProjectsSection from "./ProjectsSection.astro";
+import EducationSection from "./EducationSection.astro";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { title, description } = entry.data;
+---
+
+<BaseLayout title={title} description={description}>
+  <!-- Page Header with Breadcrumbs -->
+  <PageHeader title="Portfolio" colorScheme="amber" />
+
+  <!-- Hero Section with Intro and Social Links -->
+  <HeroSection entry={entry} />
+
+  <!-- Handmade Portfolio Carousel -->
+  <HandmadeSection entry={entry} />
+
+  <!-- Publications Carousel -->
+  <PublicationsSection entry={entry} />
+
+  <!-- Podcast Section -->
+  <PodcastSection />
+
+  <!-- Skills Section -->
+  <SkillsSection entry={entry} />
+
+  <!-- Experience Section -->
+  <ExperienceSection entry={entry} />
+
+  <!-- Projects Section -->
+  <ProjectsSection entry={entry} />
+
+  <!-- Education & Achievements Section -->
+  <EducationSection entry={entry} />
+</BaseLayout>
+
+<style>
+  /* Global portfolio styles */
+  :global(.glass) {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  :global(.dark .glass) {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Smooth scrolling for the entire page */
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+
+  /* Animation classes */
+  :global(.animate-fade-in) {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

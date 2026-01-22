@@ -1,0 +1,52 @@
+---
+import type { PortfolioEntry } from "@/types";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { skills } = entry.data;
+---
+
+{
+  skills && skills.length > 0 && (
+    <section class="section-sm container">
+      <div class="row justify-center">
+        <div class="col-12">
+          <div class="mb-12 text-center">
+            <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
+              Technical Skills
+            </h2>
+            <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
+              Technologies and tools I work with
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {skills.map((skillCategory) => (
+              <div class="glass rounded-lg p-6 transition-transform duration-300 hover:scale-105">
+                <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-center text-xl font-semibold">
+                  {skillCategory.category}
+                </h3>
+                <div class="flex flex-wrap justify-center gap-2">
+                  {skillCategory.technologies.map((tech) => (
+                    <span class="glass-t cursor-default rounded-full px-3 py-1 text-sm text-txt-p dark:text-darkmode-txt-p">
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .glass-t {
+    @apply border border-white/20 bg-white/10 backdrop-blur-sm dark:border-gray-600/30 dark:bg-gray-800/20;
+  }
+</style>

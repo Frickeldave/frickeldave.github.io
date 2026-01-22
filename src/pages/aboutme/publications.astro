@@ -1,0 +1,60 @@
+---
+import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
+import { getEntry } from "astro:content";
+
+const pubEntry = await getEntry("aboutme", "publications");
+
+const publications = (pubEntry?.data.publications || []).sort((a, b) => {
+  const yearA = parseInt(a.year || "0");
+  const yearB = parseInt(b.year || "0");
+  return yearB - yearA;
+});
+
+const toc = publications.map((pub, index) => ({
+  text: pub.title,
+  slug: `pub-${index}`,
+  depth: 2,
+}));
+---
+
+<AboutMeLayout title="Publikationen" description="Meine Veröffentlichungen in Fachzeitschriften und Online-Publikationen" toc={toc}>
+
+  <section class="container p-4">
+    <div class="glass mb-6 rounded-lg p-6 lg:p-8">
+      <h1 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
+        📚 Publikationen
+      </h1>
+    </div>
+
+    {publications.map((pub, index) => (
+      <div id={`pub-${index}`} class="glass mb-6 rounded-lg p-6 lg:p-8 scroll-mt-24">
+        <div class="mb-3 flex flex-wrap gap-2">
+          {pub.year && (
+            <span class="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+              {pub.year}
+            </span>
+          )}
+          {pub.publisher && (
+            <span class="rounded-full bg-gray-500/20 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300">
+              {pub.publisher}
+            </span>
+          )}
+        </div>
+        <h2 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-2xl font-bold">
+          {pub.title}
+        </h2>
+        <p class="text-txt-p dark:text-darkmode-txt-p mb-4">
+          {pub.description}
+        </p>
+        <a
+          href={pub.publicationUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block rounded-lg bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
+        >
+          Zur Veröffentlichung
+        </a>
+      </div>
+    ))}
+  </section>
+</AboutMeLayout>

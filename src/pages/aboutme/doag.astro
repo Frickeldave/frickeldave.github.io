@@ -1,0 +1,87 @@
+---
+import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
+import { getEntry } from "astro:content";
+
+const doagEntry = await getEntry("aboutme", "doag");
+
+if (!doagEntry) {
+  throw new Error("DOAG entry not found");
+}
+
+const episodes = doagEntry.data.episodes || [];
+
+const toc = episodes.map((episode) => ({
+  text: episode.title,
+  slug: episode.id,
+  depth: 2,
+}));
+---
+
+<AboutMeLayout
+  title="DOAG & DOAG Voices"
+  description="Meine Aktivitäten bei der DOAG und als Co-Host des DOAG VOICES Podcasts"
+  toc={toc}
+>
+  <section class="container p-4">
+    <div class="glass mb-6 rounded-lg p-6 lg:p-8">
+      <h1
+        class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl"
+      >
+        🎙️ DOAG Voices Podcast
+      </h1>
+      <div class="prose prose-lg max-w-none">
+        <p class="text-txt-p dark:text-darkmode-txt-p">
+          {doagEntry.data.intro}
+        </p>
+      </div>
+    </div>
+
+    {
+      episodes.map((episode) => (
+        <div
+          id={episode.id}
+          class="glass mb-6 scroll-mt-24 rounded-lg p-6 lg:p-8"
+        >
+          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-2xl font-bold">
+            {episode.title}
+          </h2>
+          <p class="mb-2 text-sm text-txt-p dark:text-darkmode-txt-p">
+            <strong>{episode.edition}</strong> • {episode.date}
+          </p>
+          <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
+            <strong>Mit:</strong> {episode.guests}
+          </p>
+          <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
+            {episode.description}
+          </p>
+          <div class="mt-2 flex gap-2">
+            {Object.entries(episode.links ?? {}).map(([provider, url]) => {
+              let bg;
+              if (provider === "spotify") bg = "#1DB954";
+              else if (provider === "apple") bg = "#FA57C2";
+              else if (provider === "amazon") bg = "#FF9900";
+              else if (provider === "deezer") bg = "#ED311B";
+              else if (provider === "podcast_de") bg = "#0066CC";
+              else if (provider === "acast") bg = "#000000";
+              else bg = "#777777";
+              const label =
+                provider.charAt(0).toUpperCase() +
+                provider.slice(1).replace("_", " ");
+              return (
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-block rounded px-4 py-1.5 text-white"
+                  style={{ backgroundColor: bg }}
+                >
+                  {label}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      ))
+    }
+  </section>
+</AboutMeLayout>

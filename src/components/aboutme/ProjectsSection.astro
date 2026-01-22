@@ -1,0 +1,136 @@
+---
+import type { PortfolioEntry } from "@/types";
+import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { projects } = entry.data;
+
+// Function to get status color
+const getStatusColor = (status: string | undefined) => {
+  switch (status?.toLowerCase()) {
+    case "live":
+      return "bg-green-500";
+    case "production":
+      return "bg-blue-500";
+    case "open source":
+      return "bg-purple-500";
+    case "enterprise":
+      return "bg-orange-500";
+    default:
+      return "bg-gray-500";
+  }
+};
+---
+
+{
+  projects && projects.length > 0 && (
+    <section class="section-sm container">
+      <div class="row justify-center">
+        <div class="col-12">
+          <div class="mb-12 text-center">
+            <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
+              Featured Projects
+            </h2>
+            <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
+              Some of my recent work and contributions
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            {projects.map((project, _index) => (
+              <div class="glass group rounded-lg p-6 transition-all duration-300 hover:scale-105 lg:p-8">
+                {/* Project Header */}
+                <div class="mb-4 flex items-start justify-between">
+                  <div class="flex-1">
+                    <h3 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-xl font-semibold transition-colors group-hover:text-amber-600 dark:group-hover:text-amber-400 lg:text-2xl">
+                      {project.title}
+                    </h3>
+                    {project.description && (
+                      <p class="mb-3 leading-relaxed text-txt-p dark:text-darkmode-txt-p">
+                        {project.description}
+                      </p>
+                    )}
+                  </div>
+                  {project.status && (
+                    <span
+                      class={`rounded-full px-2 py-1 text-xs text-white ${getStatusColor(project.status)} ml-4`}
+                    >
+                      {project.status}
+                    </span>
+                  )}
+                </div>
+
+                {/* Technologies */}
+                {project.technologies && project.technologies.length > 0 && (
+                  <div class="mb-4">
+                    <div class="flex flex-wrap gap-2">
+                      {project.technologies.map((tech) => (
+                        <span class="glass-t rounded px-2 py-1 text-xs text-txt-p dark:text-darkmode-txt-p">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Project Content */}
+                {project.content && project.content.length > 0 && (
+                  <div class="mb-6">
+                    <ul class="space-y-2">
+                      {project.content.map((item) => (
+                        <li class="flex items-start">
+                          <span class="mr-2 mt-1 text-amber-500">▸</span>
+                          <span class="text-sm text-txt-p dark:text-darkmode-txt-p">
+                            {item}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Project Links */}
+                <div class="flex space-x-4">
+                  {project.github && (
+                    <a
+                      href={project.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600"
+                      aria-label="View on GitHub"
+                    >
+                      <FaGithub className="w-4 h-4 text-white" />
+                      <span>Code</span>
+                    </a>
+                  )}
+                  {project.demo && (
+                    <a
+                      href={project.demo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600"
+                      aria-label="View Live Demo"
+                    >
+                      <FaExternalLinkAlt className="w-4 h-4 text-white" />
+                      <span>Demo</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .glass-t {
+    @apply border border-white/20 bg-white/10 backdrop-blur-sm dark:border-gray-600/30 dark:bg-gray-800/20;
+  }
+</style>

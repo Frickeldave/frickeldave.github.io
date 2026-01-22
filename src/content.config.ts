@@ -95,13 +95,18 @@ const indexCards = defineCollection({
   }),
 });
 
-const portfolio = defineCollection({
+const aboutme = defineCollection({
   loader: glob({
-    pattern: "-index.{md,mdx}",
-    base: "./src/content/portfolio",
+    pattern: "**/[^_]*.{md,mdx}",
+    base: "./src/content/aboutme",
   }),
   schema: ({ image }) =>
-    searchable.extend({
+    z.object({
+      title: z.string(),
+      description: z.string().optional(),
+      autodescription: z.boolean().default(true),
+      draft: z.boolean().default(false),
+      // Main about me fields
       name: z.string().optional(),
       jobTitle: z.string().optional(),
       tagline: z.string().optional(),
@@ -113,12 +118,15 @@ const portfolio = defineCollection({
       website: z.string().optional(),
       summary: z.string().optional(),
       profileImage: image().optional(),
-      intro: z
-        .object({
+      intro: z.union([
+        z.object({
           title: z.string(),
           content: z.string(),
-        })
-        .optional(),
+        }),
+        z.string()
+      ]).optional(),
+      podcast_intro: z.string().optional(),
+      // Collections
       socialLinks: z
         .array(
           z.object({
@@ -149,6 +157,26 @@ const portfolio = defineCollection({
             blogUrl: z.string().optional(),
             year: z.string().optional(),
             publisher: z.string().optional(),
+          })
+        )
+        .optional(),
+      episodes: z
+        .array(
+          z.object({
+            id: z.string(),
+            title: z.string(),
+            edition: z.string(),
+            guests: z.string(),
+            date: z.string(),
+            description: z.string(),
+            links: z.object({
+              spotify: z.string().optional(),
+              apple: z.string().optional(),
+              amazon: z.string().optional(),
+              deezer: z.string().optional(),
+              podcast_de: z.string().optional(),
+              acast: z.string().optional(),
+            }).optional(),
           })
         )
         .optional(),
@@ -262,7 +290,7 @@ export const collections = {
   downloads,
   home,
   indexCards,
-  portfolio,
+  aboutme,
   recipes,
   terms,
 };
