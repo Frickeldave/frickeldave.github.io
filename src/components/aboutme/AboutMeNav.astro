@@ -24,8 +24,8 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
 ---
 
 <nav class="space-y-6">
-  <div class="glass rounded-lg p-6">
-    <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-lg font-bold">
+  <div class="glass rounded-lg p-4">
+    <h3 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-lg font-bold">
       Bereiche
     </h3>
     <ul class="space-y-2">
@@ -35,11 +35,11 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
             <a
               href={href}
               class:list={[
-                "block rounded-lg px-4 py-2 transition-colors",
+                "glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all",
                 currentPath === href ||
                 (href !== "/aboutme" && currentPath.startsWith(href))
-                  ? "bg-amber-500 text-white"
-                  : "text-txt-p hover:bg-gray-100 dark:text-darkmode-txt-p dark:hover:bg-gray-800",
+                  ? "bg-amber-500/30 text-txt-h dark:text-darkmode-txt-h border-amber-500/50 shadow-sm"
+                  : "text-txt-p hover:bg-amber-500/20 dark:text-darkmode-txt-p",
               ]}
             >
               {text}
@@ -52,8 +52,8 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
 
   {
     toc && toc.length > 0 && (
-      <div class="glass rounded-lg p-6">
-        <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-lg font-bold">
+      <div class="glass rounded-lg p-4">
+        <h3 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-lg font-bold">
           Auf dieser Seite
         </h3>
         <ul class="space-y-2">
@@ -61,7 +61,7 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
             <li class:list={[item.depth && item.depth > 2 && "pl-4"]}>
               <a
                 href={`#${item.slug}`}
-                class="block text-sm text-txt-p transition-colors hover:text-amber-500 dark:text-darkmode-txt-p"
+                class="glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all hover:bg-amber-500/20 text-txt-p dark:text-darkmode-txt-p"
               >
                 {item.text}
               </a>
