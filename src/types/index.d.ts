@@ -9,7 +9,7 @@ export type DocsEntry = CollectionEntry<"docs">;
 export type DownloadsEntry = CollectionEntry<"downloads">;
 export type HomeEntry = CollectionEntry<"home">;
 export type IndexCardsEntry = CollectionEntry<"indexCards">;
-export type PortfolioEntry = CollectionEntry<"portfolio">;
+export type AboutMeEntry = CollectionEntry<"aboutme">;
 export type RecipesEntry = CollectionEntry<"recipes">;
 export type TermsEntry = CollectionEntry<"terms">;
 
@@ -18,7 +18,7 @@ export type SearchableEntry =
   | BlogEntry
   | DocsEntry
   | DownloadsEntry
-  | PortfolioEntry
+  | AboutMeEntry
   | RecipesEntry
   | TermsEntry;
 

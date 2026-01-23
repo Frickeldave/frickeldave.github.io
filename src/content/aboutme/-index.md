@@ -189,6 +189,7 @@ skills:
       - "Microsoft InTune"
       - "Active Directory"
       - "PowerShell DSC"
+      - "Power Platform"
 
 # Current Project
 currentProject:

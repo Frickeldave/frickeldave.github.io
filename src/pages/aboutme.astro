@@ -1,25 +1,106 @@
 ---
-import type { PortfolioEntry } from "@/types";
+import type { AboutMeEntry } from "@/types";
 import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
 import { getIndex } from "@lib/contentParser";
 
-const entry = (await getIndex("aboutme")) as PortfolioEntry;
-const { title, description, intro } = entry.data;
+import HeroSection from "@components/portfolio/HeroSection.astro";
+import HandmadeSection from "@components/portfolio/HandmadeSection.astro";
+import PublicationsSection from "@components/portfolio/PublicationsSection.astro";
+import PodcastSection from "@components/portfolio/PodcastSection.astro";
+import ProjectsSection from "@components/portfolio/ProjectsSection.astro";
+import EducationSection from "@components/portfolio/EducationSection.astro";
 
-const introTitle = typeof intro === "object" ? intro.title : title;
-const introContent =
-  typeof intro === "object" ? intro.content : intro || description;
+const entry = (await getIndex("aboutme")) as AboutMeEntry;
+const { title, description } = entry.data;
+
+const toc = [
+  { text: "Intro", slug: "hero", depth: 2 },
+  { text: "Handmade", slug: "handmade", depth: 2 },
+  { text: "Publikationen", slug: "publications", depth: 2 },
+  { text: "Podcast", slug: "podcast", depth: 2 },
+  { text: "Berufsweg", slug: "experience-summary", depth: 2 },
+  { text: "Projekte", slug: "projects", depth: 2 },
+  { text: "Ausbildung", slug: "education", depth: 2 },
+];
 ---
 
-<AboutMeLayout title={title} description={description}>
-  <div class="glass rounded-lg p-6 lg:p-8">
-    <h1
-      class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl"
-    >
-      {introTitle}
-    </h1>
-    <div class="prose prose-lg max-w-none text-txt-p dark:text-darkmode-txt-p">
-      <p>{introContent}</p>
+<AboutMeLayout title={title} description={description} toc={toc}>
+  <div class="space-y-12">
+    <!-- Hero Section -->
+    <div id="hero">
+      <HeroSection entry={entry} />
+    </div>
+
+    <!-- Handmade Portfolio -->
+    <div id="handmade">
+      <HandmadeSection entry={entry} />
+    </div>
+
+    <!-- Publications -->
+    <div id="publications">
+      <PublicationsSection entry={entry} />
+    </div>
+
+    <!-- Podcast Section -->
+    <div id="podcast">
+      <PodcastSection />
+    </div>
+
+    <!-- Experience Summary Section -->
+    <div id="experience-summary" class="glass rounded-lg p-6 lg:p-8">
+      <div
+        class="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center"
+      >
+        <div class="flex-1">
+          <h2
+            class="text-txt-h dark:text-darkmode-txt-h mb-4 text-2xl font-bold"
+          >
+            Erfahrung & Expertise
+          </h2>
+          <p
+            class="text-lg leading-relaxed text-txt-p dark:text-darkmode-txt-p"
+          >
+            {entry.data.summary}
+          </p>
+        </div>
+        <a
+          href="/aboutme/experience"
+          class="inline-flex shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 font-medium text-white transition-all hover:scale-105 hover:shadow-lg"
+        >
+          Zum vollständigen Lebenslauf
+        </a>
+      </div>
+    </div>
+
+    <!-- Projects Section -->
+    <div id="projects">
+      <ProjectsSection entry={entry} />
+    </div>
+
+    <!-- Education Section -->
+    <div id="education">
+      <EducationSection entry={entry} />
     </div>
   </div>
 </AboutMeLayout>
+
+<style>
+  /* Global portfolio styles */
+  :global(.glass) {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  :global(.dark .glass) {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Smooth scrolling */
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+</style>

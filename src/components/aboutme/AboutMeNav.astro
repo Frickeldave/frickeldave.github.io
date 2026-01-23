@@ -61,7 +61,7 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
             <li class:list={[item.depth && item.depth > 2 && "pl-4"]}>
               <a
                 href={`#${item.slug}`}
-                class="glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm text-txt-p transition-all hover:bg-amber-500/20 dark:text-darkmode-txt-p"
+                class="block py-1 text-sm text-txt-p transition-all hover:translate-x-1 hover:text-amber-600 dark:text-darkmode-txt-p dark:hover:text-amber-400"
               >
                 {item.text}
               </a>
