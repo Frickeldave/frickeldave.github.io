@@ -1,18 +1,15 @@
 ---
-import type { PortfolioEntry } from "@/types";
+import type { AboutMeEntry } from "@/types";
 import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
 import { getIndex } from "@lib/contentParser";
 
-const entry = (await getIndex("aboutme")) as PortfolioEntry;
-const { projects, handmadeProjects } = entry.data;
+const entry = (await getIndex("aboutme")) as AboutMeEntry;
+const { projects } = entry.data;
 
 const title = "Projekte";
 const description = "Meine Projekte und technische Arbeiten";
 
-const toc = [
-  { text: "IT Projects", slug: "it-projects", depth: 2 },
-  { text: "Handmade & DIY", slug: "handmade-diy", depth: 2 },
-];
+const toc = [{ text: "IT Projects", slug: "it-projects", depth: 2 }];
 ---
 
 <AboutMeLayout title={title} description={description} toc={toc}>
@@ -35,7 +32,7 @@ const toc = [
             IT Projects
           </h2>
           <div class="grid gap-6">
-            {projects.map((project) => (
+            {projects.map((project: any) => (
               <div class="glass rounded-lg p-6">
                 <div class="mb-2 flex items-start justify-between">
                   <h3 class="text-xl font-bold">{project.title}</h3>
@@ -51,7 +48,7 @@ const toc = [
 
                 {project.technologies && (
                   <div class="mb-4 flex flex-wrap gap-2">
-                    {project.technologies.map((tech) => (
+                    {project.technologies.map((tech: string) => (
                       <span class="rounded bg-gray-200 px-2 py-1 text-xs dark:bg-gray-700">
                         {tech}
                       </span>
@@ -79,34 +76,6 @@ const toc = [
                     </a>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )
-    }
-
-    {
-      handmadeProjects && (
-        <section id="handmade-diy">
-          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-6 text-2xl font-bold">
-            Handmade & DIY
-          </h2>
-          <div class="grid gap-6 md:grid-cols-2">
-            {handmadeProjects.map((project) => (
-              <div class="glass rounded-lg p-6">
-                <h3 class="mb-2 text-lg font-bold">{project.title}</h3>
-                <p class="mb-4 text-sm text-txt-p dark:text-darkmode-txt-p">
-                  {project.description}
-                </p>
-                {project.blogUrl && (
-                  <a
-                    href={project.blogUrl}
-                    class="text-sm font-medium text-amber-600 hover:text-amber-700"
-                  >
-                    Zum Blogartikel &rarr;
-                  </a>
-                )}
               </div>
             ))}
           </div>

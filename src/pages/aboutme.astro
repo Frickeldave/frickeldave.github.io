@@ -7,8 +7,6 @@ import HeroSection from "@components/portfolio/HeroSection.astro";
 import HandmadeSection from "@components/portfolio/HandmadeSection.astro";
 import PublicationsSection from "@components/portfolio/PublicationsSection.astro";
 import PodcastSection from "@components/portfolio/PodcastSection.astro";
-import ProjectsSection from "@components/portfolio/ProjectsSection.astro";
-import EducationSection from "@components/portfolio/EducationSection.astro";
 
 const entry = (await getIndex("aboutme")) as AboutMeEntry;
 const { title, description } = entry.data;
@@ -18,14 +16,12 @@ const toc = [
   { text: "Handmade", slug: "handmade", depth: 2 },
   { text: "Publikationen", slug: "publications", depth: 2 },
   { text: "Podcast", slug: "podcast", depth: 2 },
-  { text: "Berufsweg", slug: "experience-summary", depth: 2 },
-  { text: "Projekte", slug: "projects", depth: 2 },
-  { text: "Ausbildung", slug: "education", depth: 2 },
+  { text: "Erfahrung & Expertise", slug: "experience-summary", depth: 2 },
 ];
 ---
 
 <AboutMeLayout title={title} description={description} toc={toc}>
-  <div class="space-y-12">
+  <div class="space-y-6">
     <!-- Hero Section -->
     <div id="hero">
       <HeroSection entry={entry} />
@@ -70,16 +66,6 @@ const toc = [
           Zum vollständigen Lebenslauf
         </a>
       </div>
-    </div>
-
-    <!-- Projects Section -->
-    <div id="projects">
-      <ProjectsSection entry={entry} />
-    </div>
-
-    <!-- Education Section -->
-    <div id="education">
-      <EducationSection entry={entry} />
     </div>
   </div>
 </AboutMeLayout>

@@ -1,15 +1,15 @@
 ---
-import type { PortfolioEntry } from "@/types";
-import PublicationsCarousel from "./PublicationsCarousel";
+import type { AboutMeEntry } from "@/types";
+import PublicationsGrid from "./PublicationsGrid";
 
 interface Props {
-  entry: PortfolioEntry;
+  entry: AboutMeEntry;
 }
 
 const { entry } = Astro.props;
 const { publications } = entry.data;
 
-// Transform publications for the carousel
+// Transform publications for the grid
 const publicationsWithImages = (publications || []).map((pub) => {
   let imageUrl = "/images/placeholder-publication.png";
 
@@ -31,29 +31,23 @@ const publicationsWithImages = (publications || []).map((pub) => {
 
 {
   publicationsWithImages && publicationsWithImages.length > 0 && (
-    <section class="section-sm container">
-      <div class="row justify-center">
-        <div class="col-12">
-          <div class="glass rounded-2xl p-6 lg:p-10">
-            {/* Section Header */}
-            <div class="mb-8 text-center">
-              <h2 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-2xl font-bold lg:text-3xl">
-                📚 Veröffentlichungen
-              </h2>
-              <p class="mx-auto max-w-2xl text-txt-p opacity-80 dark:text-darkmode-txt-p">
-                Meine Beiträge zu Fachzeitschriften, Büchern und
-                Online-Publikationen rund um DevOps, Cloud und IT-Themen.
-              </p>
-            </div>
-
-            {/* Carousel */}
-            <PublicationsCarousel
-              publications={publicationsWithImages}
-              client:idle
-            />
+    <div class="row justify-center">
+      <div class="col-12">
+        <div class="glass rounded-2xl p-6 lg:p-10">
+          {/* Section Header */}
+          <div class="mb-8 text-center">
+            <h2 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-2xl font-bold lg:text-3xl">
+              📚 Veröffentlichungen
+            </h2>
+            <p class="mx-auto max-w-2xl text-txt-p opacity-80 dark:text-darkmode-txt-p">
+              Meine Beiträge zu Fachzeitschriften, Büchern und
+              Online-Publikationen rund um DevOps, Cloud und IT-Themen.
+            </p>
           </div>
+
+          <PublicationsGrid publications={publicationsWithImages} client:load />
         </div>
       </div>
-    </section>
+    </div>
   )
 }

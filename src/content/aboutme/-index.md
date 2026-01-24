@@ -312,8 +312,8 @@ experience:
 
 # Featured Projects
 projects:
-  - title: "STACKIT Dokumentationsplattform"
-    description: "Aufbau einer technischen Dokumentationsplattform für Enterprise-Kunden"
+  - title: "Dokumentationsplattform"
+    description: "Technische Dokumentationsplattform auf Basis von Astro und Starlight"
     technologies:
       - "Astro"
       - "Starlight"
@@ -329,8 +329,10 @@ projects:
     status: "Enterprise"
     period: "08/2025 - 10/2025"
 
-  - title: "BMW DevOps Homologation"
-    description: "Service Delivery Management für Homologation und Emissionskontrolle"
+  - title: "Homologation"
+    description:
+      "Service Delivery Management für Entiwcklungsprojekten im Umfeld vonHomologation und
+      Emissionskontrolle"
     technologies:
       - "Power Apps"
       - "Power Automate"
@@ -347,7 +349,7 @@ projects:
     status: "Enterprise"
     period: "06/2024 - 07/2025"
 
-  - title: "Brose Clientmanagement Infrastruktur"
+  - title: "Clientmanagement Infrastruktur"
     description: "Client Management Lösung für Automobilzulieferer mit Windows 7 und Citrix"
     technologies:
       - "C#"
@@ -382,8 +384,8 @@ projects:
     status: "Commercial"
     period: "08/2012 - 03/2015"
 
-  - title: "msg DevOps Toolchain"
-    description: "Zentrale DevOps Toolchain für Automotive Sektor (Daimler, BMW, VW)"
+  - title: "DevOps Toolchain"
+    description: "Zentrale DevOps Toolchain für Entwicklungsteams im Automotive Sektor"
     technologies:
       - "Ansible"
       - "Jenkins"
@@ -401,8 +403,10 @@ projects:
     status: "Enterprise"
     period: "01/2019 - 12/2019"
 
-  - title: "MediaMarktSaturn Ansible Infrastructure"
-    description: "Aufbau einer Ansible-basierten Infrastruktur für Windows/Linux Server Management"
+  - title: "Ansible Infrastructure"
+    description:
+      "Aufbau einer Ansible-basierten Infrastruktur für Windows/Linux Server Management auf ~5000
+      Servern"
     technologies:
       - "Ansible"
       - "Windows"
@@ -440,19 +444,17 @@ projects:
     period: "10/2023 - heute"
 
   - title: "Smarthome Automation"
-    description: "Vollständig containerisierte Microservice Architektur für Smarthome Automation"
+    description: "Vollständig containerisierte für Smarthome Automation"
     technologies:
-      - "PowerShell"
+      - "Ansible"
       - "Docker"
-      - "Microservices"
       - "GitHub Actions"
       - "CI/CD"
     content:
-      - "PowerShell-basierte Automatisierung für Smarthome-Systeme"
-      - "Containerisierte Microservice-Architektur"
+      - "Containerisierte Architektur"
       - "GitHub-basierte CI/CD Pipeline"
       - "Moderne DevOps-Praktiken im IoT-Bereich"
-    status: "In Entwicklung"
+    status: "Live"
 
   - title: "frickeldave.de"
     description: "Persönliche Website und Blog über IT, DevOps und Handwerk"
@@ -496,29 +498,15 @@ projects:
       - "Content-Erstellung und Social Media Management"
       - "Channel-Partner Aufbau und Betreuung"
       - "Technical Evangelism"
-    status: "Erfolgreich"
-
-# Career Journey
-careerJourney:
-  "17 Jahre Consultant, 17 Jahre wohnen im Hotel, auf der Straße, in Clubs, in Bars, in Büros, in
-  Flugzeugen, Zügen, Bussen und Autobahnen, immer viel Spaß an der Aufgabe und viel Engagement.
-  Plötzlich Vater, Ehemann. Neue Herausforderungen, ein neuer Fokus, der vorher nie da war. Leben
-  mit Ziel?"
+    status: "Community"
 
 # Personal Interests
 personalInterests:
   - "Hausbau und Handwerk"
   - "Maker-Projekte"
+  - "3D Druck"
   - "Smarthome-Automation"
   - "Blogging und Content Creation"
   - "DevOps und Infrastructure"
   - "Vater und Familie"
-
-# Values
-values:
-  - "Craftmanship über Engineering"
-  - "Agile Transformation"
-  - "Continuous Learning"
-  - "Community Building"
-  - "Work-Life Integration"
 ---
