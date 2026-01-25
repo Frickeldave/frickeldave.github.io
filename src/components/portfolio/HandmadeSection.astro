@@ -1,6 +1,6 @@
 ---
-import { getCollection } from "astro:content";
-import type { AboutMeEntry, BlogEntry } from "@/types";
+import type { AboutMeEntry } from "@/types";
+import { getEntries } from "@lib/contentParser";
 import HandmadeGrid from "./HandmadeGrid";
 
 interface Props {
@@ -8,69 +8,59 @@ interface Props {
 }
 
 const { entry } = Astro.props;
+const { handmadeProjects = [] } = entry.data;
 
-// Fetch all blog posts
-const allBlogPosts = (await getCollection("blog")) as BlogEntry[];
-
-// Define categories we're interested in
-const targetCategories = [
-  "Holzwerken",
-  "Epoxidharz",
-  "Laser",
-  "3D-Druck",
-  "DIY",
-];
-
-// Filter and format blog posts for the handmade portfolio
-const handmadeBlogProjects = allBlogPosts
+// Fetch all blog posts to find more DIY/Holzwerken projects
+const allBlogPosts = await getEntries("blog");
+const blogProjects = allBlogPosts
   .filter((post) => {
-    const categories = post.data.categories?.map((c) => c.toLowerCase()) || [];
-    return targetCategories.some((tc) => categories.includes(tc.toLowerCase()));
+    const data = post.data as any;
+    return (
+      data.categories?.includes("DIY") ||
+      data.categories?.includes("Holzwerken")
+    );
   })
   .map((post) => {
-    // Find the best category to display (priority to more specific ones)
-    const displayCategory =
-      post.data.categories?.find((c) =>
-        ["Holzwerken", "Epoxidharz", "Laser", "3D-Druck"].includes(c)
-      ) ||
-      post.data.categories?.find((c) => c === "DIY") ||
-      "DIY";
-
+    const data = post.data as any;
     return {
-      title: post.data.title,
-      description: post.data.description || "",
-      image: post.data.image,
+      title: data.title,
+      description: data.description || "",
+      image: data.image,
       blogUrl: `/blog/${post.id}`,
-      category: displayCategory,
+      category: data.categories?.includes("Holzwerken") ? "Holzwerken" : "DIY",
     };
   });
 
-// Combine with hardcoded projects if they are not already included (by title)
-const existingTitles = new Set(handmadeBlogProjects.map((p) => p.title));
-const additionalProjects = (entry.data.handmadeProjects || []).filter(
-  (p) => !existingTitles.has(p.title)
-);
+// Merge static projects from aboutme index and dynamic projects from blog
+// Use a Map to avoid duplicates by title or blogUrl
+const projectMap = new Map();
 
-const allHandmadeProjects = [...handmadeBlogProjects, ...additionalProjects];
+// Add blog projects first (generally more up to date)
+blogProjects.forEach((p) => projectMap.set(p.blogUrl, p));
+// Add static projects (may overwrite or add new ones)
+handmadeProjects.forEach((p) => projectMap.set(p.blogUrl, p));
+
+const combinedProjects = Array.from(projectMap.values());
 ---
 
 {
-  allHandmadeProjects && allHandmadeProjects.length > 0 && (
+  combinedProjects.length > 0 && (
     <div class="row justify-center">
       <div class="col-12">
         <div class="glass rounded-2xl p-6 lg:p-10">
           {/* Section Header */}
           <div class="mb-8 text-center">
             <h2 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-2xl font-bold lg:text-3xl">
-              🛠️ DIY Projekte
+              🛠️ Handmade Portfolio
             </h2>
             <p class="mx-auto max-w-2xl text-txt-p opacity-80 dark:text-darkmode-txt-p">
-              Hier siehst du eine zufällige Auswahl von DIY Projekten aus den
-              Bereichen Holzwerken, Laser, Epoxidharz und 3D-Druck.
+              Hier siehst du eine zufällige Auswahl meiner DIY- und
+              Holzwerken-Projekte. Klicke auf "Neue Auswahl zeigen", um weitere
+              Projekte zu entdecken.
             </p>
           </div>
 
-          <HandmadeGrid projects={allHandmadeProjects} client:load />
+          <HandmadeGrid projects={combinedProjects} client:load />
         </div>
       </div>
     </div>

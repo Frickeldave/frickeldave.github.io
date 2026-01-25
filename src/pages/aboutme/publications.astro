@@ -1,6 +1,7 @@
 ---
 import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
 import { getEntry } from "astro:content";
+import { Image } from "astro:assets";
 
 const pubEntry = await getEntry("aboutme", "publications");
 
@@ -37,32 +38,70 @@ const toc = publications.map((pub, index) => ({
           id={`pub-${index}`}
           class="glass mb-6 scroll-mt-24 rounded-lg p-6 lg:p-8"
         >
-          <div class="mb-3 flex flex-wrap gap-2">
-            {pub.year && (
-              <span class="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-                {pub.year}
-              </span>
+          {/* Row 1: Image and Metadata */}
+          <div class="mb-6 flex flex-col gap-6 lg:flex-row">
+            {pub.image && (
+              <div class="w-full shrink-0 lg:w-1/2">
+                <Image
+                  src={pub.image}
+                  alt={pub.title}
+                  class="h-auto w-full rounded-lg object-cover shadow-lg"
+                />
+              </div>
             )}
-            {pub.publisher && (
-              <span class="rounded-full bg-gray-500/20 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300">
-                {pub.publisher}
-              </span>
-            )}
+            <div class="flex-1">
+              <div class="mb-3 flex flex-wrap gap-2">
+                {pub.year && (
+                  <span class="rounded-full border border-black/10 bg-amber-500 px-3 py-1 text-xs font-bold text-black">
+                    {pub.year}
+                  </span>
+                )}
+                {pub.publisher && (
+                  <span class="rounded-full border border-orange-500/30 bg-orange-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-black">
+                    {pub.publisher}
+                  </span>
+                )}
+              </div>
+              <h2 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-2xl font-bold">
+                {pub.title}
+              </h2>
+              <p class="text-lg font-medium text-txt-p opacity-90 dark:text-darkmode-txt-p">
+                {pub.description}
+              </p>
+            </div>
           </div>
-          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-2xl font-bold">
-            {pub.title}
-          </h2>
-          <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
-            {pub.description}
-          </p>
-          <a
-            href={pub.publicationUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-block rounded-lg bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
-          >
-            Zur Veröffentlichung
-          </a>
+
+          {/* Row 2: Content Text and Action */}
+          <div class="mt-6 border-t border-white/10 pt-6">
+            {pub.text && (
+              <div class="mb-6 max-w-none text-txt-p dark:text-darkmode-txt-p">
+                <p class="whitespace-pre-line text-base leading-relaxed lg:text-lg">
+                  {pub.text}
+                </p>
+              </div>
+            )}
+            <a
+              href={pub.publicationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 font-bold text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
+            >
+              <svg
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+              Zur Veröffentlichung
+            </a>
+          </div>
         </div>
       ))
     }

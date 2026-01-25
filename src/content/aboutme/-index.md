@@ -1,5 +1,5 @@
 ---
-title: Portfolio
+title: About Me
 description: David Koenig - Managing IT-Consultant & DevOps Evangelist
 
 # Personal Information
@@ -97,7 +97,7 @@ handmadeProjects:
 publications:
   - title: "Testartikel über den Creality K2 Drucker"
     description: "Mein ausführlicher Testbericht zum Creality K2 3D-Drucker im Make-Magazin."
-    image: "@assets/placeholder-publications.png"
+    image: "@assets/publications/testartikel-über-den-creality-k2-drucker.png"
     publicationUrl: "https://www.heise.de/select/make/2025/3/2512010252016731760"
     blogUrl: "#TODO"
     year: "2025"

@@ -1,12 +1,7 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaExternalLinkAlt,
-  FaBook,
-} from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaBook } from "react-icons/fa";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -16,7 +11,6 @@ type Publication = {
   description: string;
   imageUrl: string;
   publicationUrl: string;
-  blogUrl?: string;
   year?: string;
   publisher?: string;
 };
@@ -79,7 +73,7 @@ const PublicationsCarousel: React.FC<Props> = ({ publications }) => {
                 {/* Year & Publisher */}
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   {pub.year && (
-                    <span className="rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                    <span className="rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-1 text-xs font-bold text-black">
                       {pub.year}
                     </span>
                   )}
@@ -111,15 +105,6 @@ const PublicationsCarousel: React.FC<Props> = ({ publications }) => {
                     <FaBook className="text-xs" />
                     Zur Veröffentlichung
                   </a>
-                  {pub.blogUrl && pub.blogUrl !== "#TODO" && (
-                    <a
-                      href={pub.blogUrl}
-                      className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-txt-p transition-all duration-300 hover:bg-gray-100 dark:border-gray-600 dark:text-darkmode-txt-p dark:hover:bg-gray-800"
-                    >
-                      Blog-Artikel
-                      <FaExternalLinkAlt className="text-xs" />
-                    </a>
-                  )}
                 </div>
               </div>
             </div>

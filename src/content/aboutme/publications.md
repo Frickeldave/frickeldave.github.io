@@ -7,24 +7,23 @@ publications:
     description: "Mein ausführlicher Testbericht zum Creality K2 3D-Drucker im Make-Magazin."
     text:
       "In der aktuellen MAKE-Ausgabe habe ich einen umfangreichen Fachartikel über den Creality K2
-      Plus veröffentlicht, in dem ich den Drucker mehrere Monate lang im 24/7-Einsatz getestet habe.
-      Ich gehe darin nicht nur auf die beeindruckenden Eckdaten wie CoreXY-Kinematik, 350×350×350 mm
-      Bauraum, beheizte Kammer und bis zu 600 mm/s ein, sondern vor allem auf das, was im Alltag
-      wirklich zählt: zuverlässige Druckqualität, sinnvolle Features und ehrliche Stolpersteine. Ich
+      Plus veröffentlicht, in dem ich den Drucker mehrere Monate lang getestet habe. Ich gehe darin
+      nicht nur auf die beeindruckenden Eckdaten wie CoreXY-Kinematik, 350×350×350 mm Bauraum,
+      beheizte Kammer und bis zu 600 mm/s ein, sondern vor allem auf das, was im Alltag wirklich
+      zählt: zuverlässige Druckqualität, sinnvolle Features und ehrliche Stolpersteine. Ich
       schildere meine Erfahrungen vom Auspacken über die Inbetriebnahme bis hin zu ersten Benchys,
       All-in-One-Tests und großen Praxisprojekten – inklusive Multicolor-Drucken mit dem CFS-System
       und dem unvermeidlichen „Poop-Management“. Dazu kommen Messungen zu Stromverbrauch und
-      Luftqualität, Tests mit PLA, PETG, ASA, TPU und Nylon sowie ein Blick auf Themen wie
-      Lautstärke, Platzbedarf und Vibrationen im eigenen Maker-Setup. Der Artikel ist bewusst
-      praxisnah geschrieben: Du erfährst, wo der K2 glänzt, wo Creality bei Firmware und Software
-      nachlegen musste und welche Mods und Einstellungen sich für mich als Gamechanger erwiesen
-      haben. Wenn du mit dem Gedanken spielst, dir einen Creality K2 zuzulegen – oder generell an
-      modernen Highspeed-CoreXY-Druckern interessiert bist – bekommst du hier gebündelt meine echten
+      Luftqualität, Tests mit PLA, PETG, ASA, TPU sowie ein Blick auf Themen wie Lautstärke,
+      Platzbedarf und Vibrationen im eigenen Maker-Setup. Der Artikel ist bewusst praxisnah
+      geschrieben: Du erfährst, wo der K2 glänzt, wo Creality bei Firmware und Software nachlegen
+      musste und welche Mods und Einstellungen sich für mich als Gamechanger erwiesen haben. Wenn du
+      mit dem Gedanken spielst, dir einen Creality K2 zuzulegen – oder generell an modernen
+      Highspeed-CoreXY-Druckern interessiert bist – bekommst du hier gebündelt meine echten
       Langzeiterfahrungen statt Marketingversprechen. Genau deshalb ist der Beitrag aus meiner Sicht
       unbedingt lesenswert."
-    image: "@assets/placeholder-publications.png"
+    image: "@assets/publications/testartikel-über-den-creality-k2-drucker.png"
     publicationUrl: "https://www.heise.de/select/make/2025/3/2512010252016731760"
-    blogUrl: "#TODO"
     year: "2025"
     publisher: "Make Magazin / Heise"
 
@@ -48,7 +47,6 @@ publications:
       für IT-Leader, die Geld, Risiken und Talente sichern wollen!"
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/devops-ist-euer-qi-im-einklang.html"
-    blogUrl: "#TODO"
     year: "2024"
     publisher: "Informatik Aktuell"
 
@@ -70,7 +68,6 @@ publications:
       ins deutschsprachige ESP32-Universum!"
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/der-definitive-guide-in-die-esp32-welt.html"
-    blogUrl: "#TODO"
     year: "2024"
     publisher: "Informatik Aktuell"
 
@@ -91,7 +88,6 @@ publications:
       Must-Read für hybride Zukunftsgestalter."
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.informatik-aktuell.de/management-und-recht/digitalisierung/symbiose-von-informatik-und-handwerk.html"
-    blogUrl: "#TODO"
     year: "2024"
     publisher: "Informatik Aktuell"
 
@@ -112,7 +108,6 @@ publications:
       NPM-Scripts, Konfigs und Fazit macht's zum Must-Read für DevOps-Engineers und Docs-Autoren!"
     image: "@assets/placeholder-publications.png"
     publicationUrl: "https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html"
-    blogUrl: "#TODO"
     year: "2025"
     publisher: "Heise Developer"
 ---

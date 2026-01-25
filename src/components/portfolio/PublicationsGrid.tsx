@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  FaSyncAlt,
-  FaArrowRight,
-  FaBook,
-  FaExternalLinkAlt,
-} from "react-icons/fa";
+import { FaSyncAlt, FaArrowRight, FaBook } from "react-icons/fa";
 
 type Publication = {
   title: string;
   description: string;
   imageUrl: string;
   publicationUrl: string;
-  blogUrl?: string;
   year?: string;
   publisher?: string;
 };
@@ -106,15 +100,6 @@ const PublicationsGrid: React.FC<Props> = ({ publications }) => {
                   <FaBook className="text-xs" />
                   Zur Veröffentlichung
                 </a>
-                {pub.blogUrl && pub.blogUrl !== "#TODO" && (
-                  <a
-                    href={pub.blogUrl}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-500/30 px-4 py-2 text-xs font-bold text-txt-p transition-all duration-300 hover:bg-amber-500/10 dark:text-darkmode-txt-p"
-                  >
-                    <span>Blog-Artikel</span>
-                    <FaExternalLinkAlt className="text-[10px]" />
-                  </a>
-                )}
               </div>
             </div>
           </div>

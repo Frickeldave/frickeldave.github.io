@@ -45,3 +45,28 @@ input#nav-toggle:checked ~ #nav-menu {
     @apply flex;
   }
 }
+
+// Podcast Player Sliders
+.podcast-slider {
+  @apply h-1.5 cursor-pointer appearance-none rounded-full bg-white/20 outline-none;
+
+  &::-webkit-slider-thumb {
+    @apply h-3.5 w-3.5 cursor-pointer appearance-none rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all hover:scale-110;
+  }
+
+  &::-moz-range-thumb {
+    @apply h-3.5 w-3.5 cursor-pointer appearance-none rounded-full border-0 bg-gradient-to-r from-amber-500 to-orange-500 transition-all hover:scale-110;
+  }
+}
+
+.podcast-slider-volume {
+  @apply h-1 cursor-pointer appearance-none rounded-full bg-white/20 outline-none;
+
+  &::-webkit-slider-thumb {
+    @apply h-2.5 w-2.5 cursor-pointer appearance-none rounded-full bg-amber-500 transition-all hover:scale-110;
+  }
+
+  &::-moz-range-thumb {
+    @apply h-2.5 w-2.5 cursor-pointer appearance-none rounded-full border-0 bg-amber-500 transition-all hover:scale-110;
+  }
+}

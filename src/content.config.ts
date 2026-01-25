@@ -164,9 +164,9 @@ const aboutme = defineCollection({
             description: z.string(),
             image: image().optional(),
             publicationUrl: z.string(),
-            blogUrl: z.string().optional(),
             year: z.string().optional(),
             publisher: z.string().optional(),
+            text: z.string().optional(),
           })
         )
         .optional(),
@@ -179,6 +179,7 @@ const aboutme = defineCollection({
             guests: z.string(),
             date: z.string(),
             description: z.string(),
+            audioUrl: z.string().optional(),
             links: z
               .object({
                 spotify: z.string().optional(),

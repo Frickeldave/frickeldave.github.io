@@ -1,9 +1,9 @@
 ---
-import type { PortfolioEntry } from "@/types";
+import type { AboutMeEntry } from "@/types";
 import PublicationsCarousel from "./PublicationsCarousel";
 
 interface Props {
-  entry: PortfolioEntry;
+  entry: AboutMeEntry;
 }
 
 const { entry } = Astro.props;
@@ -22,9 +22,9 @@ const publicationsWithImages = (publications || []).map((pub) => {
     description: pub.description,
     imageUrl,
     publicationUrl: pub.publicationUrl,
-    blogUrl: pub.blogUrl,
     year: pub.year,
     publisher: pub.publisher,
+    text: pub.text,
   };
 });
 ---
