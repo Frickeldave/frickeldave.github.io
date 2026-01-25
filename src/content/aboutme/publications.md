@@ -3,6 +3,27 @@ title: "Publikationen"
 description: "Meine Veröffentlichungen in Fachzeitschriften und Online-Publikationen"
 
 publications:
+  - title: "Macherfestival 2024 - IT trifft Handwerk"
+    description:
+      "Zwei Artikel über die Teilnahme der DOAG am Macherfestival der Real Life Guys 2024."
+    text: "In zwei ausführlichen Artikeln auf der DOAG-Website berichte ich über die Teilnahme der
+      DOAG am Macherfestival 2024 in Gräfenhainchen bei Leipzig. Im ersten Artikel 'IT ist Handwerk,
+      oder: Warum die DOAG die Makerszene besucht' beschreibe ich, wie die Idee entstand, mit dem
+      DOAG Cloud Native Community Tourbus und Hebocon-Workshops auf dem Festival vertreten zu sein.
+      Der zweite Artikel 'Eindrücke vom Macher Festival 2024' schildert die Erlebnisse vor Ort, wo
+      6.000 Maker zusammenkamen, um gemeinsam zu bauen und zu experimentieren. Die Verbindung von
+      IT-Handwerk und klassischem Handwerk stand dabei im Mittelpunkt - perfekt für die Mission der
+      DOAG, junge Menschen für IT-Berufe zu begeistern.
+
+      - [Link zu Artikel
+      1](https://www.doag.org/de/home/news/it-ist-handwerk-oder-warum-die-doag-die-makerszene-besucht/)
+
+      - [Link zu Artikel 2](https://www.doag.org/de/home/news/eindruecke-vom-macher-festival-2024/)"
+    image: "@assets/publications/macherfestival-2024-it-trifft-handwerk.png"
+    publicationUrl: "https://www.doag.org/de/home/news/it-ist-handwerk-oder-warum-die-doag-die-makerszene-besucht/"
+    year: "2024"
+    publisher: "DOAG e.V."
+
   - title: "Testartikel über den Creality K2 Drucker"
     description: "Mein ausführlicher Testbericht zum Creality K2 3D-Drucker im Make-Magazin."
     text:
@@ -45,7 +66,7 @@ publications:
       zu Verantwortung/Kollaboration, Spinnennetz-Diagramme, Übergabe an internen „Hausarzt“ plus
       regelmäßige Kontrollen – mit Sponsoren als „Chefsache“ für nachhaltigen Erfolg. Absolutes Muss
       für IT-Leader, die Geld, Risiken und Talente sichern wollen!"
-    image: "@assets/placeholder-publications.png"
+    image: "@assets/publications/ist-dein-devops-qi-im-einklang.png"
     publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/devops-ist-euer-qi-im-einklang.html"
     year: "2024"
     publisher: "Informatik Aktuell"
@@ -66,7 +87,7 @@ publications:
       Framework für schnelle Entwicklung; Warnung vor veralteten Infos und fehlender Pin-Doku.
       Erster Teil einer Serie mit Praxis-Beispielen – der ultimative Einstieg für Maker und Profis
       ins deutschsprachige ESP32-Universum!"
-    image: "@assets/placeholder-publications.png"
+    image: "@assets/publications/der-definitive-guide-in-die-esp32-welt.png"
     publicationUrl: "https://www.informatik-aktuell.de/entwicklung/methoden/der-definitive-guide-in-die-esp32-welt.html"
     year: "2024"
     publisher: "Informatik Aktuell"
@@ -86,7 +107,7 @@ publications:
       Pilotprojekte (Benachrichtigungs-Lampe via ESP32, Desk-Buchung, KI-Automat), Experience Labs,
       Tech-Scouting, Makerfairs – oder Risiko: Marktverlust durch Ignoranz von Hardware/KI!
       Must-Read für hybride Zukunftsgestalter."
-    image: "@assets/placeholder-publications.png"
+    image: "@assets/publications/symbiose-von-handwerk-und-it.png"
     publicationUrl: "https://www.informatik-aktuell.de/management-und-recht/digitalisierung/symbiose-von-informatik-und-handwerk.html"
     year: "2024"
     publisher: "Informatik Aktuell"
@@ -106,7 +127,7 @@ publications:
       Praktische Beispiele aus realen Projekten: Rechtschreibung, Redundanz, Inklusivität und
       Lesbarkeit optimiert – ideal für remote Teams mit wachsenden Codebases. Der Leitfaden mit
       NPM-Scripts, Konfigs und Fazit macht's zum Must-Read für DevOps-Engineers und Docs-Autoren!"
-    image: "@assets/placeholder-publications.png"
+    image: "@assets/publications/linting-für-nodejs-projekte-auf-basis-von-astro.png"
     publicationUrl: "https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html"
     year: "2025"
     publisher: "Heise Developer"

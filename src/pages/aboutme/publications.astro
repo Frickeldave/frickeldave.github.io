@@ -2,6 +2,7 @@
 import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
 import { getEntry } from "astro:content";
 import { Image } from "astro:assets";
+import { markdownify } from "@lib/textConverter";
 
 const pubEntry = await getEntry("aboutme", "publications");
 
@@ -10,6 +11,15 @@ const publications = (pubEntry?.data.publications || []).sort((a, b) => {
   const yearB = parseInt(b.year || "0");
   return yearB - yearA;
 });
+
+// Get unique publishers and years for filters
+const publishers = [...new Set(publications.map((p) => p.publisher || ""))]
+  .filter(Boolean)
+  .sort();
+const years = [...new Set(publications.map((p) => p.year || ""))]
+  .filter(Boolean)
+  .sort()
+  .reverse();
 
 const toc = publications.map((pub, index) => ({
   text: pub.title,
@@ -30,80 +40,336 @@ const toc = publications.map((pub, index) => ({
       >
         📚 Publikationen
       </h1>
-    </div>
+      <p
+        class="mb-6 text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
+      >
+        Neben diesem Blog veröffentliche ich regelmäßig Fachartikel in
+        renommierten IT-Magazinen und Online-Publikationen. Meine Themen reichen
+        von DevOps und Cloud-Technologien über IoT und Mikrocontroller bis hin
+        zu 3D-Druck und Maker-Projekten. Hier findest du eine Übersicht meiner
+        Veröffentlichungen.
+      </p>
 
-    {
-      publications.map((pub, index) => (
-        <div
-          id={`pub-${index}`}
-          class="glass mb-6 scroll-mt-24 rounded-lg p-6 lg:p-8"
+      <div class="mt-6 border-t border-amber-500/30 pt-6">
+        <h3
+          class="text-txt-h dark:text-darkmode-txt-h mb-4 text-lg font-semibold"
         >
-          {/* Row 1: Image and Metadata */}
-          <div class="mb-6 flex flex-col gap-6 lg:flex-row">
-            {pub.image && (
-              <div class="w-full shrink-0 lg:w-1/2">
-                <Image
-                  src={pub.image}
-                  alt={pub.title}
-                  class="h-auto w-full rounded-lg object-cover shadow-lg"
-                />
-              </div>
-            )}
-            <div class="flex-1">
-              <div class="mb-3 flex flex-wrap gap-2">
-                {pub.year && (
-                  <span class="rounded-full border border-black/10 bg-amber-500 px-3 py-1 text-xs font-bold text-black">
-                    {pub.year}
-                  </span>
-                )}
-                {pub.publisher && (
-                  <span class="rounded-full border border-orange-500/30 bg-orange-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-black">
-                    {pub.publisher}
-                  </span>
-                )}
-              </div>
-              <h2 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-2xl font-bold">
-                {pub.title}
-              </h2>
-              <p class="text-lg font-medium text-txt-p opacity-90 dark:text-darkmode-txt-p">
-                {pub.description}
-              </p>
-            </div>
+          🔍 Publikationen filtern
+        </h3>
+
+        <div class="grid gap-4 md:grid-cols-3">
+          <div>
+            <label
+              class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+            >
+              Suche
+            </label>
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Titel oder Beschreibung..."
+              class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none"
+            />
           </div>
 
-          {/* Row 2: Content Text and Action */}
-          <div class="mt-6 border-t border-white/10 pt-6">
-            {pub.text && (
-              <div class="mb-6 max-w-none text-txt-p dark:text-darkmode-txt-p">
-                <p class="whitespace-pre-line text-base leading-relaxed lg:text-lg">
-                  {pub.text}
-                </p>
-              </div>
-            )}
-            <a
-              href={pub.publicationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 font-bold text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
+          <div>
+            <label
+              class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
             >
-              <svg
-                class="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
-              Zur Veröffentlichung
-            </a>
+              Publisher
+            </label>
+            <select
+              id="publisher-filter"
+              class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+            >
+              <option value="all">Alle Publisher</option>
+              {
+                publishers.map((publisher) => (
+                  <option value={publisher}>{publisher}</option>
+                ))
+              }
+            </select>
+          </div>
+
+          <div>
+            <label
+              class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+            >
+              Jahr
+            </label>
+            <select
+              id="year-filter"
+              class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+            >
+              <option value="all">Alle Jahre</option>
+              {years.map((year) => <option value={year}>{year}</option>)}
+            </select>
           </div>
         </div>
-      ))
-    }
+
+        <div class="mt-4 flex items-center justify-between">
+          <div id="results-count" class="text-sm opacity-70">
+            {publications.length} von {publications.length} Publikationen
+          </div>
+          <button
+            id="clear-filters"
+            class="rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600"
+          >
+            Filter zurücksetzen
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="publications-grid">
+      {
+        publications.map((pub, index) => (
+          <div
+            id={`pub-${index}`}
+            class="publication-card glass mb-6 scroll-mt-24 rounded-lg p-6 lg:p-8"
+            data-title={pub.title.toLowerCase()}
+            data-description={pub.description.toLowerCase()}
+            data-publisher={pub.publisher || ""}
+            data-year={pub.year || ""}
+          >
+            {/* Row 1: Image and Metadata */}
+            <div class="mb-6 flex flex-col gap-6 lg:flex-row">
+              {pub.image && (
+                <div class="w-full shrink-0 lg:w-1/2">
+                  <Image
+                    src={pub.image}
+                    alt={pub.title}
+                    class="h-auto w-full rounded-lg object-cover shadow-lg"
+                  />
+                </div>
+              )}
+              <div class="flex-1">
+                <div class="mb-3 flex flex-wrap gap-2">
+                  {pub.year && (
+                    <span class="rounded-full border border-black/10 bg-amber-500 px-3 py-1 text-xs font-bold text-black">
+                      {pub.year}
+                    </span>
+                  )}
+                  {pub.publisher && (
+                    <span class="rounded-full border border-orange-500/30 bg-orange-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-black">
+                      {pub.publisher}
+                    </span>
+                  )}
+                </div>
+                <h2 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-2xl font-bold">
+                  {pub.title}
+                </h2>
+                <p class="text-lg font-medium text-txt-p opacity-90 dark:text-darkmode-txt-p">
+                  {pub.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Row 2: Content Text and Action */}
+            <div class="mt-6 border-t border-white/10 pt-6">
+              {pub.text && (
+                <div
+                  class="prose prose-lg mb-6 max-w-none text-txt-p dark:prose-invert dark:text-darkmode-txt-p"
+                  set:html={markdownify(pub.text, true)}
+                />
+              )}
+              <a
+                href={pub.publicationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 font-bold text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
+              >
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+                Zur Veröffentlichung
+              </a>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <div id="no-results" class="glass hidden rounded-lg py-12 text-center">
+      <p class="text-xl opacity-70">
+        Keine Publikationen gefunden. Versuche andere Filter.
+      </p>
+    </div>
   </section>
 </AboutMeLayout>
+
+<script>
+  (() => {
+    let selectedPublisher = "all";
+    let selectedYear = "all";
+    let searchQuery = "";
+
+    function initializeFilters() {
+      console.log("Initializing publication filters...");
+
+      const searchInput = document.getElementById(
+        "search-input"
+      ) as HTMLInputElement;
+      const publisherFilter = document.getElementById(
+        "publisher-filter"
+      ) as HTMLSelectElement;
+      const yearFilter = document.getElementById(
+        "year-filter"
+      ) as HTMLSelectElement;
+      const clearButton = document.getElementById("clear-filters");
+      const publicationsGrid = document.getElementById("publications-grid");
+      const resultsCount = document.getElementById("results-count");
+      const noResults = document.getElementById("no-results");
+
+      if (!publicationsGrid || !noResults) {
+        console.warn(
+          "Essential publication filter elements not found, retrying in 100ms..."
+        );
+        setTimeout(initializeFilters, 100);
+        return;
+      }
+
+      function updateDisplay() {
+        const publicationCards =
+          publicationsGrid?.querySelectorAll(".publication-card") || [];
+        let visibleCount = 0;
+        const visiblePublicationIds: string[] = [];
+
+        publicationCards.forEach((card) => {
+          const title = card.getAttribute("data-title") || "";
+          const description = card.getAttribute("data-description") || "";
+          const publisher = card.getAttribute("data-publisher") || "";
+          const year = card.getAttribute("data-year") || "";
+          const publicationId = card.getAttribute("id") || "";
+
+          let visible = true;
+
+          // Filter by publisher
+          if (selectedPublisher !== "all" && publisher !== selectedPublisher) {
+            visible = false;
+          }
+
+          // Filter by year
+          if (selectedYear !== "all" && year !== selectedYear) {
+            visible = false;
+          }
+
+          // Filter by search (title or description)
+          if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            if (!title.includes(query) && !description.includes(query)) {
+              visible = false;
+            }
+          }
+
+          if (visible) {
+            visibleCount++;
+            visiblePublicationIds.push(publicationId);
+            card.classList.remove("hidden");
+          } else {
+            card.classList.add("hidden");
+          }
+        });
+
+        // Update results count
+        const totalCount = publicationCards.length;
+        const resultsText = `${visibleCount} von ${totalCount} Publikationen`;
+
+        if (resultsCount) {
+          resultsCount.textContent = resultsText;
+        }
+
+        // Show/hide no results message
+        if (noResults) {
+          if (visibleCount === 0) {
+            noResults.classList.remove("hidden");
+          } else {
+            noResults.classList.add("hidden");
+          }
+        }
+
+        // Update TOC (Table of Contents)
+        const tocLinks = document.querySelectorAll('a[href^="#pub-"]');
+        tocLinks.forEach((link) => {
+          const href = link.getAttribute("href") || "";
+          const publicationId = href.replace("#", "");
+          const listItem = link.closest("li");
+
+          if (listItem && publicationId) {
+            if (visiblePublicationIds.includes(publicationId)) {
+              listItem.classList.remove("hidden");
+            } else {
+              listItem.classList.add("hidden");
+            }
+          }
+        });
+      }
+
+      // Search input
+      searchInput?.addEventListener("input", (e) => {
+        searchQuery = (e.target as HTMLInputElement).value;
+        updateDisplay();
+      });
+
+      // Publisher filter
+      publisherFilter?.addEventListener("change", (e) => {
+        selectedPublisher = (e.target as HTMLSelectElement).value;
+        updateDisplay();
+      });
+
+      // Year filter
+      yearFilter?.addEventListener("change", (e) => {
+        selectedYear = (e.target as HTMLSelectElement).value;
+        updateDisplay();
+      });
+
+      // Clear filters button
+      clearButton?.addEventListener("click", () => {
+        selectedPublisher = "all";
+        selectedYear = "all";
+        searchQuery = "";
+
+        if (searchInput) searchInput.value = "";
+        if (publisherFilter) publisherFilter.value = "all";
+        if (yearFilter) yearFilter.value = "all";
+
+        updateDisplay();
+      });
+
+      // Initial display update
+      updateDisplay();
+    }
+
+    // Initialize immediately if DOM is ready
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeFilters);
+    } else {
+      setTimeout(initializeFilters, 0);
+    }
+
+    // Re-initialize on Astro page events
+    document.addEventListener("astro:page-load", () => {
+      console.log(
+        "Astro page load event detected, reinitializing publication filters..."
+      );
+      setTimeout(initializeFilters, 100);
+    });
+
+    document.addEventListener("astro:after-swap", () => {
+      console.log(
+        "Astro after-swap event detected, reinitializing publication filters..."
+      );
+      setTimeout(initializeFilters, 100);
+    });
+  })();
+</script>
