@@ -1,15 +1,15 @@
 ---
-import type { PortfolioEntry } from "@/types";
+import type { AboutMeEntry } from "@/types";
 import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
 import { getIndex } from "@lib/contentParser";
 
-const entry = (await getIndex("aboutme")) as PortfolioEntry;
+const entry = (await getIndex("aboutme")) as AboutMeEntry;
 const { experience, skills } = entry.data;
 
-const toc = [];
+const toc: any[] = [];
 if (skills) toc.push({ text: "Skills", slug: "skills", depth: 2 });
 if (experience) {
-  experience.forEach((job, index) => {
+  experience.forEach((job: any, index: number) => {
     // Creating slug from position + company
     const slug = `job-${index}`;
     toc.push({ text: `${job.position} @ ${job.company}`, slug, depth: 2 });
@@ -38,14 +38,14 @@ if (experience) {
           Skills
         </h2>
         <div class="grid gap-6 md:grid-cols-2">
-          {skills.map((skillGroup) => (
+          {skills.map((skillGroup: any) => (
             <div>
               <h3 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-lg font-semibold">
                 {skillGroup.category}
               </h3>
               <div class="flex flex-wrap gap-2">
-                {skillGroup.technologies.map((tech) => (
-                  <span class="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                {skillGroup.technologies.map((tech: string) => (
+                  <span class="rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-black">
                     {tech}
                   </span>
                 ))}
@@ -61,23 +61,23 @@ if (experience) {
   {
     experience && (
       <div class="space-y-6">
-        {experience.map((job, index) => (
+        {experience.map((job: any, index: number) => (
           <div id={`job-${index}`} class="glass rounded-lg p-6 lg:p-8">
-            <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+            <div class="mb-4 flex flex-wrap items-baseline justify-between gap-4">
               <h2 class="text-txt-h dark:text-darkmode-txt-h text-xl font-bold">
                 {job.position}
               </h2>
-              <span class="text-sm text-gray-500 dark:text-gray-400">
+              <span class="rounded-full border border-black/10 bg-amber-500 px-3 py-1 text-xs font-bold text-black">
                 {job.period}
               </span>
             </div>
-            <p class="mb-4 text-lg font-semibold text-amber-600 dark:text-amber-400">
+            <p class="mb-4 text-lg font-bold text-amber-700 dark:text-amber-400">
               {job.company}
             </p>
 
             {job.responsibilities && (
               <ul class="list-disc space-y-2 pl-5 text-txt-p dark:text-darkmode-txt-p">
-                {job.responsibilities.map((resp) => (
+                {job.responsibilities.map((resp: string) => (
                   <li>{resp}</li>
                 ))}
               </ul>

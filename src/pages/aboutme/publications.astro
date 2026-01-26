@@ -68,7 +68,7 @@ const toc = publications.map((pub, index) => ({
               type="text"
               id="search-input"
               placeholder="Titel oder Beschreibung..."
-              class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none"
+              class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-white/10 dark:text-darkmode-txt-p"
             />
           </div>
 
@@ -80,7 +80,7 @@ const toc = publications.map((pub, index) => ({
             </label>
             <select
               id="publisher-filter"
-              class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+              class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
             >
               <option value="all">Alle Publisher</option>
               {
@@ -99,7 +99,7 @@ const toc = publications.map((pub, index) => ({
             </label>
             <select
               id="year-filter"
-              class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+              class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
             >
               <option value="all">Alle Jahre</option>
               {years.map((year) => <option value={year}>{year}</option>)}
