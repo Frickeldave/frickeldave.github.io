@@ -1,7 +1,5 @@
 ---
-agent: "agent"
-description: "Deploy changes to dev environments."
-model: Claude Haiku 4.5 (copilot)
+trigger: manual
 ---
 
 Deploye die Änderungen. Checke als erstes ob alle prerequsites erfüllt sind. Dies sind die

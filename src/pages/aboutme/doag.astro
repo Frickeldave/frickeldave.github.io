@@ -1,0 +1,405 @@
+---
+import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
+import { getEntry } from "astro:content";
+import { markdownify } from "@lib/textConverter";
+import PodcastPlayer from "@components/aboutme/PodcastPlayer";
+
+const doagEntry = await getEntry("aboutme", "doag");
+
+if (!doagEntry) {
+  throw new Error("DOAG entry not found");
+}
+
+const episodes = doagEntry.data.episodes || [];
+const podcastPlatforms = doagEntry.data.podcast_platforms || [];
+
+// Get unique editions for filter
+const editions = [...new Set(episodes.map((e) => e.edition))];
+
+// Get unique years from episode dates
+const years = [
+  ...new Set(
+    episodes.map((e) => {
+      // Extract year from date string (e.g., "20. Januar 2026" -> "2026")
+      const match = e.date.match(/\d{4}/);
+      return match ? match[0] : null;
+    })
+  ),
+]
+  .filter((year): year is string => year !== null)
+  .sort()
+  .reverse(); // Most recent first
+
+const toc = episodes.map((episode) => ({
+  text: episode.title,
+  slug: episode.id,
+  depth: 2,
+}));
+---
+
+<AboutMeLayout
+  title="DOAG & DOAG Voices"
+  description="Meine Aktivitäten bei der DOAG und als Co-Host des DOAG VOICES Podcasts"
+  toc={toc}
+>
+  <section class="container p-4">
+    <div class="glass mb-6 rounded-lg p-6 lg:p-8">
+      <h1
+        class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl"
+      >
+        🎙️ DOAG Voices Podcast
+      </h1>
+      <div
+        class="text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
+        set:html={typeof doagEntry.data.intro === "string"
+          ? markdownify(doagEntry.data.intro, true)
+          : doagEntry.data.intro?.content
+            ? markdownify(doagEntry.data.intro.content, true)
+            : ""}
+      />
+    </div>
+
+    {
+      doagEntry.data.podcast_intro && (
+        <div class="glass mb-6 rounded-lg p-6 lg:p-8">
+          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-2xl font-bold">
+            Über den Podcast
+          </h2>
+          <div
+            class="text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
+            set:html={markdownify(doagEntry.data.podcast_intro, true)}
+          />
+
+          {podcastPlatforms.length > 0 && (
+            <div class="mt-6">
+              <h3 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-lg font-semibold">
+                Jetzt anhören auf:
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                {podcastPlatforms.map((platform) => {
+                  let bg;
+                  if (platform.name === "Spotify") bg = "#1DB954";
+                  else if (platform.name === "Apple Podcasts") bg = "#FA57C2";
+                  else if (platform.name === "Amazon Music") bg = "#FF9900";
+                  else if (platform.name === "Deezer") bg = "#ED311B";
+                  else if (platform.name === "Podcast.de") bg = "#0066CC";
+                  else if (platform.name === "Acast") bg = "#000000";
+                  else bg = "#777777";
+                  return (
+                    <a
+                      href={platform.url}
+                      target="_blank"
+                      rel="noopener"
+                      class="inline-block rounded px-2.5 py-0.5 text-sm text-white transition-opacity hover:opacity-80"
+                      style={{ backgroundColor: bg }}
+                    >
+                      {platform.name}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div class="mt-6 border-t border-amber-500/30 pt-6">
+            <h3 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-lg font-semibold">
+              🔍 Episoden filtern
+            </h3>
+
+            <div class="grid gap-4 md:grid-cols-3">
+              <div>
+                <label class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p">
+                  Suche
+                </label>
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="Titel oder Teilnehmer..."
+                  class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p">
+                  Edition
+                </label>
+                <select
+                  id="edition-filter"
+                  class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+                >
+                  <option value="all">Alle Editionen</option>
+                  {editions.map((edition) => (
+                    <option value={edition}>{edition}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p">
+                  Zeitraum
+                </label>
+                <select
+                  id="date-filter"
+                  class="w-full rounded-lg border border-amber-500/20 bg-white/10 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+                >
+                  <option value="all">Alle Episoden</option>
+                  {years.map((year) => (
+                    <option value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between">
+              <div id="results-count" class="text-sm opacity-70">
+                {episodes.length} von {episodes.length} Episoden
+              </div>
+              <button
+                id="clear-filters"
+                class="rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600"
+              >
+                Filter zurücksetzen
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    <div id="episodes-grid">
+      {
+        episodes.map((episode) => (
+          <div
+            id={episode.id}
+            class="episode-card glass mb-6 scroll-mt-24 rounded-lg p-6 lg:p-8"
+            data-title={episode.title.toLowerCase()}
+            data-guests={episode.guests.toLowerCase()}
+            data-edition={episode.edition}
+            data-date={episode.date}
+          >
+            <h2 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-2xl font-bold">
+              {episode.title}
+            </h2>
+            <div class="mb-2 flex flex-wrap items-center gap-2">
+              <p class="text-sm text-txt-p dark:text-darkmode-txt-p">
+                <strong>{episode.edition}</strong> • {episode.date}
+              </p>
+              {Object.entries(episode.links ?? {}).map(([provider, url]) => {
+                let bg;
+                if (provider === "spotify") bg = "#1DB954";
+                else if (provider === "apple") bg = "#FA57C2";
+                else if (provider === "amazon") bg = "#FF9900";
+                else if (provider === "deezer") bg = "#ED311B";
+                else if (provider === "podcast_de") bg = "#0066CC";
+                else if (provider === "acast") bg = "#000000";
+                else bg = "#777777";
+                const label =
+                  provider.charAt(0).toUpperCase() +
+                  provider.slice(1).replace("_", " ");
+                return (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-block rounded px-2.5 py-0.5 text-sm text-white transition-opacity hover:opacity-80"
+                    style={{ backgroundColor: bg }}
+                  >
+                    {label}
+                  </a>
+                );
+              })}
+            </div>
+            <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
+              <strong>Mit:</strong> {episode.guests}
+            </p>
+            <div
+              class="mb-4 leading-relaxed text-txt-p dark:text-darkmode-txt-p"
+              set:html={markdownify(episode.description, true)}
+            />
+
+            {episode.audioUrl && (
+              <PodcastPlayer client:load audioUrl={episode.audioUrl} />
+            )}
+          </div>
+        ))
+      }
+    </div>
+
+    <div id="no-results" class="glass hidden rounded-lg py-12 text-center">
+      <p class="text-xl opacity-70">
+        Keine Episoden gefunden. Versuche andere Filter.
+      </p>
+    </div>
+  </section>
+</AboutMeLayout>
+
+<script>
+  // Force script re-execution on each page load
+  (() => {
+    let selectedEdition = "all";
+    let searchQuery = "";
+    let selectedYear = "all";
+
+    function initializeFilters() {
+      console.log("Initializing podcast filters...");
+
+      const searchInput = document.getElementById(
+        "search-input"
+      ) as HTMLInputElement;
+      const editionFilter = document.getElementById(
+        "edition-filter"
+      ) as HTMLSelectElement;
+      const dateFilter = document.getElementById(
+        "date-filter"
+      ) as HTMLSelectElement;
+      const clearButton = document.getElementById("clear-filters");
+      const episodesGrid = document.getElementById("episodes-grid");
+      const resultsCount = document.getElementById("results-count");
+      const noResults = document.getElementById("no-results");
+
+      if (!episodesGrid || !noResults) {
+        console.warn(
+          "Essential podcast filter elements not found, retrying in 100ms..."
+        );
+        setTimeout(initializeFilters, 100);
+        return;
+      }
+
+      function updateDisplay() {
+        const episodeCards =
+          episodesGrid?.querySelectorAll(".episode-card") || [];
+        let visibleCount = 0;
+        const visibleEpisodeIds: string[] = [];
+
+        episodeCards.forEach((card) => {
+          const title = card.getAttribute("data-title") || "";
+          const guests = card.getAttribute("data-guests") || "";
+          const edition = card.getAttribute("data-edition") || "";
+          const date = card.getAttribute("data-date") || "";
+          const episodeId = card.getAttribute("id") || "";
+
+          let visible = true;
+
+          // Filter by edition
+          if (selectedEdition !== "all" && edition !== selectedEdition) {
+            visible = false;
+          }
+
+          // Filter by search (title or guests)
+          if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            if (!title.includes(query) && !guests.includes(query)) {
+              visible = false;
+            }
+          }
+
+          // Filter by year
+          if (selectedYear !== "all") {
+            if (!date.includes(selectedYear)) {
+              visible = false;
+            }
+          }
+
+          if (visible) {
+            visibleCount++;
+            visibleEpisodeIds.push(episodeId);
+            card.classList.remove("hidden");
+          } else {
+            card.classList.add("hidden");
+          }
+        });
+
+        // Update results count
+        const totalCount = episodeCards.length;
+        const resultsText = `${visibleCount} von ${totalCount} Episoden`;
+
+        if (resultsCount) {
+          resultsCount.textContent = resultsText;
+        }
+
+        // Show/hide no results message
+        if (noResults) {
+          if (visibleCount === 0) {
+            noResults.classList.remove("hidden");
+          } else {
+            noResults.classList.add("hidden");
+          }
+        }
+
+        // Update TOC (Table of Contents) - filter links in sidebar
+        // Find all links in the "Auf dieser Seite" section that start with #
+        const tocLinks = document.querySelectorAll('a[href^="#"]');
+        tocLinks.forEach((link) => {
+          const href = link.getAttribute("href") || "";
+          const episodeId = href.replace("#", "");
+          const listItem = link.closest("li");
+
+          // Only filter TOC links, not other anchor links
+          if (listItem && episodeId && href.startsWith("#doag-voices-")) {
+            if (visibleEpisodeIds.includes(episodeId)) {
+              listItem.classList.remove("hidden");
+            } else {
+              listItem.classList.add("hidden");
+            }
+          }
+        });
+      }
+
+      // Search input
+      searchInput?.addEventListener("input", (e) => {
+        searchQuery = (e.target as HTMLInputElement).value;
+        updateDisplay();
+      });
+
+      // Edition filter
+      editionFilter?.addEventListener("change", (e) => {
+        selectedEdition = (e.target as HTMLSelectElement).value;
+        updateDisplay();
+      });
+
+      // Date filter
+      dateFilter?.addEventListener("change", (e) => {
+        selectedYear = (e.target as HTMLSelectElement).value;
+        updateDisplay();
+      });
+
+      // Clear filters button
+      clearButton?.addEventListener("click", () => {
+        selectedEdition = "all";
+        searchQuery = "";
+        selectedYear = "all";
+
+        if (searchInput) searchInput.value = "";
+        if (editionFilter) editionFilter.value = "all";
+        if (dateFilter) dateFilter.value = "all";
+
+        updateDisplay();
+      });
+
+      // Initial display update
+      updateDisplay();
+    }
+
+    // Initialize immediately if DOM is ready
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeFilters);
+    } else {
+      setTimeout(initializeFilters, 0);
+    }
+
+    // Re-initialize on Astro page events
+    document.addEventListener("astro:page-load", () => {
+      console.log(
+        "Astro page load event detected, reinitializing podcast filters..."
+      );
+      setTimeout(initializeFilters, 100);
+    });
+
+    document.addEventListener("astro:after-swap", () => {
+      console.log(
+        "Astro after-swap event detected, reinitializing podcast filters..."
+      );
+      setTimeout(initializeFilters, 100);
+    });
+  })();
+</script>

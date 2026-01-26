@@ -1,0 +1,86 @@
+---
+import type { AboutMeEntry } from "@/types";
+import AboutMeLayout from "@components/aboutme/AboutMeLayout.astro";
+import { getIndex } from "@lib/contentParser";
+
+const entry = (await getIndex("aboutme")) as AboutMeEntry;
+const { projects } = entry.data;
+
+const title = "Projekte";
+const description = "Meine Projekte und technische Arbeiten";
+
+const toc = [{ text: "IT Projects", slug: "it-projects", depth: 2 }];
+---
+
+<AboutMeLayout title={title} description={description} toc={toc}>
+  <div class="glass mb-6 rounded-lg p-6 lg:p-8">
+    <h1
+      class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl"
+    >
+      Projekte
+    </h1>
+    <p class="text-txt-p dark:text-darkmode-txt-p">
+      Meine Projekte und technische Arbeiten werden hier präsentiert.
+    </p>
+  </div>
+
+  <div class="space-y-12">
+    {
+      projects && (
+        <section id="it-projects">
+          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-6 text-2xl font-bold">
+            IT Projects
+          </h2>
+          <div class="grid gap-6">
+            {projects.map((project: any) => (
+              <div class="glass rounded-lg p-6">
+                <div class="mb-2 flex items-start justify-between">
+                  <h3 class="text-xl font-bold">{project.title}</h3>
+                  {project.status && (
+                    <span class="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
+                      {project.status}
+                    </span>
+                  )}
+                </div>
+                <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
+                  {project.description}
+                </p>
+
+                {project.technologies && (
+                  <div class="mb-4 flex flex-wrap gap-2">
+                    {project.technologies.map((tech: string) => (
+                      <span class="rounded bg-gray-200 px-2 py-1 text-xs dark:bg-gray-700">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div class="flex gap-4">
+                  {project.demo && (
+                    <a
+                      href={project.demo}
+                      target="_blank"
+                      class="font-medium text-amber-600 hover:text-amber-700"
+                    >
+                      Demo &rarr;
+                    </a>
+                  )}
+                  {project.github && (
+                    <a
+                      href={project.github}
+                      target="_blank"
+                      class="font-medium text-amber-600 hover:text-amber-700"
+                    >
+                      GitHub &rarr;
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</AboutMeLayout>

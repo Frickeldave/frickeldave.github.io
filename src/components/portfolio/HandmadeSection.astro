@@ -1,148 +1,68 @@
 ---
-import type { PortfolioEntry } from "@/types";
-import { Image } from "astro:assets";
+import type { AboutMeEntry } from "@/types";
+import { getEntries } from "@lib/contentParser";
+import HandmadeGrid from "./HandmadeGrid";
 
 interface Props {
-  entry: PortfolioEntry;
+  entry: AboutMeEntry;
 }
 
 const { entry } = Astro.props;
-const { handmadeProjects } = entry.data;
+const { handmadeProjects = [] } = entry.data;
 
-// Categories we want to show
-const categories = ["Holzwerken", "Epoxidharz", "Laser", "3D-Druck"];
-
-// Group projects by category
-const projectsByCategory = categories.reduce(
-  (acc, category) => {
-    acc[category] = (handmadeProjects || []).filter(
-      (p) => p.category === category
+// Fetch all blog posts to find more DIY/Holzwerken projects
+const allBlogPosts = await getEntries("blog");
+const blogProjects = allBlogPosts
+  .filter((post) => {
+    const data = post.data as any;
+    return (
+      data.categories?.includes("DIY") ||
+      data.categories?.includes("Holzwerken")
     );
-    return acc;
-  },
-  {} as Record<string, typeof handmadeProjects>
-);
-
-// Select one random project from each category
-const selectedProjects = categories
-  .map((category) => {
-    const categoryProjects = projectsByCategory[category];
-    if (categoryProjects && categoryProjects.length > 0) {
-      const randomIndex = Math.floor(Math.random() * categoryProjects.length);
-      return categoryProjects[randomIndex];
-    }
-    return null;
   })
-  .filter((p) => p !== null);
+  .map((post) => {
+    const data = post.data as any;
+    return {
+      title: data.title,
+      description: data.description || "",
+      image: data.image,
+      blogUrl: `/blog/${post.id}`,
+      category: data.categories?.includes("Holzwerken") ? "Holzwerken" : "DIY",
+    };
+  });
 
-// Category icons
-const getCategoryIcon = (category: string | undefined) => {
-  switch (category) {
-    case "Holzwerken":
-      return "🪵";
-    case "Epoxidharz":
-      return "💎";
-    case "Laser":
-      return "⚡";
-    case "3D-Druck":
-      return "🖨️";
-    default:
-      return "🛠️";
-  }
-};
+// Merge static projects from aboutme index and dynamic projects from blog
+// Use a Map to avoid duplicates by title or blogUrl
+const projectMap = new Map();
+
+// Add blog projects first (generally more up to date)
+blogProjects.forEach((p) => projectMap.set(p.blogUrl, p));
+// Add static projects (may overwrite or add new ones)
+handmadeProjects.forEach((p) => projectMap.set(p.blogUrl, p));
+
+const combinedProjects = Array.from(projectMap.values());
 ---
 
 {
-  selectedProjects && selectedProjects.length > 0 && (
-    <section class="section-sm container">
-      <div class="row justify-center">
-        <div class="col-12">
-          <div class="glass rounded-2xl p-6 lg:p-10">
-            {/* Section Header */}
-            <div class="mb-8 text-center">
-              <h2 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-2xl font-bold lg:text-3xl">
-                🛠️ Handmade Portfolio
-              </h2>
-              <p class="mx-auto max-w-2xl text-txt-p opacity-80 dark:text-darkmode-txt-p">
-                Hier siehst du eine zufällige Auswahl von DIY Projekten aus den
-                Bereichen Holzwerken, Laser, Epoxidharz und 3D-Druck.
-              </p>
-            </div>
-
-            {/* 4-Column Grid */}
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {selectedProjects.map((project) => (
-                <a
-                  href={project?.blogUrl || "#"}
-                  class="group block no-underline"
-                >
-                  <div class="glass-t h-full overflow-hidden rounded-xl transition-all duration-300 hover:scale-[1.03] hover:shadow-xl">
-                    {/* Image */}
-                    <div class="aspect-video overflow-hidden">
-                      {project?.image ? (
-                        <Image
-                          src={project.image}
-                          alt={project.title}
-                          width={400}
-                          height={225}
-                          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      ) : (
-                        <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-500/20 to-orange-500/20">
-                          <span class="text-4xl">
-                            {getCategoryIcon(project?.category)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div class="p-4">
-                      {/* Category Badge */}
-                      <span class="mb-2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-                        {getCategoryIcon(project?.category)} {project?.category}
-                      </span>
-
-                      {/* Title */}
-                      <h4 class="text-txt-h dark:text-darkmode-txt-h mb-2 line-clamp-1 text-base font-bold">
-                        {project?.title}
-                      </h4>
-
-                      {/* Description */}
-                      <p class="line-clamp-2 text-sm text-txt-p opacity-80 dark:text-darkmode-txt-p">
-                        {project?.description}
-                      </p>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div class="mt-8 text-center">
-              <a
-                href="/blog/categories/diy"
-                class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 font-medium text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
-              >
-                Alle DIY-Projekte ansehen
-                <svg
-                  class="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </a>
-            </div>
+  combinedProjects.length > 0 && (
+    <div class="row justify-center">
+      <div class="col-12">
+        <div class="glass rounded-2xl p-6 lg:p-10">
+          {/* Section Header */}
+          <div class="mb-8 text-center">
+            <h2 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-2xl font-bold lg:text-3xl">
+              🛠️ Handmade Portfolio
+            </h2>
+            <p class="mx-auto max-w-2xl text-txt-p opacity-80 dark:text-darkmode-txt-p">
+              Hier siehst du eine zufällige Auswahl meiner DIY- und
+              Holzwerken-Projekte. Klicke auf "Neue Auswahl zeigen", um weitere
+              Projekte zu entdecken.
+            </p>
           </div>
+
+          <HandmadeGrid projects={combinedProjects} client:load />
         </div>
       </div>
-    </section>
+    </div>
   )
 }
