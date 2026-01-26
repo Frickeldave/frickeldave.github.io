@@ -9,7 +9,11 @@ const { projects } = entry.data;
 const title = "Projekte";
 const description = "Meine Projekte und technische Arbeiten";
 
-const toc = [{ text: "IT Projects", slug: "it-projects", depth: 2 }];
+const toc = (projects || []).map((project: any, index: number) => ({
+  text: project.title,
+  slug: `project-${index}`,
+  depth: 2,
+}));
 ---
 
 <AboutMeLayout title={title} description={description} toc={toc}>
@@ -28,16 +32,16 @@ const toc = [{ text: "IT Projects", slug: "it-projects", depth: 2 }];
     {
       projects && (
         <section id="it-projects">
-          <h2 class="text-txt-h dark:text-darkmode-txt-h mb-6 text-2xl font-bold">
-            IT Projects
-          </h2>
           <div class="grid gap-6">
-            {projects.map((project: any) => (
-              <div class="glass rounded-lg p-6">
+            {projects.map((project: any, index: number) => (
+              <div
+                id={`project-${index}`}
+                class="glass scroll-mt-24 rounded-lg p-6"
+              >
                 <div class="mb-2 flex items-start justify-between">
                   <h3 class="text-xl font-bold">{project.title}</h3>
                   {project.status && (
-                    <span class="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
+                    <span class="rounded-full border border-black/10 bg-amber-500 px-3 py-1 text-xs font-bold text-black">
                       {project.status}
                     </span>
                   )}
@@ -49,7 +53,7 @@ const toc = [{ text: "IT Projects", slug: "it-projects", depth: 2 }];
                 {project.technologies && (
                   <div class="mb-4 flex flex-wrap gap-2">
                     {project.technologies.map((tech: string) => (
-                      <span class="rounded bg-gray-200 px-2 py-1 text-xs dark:bg-gray-700">
+                      <span class="rounded border border-amber-500/50 bg-amber-500/10 px-2 py-1 text-xs font-bold text-black">
                         {tech}
                       </span>
                     ))}

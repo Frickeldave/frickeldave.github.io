@@ -331,7 +331,7 @@ projects:
 
   - title: "Homologation"
     description:
-      "Service Delivery Management für Entiwcklungsprojekten im Umfeld vonHomologation und
+      "Service Delivery Management für Entiwcklungsprojekten im Umfeld von Homologation und
       Emissionskontrolle"
     technologies:
       - "Power Apps"
@@ -454,7 +454,7 @@ projects:
       - "Containerisierte Architektur"
       - "GitHub-basierte CI/CD Pipeline"
       - "Moderne DevOps-Praktiken im IoT-Bereich"
-    status: "Live"
+    status: "Personal"
 
   - title: "frickeldave.de"
     description: "Persönliche Website und Blog über IT, DevOps und Handwerk"
@@ -470,7 +470,7 @@ projects:
       - "SEO-optimiert und performant"
     github: "https://github.com/Frickeldave/frickeldave-main"
     demo: "https://frickeldave.de"
-    status: "Live"
+    status: "Personal"
 
   - title: "Enterprise Manager for SCCM"
     description: "Softwaremanagement Agent für Microsoft SCCM"
