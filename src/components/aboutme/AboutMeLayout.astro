@@ -1,0 +1,32 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import AboutMeNav from "@components/aboutme/AboutMeNav.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+
+import type { TocItem } from "@components/aboutme/AboutMeNav.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  toc?: TocItem[];
+}
+
+const { title, description, toc } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader title="About Me" colorScheme="amber" />
+
+  <section class="container p-4">
+    <div class="grid gap-8 lg:grid-cols-4">
+      <div class="space-y-6 lg:col-span-3">
+        <slot />
+      </div>
+      <div class="lg:col-span-1">
+        <AboutMeNav toc={toc}>
+          <slot name="nav-extra" />
+        </AboutMeNav>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

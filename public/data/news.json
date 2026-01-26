@@ -2,6 +2,13 @@
   "news": [
     {
       "visible": true,
+      "date": "2026-01-24",
+      "title": "Aboutme fertig",
+      "text": "Nach diversen Fehltritten und Anpassungen und dem Umstieg auf googles Antigravity IDE ist nun die aboutme Seite fertig.",
+      "imageUrl": "src/assets/news/2026-01-24-aboutme-page-fertig.png"
+    },
+    {
+      "visible": true,
       "date": "2026-01-15",
       "title": "Blog Migration abgeschlossen",
       "text": "Nach Monaten harter Arbeit ist die Migration aller Blog Artikel abgeschlossen. Es wurden 40 von insgesamt 91 Artikel vom alten Wordpress basierten Blog übernommen. 51 Artikel wurden verworfen, was eine Übernahmequote von 44% bedeutet. Ein großes Learning hieraus ist das Verständnis, wie Artikel aufgebaut werden, welche Inhalte interessant sind, welche dauerhaft oder nur kurzfristig sind.",
@@ -42,6 +49,5 @@
       "text": "Wordpress hat seinen Dienst getan. Mit dem heutigen Tag starte ich den Relaunch meiner persönlichen Webseite. Der Fokus liegt auf Performance, einheitliches Design, KI Unterstützung und Flexibilität. Technisch setze ich auf Astro, TailwindCSS und React.",
       "imageUrl": "src/assets/news/2025-08-14-start-des-relaunch.png"
     }
-    
   ]
 }

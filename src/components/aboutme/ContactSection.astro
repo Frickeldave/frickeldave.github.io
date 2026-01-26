@@ -1,0 +1,96 @@
+---
+import type { PortfolioEntry } from "@/types";
+
+interface Props {
+  entry: PortfolioEntry;
+}
+
+const { entry } = Astro.props;
+const { email, linkedin, github } = entry.data;
+---
+
+<section class="section-sm container">
+  <div class="row justify-center">
+    <div class="col-12 lg:col-8">
+      <div class="glass rounded-lg p-8 text-center lg:p-12">
+        <h2
+          class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl"
+        >
+          Let's Work Together
+        </h2>
+        <p
+          class="mb-8 text-lg leading-relaxed text-txt-p dark:text-darkmode-txt-p"
+        >
+          I'm always interested in new opportunities and exciting projects.
+          Whether you need a full-stack developer, Power Platform consultant, or
+          just want to chat about technology, feel free to reach out!
+        </p>
+
+        <div class="flex flex-col justify-center gap-4 sm:flex-row">
+          {
+            email && (
+              <a
+                href={`mailto:${email}`}
+                class="btn btn-primary glass-btn"
+                aria-label="Send Email"
+              >
+                📧 Get In Touch
+              </a>
+            )
+          }
+          {
+            linkedin && (
+              <a
+                href={linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-outline glass-btn"
+                aria-label="LinkedIn Profile"
+              >
+                💼 LinkedIn
+              </a>
+            )
+          }
+          {
+            github && (
+              <a
+                href={github}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-outline glass-btn"
+                aria-label="GitHub Profile"
+              >
+                🚀 GitHub
+              </a>
+            )
+          }
+        </div>
+
+        <!-- Additional Contact Info -->
+        <div class="mt-8 border-t border-gray-300 pt-8 dark:border-gray-600">
+          <p class="text-sm text-txt-p dark:text-darkmode-txt-p">
+            Available for freelance projects and full-time opportunities
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .glass-btn {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+  }
+
+  .btn {
+    @apply inline-block rounded-lg px-6 py-3 text-center font-medium;
+  }
+
+  .btn-primary {
+    @apply border-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white;
+  }
+
+  .btn-outline {
+    @apply border-2 border-gray-300 text-txt-p hover:bg-gray-100 dark:border-gray-600 dark:text-darkmode-txt-p dark:hover:bg-gray-800;
+  }
+</style>

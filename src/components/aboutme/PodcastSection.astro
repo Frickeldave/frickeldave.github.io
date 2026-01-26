@@ -1,0 +1,129 @@
+---
+import { Image } from "astro:assets";
+import {
+  FaSpotify,
+  FaApple,
+  FaAmazon,
+  FaMicrophone,
+  FaPodcast,
+  FaMusic,
+} from "react-icons/fa";
+
+// Import the podcast image
+import podcastImage from "@assets/doag-voices.png";
+
+// Podcast platforms
+const platforms = [
+  {
+    name: "Spotify",
+    url: "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB",
+    icon: FaSpotify,
+  },
+  {
+    name: "Apple",
+    url: "https://podcasts.apple.com/de/podcast/doag-voices/id1847181531",
+    icon: FaApple,
+  },
+  {
+    name: "Amazon",
+    url: "https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices",
+    icon: FaAmazon,
+  },
+  {
+    name: "Deezer",
+    url: "https://www.deezer.com/de/show/1002294232",
+    icon: FaMusic,
+  },
+  {
+    name: "podcast.de",
+    url: "https://www.podcast.de/podcast/3651714/doag-voices",
+    icon: FaPodcast,
+  },
+  {
+    name: "acast",
+    url: "https://shows.acast.com/doag-voices-arbeitstitel",
+    icon: FaMicrophone,
+  },
+];
+---
+
+<section class="section-sm container">
+  <div class="row justify-center">
+    <div class="col-12">
+      <div class="glass rounded-2xl p-6 lg:p-10">
+        {/* Section Header */}
+        <div class="mb-8 text-center">
+          <h2
+            class="text-txt-h dark:text-darkmode-txt-h mb-3 text-2xl font-bold lg:text-3xl"
+          >
+            🎙️ Podcast Host
+          </h2>
+          <p
+            class="mx-auto max-w-2xl text-txt-p opacity-80 dark:text-darkmode-txt-p"
+          >
+            DOAG VOICES – Einzigartige Stimmen aus der Welt der IT
+          </p>
+        </div>
+
+        {/* Content Grid */}
+        <div class="flex flex-col items-center gap-8 lg:flex-row">
+          {/* Podcast Image */}
+          <div class="flex w-full justify-center lg:w-1/3">
+            <div class="relative">
+              <div
+                class="absolute -inset-2 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 opacity-50 blur-lg"
+              >
+              </div>
+              <Image
+                src={podcastImage}
+                alt="DOAG VOICES Podcast"
+                width={300}
+                height={300}
+                class="relative rounded-2xl border-2 border-white/20 shadow-2xl"
+              />
+            </div>
+          </div>
+
+          {/* Podcast Info */}
+          <div class="w-full lg:w-2/3">
+            <h3
+              class="text-txt-h dark:text-darkmode-txt-h mb-4 text-xl font-bold lg:text-2xl"
+            >
+              DOAG VOICES
+            </h3>
+            <p
+              class="mb-6 text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
+            >
+              Als Host bei DOAG VOICES führe ich spannende Gespräche mit
+              Expert:innen aus der IT-Welt. Der Podcast der DOAG bringt
+              Fachwissen, Leidenschaft und echte Geschichten aus der Community
+              ans Mikro – jede Woche neu zu Themen wie Cloud, KI,
+              Softwareentwicklung und die Menschen dahinter.
+            </p>
+
+            {/* Platform Buttons */}
+            <div class="flex flex-wrap gap-3">
+              {
+                platforms.map((platform) => {
+                  const IconComponent = platform.icon;
+                  return (
+                    <a
+                      href={platform.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="group inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
+                      aria-label={`${platform.name} - DOAG VOICES`}
+                    >
+                      <IconComponent className="text-lg text-white" />
+                      <span>{platform.name}</span>
+                    </a>
+                  );
+                })
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
