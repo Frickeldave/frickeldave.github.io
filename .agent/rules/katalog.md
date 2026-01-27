@@ -29,7 +29,7 @@ Als Kategorie gibt es aktuell die folgenden:
 Jedes Produkt hat einen eigenen Ordner, bestehend aus der Artikelnummer und einer kurzen
 Beschreibung. Die Artikelnummer setzt sich wie folgt zusammen:
 
-- Das zweistellige Kürzel
+- Das zweistellige Kategoriekürzel
 - Gefolgt von einer zufälligen Reihe von 4 Buchstaben und Zahlen
 
 Innerhalb des Produktordners ist eine JSON Datei mit folgenden Schema hinterlegt:
@@ -46,8 +46,8 @@ Neben der JSON Datei liegen bis zu 99 Bilder des Produktes mit dem Dateinamen
 
 ## Beschreibung der Ordner und Dateien im Repo
 
-Alle Bilder des Produktkatalogs sollen unter src/assets/handmade/<kategorie>/<artikelnummer> liegen.
-Die Kategorien und Artikelnummer sind identisch wie oben aufgebaut.
+Alle Bilder des Produktkatalogs sollen unter src/assets/handmade/<kategoriekürzel>/<artikelnummer>
+liegen. Die Kategorien und Artikelnummer sind identisch wie oben aufgebaut.
 
 Alle Metainformationen sollen unter public\data\handmade.json liegen. Das Schema der Datei ist wie
 folgt definiert:
@@ -64,44 +64,48 @@ folgt definiert:
 
 ## Aufgaben
 
+### Prüfung
+
 - Es soll ein Script generiert werden, dass alle Informationen die in dem gegebenen Ordner abgelegt
   sind, mit dem Git Repository synchronisiert.
-- Das Script soll Platformübergreifend funktionieren, es bietet sich wohl Typescript an.
+- Das Script soll Plattformübergreifend funktionieren, es bietet sich wohl Typescript an.
 - Das Script soll in /scripts/synchronize-products.ts liegen
 - Das Script muss gut kommentiert sein, bitte in englisch
 - Folgende Schritte soll das Script durchführen:
   - Erstellen einer Liste aller Aktionen
     - Welche Produkte werden im Ziel aktualisiert
-    - Welche Produkte werden im Ziel gelöscht
+    - Welche Produkte werden im Ziel gelöscht. Es werden Produkte im Ziel gelöscht, die nicht in der
+      Quellordnerstruktur vorhanden sind
     - Welche Produkte werden im Ziel angelegt
-    - Welche Produkte werden ignoriert
-- Ignoriert werden Produkte unter folgenden Bedingungen:
-  - Kategorieordner die nicht
-  - Der Produktordner entspricht nicht dem gegebenen Schema <LA|EP|WO|3D...4stellen>
-  - Die Quell-JSON entspricht nicht dem Schema
-  - Einzelne oder alle Quell-Bilddateien entsprechen nicht dem Dateinamensschema
-    <artikelnummer>-<01-99>.PNG.
-  -
+    - Welche Produkte werden ignoriert. Ignoriert werden Produkte unter folgenden Bedingungen:
+      - Kategorieordner die nicht dem Schema entsprechen
+      - Der Produktordner entspricht nicht dem gegebenen Schema <LA|EP|WO|3D...4stellen>
+      - Die Tags in der Quell-JSON entsprechen nicht den tags, die im root des Quellordner in der
+        Datei "tags.json" definiert sind.
+      - Die Quell-JSON entspricht nicht dem Schema
+      - Einzelne oder alle Quell-Bilddateien entsprechen nicht dem Dateinamensschema
+        <artikelnummer>-<01-99>.PNG.
+  - Ist die Liste erstellt, soll das Script eine summary ausgeben und der Benutzer muss entscheiden
+    ob die sync-Aktion durchgeführt werden soll.
 
-- Als erstes soll das Script einen Branch aus "main" erstellen. Der Branch soll heißen
-  "synchronize-products-yyyy-mm-dd_hh-mm-ss".
-- In die Datei public\data\handmade.json sollen die Inhalte aller gefunden JSON Dateien in den
-  Produktordner eingetragen werden.
+### Durchzuführende Aktionen durch das Script
+
+Bestätigt der Benutzer, werden folgende Aktionen durchgeführt:
+
+- Das Script soll einen Branch aus "main" erstellen. Der Branch soll heißen
+  "chore/synchronize-products-yyyy-mm-dd_hh-mm-ss".
+- In die Datei public\data\handmade.json sollen die Inhalte aller gefunden und gültigen JSON Dateien
+  in den Produktordner eingetragen werden, sofern diese gültig sind.
 - Ist in der public\data\handmade.json ein Produkt gelistet, was nicht im Quellordner enthalten ist,
   soll das Produkt aus der JSON Datei gelöscht werden.
 - Die Bilder sollen unter
-  src\assets\handmade\<kategorie>\<Artikelnummer>\<Artikelnummer>-<01-99>.png gespeichert werden.
+  src\assets\handmade\<kategoriekürzel>\<Artikelnummer>\<Artikelnummer>-<01-99>.png gespeichert
+  werden.
 - Ist das Zielbild schon mit gleichem Namen vorhanden, berechne die Hashwerte der Quellbilder und
   der Zielbilder, vergleiche diese und überschreibe das Zielbild wenn sich die Hashsumme
   unterscheidet.
 - Bilder die nicht im Quellordner vorhanden sind, sollen gelöscht werden.
-- Entspricht ein Quell-JSON nicht dem obigen Schema, soll es ignoriert werden
-- Es sollen alle Aktionen in eine Logdatei geschrieben werden, die besondere Aufmerksamkeit
-  erfordern.
-- Als besonders definiert wird
-  - Dateien die ignoriert wurden, weil sie nicht der Definition des Produktkatalogs oben
-    entsprechen.
-  - Dateien und Ordner die im Ziel gelöscht wurden
-  - Metainformationen die nicht eingetragen werden konnten weil sie nicht dem Schema entsprechen
+- Es sollen alle Aktionen in eine Logdatei geschrieben werden.
 
-Die Log-Dateien sollen unter /scripts/synchronize-products/synchronize-products.md abeglegt werden.
+Die Log-Dateien sollen unter
+/scripts/synchronize-products/synchronize-products-yyy-mmm-ddd_hh-mm-ss.md abeglegt werden.
