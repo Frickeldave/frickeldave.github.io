@@ -85,7 +85,7 @@ const getProductImage = (
   category: string,
   articleNumber: string
 ): ImageMetadata => {
-  const categoryFolder = category.toLowerCase().replace(/\s+/g, "-");
+  const categoryFolder = category;
   const imagePath = `${categoryFolder}/${articleNumber}/${articleNumber}-000.png`;
   return imageMap[imagePath] || placeholderImage;
 };

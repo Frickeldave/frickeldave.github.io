@@ -36,8 +36,8 @@ const imageMap = Object.entries(images).reduce(
 
 // Helper function to get image for product
 const getProductImage = (category: string, articleNumber: string) => {
-  // Convert category to folder name (lowercase and replace spaces with hyphens)
-  const categoryFolder = category.toLowerCase().replace(/\s+/g, "-");
+  // Use category directly as folder name
+  const categoryFolder = category;
   // Build the dynamic path: category/articleNumber/articleNumber-000.png
   const imagePath = `${categoryFolder}/${articleNumber}/${articleNumber}-000.png`;
 
