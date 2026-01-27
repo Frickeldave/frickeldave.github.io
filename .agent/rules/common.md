@@ -57,7 +57,8 @@ Alle Styleguides sind in @/docs/20-design-system.md beschrieben
 ## Prompt Speicherung
 
 Speichere alle Prompts in @/docs/31-prompt-summary.md für zukünftige Referenz und
-Wiederverwendbarkeit in der Tabelle.
+Wiederverwendbarkeit in der Tabelle, frage mich dabei nach einer Bewertung von 0-10 und einer kurzen
+Begründung für die Bewertung. Wird keien Bewertung eingegeben, lass sie einfach weg.
 
 - Hinterlege das Datum, den eingegebenen Prompt und das verwendete Modell |Date|Prompt|model|.
 - Wenn der Prompt in einer prompt-Datei oder agent rule gespeichert ist, verweise auf den Dateipfad
