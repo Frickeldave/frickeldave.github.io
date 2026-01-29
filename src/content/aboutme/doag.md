@@ -5,7 +5,7 @@ intro: >
   Die Deutsche Oracle Anwendergruppe (DOAG) ist ein IT-Verein mit rund 6.000 Mitgliedern in
   Deutschland, Österreich und der Schweiz mit Hauptsitz in Berlin. Die DOAG versteht sich als
   Plattform für den fachlichen Austausch rund um moderne IT-Themen – von Datenbanken über
-  Cloud-native Entwicklung bis hin zu Künstlicher Intelligenz. 
+  Cloud-native Entwicklung bis hin zu Künstlicher Intelligenz.
 
 
   Als Mitglied der DOAG engagiere ich mich besonders in den Themenfeldern **Cloud** und **Künstliche
@@ -47,6 +47,26 @@ podcast_platforms:
   - name: Acast
     url: https://shows.acast.com/doag-voices-arbeitstitel
 episodes:
+  - id: doag-voices-24579
+    title: KI-Modellauswahl statt Modellbau - Transfer Learning in der Praxis
+    edition: FutureAI
+    guests: Dave König und Dr. Melanie Sigl
+    date: 27. Januar 2026
+    description: >-
+      Künstliche Intelligenz ist allgegenwärtig – doch der erfolgreiche Einsatz beginnt nicht mit
+      dem Training eines Modells, sondern mit der richtigen Auswahl. In dieser Folge spreche ich mit
+      Dr. Melanie Sigl über die Herausforderungen von Transfer Learning auf multivariaten
+      Zeitreihen, warum vortrainierte Modelle nicht automatisch gute Ergebnisse liefern und wie
+      Methoden wie Dynamic Time Warping und Learning-to-Rank-Ansätze helfen, KI-Modelle systematisch
+      zu bewerten.
+    links:
+      spotify: https://open.spotify.com/episode/2RGCSMN8T3yUxP7bB7O641
+      apple: >-
+        https://podcasts.apple.com/de/podcast/doag-voices-futureai-dave-ko-nig-und-dr-melanie-sigl/id1847181531?i=1000746815994
+      amazon: >-
+        https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/697359de35a98abf7c4f2457/media.mp3
   - id: doag-voices-73421
     title: DevLand - Neue Konferenz für moderne Softwareentwicklung
     edition: DevLand
