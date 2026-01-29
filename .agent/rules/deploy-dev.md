@@ -16,7 +16,8 @@ Führe dabei die folgenden Schritte aus:
    und lasse mich wissen, dass ich die Änderungen committen soll.
 3. Sollte aktuell der dev oder main Branch aktiv sein, wechsle zu einem neuen Feature-Branch
    basierend auf dev und übernimm alle aktuell offenen Änderungen. Der Name sollte aus deiner
-   Analyse aus Schritt 1 abgeleitet werden.
+   Analyse aus Schritt 1 abgeleitet werden. Wenn schon ein andere Branch als dev oder main aktiv
+   ist, nimm auf jeden Fall den ohne einen neuen zu erstellen, auch wenn der Name ggf. nicht passt.
 4. Führe den linter (npm run lint) aus und behebe alle gefundenen Probleme. Auf gar keinen Fall
    dürfen dabei Dateien gelöscht werden.
 5. Führe prettier (npm run format) aus, um den Code zu formatieren. Auf gar keinen Fall dürfen dabei
