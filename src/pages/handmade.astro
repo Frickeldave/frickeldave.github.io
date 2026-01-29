@@ -35,14 +35,18 @@ const imageMap = Object.entries(images).reduce(
 );
 
 // Helper function to get image for product
+// Helper function to get image for product
 const getProductImage = (category: string, articleNumber: string) => {
-  // Convert category to folder name (lowercase and replace spaces with hyphens)
-  const categoryFolder = category.toLowerCase().replace(/\s+/g, "-");
-  // Build the dynamic path: category/articleNumber/articleNumber-000.png
-  const imagePath = `${categoryFolder}/${articleNumber}/${articleNumber}-000.png`;
+  // Use category directly as folder name
+  const categoryFolder = category;
+  // Dynamic lookup: find any image that belongs to this product
+  const prefix = `${categoryFolder}/${articleNumber}/`;
+  const matchingPath = Object.keys(imageMap).find((path) =>
+    path.startsWith(prefix)
+  );
 
   // Return the product image if it exists, otherwise return placeholder
-  return imageMap[imagePath] || placeholderImage;
+  return matchingPath ? imageMap[matchingPath] : placeholderImage;
 };
 
 // Get unique categories and tags

@@ -35,7 +35,7 @@ export async function getStaticPaths() {
 }
 
 // Import all images for this specific product
-const categoryFolder = product.category.toLowerCase().replace(/\s+/g, "-");
+const categoryFolder = product.category;
 
 // Get all images for this product
 const allImages = import.meta.glob<{ default: ImageMetadata }>(

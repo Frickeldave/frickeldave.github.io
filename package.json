@@ -14,6 +14,7 @@
     "prebuild": "npm run generate-version",
     "postbuild": "pagefind --site dist",
     "generate-version": "tsx scripts/generate-version.ts",
+    "sync-products": "tsx scripts/synchronize-products.ts",
     "prepare": "husky install",
     "postinstall": "npm run install-vale",
     "format": "prettier --write ./src --log-level silent",
