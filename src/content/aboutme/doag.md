@@ -2,11 +2,10 @@
 title: DOAG & DOAG Voices
 description: Meine Aktivitäten bei der DOAG und als Co-Host des DOAG VOICES Podcasts
 intro: >
-  Die Deutsche Oracle Anwendergruppe (DOAG) ist ein IT-Verein mit rund 6.000 Mitgliedern in
-  Deutschland, Österreich und der Schweiz mit Hauptsitz in Berlin. Die DOAG versteht sich als
-  Plattform für den fachlichen Austausch rund um moderne IT-Themen – von Datenbanken über
-  Cloud-native Entwicklung bis hin zu Künstlicher Intelligenz.
-
+  Die DOAG ist ein IT-Verein mit rund 6.000 Mitgliedern in Deutschland, Österreich und der Schweiz
+  mit Hauptsitz in Berlin. Die DOAG versteht sich als Plattform für den fachlichen Austausch rund um
+  moderne IT-Themen – von Datenbanken über Cloud-native Entwicklung bis hin zu Künstlicher
+  Intelligenz.
 
   Als Mitglied der DOAG engagiere ich mich besonders in den Themenfeldern **Cloud** und **Künstliche
   Intelligenz**. Die Community bietet mir die Möglichkeit, mein Wissen zu teilen, von anderen
@@ -17,17 +16,10 @@ podcast_intro: >
   Vordenkern der Branche. Der Podcast erscheint in verschiedenen Editionen, die das breite Spektrum
   der DOAG-Community abbilden:
 
-
-  - **People** – Persönliche Geschichten hinter dem Fachwissen
-
-  - **FutureAI** – KI im Hier und Morgen, Ethik und Zukunftsvisionen
-
-  - **DataWorld** – Von Analytics bis zu intelligenten Architekturen
-
-  - **CloudTalk** – Wie Cloud-Technologien Unternehmen verändern
-
-  - **DevLand** – Moderne Softwareentwicklung zwischen Wandel und multiplen Perspektiven
-
+  - **People** – Persönliche Geschichten hinter dem Fachwissen - **FutureAI** – KI im Hier und
+  Morgen, Ethik und Zukunftsvisionen - **DataWorld** – Von Analytics bis zu intelligenten
+  Architekturen - **CloudTalk** – Wie Cloud-Technologien Unternehmen verändern - **DevLand** –
+  Moderne Softwareentwicklung zwischen Wandel und multiplen Perspektiven
 
   Das Konzept verbindet technische Tiefe mit menschlichen Perspektiven. In jeder Folge geht es nicht
   nur um Tools und Technologien, sondern auch um die Menschen, die sie nutzen, und die
