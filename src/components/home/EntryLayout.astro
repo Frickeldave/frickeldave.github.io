@@ -86,8 +86,13 @@ const getProductImage = (
   articleNumber: string
 ): ImageMetadata => {
   const categoryFolder = category;
-  const imagePath = `${categoryFolder}/${articleNumber}/${articleNumber}-000.png`;
-  return imageMap[imagePath] || placeholderImage;
+  // Dynamic lookup: find any image that belongs to this product (starts with category/articleNumber/)
+  const prefix = `${categoryFolder}/${articleNumber}/`;
+  const matchingPath = Object.keys(imageMap).find((path) =>
+    path.startsWith(prefix)
+  );
+
+  return matchingPath ? imageMap[matchingPath] : placeholderImage;
 };
 
 // Prepare handmade products with image URLs for React component
