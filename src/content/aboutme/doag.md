@@ -1,4 +1,5 @@
 ---
+visible: true
 title: DOAG & DOAG Voices
 description: Meine Aktivitäten bei der DOAG und als Co-Host des DOAG VOICES Podcasts
 intro: >

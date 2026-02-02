@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Jane Doe
 email: janedoe@email.com
 image: "@assets/profile/jane-doe.jpg"

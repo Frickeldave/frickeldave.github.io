@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Characters
 description: Character creation information
 image: "@assets/docs/characters/cover.jpg"

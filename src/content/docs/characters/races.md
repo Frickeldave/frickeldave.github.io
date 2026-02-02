@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Races
 description:
   "An overview of the diverse races that inhabit the realms, their traits, and cultural nuances."

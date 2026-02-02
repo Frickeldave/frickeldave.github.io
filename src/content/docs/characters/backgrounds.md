@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Backgrounds
 description:
   "A collection of backgrounds that shape a character’s skills, motivations, and story before

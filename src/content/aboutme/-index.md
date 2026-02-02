@@ -1,4 +1,5 @@
 ---
+visible: true
 title: About Me
 description: David Koenig - Managing IT-Consultant & DevOps Evangelist
 

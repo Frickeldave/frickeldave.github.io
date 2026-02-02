@@ -1,4 +1,5 @@
 ---
+visible: true
 title: The Arcane
 description: The mystical elements of the world
 image: "@assets/docs/the-arcane/cover.jpg"

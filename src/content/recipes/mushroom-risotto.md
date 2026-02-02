@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Creamy Mushroom Risotto
 description: A rich and comforting risotto made with earthy mushrooms and creamy Parmesan.
 image: "@assets/recipes/mushroom-risotto.jpg"

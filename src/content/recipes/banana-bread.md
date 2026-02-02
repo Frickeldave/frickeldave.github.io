@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Banana Bread
 description:
   A moist, flavorful banana bread made with overripe bananas, perfect for breakfast or a snack.

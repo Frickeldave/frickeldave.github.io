@@ -1,4 +1,5 @@
 ---
+visible: true
 title: The Forbidden Arts
 description:
   A guide to the shadowed arts of demonology, summoning, and occult rituals for those who dare tread

@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Classic Margherita Pizza
 description:
   A simple, authentic Italian-style pizza with fresh ingredients and a perfect crispy crust.

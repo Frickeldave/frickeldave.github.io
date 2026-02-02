@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Deities
 description:
   A guide to the deities of the arcane, their domains, and blessings bestowed upon followers.
