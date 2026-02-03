@@ -53,9 +53,9 @@ episodes:
       Ansätze wie Prompt-Engineering, RAG und das neue Model Context Protocol (MCP) Unternehmen
       dabei helfen, ihre Fachlichkeit in einer dynamischen Technologiewelt zu bewahren.
     links:
-      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
-      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
-      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+      spotify: https://open.spotify.com/episode/3qGejpVmGr48a1wiK9l3ge
+      apple: https://podcasts.apple.com/de/podcast/doag-voices-futureai-mit-dave-k%C3%B6nig-und-dr-benjamin-linnik/id1847181531?i=1000747824959
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/episodes/7266538b-75a4-44f3-a86c-32aebf6a6e9a/doag-voices-doag-voices-futureai-%E2%80%93-mit-dave-k%C3%B6nig-und-dr-benjamin-linnik
     audioUrl: >-
       https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69819cfbd77e5e94dcb238a8/media.mp3
   - id: doag-voices-24579
