@@ -9,6 +9,7 @@ const searchable = z.object({
   description: z.string().optional(),
   autodescription: z.boolean().default(true),
   draft: z.boolean().default(false),
+  visible: z.boolean().default(false),
 });
 
 const social = z.object({
@@ -106,6 +107,7 @@ const aboutme = defineCollection({
       description: z.string().optional(),
       autodescription: z.boolean().default(true),
       draft: z.boolean().default(false),
+      visible: z.boolean().default(false),
       // Main about me fields
       name: z.string().optional(),
       jobTitle: z.string().optional(),

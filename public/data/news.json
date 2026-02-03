@@ -2,6 +2,13 @@
   "news": [
     {
       "visible": true,
+      "date": "2026-01-31",
+      "title": "website release",
+      "text": "Nach 6 Monaten arbeit ist die Website nun fertig und unter frickeldave.de erreichbar.",
+      "imageUrl": "src/assets/news/2026-01-31-website-release.png"
+    },
+    {
+      "visible": true,
       "date": "2026-01-24",
       "title": "Aboutme fertig",
       "text": "Nach diversen Fehltritten und Anpassungen und dem Umstieg auf googles Antigravity IDE ist nun die aboutme Seite fertig.",

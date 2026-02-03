@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Veggie Stir-Fry with Tofu
 description:
   A vibrant, healthy stir-fry featuring crispy tofu and colorful vegetables, tossed in a savory

@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Lemon Herb Roasted Chicken
 description:
   A juicy roasted chicken infused with zesty lemon and fragrant herbs, perfect for a family dinner.

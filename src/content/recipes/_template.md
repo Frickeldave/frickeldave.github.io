@@ -1,4 +1,5 @@
 ---
+visible: true
 title:
 description:
 image: "@assets/recipes/.jpg"

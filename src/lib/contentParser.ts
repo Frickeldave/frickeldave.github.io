@@ -20,7 +20,11 @@ export const getEntries = async (
     : entries;
   entries = noDrafts
     ? entries.filter(
-        (entry: GenericEntry) => "draft" in entry.data && !entry.data.draft
+        (entry: GenericEntry) =>
+          "draft" in entry.data &&
+          !entry.data.draft &&
+          "visible" in entry.data &&
+          entry.data.visible
       )
     : entries;
   entries = sortFunction ? sortFunction(entries) : entries;

@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Spaghetti Carbonara
 description:
   A classic Italian pasta dish featuring creamy eggs, crispy pancetta, and sharp Pecorino cheese.

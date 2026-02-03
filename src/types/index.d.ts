@@ -56,6 +56,7 @@ export type MenuItemWithDraft = {
   title?: string;
   id: string;
   draft: boolean;
+  visible: boolean;
   children: MenuItemWithDraft[];
 };
 

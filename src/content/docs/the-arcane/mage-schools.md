@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Mage Schools
 description: An overview of the magical schools and the unique paths they offer to aspiring mages
 image: "@assets/docs/the-arcane/mage-schools/cover.jpg"

@@ -1,4 +1,5 @@
 ---
+visible: true
 title: "Publikationen"
 description: "Meine Veröffentlichungen in Fachzeitschriften und Online-Publikationen"
 

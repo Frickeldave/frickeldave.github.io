@@ -1,4 +1,5 @@
 ---
+visible: true
 title: Terms & Conditions
 ---
 
