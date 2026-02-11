@@ -50,6 +50,7 @@ This blog is built with modern web technologies:
 - [Redirects System](./docs/features/fr001-redirects.md)
 - [Versioning Feature](./docs/features/fr002-versioning.md)
 - [Product catalog](./docs/features/fr003-catalog.md)
+- [Automated Podcast Sync](./docs/features/fr005-podcast-sync.md)
 
 ### Linting & Code Quality
 - [Linter Setup](./docs/linter/01-linter-start.md)
