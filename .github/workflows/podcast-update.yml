@@ -62,13 +62,13 @@ jobs:
           GITHUB_OUTPUT: ${{ github.workspace }}/episode-check.txt
 
       - name: Exit if no new episodes
-        if: steps.check_episodes.outputs.missing_episode == ''
+        if: false
         run: |
           echo "✅ No new episodes found. All episodes are up to date."
           exit 0
 
       - name: Generate episode metadata using Copilot
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         id: generate_metadata
         run: |
           echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
@@ -77,7 +77,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Issue
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         id: create_issue
         run: |
           TITLE=$(jq -r '.title' metadata.json)
@@ -90,7 +90,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create branch and update doag.md
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         id: create_branch
         run: |
           TITLE=$(jq -r '.title' metadata.json)
@@ -114,7 +114,7 @@ jobs:
           echo "episode_title=$TITLE" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request to dev
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         id: create_pr_dev
         run: |
           BRANCH_NAME="${{ steps.create_branch.outputs.branch_name }}"
@@ -128,7 +128,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for PR checks to complete (dev)
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         run: |
           PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
           PR_NUMBER=$(basename "$PR_URL")
@@ -175,7 +175,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge PR to dev and delete branch
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         run: |
           PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
           PR_NUMBER=$(basename "$PR_URL")
@@ -184,14 +184,14 @@ jobs:
           gh pr merge "$PR_NUMBER"
 
       - name: Checkout dev branch
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         run: |
           git fetch origin dev
           git checkout dev
           git pull origin dev
 
       - name: Create Pull Request to main
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         id: create_pr_main
         run: |
           TITLE="Podcast Update: PRD ${{ steps.create_branch.outputs.episode_title }}"
@@ -204,7 +204,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for PR checks to complete (main)
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         run: |
           PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
           PR_NUMBER=$(basename "$PR_URL")
@@ -251,7 +251,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge PR to main
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         run: |
           PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
           PR_NUMBER=$(basename "$PR_URL")
@@ -262,7 +262,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Success summary
-        if: steps.check_episodes.outputs.missing_episode != ''
+        if: false
         run: |
           echo ""
           echo "╔════════════════════════════════════════════════════════════╗"

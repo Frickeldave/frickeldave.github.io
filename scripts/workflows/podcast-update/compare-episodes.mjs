@@ -44,7 +44,10 @@ async function fetchAcastRSS() {
 function extractTag(text, tagName) {
   const regex = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i");
   const match = text.match(regex);
-  return match ? match[1].trim() : "";
+  let result = match ? match[1].trim() : "";
+  // Remove CDATA wrapper if present
+  result = result.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "");
+  return result;
 }
 
 /**
@@ -97,7 +100,7 @@ async function parseRSSFeed(xmlData) {
 }
 
 /**
- * Extract episodes from doag.md frontmatter - improved parser
+ * Extract episodes from doag.md frontmatter - robust parser
  */
 function getExistingEpisodes() {
   const content = readFileSync(DOAG_MD_PATH, "utf-8");
@@ -109,43 +112,82 @@ function getExistingEpisodes() {
   }
   
   const frontmatter = frontmatterMatch[1];
-  
-  // Extract episodes array - improved approach
-  const episodesMatch = frontmatter.match(/^episodes:\s*\n((?:  - id:.*\n(?:    .*\n)*)+)/m);
-  if (!episodesMatch) {
-    console.log("⚠️  No episodes found in frontmatter");
-    return [];
-  }
-  
-  const episodesText = episodesMatch[1];
-  console.log(`📖 Parsing ${episodesText.split("- id:").length - 1} episodes from doag.md`);
+  const lines = frontmatter.split("\n");
   
   const episodes = [];
+  let currentEpisode = null;
+  let inEpisodesSection = false;
   
-  // Split by "  - id:" but keep the "- id:"
-  const episodeBlocks = episodesText.split(/\n  - id: /).filter(Boolean);
-  
-  for (let i = 0; i < episodeBlocks.length; i++) {
-    const block = (i === 0 ? "- id: " : "") + episodeBlocks[i];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     
-    // Extract fields with multiline support
-    const idMatch = block.match(/^- id:\s*(\S+)/m);
-    const titleMatch = block.match(/^\s*title:\s*(.+?)$/m);
-    const dateMatch = block.match(/^\s*date:\s*(.+?)$/m);
-    const audioUrlMatch = block.match(/^\s*audioUrl:\s*>\s*\n\s*(.+?)$/m);
+    // Detect episodes section start
+    if (line.match(/^episodes:\s*$/)) {
+      inEpisodesSection = true;
+      continue;
+    }
     
-    if (idMatch && titleMatch && dateMatch) {
-      const id = idMatch[1];
-      const title = titleMatch[1].trim();
-      const date = dateMatch[1].trim();
-      const audioUrl = audioUrlMatch ? audioUrlMatch[1].trim() : null;
+    // Detect end of episodes section (new top-level field)
+    if (inEpisodesSection && line.match(/^[a-z_]+:/) && !line.match(/^\s/)) {
+      inEpisodesSection = false;
+      if (currentEpisode && currentEpisode.id && currentEpisode.title && currentEpisode.date) {
+        episodes.push(currentEpisode);
+      }
+      currentEpisode = null;
+      continue;
+    }
+    
+    if (!inEpisodesSection) continue;
+    
+    // Detect new episode (- id: pattern with 2-space indent)
+    if (line.match(/^  - id:\s*(\S+)/)) {
+      if (currentEpisode && currentEpisode.id && currentEpisode.title && currentEpisode.date) {
+        episodes.push(currentEpisode);
+      }
       
-      episodes.push({ id, title, date, audioUrl });
-      console.log(`   └─ "${title}" (${date})`);
-    } else {
-      console.log(`⚠️  Could not parse episode: missing ${!idMatch ? "id" : !titleMatch ? "title" : "date"}`);
+      const idMatch = line.match(/^  - id:\s*(\S+)/);
+      currentEpisode = {
+        id: idMatch[1],
+        title: null,
+        date: null,
+        audioUrl: null
+      };
+      continue;
+    }
+    
+    if (!currentEpisode) continue;
+    
+    // Extract fields with 4-space indent
+    if (line.match(/^    title:\s*(.+)$/)) {
+      const titleMatch = line.match(/^    title:\s*(.+)$/);
+      currentEpisode.title = titleMatch[1].trim();
+    } else if (line.match(/^    date:\s*(.+)$/)) {
+      const dateMatch = line.match(/^    date:\s*(.+)$/);
+      currentEpisode.date = dateMatch[1].trim();
+    } else if (line.match(/^    audioUrl:\s*[>|]?\s*$/)) {
+      // audioUrl is multiline, get next non-empty line
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[j].match(/^      \S/)) {
+          currentEpisode.audioUrl = lines[j].trim();
+          i = j;
+          break;
+        } else if (lines[j].match(/^    [a-z]/)) {
+          // Hit next field
+          break;
+        }
+      }
     }
   }
+  
+  // Don't forget the last episode
+  if (currentEpisode && currentEpisode.id && currentEpisode.title && currentEpisode.date) {
+    episodes.push(currentEpisode);
+  }
+  
+  console.log(`📖 Parsing ${episodes.length} episodes from doag.md`);
+  episodes.forEach((ep) => {
+    console.log(`   └─ "${ep.title}" (${ep.date})`);
+  });
   
   return episodes;
 }
