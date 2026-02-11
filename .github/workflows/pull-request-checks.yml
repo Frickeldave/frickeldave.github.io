@@ -36,19 +36,24 @@ jobs:
         run: |
           echo "✅ Merging into '${{ github.base_ref }}'. Start linting process..."
 
+          # Check Node.js version
+          echo "--------------------------------------"
+          echo "🔍 Checking Node.js version"
+          echo "--------------------------------------"
+          NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+          if [ "$NODE_VERSION" != "24" ]; then
+            echo "❌ Node.js v24 is required, but v$NODE_VERSION is installed."
+            exit 1
+          fi
+          echo "✅ Node.js v24 is available"
+          node --version
+          npm --version
+          
           # Install dependencies
           echo "--------------------------------------"
           echo "➕ Install dependencies"
           echo "--------------------------------------"
-          echo "Downloading and installing nvm..."
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          
           export NODE_OPTIONS="--max-old-space-size=8192"
-          source ~/.bashrc
-          nvm install 24
-          nvm use 24
           npm ci || { echo "❌ Installation of dependencies failed"; exit 1; }
 
           # Run ESLint check

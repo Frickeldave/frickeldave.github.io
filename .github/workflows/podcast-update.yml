@@ -36,15 +36,17 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
+      - name: Check Node.js version
         run: |
-          echo "📦 Setting up Node.js environment..."
-          export NVM_DIR="$HOME/.nvm"
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm install 24
-          nvm use 24
-          npm ci
+          echo "🔍 Checking Node.js version..."
+          NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+          if [ "$NODE_VERSION" != "24" ]; then
+            echo "❌ Node.js v24 is required, but v$NODE_VERSION is installed."
+            exit 1
+          fi
+          echo "✅ Node.js v24 is available"
+          node --version
+          npm --version
 
       - name: Fetch Acast RSS and compare episodes
         id: check_episodes
