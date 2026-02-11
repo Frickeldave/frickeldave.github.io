@@ -25,7 +25,6 @@
     "prose": "node -e \"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\""
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.6.4",
     "@astrojs/mdx": "^4.3.4",
     "@astrojs/react": "^4.3.0",
     "@astrojs/rss": "^4.0.12",
@@ -84,7 +83,9 @@
     "tailwindcss": "^3.3.3",
     "tsx": "^4.20.6",
     "typescript": "5.1.6",
-    "typescript-eslint": "^8.53.0",
-    "wrangler": "^4.24.0"
+    "typescript-eslint": "^8.53.0"
+  },
+  "overrides": {
+    "undici": "^7.19.0"
   }
 }
