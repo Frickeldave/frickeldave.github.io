@@ -60,7 +60,7 @@ git commit -m "fix" # Husky führt automatisch lint + tests aus
 
 ## Voraussetzungen
 
-- Node.js (>=22) und npm installiert
+- Node.js (>=24) und npm installiert
 - Git-Repository initialisiert (oder bestehendes Repo)
 
 ## Installation
