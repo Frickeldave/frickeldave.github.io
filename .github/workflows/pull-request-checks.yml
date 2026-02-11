@@ -40,7 +40,8 @@ jobs:
           echo "--------------------------------------"
           echo "🔍 Checking Node.js version"
           echo "--------------------------------------"
-          source ~/.bashrc
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
           if [ "$NODE_VERSION" != "24" ]; then
             echo "❌ Node.js v24 is required, but v$NODE_VERSION is installed."
