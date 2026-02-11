@@ -39,6 +39,7 @@ jobs:
       - name: Check Node.js version
         run: |
           echo "🔍 Checking Node.js version..."
+          source ~/.bashrc
           NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
           if [ "$NODE_VERSION" != "24" ]; then
             echo "❌ Node.js v24 is required, but v$NODE_VERSION is installed."
