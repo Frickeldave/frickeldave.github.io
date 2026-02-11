@@ -38,6 +38,7 @@ This blog is built with modern web technologies:
 - [Categories and Tags](./docs/12-categories-and-tags.md)
 - [Structure](./docs/13-structure.md)
 - [Versioning](./docs/14-versioning.md)
+- [Branch Naming Strategy](./docs/15-branch-naming-strategy.md)
 
 ### Design
 - [Design System](./docs/20-design-system.md)

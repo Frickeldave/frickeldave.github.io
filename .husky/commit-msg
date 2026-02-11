@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Use Node.js to validate commit message (cross-platform)
+node "$(dirname "$0")/commit-msg-validate.js" "$1"
