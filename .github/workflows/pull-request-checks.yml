@@ -5,7 +5,7 @@ on:
     
 jobs:
   pull-request-checks:
-    if: false  # This workflow is currently disabled. To enable, change 'false' to 'true' and commit the change.
+    if: true  # Used to temporarily disable the flow, change to 'false' or 'true' and commit the change.
     runs-on: [self-hosted, frickeldave-main]
     steps:
       - uses: actions/checkout@v3
