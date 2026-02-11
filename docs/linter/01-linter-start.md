@@ -26,7 +26,7 @@ More details:
 
 - [Husky](./02-linter-husky.md)
 - [ESLint](./03-linter-eslint.md)
-- [Prettier](./04-prettier.md)
+- [Prettier](./04-linter-prettier.md)
 - [Vale](./05-linter-vale.md)
 
 ## Wie die Tools zusammenarbeiten
@@ -42,7 +42,8 @@ More details:
 - Alle drei Tools laufen automatisch vor jedem Git-Commit
 - Verhindert, dass problematischer Code/Content committed wird
 - Stellt sicher, dass alle Änderungen den Qualitätsstandards entsprechen
-
+- Kann mit --no-verify übersprungen werden (Nicht empfohlen)
+  
 **3. CI/CD Pipeline**
 
 - Validiert, dass alle Regeln eingehalten werden
