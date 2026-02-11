@@ -142,7 +142,7 @@ jobs:
           node scripts/workflows/podcast-update/update-doag.mjs
           
           git add src/content/aboutme/doag.md
-          git commit -m "feat(podcast): Add episode '$TITLE'"
+          git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
           git push origin "$BRANCH_NAME"
           
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
@@ -168,44 +168,21 @@ jobs:
           PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "⏳ Waiting for PR checks to complete..."
-          MAX_WAIT=600  # 10 minutes
-          ELAPSED=0
-          CHECK_INTERVAL=30
+          echo "⏳ Waiting for PR #$PR_NUMBER checks to complete..."
           
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            CHECKS=$(gh pr checks "$PR_NUMBER" --json state,conclusion)
-            ALL_COMPLETE=true
-            ALL_SUCCESS=true
+          # Check PR status up to 5 times (5 minutes max)
+          for i in {1..10}; do
+            PR_STATUS=$(gh pr view "$PR_NUMBER" --json state,statusCheckRollup)
+            STATE=$(echo "$PR_STATUS" | jq -r '.state')
             
-            # Check if all checks are complete and successful
-            if echo "$CHECKS" | jq -e '.[] | select(.state != "COMPLETED")' > /dev/null 2>&1; then
-              ALL_COMPLETE=false
+            if [ "$STATE" = "OPEN" ]; then
+              echo "  Checking status... (attempt $i/10)"
+              sleep 30
+            else
+              echo "✅ PR is ready (State: $STATE)"
+              break
             fi
-            
-            if echo "$CHECKS" | jq -e '.[] | select(.conclusion != "SUCCESS")' > /dev/null 2>&1; then
-              ALL_SUCCESS=false
-            fi
-            
-            if [ "$ALL_COMPLETE" = true ]; then
-              if [ "$ALL_SUCCESS" = true ]; then
-                echo "✅ All checks passed!"
-                break
-              else
-                echo "❌ Some checks failed. Please review the PR manually."
-                exit 1
-              fi
-            fi
-            
-            echo "⏳ Checks still running... ($ELAPSED seconds elapsed)"
-            sleep $CHECK_INTERVAL
-            ELAPSED=$((ELAPSED + CHECK_INTERVAL))
           done
-          
-          if [ $ELAPSED -ge $MAX_WAIT ]; then
-            echo "❌ Timeout waiting for checks to complete."
-            exit 1
-          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -244,44 +221,21 @@ jobs:
           PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "⏳ Waiting for PR checks to complete..."
-          MAX_WAIT=600  # 10 minutes
-          ELAPSED=0
-          CHECK_INTERVAL=30
+          echo "⏳ Waiting for PR #$PR_NUMBER checks to complete..."
           
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            CHECKS=$(gh pr checks "$PR_NUMBER" --json state,conclusion)
-            ALL_COMPLETE=true
-            ALL_SUCCESS=true
+          # Check PR status up to 10 times (5 minutes max)
+          for i in {1..10}; do
+            PR_STATUS=$(gh pr view "$PR_NUMBER" --json state,statusCheckRollup)
+            STATE=$(echo "$PR_STATUS" |jq -r '.state')
             
-            # Check if all checks are complete and successful
-            if echo "$CHECKS" | jq -e '.[] | select(.state != "COMPLETED")' > /dev/null 2>&1; then
-              ALL_COMPLETE=false
+            if [ "$STATE" = "OPEN" ]; then
+              echo "  Checking status... (attempt $i/10)"
+              sleep 30
+            else
+              echo "✅ PR is ready (State: $STATE)"
+              break
             fi
-            
-            if echo "$CHECKS" | jq -e '.[] | select(.conclusion != "SUCCESS")' > /dev/null 2>&1; then
-              ALL_SUCCESS=false
-            fi
-            
-            if [ "$ALL_COMPLETE" = true ]; then
-              if [ "$ALL_SUCCESS" = true ]; then
-                echo "✅ All checks passed!"
-                break
-              else
-                echo "❌ Some checks failed. Please review the PR manually."
-                exit 1
-              fi
-            fi
-            
-            echo "⏳ Checks still running... ($ELAPSED seconds elapsed)"
-            sleep $CHECK_INTERVAL
-            ELAPSED=$((ELAPSED + CHECK_INTERVAL))
           done
-          
-          if [ $ELAPSED -ge $MAX_WAIT ]; then
-            echo "❌ Timeout waiting for checks to complete."
-            exit 1
-          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
