@@ -1,7 +1,6 @@
 name: Podcast Update
 
 on:
-  push:
   schedule:
     # Every Tuesday at 09:00 CET/CEST
     - cron: '0 8 * * 2'  # 08:00 UTC = 09:00 CET (winter) / 07:00 UTC = 09:00 CEST (summer)
@@ -10,6 +9,9 @@ on:
 jobs:
   podcast-update:
     runs-on: [self-hosted, frickeldave-main]
+    defaults:
+      run:
+        shell: bash -il {0}
     steps:
       - name: Check GitHub CLI availability
         run: |
