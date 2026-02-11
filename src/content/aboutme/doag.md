@@ -40,13 +40,13 @@ podcast_platforms:
   - name: Acast
     url: https://shows.acast.com/doag-voices-arbeitstitel
 episodes:
-  - id: doag-voices-76722
-    title: Low-Code, KI und Citizen Developer – Die Zukunft der Softwareentwicklung
+  - id: doag-voices-86502
+    title: Low-Code trifft KI: Zwischen Citizen Development und Enterprise-Governance
     edition: DevLand
     guests: Dave König, Vanessa Schmitz und Markus Bernhart
     date: 10. Februar 2026
     description: >-
-      Low-Code und No-Code verändern die Softwareentwicklung fundamental. Markus Bernhart und Vanessa Schmitz diskutieren mit Dave König über moderne Plattformen wie Mendix, OutSystems und Oracle APEX, die Rolle von Citizen Developern und warum Governance unverzichtbar bleibt. Ein besonderer Fokus liegt auf dem Zusammenspiel von Low-Code und KI: Vibe-Coding und Prompt-basierte Entwicklung eröffnen neue Möglichkeiten, werfen aber auch Fragen zur Enterprise-Tauglichkeit auf.
+      Low-Code und No-Code sind längst kein Nischenthema mehr. Markus Bernhart und Vanessa Schmitz diskutieren mit Dave König, wie sich Softwareentwicklung zwischen klassischen Pro-Code-Stacks, Citizen Developern und KI neu erfindet. Dabei wird deutlich: Low-Code ist keine Abkürzung, sondern moderne Form von Softwareengineering – mit klaren Governance-Modellen und der Chance, durch KI-Integration wie Vibe-Coding noch mehr Potenzial zu entfalten.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
       apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531

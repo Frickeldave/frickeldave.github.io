@@ -168,32 +168,20 @@ jobs:
           PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "⏳ Waiting for PR #$PR_NUMBER checks to complete..."
-          
-          # Check PR status up to 5 times (5 minutes max)
-          for i in {1..10}; do
-            PR_STATUS=$(gh pr view "$PR_NUMBER" --json state,statusCheckRollup)
-            STATE=$(echo "$PR_STATUS" | jq -r '.state')
-            
-            if [ "$STATE" = "OPEN" ]; then
-              echo "  Checking status... (attempt $i/10)"
-              sleep 30
-            else
-              echo "✅ PR is ready (State: $STATE)"
-              break
-            fi
-          done
+          echo "⏳ Merging PR #$PR_NUMBER with auto-merge (waits for checks if needed)..."
+          gh pr merge "$PR_NUMBER" --auto --squash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Merge PR to dev and delete branch
+      - name: Verify PR dev is merged
         if: steps.check_episodes.outputs.missing_episode != ''
         run: |
           PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "🔀 Merging PR #$PR_NUMBER to dev..."
-          gh pr merge "$PR_NUMBER"
+          echo "✅ Verifying PR #$PR_NUMBER is merged..."
+          PR_STATE=$(gh pr view "$PR_NUMBER" --json state | jq -r '.state')
+          echo "PR State: $PR_STATE"
 
       - name: Checkout dev branch
         if: steps.check_episodes.outputs.missing_episode != ''
@@ -221,32 +209,20 @@ jobs:
           PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "⏳ Waiting for PR #$PR_NUMBER checks to complete..."
-          
-          # Check PR status up to 10 times (5 minutes max)
-          for i in {1..10}; do
-            PR_STATUS=$(gh pr view "$PR_NUMBER" --json state,statusCheckRollup)
-            STATE=$(echo "$PR_STATUS" |jq -r '.state')
-            
-            if [ "$STATE" = "OPEN" ]; then
-              echo "  Checking status... (attempt $i/10)"
-              sleep 30
-            else
-              echo "✅ PR is ready (State: $STATE)"
-              break
-            fi
-          done
+          echo "⏳ Merging PR #$PR_NUMBER with auto-merge (waits for checks if needed)..."
+          gh pr merge "$PR_NUMBER" --auto --squash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Merge PR to main
+      - name: Verify PR main is merged
         if: steps.check_episodes.outputs.missing_episode != ''
         run: |
           PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "🔀 Merging PR #$PR_NUMBER to main..."
-          gh pr merge "$PR_NUMBER"
+          echo "✅ Verifying PR #$PR_NUMBER is merged..."
+          PR_STATE=$(gh pr view "$PR_NUMBER" --json state | jq -r '.state')
+          echo "PR State: $PR_STATE"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
