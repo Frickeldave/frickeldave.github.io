@@ -97,7 +97,7 @@ async function parseRSSFeed(xmlData) {
 }
 
 /**
- * Extract episodes from doag.md frontmatter
+ * Extract episodes from doag.md frontmatter - improved parser
  */
 function getExistingEpisodes() {
   const content = readFileSync(DOAG_MD_PATH, "utf-8");
@@ -110,29 +110,40 @@ function getExistingEpisodes() {
   
   const frontmatter = frontmatterMatch[1];
   
-  // Extract episodes array - simple regex approach
-  const episodesMatch = frontmatter.match(/episodes:\s*\n([\s\S]*?)(?=\n[a-z_]+:|$)/);
+  // Extract episodes array - improved approach
+  const episodesMatch = frontmatter.match(/^episodes:\s*\n((?:  - id:.*\n(?:    .*\n)*)+)/m);
   if (!episodesMatch) {
+    console.log("⚠️  No episodes found in frontmatter");
     return [];
   }
   
   const episodesText = episodesMatch[1];
+  console.log(`📖 Parsing ${episodesText.split("- id:").length - 1} episodes from doag.md`);
   
-  // Extract all episode IDs and titles
   const episodes = [];
+  
+  // Split by "  - id:" but keep the "- id:"
   const episodeBlocks = episodesText.split(/\n  - id: /).filter(Boolean);
   
-  for (const block of episodeBlocks) {
-    const idMatch = block.match(/^(doag-voices-\d+)/);
-    const titleMatch = block.match(/title:\s*(.+)/);
-    const dateMatch = block.match(/date:\s*(.+)/);
+  for (let i = 0; i < episodeBlocks.length; i++) {
+    const block = (i === 0 ? "- id: " : "") + episodeBlocks[i];
+    
+    // Extract fields with multiline support
+    const idMatch = block.match(/^- id:\s*(\S+)/m);
+    const titleMatch = block.match(/^\s*title:\s*(.+?)$/m);
+    const dateMatch = block.match(/^\s*date:\s*(.+?)$/m);
+    const audioUrlMatch = block.match(/^\s*audioUrl:\s*>\s*\n\s*(.+?)$/m);
     
     if (idMatch && titleMatch && dateMatch) {
-      episodes.push({
-        id: idMatch[1],
-        title: titleMatch[1].trim(),
-        date: dateMatch[1].trim()
-      });
+      const id = idMatch[1];
+      const title = titleMatch[1].trim();
+      const date = dateMatch[1].trim();
+      const audioUrl = audioUrlMatch ? audioUrlMatch[1].trim() : null;
+      
+      episodes.push({ id, title, date, audioUrl });
+      console.log(`   └─ "${title}" (${date})`);
+    } else {
+      console.log(`⚠️  Could not parse episode: missing ${!idMatch ? "id" : !titleMatch ? "title" : "date"}`);
     }
   }
   
@@ -159,15 +170,41 @@ function episodeExists(rssEpisode, existingEpisodes) {
   for (const existing of existingEpisodes) {
     const normalizedExistingTitle = normalizeTitle(existing.title);
     
-    // Check if titles match (fuzzy)
-    if (normalizedRssTitle.includes(normalizedExistingTitle) ||
-        normalizedExistingTitle.includes(normalizedRssTitle)) {
+    // Check if audio URL matches (most reliable)
+    if (existing.audioUrl && rssEpisode.audioUrl && existing.audioUrl === rssEpisode.audioUrl) {
+      console.log(`   ✅ Audio URL match: "${rssEpisode.title}"`);
       return true;
     }
     
-    // Also check if the formatted date matches
-    if (existing.date === rssEpisode.pubDateFormatted) {
+    // Check if titles match (fuzzy)
+    if (normalizedRssTitle.includes(normalizedExistingTitle) ||
+        normalizedExistingTitle.includes(normalizedRssTitle)) {
+      console.log(`   ✅ Title match: "${rssEpisode.title}"`);
       return true;
+    }
+    
+    // Also check if the formatted date matches (with some tolerance for format differences)
+    // Normalize dates for comparison (remove locale-specific markers)
+    const normalizedRssDate = rssEpisode.pubDateFormatted
+      .toLowerCase()
+      .replace(/\.?\s*/g, " ")
+      .trim();
+    const normalizedExistingDate = existing.date
+      .toLowerCase()
+      .replace(/\.?\s*/g, " ")
+      .trim();
+    
+    if (normalizedRssDate === normalizedExistingDate) {
+      console.log(`   ✅ Date match: "${rssEpisode.title}" (${existing.date})`);
+      return true;
+    }
+    
+    // Debug: Log comparison details
+    if (process.env.DEBUG_EPISODES === "true") {
+      console.log(`   📋 Comparing "${rssEpisode.title}"`);
+      console.log(`      RSS normalized: "${normalizedRssTitle}"`);
+      console.log(`      Existing normalized: "${normalizedExistingTitle}"`);
+      console.log(`      RSS date: "${rssEpisode.pubDateFormatted}" vs Existing: "${existing.date}"`);
     }
   }
   
@@ -204,7 +241,10 @@ async function main() {
       process.exit(0);
     }
     
-    console.log(`📝 Found ${missingEpisodes.length} missing episode(s)`);
+    console.log(`📝 Found ${missingEpisodes.length} missing episode(s):`);
+    missingEpisodes.forEach((ep, idx) => {
+      console.log(`   ${idx + 1}. "${ep.title}" (${ep.pubDateFormatted})`);
+    });
     
     // Sort by publication date (oldest first)
     missingEpisodes.sort((a, b) => new Date(a.pubDate) - new Date(b.pubDate));
