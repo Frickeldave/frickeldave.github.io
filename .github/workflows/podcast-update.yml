@@ -1,0 +1,313 @@
+name: Podcast Update
+
+on:
+  schedule:
+    # Every Tuesday at 09:00 CET/CEST
+    - cron: '0 8 * * 2'  # 08:00 UTC = 09:00 CET (winter) / 07:00 UTC = 09:00 CEST (summer)
+  workflow_dispatch:
+
+jobs:
+  podcast-update:
+    runs-on: [self-hosted, frickeldave-main]
+    defaults:
+      run:
+        shell: bash -il {0}
+    steps:
+      - name: Check GitHub CLI availability
+        run: |
+          echo "🔍 Checking GitHub CLI availability..."
+          if ! command -v gh &> /dev/null; then
+            echo "❌ GitHub CLI (gh) is not available. Please install it first."
+            exit 1
+          fi
+          echo "✅ GitHub CLI is available"
+          gh --version
+
+      - name: Check GitHub Authentication
+        run: |
+          echo "🔐 Checking GitHub authentication..."
+          if [ -z "$GH_TOKEN" ]; then
+            echo "❌ GH_TOKEN environment variable is not set."
+            exit 1
+          fi
+          
+          # Set up authentication for gh CLI
+          export GITHUB_TOKEN="$GH_TOKEN"
+          
+          # Check if gh is already authenticated
+          if gh auth status &> /dev/null; then
+            echo "✅ GitHub CLI is already authenticated"
+          else
+            echo "⚠️  Setting up GitHub authentication..."
+            # Use the token directly
+            echo "$GH_TOKEN" | gh auth login --with-token
+          fi
+          
+          gh auth status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check GitHub Copilot CLI availability
+        run: |
+          echo "🔍 Checking GitHub Copilot CLI availability..."
+          if ! gh copilot -- --help &> /dev/null; then
+            echo "❌ GitHub Copilot CLI is not available. Please install it first."
+            exit 1
+          fi
+          echo "✅ GitHub Copilot CLI is available"
+        env:
+          GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Node.js version
+        run: |
+          echo "🔍 Checking Node.js version..."
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+          if [ "$NODE_VERSION" != "24" ]; then
+            echo "❌ Node.js v24 is required, but v$NODE_VERSION is installed."
+            exit 1
+          fi
+          echo "✅ Node.js v24 is available"
+          node --version
+          npm --version
+
+      - name: Fetch Acast RSS and compare episodes
+        id: check_episodes
+        run: |
+          echo "📡 Fetching Acast RSS feed and comparing with existing episodes..."
+          node scripts/workflows/podcast-update/compare-episodes.mjs
+        env:
+          GITHUB_OUTPUT: ${{ github.workspace }}/episode-check.txt
+
+      - name: Exit if no new episodes
+        if: steps.check_episodes.outputs.missing_episode == ''
+        run: |
+          echo "✅ No new episodes found. All episodes are up to date."
+          exit 0
+
+      - name: Generate episode metadata using Copilot
+        if: steps.check_episodes.outputs.missing_episode != ''
+        id: generate_metadata
+        run: |
+          echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
+          
+          # Ensure authentication
+          if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
+            echo "❌ COPILOT_GITHUB_TOKEN is not set."
+            exit 1
+          fi
+          
+          export GITHUB_TOKEN="$COPILOT_GITHUB_TOKEN"
+          
+          # Run without passing JSON as parameter - read from file instead
+          node scripts/workflows/podcast-update/generate-metadata.mjs
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Create GitHub Issue
+        if: steps.check_episodes.outputs.missing_episode != ''
+        id: create_issue
+        run: |
+          TITLE=$(jq -r '.title' metadata.json)
+          
+          echo "📝 Creating GitHub Issue: Podcast Update: $TITLE"
+          ISSUE_URL=$(gh issue create --title "Podcast Update: $TITLE" --label "podcast-update" --body "Automated podcast update for episode: $TITLE")
+          echo "issue_url=$ISSUE_URL" >> $GITHUB_OUTPUT
+          echo "✅ Issue created: $ISSUE_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create branch and update doag.md
+        if: steps.check_episodes.outputs.missing_episode != ''
+        id: create_branch
+        run: |
+          TITLE=$(jq -r '.title' metadata.json)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/-\+/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-50)
+          BRANCH_NAME="podcast-update-$TIMESTAMP-$SLUG"
+          
+          echo "🌿 Creating branch: $BRANCH_NAME"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH_NAME"
+          
+          echo "📝 Updating doag.md with new episode..."
+          node scripts/workflows/podcast-update/update-doag.mjs
+          
+          git add src/content/aboutme/doag.md
+          git commit -m "feat(podcast): Add episode '$TITLE'"
+          git push origin "$BRANCH_NAME"
+          
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "episode_title=$TITLE" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request to dev
+        if: steps.check_episodes.outputs.missing_episode != ''
+        id: create_pr_dev
+        run: |
+          BRANCH_NAME="${{ steps.create_branch.outputs.branch_name }}"
+          TITLE="Podcast Update: DEV ${{ steps.create_branch.outputs.episode_title }}"
+          
+          echo "📋 Creating PR from $BRANCH_NAME to dev..."
+          PR_URL=$(gh pr create --base dev --head "$BRANCH_NAME" --title "$TITLE" --body "Automated podcast update. See issue: ${{ steps.create_issue.outputs.issue_url }}")
+          echo "pr_dev_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "✅ PR created: $PR_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for PR checks to complete (dev)
+        if: steps.check_episodes.outputs.missing_episode != ''
+        run: |
+          PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
+          PR_NUMBER=$(basename "$PR_URL")
+          
+          echo "⏳ Waiting for PR checks to complete..."
+          MAX_WAIT=600  # 10 minutes
+          ELAPSED=0
+          CHECK_INTERVAL=30
+          
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            CHECKS=$(gh pr checks "$PR_NUMBER" --json state,conclusion)
+            ALL_COMPLETE=true
+            ALL_SUCCESS=true
+            
+            # Check if all checks are complete and successful
+            if echo "$CHECKS" | jq -e '.[] | select(.state != "COMPLETED")' > /dev/null 2>&1; then
+              ALL_COMPLETE=false
+            fi
+            
+            if echo "$CHECKS" | jq -e '.[] | select(.conclusion != "SUCCESS")' > /dev/null 2>&1; then
+              ALL_SUCCESS=false
+            fi
+            
+            if [ "$ALL_COMPLETE" = true ]; then
+              if [ "$ALL_SUCCESS" = true ]; then
+                echo "✅ All checks passed!"
+                break
+              else
+                echo "❌ Some checks failed. Please review the PR manually."
+                exit 1
+              fi
+            fi
+            
+            echo "⏳ Checks still running... ($ELAPSED seconds elapsed)"
+            sleep $CHECK_INTERVAL
+            ELAPSED=$((ELAPSED + CHECK_INTERVAL))
+          done
+          
+          if [ $ELAPSED -ge $MAX_WAIT ]; then
+            echo "❌ Timeout waiting for checks to complete."
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge PR to dev and delete branch
+        if: steps.check_episodes.outputs.missing_episode != ''
+        run: |
+          PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
+          PR_NUMBER=$(basename "$PR_URL")
+          
+          echo "🔀 Merging PR #$PR_NUMBER to dev..."
+          gh pr merge "$PR_NUMBER"
+
+      - name: Checkout dev branch
+        if: steps.check_episodes.outputs.missing_episode != ''
+        run: |
+          git fetch origin dev
+          git checkout dev
+          git pull origin dev
+
+      - name: Create Pull Request to main
+        if: steps.check_episodes.outputs.missing_episode != ''
+        id: create_pr_main
+        run: |
+          TITLE="Podcast Update: PRD ${{ steps.create_branch.outputs.episode_title }}"
+          
+          echo "📋 Creating PR from dev to main..."
+          PR_URL=$(gh pr create --base main --head dev --title "$TITLE" --body "Automated podcast update. See issue: ${{ steps.create_issue.outputs.issue_url }}")
+          echo "pr_main_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "✅ PR created: $PR_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for PR checks to complete (main)
+        if: steps.check_episodes.outputs.missing_episode != ''
+        run: |
+          PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
+          PR_NUMBER=$(basename "$PR_URL")
+          
+          echo "⏳ Waiting for PR checks to complete..."
+          MAX_WAIT=600  # 10 minutes
+          ELAPSED=0
+          CHECK_INTERVAL=30
+          
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            CHECKS=$(gh pr checks "$PR_NUMBER" --json state,conclusion)
+            ALL_COMPLETE=true
+            ALL_SUCCESS=true
+            
+            # Check if all checks are complete and successful
+            if echo "$CHECKS" | jq -e '.[] | select(.state != "COMPLETED")' > /dev/null 2>&1; then
+              ALL_COMPLETE=false
+            fi
+            
+            if echo "$CHECKS" | jq -e '.[] | select(.conclusion != "SUCCESS")' > /dev/null 2>&1; then
+              ALL_SUCCESS=false
+            fi
+            
+            if [ "$ALL_COMPLETE" = true ]; then
+              if [ "$ALL_SUCCESS" = true ]; then
+                echo "✅ All checks passed!"
+                break
+              else
+                echo "❌ Some checks failed. Please review the PR manually."
+                exit 1
+              fi
+            fi
+            
+            echo "⏳ Checks still running... ($ELAPSED seconds elapsed)"
+            sleep $CHECK_INTERVAL
+            ELAPSED=$((ELAPSED + CHECK_INTERVAL))
+          done
+          
+          if [ $ELAPSED -ge $MAX_WAIT ]; then
+            echo "❌ Timeout waiting for checks to complete."
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge PR to main
+        if: steps.check_episodes.outputs.missing_episode != ''
+        run: |
+          PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
+          PR_NUMBER=$(basename "$PR_URL")
+          
+          echo "🔀 Merging PR #$PR_NUMBER to main..."
+          gh pr merge "$PR_NUMBER"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Success summary
+        if: steps.check_episodes.outputs.missing_episode != ''
+        run: |
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════╗"
+          echo "║  🎉 PODCAST UPDATE COMPLETED SUCCESSFULLY                  ║"
+          echo "╚════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "📊 Summary:"
+          echo "  • Episode: ${{ steps.create_branch.outputs.episode_title }}"
+          echo "  • Issue: ${{ steps.create_issue.outputs.issue_url }}"
+          echo "  • PR (dev): ${{ steps.create_pr_dev.outputs.pr_dev_url }}"
+          echo "  • PR (main): ${{ steps.create_pr_main.outputs.pr_main_url }}"
+          echo ""
+          echo "✅ The new episode has been successfully added and deployed!"
