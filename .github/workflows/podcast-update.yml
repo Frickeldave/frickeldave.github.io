@@ -62,13 +62,13 @@ jobs:
           GITHUB_OUTPUT: ${{ github.workspace }}/episode-check.txt
 
       - name: Exit if no new episodes
-        if: false
+        if: steps.check_episodes.outputs.missing_episode == ''
         run: |
           echo "✅ No new episodes found. All episodes are up to date."
           exit 0
 
       - name: Generate episode metadata using Copilot
-        if: false
+        if: steps.check_episodes.outputs.missing_episode != ''
         id: generate_metadata
         run: |
           echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
