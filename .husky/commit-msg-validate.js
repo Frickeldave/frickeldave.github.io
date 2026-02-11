@@ -73,7 +73,7 @@ const checks = [
     name: 'Vale',
     command: 'npm run prose',
     description: 'Prose & documentation style',
-    optional: true,
+    optional: false,
   },
 ];
 
@@ -90,6 +90,10 @@ for (const check of checks) {
   } catch (error) {
     if (check.optional && error.message.includes('not found')) {
       console.log(`     ⚠️  ${check.name} not available - skipping`);
+    } else if (!check.optional && error.message.includes('not found')) {
+      console.log(`     ❌ ${check.name} NOT INSTALLED (required)`);
+      console.log(`\n   Run 'npm run install-vale' to install Vale for prose checking\n`);
+      hasErrors = true;
     } else {
       console.log(`     ❌ ${check.description} FAILED`);
       hasErrors = true;
