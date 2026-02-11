@@ -193,6 +193,14 @@ async function main() {
     console.log(`   Edition: ${metadata.edition}`);
     console.log(`   Guests: ${metadata.guests}`);
     console.log(`   Date: ${metadata.date}`);
+    if (metadata.description) {
+      console.log(`   Description: ${metadata.description.substring(0, 100)}...`);
+    } else {
+      console.log(`   Description: ⚠️  NOT PROVIDED BY COPILOT`);
+    }
+    
+    console.log("\n📄 Full metadata (JSON):");
+    console.log(JSON.stringify(metadata, null, 2));
     
   } catch (error) {
     console.error("\n❌ Error:", error.message);
