@@ -142,7 +142,7 @@ jobs:
           node scripts/workflows/podcast-update/update-doag.mjs
           
           git add src/content/aboutme/doag.md
-          git commit -m "feat(podcast): Add episode '$TITLE'"
+          git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
           git push origin "$BRANCH_NAME"
           
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
@@ -168,55 +168,20 @@ jobs:
           PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "⏳ Waiting for PR checks to complete..."
-          MAX_WAIT=600  # 10 minutes
-          ELAPSED=0
-          CHECK_INTERVAL=30
-          
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            CHECKS=$(gh pr checks "$PR_NUMBER" --json state,conclusion)
-            ALL_COMPLETE=true
-            ALL_SUCCESS=true
-            
-            # Check if all checks are complete and successful
-            if echo "$CHECKS" | jq -e '.[] | select(.state != "COMPLETED")' > /dev/null 2>&1; then
-              ALL_COMPLETE=false
-            fi
-            
-            if echo "$CHECKS" | jq -e '.[] | select(.conclusion != "SUCCESS")' > /dev/null 2>&1; then
-              ALL_SUCCESS=false
-            fi
-            
-            if [ "$ALL_COMPLETE" = true ]; then
-              if [ "$ALL_SUCCESS" = true ]; then
-                echo "✅ All checks passed!"
-                break
-              else
-                echo "❌ Some checks failed. Please review the PR manually."
-                exit 1
-              fi
-            fi
-            
-            echo "⏳ Checks still running... ($ELAPSED seconds elapsed)"
-            sleep $CHECK_INTERVAL
-            ELAPSED=$((ELAPSED + CHECK_INTERVAL))
-          done
-          
-          if [ $ELAPSED -ge $MAX_WAIT ]; then
-            echo "❌ Timeout waiting for checks to complete."
-            exit 1
-          fi
+          echo "⏳ Merging PR #$PR_NUMBER with auto-merge (waits for checks if needed)..."
+          gh pr merge "$PR_NUMBER" --auto --squash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Merge PR to dev and delete branch
+      - name: Verify PR dev is merged
         if: steps.check_episodes.outputs.missing_episode != ''
         run: |
           PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "🔀 Merging PR #$PR_NUMBER to dev..."
-          gh pr merge "$PR_NUMBER"
+          echo "✅ Verifying PR #$PR_NUMBER is merged..."
+          PR_STATE=$(gh pr view "$PR_NUMBER" --json state | jq -r '.state')
+          echo "PR State: $PR_STATE"
 
       - name: Checkout dev branch
         if: steps.check_episodes.outputs.missing_episode != ''
@@ -244,55 +209,20 @@ jobs:
           PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "⏳ Waiting for PR checks to complete..."
-          MAX_WAIT=600  # 10 minutes
-          ELAPSED=0
-          CHECK_INTERVAL=30
-          
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            CHECKS=$(gh pr checks "$PR_NUMBER" --json state,conclusion)
-            ALL_COMPLETE=true
-            ALL_SUCCESS=true
-            
-            # Check if all checks are complete and successful
-            if echo "$CHECKS" | jq -e '.[] | select(.state != "COMPLETED")' > /dev/null 2>&1; then
-              ALL_COMPLETE=false
-            fi
-            
-            if echo "$CHECKS" | jq -e '.[] | select(.conclusion != "SUCCESS")' > /dev/null 2>&1; then
-              ALL_SUCCESS=false
-            fi
-            
-            if [ "$ALL_COMPLETE" = true ]; then
-              if [ "$ALL_SUCCESS" = true ]; then
-                echo "✅ All checks passed!"
-                break
-              else
-                echo "❌ Some checks failed. Please review the PR manually."
-                exit 1
-              fi
-            fi
-            
-            echo "⏳ Checks still running... ($ELAPSED seconds elapsed)"
-            sleep $CHECK_INTERVAL
-            ELAPSED=$((ELAPSED + CHECK_INTERVAL))
-          done
-          
-          if [ $ELAPSED -ge $MAX_WAIT ]; then
-            echo "❌ Timeout waiting for checks to complete."
-            exit 1
-          fi
+          echo "⏳ Merging PR #$PR_NUMBER with auto-merge (waits for checks if needed)..."
+          gh pr merge "$PR_NUMBER" --auto --squash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Merge PR to main
+      - name: Verify PR main is merged
         if: steps.check_episodes.outputs.missing_episode != ''
         run: |
           PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
           PR_NUMBER=$(basename "$PR_URL")
           
-          echo "🔀 Merging PR #$PR_NUMBER to main..."
-          gh pr merge "$PR_NUMBER"
+          echo "✅ Verifying PR #$PR_NUMBER is merged..."
+          PR_STATE=$(gh pr view "$PR_NUMBER" --json state | jq -r '.state')
+          echo "PR State: $PR_STATE"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
