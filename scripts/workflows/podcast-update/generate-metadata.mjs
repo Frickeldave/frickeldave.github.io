@@ -78,11 +78,19 @@ async function callCopilotCLI(prompt) {
     const command = `gh copilot -p "$(cat ${tempPromptFile})"`;
     
     console.log("📤 Sending prompt to Copilot...");
+    
+    // Prepare environment with Copilot auth token
+    const env = Object.assign({}, process.env);
+    if (process.env.COPILOT_GITHUB_TOKEN) {
+      env.GITHUB_TOKEN = process.env.COPILOT_GITHUB_TOKEN;
+    }
+    
     const output = execSync(command, {
       encoding: "utf-8",
       maxBuffer: 10 * 1024 * 1024, // 10MB buffer
       stdio: ["pipe", "pipe", "pipe"],
-      shell: "/bin/bash"
+      shell: "/bin/bash",
+      env: env
     });
     
     console.log("📥 Received response from Copilot");

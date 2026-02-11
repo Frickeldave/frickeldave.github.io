@@ -24,6 +24,30 @@ jobs:
           echo "✅ GitHub CLI is available"
           gh --version
 
+      - name: Check GitHub Authentication
+        run: |
+          echo "🔐 Checking GitHub authentication..."
+          if [ -z "$GH_TOKEN" ]; then
+            echo "❌ GH_TOKEN environment variable is not set."
+            exit 1
+          fi
+          
+          # Set up authentication for gh CLI
+          export GITHUB_TOKEN="$GH_TOKEN"
+          
+          # Check if gh is already authenticated
+          if gh auth status &> /dev/null; then
+            echo "✅ GitHub CLI is already authenticated"
+          else
+            echo "⚠️  Setting up GitHub authentication..."
+            # Use the token directly
+            echo "$GH_TOKEN" | gh auth login --with-token
+          fi
+          
+          gh auth status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Check GitHub Copilot CLI availability
         run: |
           echo "🔍 Checking GitHub Copilot CLI availability..."
@@ -32,6 +56,8 @@ jobs:
             exit 1
           fi
           echo "✅ GitHub Copilot CLI is available"
+        env:
+          GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -72,9 +98,19 @@ jobs:
         id: generate_metadata
         run: |
           echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
-          node scripts/workflows/podcast-update/generate-metadata.mjs '${{ steps.check_episodes.outputs.missing_episode }}'
+          
+          # Ensure authentication
+          if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
+            echo "❌ COPILOT_GITHUB_TOKEN is not set."
+            exit 1
+          fi
+          
+          export GITHUB_TOKEN="$COPILOT_GITHUB_TOKEN"
+          
+          # Run without passing JSON as parameter - read from file instead
+          node scripts/workflows/podcast-update/generate-metadata.mjs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Create GitHub Issue
         if: false

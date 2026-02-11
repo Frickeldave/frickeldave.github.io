@@ -60,6 +60,26 @@ function extractAttribute(text, tagName, attrName) {
 }
 
 /**
+ * Strip HTML tags and decode entities
+ */
+function cleanHtml(html) {
+  if (!html) return "";
+  
+  // Remove HTML tags
+  let text = html.replace(/<[^>]*>/g, "");
+  
+  // Decode common HTML entities
+  text = text
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
+  
+  return text.trim();
+}
+
+/**
  * Parse RSS XML to episodes array (using simple string parsing)
  */
 async function parseRSSFeed(xmlData) {
@@ -72,7 +92,7 @@ async function parseRSSFeed(xmlData) {
     
     const title = extractTag(itemXml, "title");
     const pubDateStr = extractTag(itemXml, "pubDate");
-    const description = extractTag(itemXml, "description");
+    const description = cleanHtml(extractTag(itemXml, "description"));
     const audioUrl = extractAttribute(itemXml, "enclosure", "url");
     const link = extractTag(itemXml, "link");
     const guid = extractTag(itemXml, "guid");
