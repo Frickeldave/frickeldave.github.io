@@ -1,12 +1,9 @@
 #!/usr/bin/env sh
 . "$(dirname "$0")/_/husky.sh"
 
-# Detect shell and run appropriate script
-if [ -n "$PSVersionTable" ] || [ "$SHELL" = "powershell.exe" ] || [ "$SHELL" = "pwsh.exe" ]; then
-  # PowerShell
-  pwsh -NoProfile -File "$(dirname "$0")/pre-commit.ps1"
-else
-  # Bash/sh
-  sh "$(dirname "$0")/pre-commit.sh"
-fi
+# Code quality checks moved to commit-msg hook for better UX
+# This ensures we validate the commit message FIRST (quick)
+# before running expensive linting operations (slow)
+# See: .husky/commit-msg-validate.js
+
 
