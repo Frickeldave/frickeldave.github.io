@@ -1,6 +1,9 @@
 name: Podcast Update
 
 on:
+  push:
+    branches:
+      - podcast-update-workflow
   schedule:
     # Every Tuesday at 09:00 CET/CEST
     - cron: '0 8 * * 2'  # 08:00 UTC = 09:00 CET (winter) / 07:00 UTC = 09:00 CEST (summer)
