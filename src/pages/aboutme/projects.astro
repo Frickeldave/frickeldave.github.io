@@ -9,7 +9,7 @@ const { projects } = entry.data;
 const title = "Projekte";
 const description = "Meine Projekte und technische Arbeiten";
 
-const toc = (projects || []).map((project: any, index: number) => ({
+const toc = (projects || []).map((project, index) => ({
   text: project.title,
   slug: `project-${index}`,
   depth: 2,
@@ -33,7 +33,7 @@ const toc = (projects || []).map((project: any, index: number) => ({
       projects && (
         <section id="it-projects">
           <div class="grid gap-6">
-            {projects.map((project: any, index: number) => (
+            {projects.map((project, index) => (
               <div
                 id={`project-${index}`}
                 class="glass scroll-mt-24 rounded-lg p-6"
