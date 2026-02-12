@@ -1,5 +1,5 @@
 ---
-import type { AboutMeEntry } from "@/types";
+import type { AboutMeEntry, BlogEntry } from "@/types";
 import { getEntries } from "@lib/contentParser";
 import HandmadeGrid from "./HandmadeGrid";
 
@@ -14,14 +14,14 @@ const { handmadeProjects = [] } = entry.data;
 const allBlogPosts = await getEntries("blog");
 const blogProjects = allBlogPosts
   .filter((post) => {
-    const data = post.data as any;
+    const data = (post as BlogEntry).data;
     return (
       data.categories?.includes("DIY") ||
       data.categories?.includes("Holzwerken")
     );
   })
   .map((post) => {
-    const data = post.data as any;
+    const data = (post as BlogEntry).data;
     return {
       title: data.title,
       description: data.description || "",

@@ -6,10 +6,10 @@ import { getIndex } from "@lib/contentParser";
 const entry = (await getIndex("aboutme")) as AboutMeEntry;
 const { experience, skills } = entry.data;
 
-const toc: any[] = [];
+const toc: { text: string; slug: string; depth: number }[] = [];
 if (skills) toc.push({ text: "Skills", slug: "skills", depth: 2 });
 if (experience) {
-  experience.forEach((job: any, index: number) => {
+  experience.forEach((job, index) => {
     // Creating slug from position + company
     const slug = `job-${index}`;
     toc.push({ text: `${job.position} @ ${job.company}`, slug, depth: 2 });
@@ -38,7 +38,7 @@ if (experience) {
           Skills
         </h2>
         <div class="grid gap-6 md:grid-cols-2">
-          {skills.map((skillGroup: any) => (
+          {skills.map((skillGroup) => (
             <div>
               <h3 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-lg font-semibold">
                 {skillGroup.category}
@@ -61,7 +61,7 @@ if (experience) {
   {
     experience && (
       <div class="space-y-6">
-        {experience.map((job: any, index: number) => (
+        {experience.map((job, index) => (
           <div id={`job-${index}`} class="glass rounded-lg p-6 lg:p-8">
             <div class="mb-4 flex flex-wrap items-baseline justify-between gap-4">
               <h2 class="text-txt-h dark:text-darkmode-txt-h text-xl font-bold">

@@ -205,9 +205,9 @@ episodes:
       Sebastian Kister über Transformation, Multi-Cloud-Architekturen, Container-Plattformen und
       echte Innovationskultur. Wie transformiert man ein Unternehmen mit über 3.400 Beteiligungen?
       Was bedeutet 'People First' wirklich – und wie baut man bei Audi eine hochskalierbare
-      Containerplattform, die Tausende Anwendungen trägt? Ein Gespräch über kulturelle Transformation,
-      TCO-Strategien, Multi-Cloud-Architekturen, Plattformstabilität und die Frage, warum Menschen und
-      Problemlösung immer vor Prozessen stehen sollten.
+      Containerplattform, die Tausende Anwendungen trägt? Ein Gespräch über kulturelle
+      Transformation, TCO-Strategien, Multi-Cloud-Architekturen, Plattformstabilität und die Frage,
+      warum Menschen und Problemlösung immer vor Prozessen stehen sollten.
     links:
       spotify: "https://open.spotify.com/episode/4AFRip5SsnIE1qqVvvlVIM"
       apple: "https://podcasts.apple.com/de/podcast/doag-voices-cloudtalk-mit-dave-k%C3%B6nig-und-sebastian/id1847181531"
