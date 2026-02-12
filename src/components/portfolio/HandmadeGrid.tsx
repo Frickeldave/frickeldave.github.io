@@ -4,7 +4,7 @@ import { FaSyncAlt, FaArrowRight } from "react-icons/fa";
 type HandmadeProject = {
   title: string;
   description: string;
-  image?: any;
+  image?: { src: string } | string;
   blogUrl?: string;
   category?: string;
 };
@@ -65,7 +65,10 @@ const HandmadeGrid: React.FC<Props> = ({ projects }) => {
         }`}
       >
         {selectedProjects.map((project, index) => {
-          const imageUrl = project.image?.src || project.image || "";
+          const imageUrl =
+            typeof project.image === "string"
+              ? project.image
+              : project.image?.src || "";
 
           return (
             <a
