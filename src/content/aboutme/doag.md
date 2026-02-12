@@ -38,10 +38,7 @@ episodes:
     description: >-
       Künstliche Intelligenz verändert sich schneller als die meisten Organisationsstrukturen. In
       dieser Folge spreche ich mit Dr. Benjamin Linnik über die Notwendigkeit modularer und
-      austauschbarer KI-Architekturen. Wir diskutieren, warum ein Physikstudium die ideale Grundlage
-      für Data Science ist, weshalb teures Fine-Tuning oft die falsche Wahl ist und wie pragmatische
-      Ansätze wie Prompt-Engineering, RAG und das neue Model Context Protocol (MCP) Unternehmen
-      dabei helfen, ihre Fachlichkeit in einer dynamischen Technologiewelt zu bewahren.
+      austauschbarer KI-Architekturen.
     links:
       spotify: "https://open.spotify.com/episode/3qGejpVmGr48a1wiK9l3ge"
       apple: "https://podcasts.apple.com/de/podcast/doag-voices-futureai-mit-dave-k%C3%B6nig-und-dr-benjamin-linnik/id1847181531?i=1000747824959"
@@ -55,11 +52,7 @@ episodes:
     date: "27. Januar 2026"
     description: >-
       Künstliche Intelligenz ist allgegenwärtig – doch der erfolgreiche Einsatz beginnt nicht mit
-      dem Training eines Modells, sondern mit der richtigen Auswahl. In dieser Folge spreche ich mit
-      Dr. Melanie Sigl über die Herausforderungen von Transfer Learning auf multivariaten
-      Zeitreihen, warum vortrainierte Modelle nicht automatisch gute Ergebnisse liefern und wie
-      Methoden wie Dynamic Time Warping und Learning-to-Rank-Ansätze helfen, KI-Modelle systematisch
-      zu bewerten.
+      dem Training eines Modells, sondern mit der richtigen Auswahl.
     links:
       spotify: "https://open.spotify.com/episode/2RGCSMN8T3yUxP7bB7O641"
       apple: "https://podcasts.apple.com/de/podcast/doag-voices-futureai-dave-ko-nig-und-dr-melanie-sigl/id1847181531?i=1000746815994"
