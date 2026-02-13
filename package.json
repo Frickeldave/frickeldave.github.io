@@ -9,11 +9,9 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "dev": "npm run generate-version && astro dev --host 0.0.0.0",
+    "dev": "astro dev --host 0.0.0.0",
     "build": "astro build",
-    "prebuild": "npm run generate-version",
     "postbuild": "pagefind --site dist",
-    "generate-version": "tsx scripts/generate-version.ts",
     "sync-products": "tsx scripts/synchronize-products.ts",
     "prepare": "husky install",
     "postinstall": "npm run install-vale",
