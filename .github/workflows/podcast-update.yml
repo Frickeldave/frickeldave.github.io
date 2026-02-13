@@ -27,56 +27,16 @@ jobs:
       run:
         shell: bash -il {0}
     steps:
-      - name: Check GitHub CLI availability
-        run: |
-          echo "🔍 Checking GitHub CLI availability..."
-          if ! command -v gh &> /dev/null; then
-            echo "❌ GitHub CLI (gh) is not available. Please install it first."
-            exit 1
-          fi
-          echo "✅ GitHub CLI is available"
-          gh --version
-
-      - name: Check GitHub Authentication
-        run: |
-          echo "🔐 Checking GitHub authentication..."
-          if [ -z "$GH_TOKEN" ]; then
-            echo "❌ GH_TOKEN environment variable is not set."
-            exit 1
-          fi
-
-          # Set up authentication for gh CLI
-          export GITHUB_TOKEN="$GH_TOKEN"
-
-          # Check if gh is already authenticated
-          if gh auth status &> /dev/null; then
-            echo "✅ GitHub CLI is already authenticated"
-          else
-            echo "⚠️  Setting up GitHub authentication..."
-            # Use the token directly
-            echo "$GH_TOKEN" | gh auth login --with-token
-          fi
-
-          gh auth status
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check GitHub Copilot CLI availability
-        run: |
-          echo "🔍 Checking GitHub Copilot CLI availability..."
-          if ! gh copilot -- --help &> /dev/null; then
-            echo "❌ GitHub Copilot CLI is not available. Please install it first."
-            exit 1
-          fi
-          echo "✅ GitHub Copilot CLI is available"
-        env:
-          GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-
-      - name: Checkout repository
+      - name: Checkout repository (main)
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Check Node.js version
         run: |
@@ -89,13 +49,11 @@ jobs:
             exit 1
           fi
           echo "✅ Node.js v24 is available"
-          node --version
-          npm --version
 
-      - name: Fetch Acast RSS and compare episodes
+      - name: Global episode comparison (against main)
         id: check_episodes
         run: |
-          echo "📡 Fetching Acast RSS feed and comparing with existing episodes..."
+          echo "📡 Comparing RSS feed with main branch..."
           node scripts/workflows/podcast-update/compare-episodes.mjs
         env:
           GITHUB_OUTPUT: ${{ github.workspace }}/episode-check.txt
@@ -111,155 +69,59 @@ jobs:
         id: generate_metadata
         run: |
           echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
-
-          # Ensure authentication
-          if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
-            echo "❌ COPILOT_GITHUB_TOKEN is not set."
-            exit 1
-          fi
-
-          export GITHUB_TOKEN="$COPILOT_GITHUB_TOKEN"
-
-          # Run without passing JSON as parameter - read from file instead
+          export GITHUB_TOKEN="${{ secrets.COPILOT_GITHUB_TOKEN }}"
           node scripts/workflows/podcast-update/generate-metadata.mjs
-        env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
-      - name: Create GitHub Issue
-        if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
-        id: create_issue
-        run: |
-          TITLE=$(jq -r '.title' metadata.json)
-
-          echo "📝 Creating GitHub Issue: Podcast Update: $TITLE"
-          ISSUE_URL=$(gh issue create --title "Podcast Update: $TITLE" --label "podcast-update" --body "Automated podcast update for episode: $TITLE")
-          echo "issue_url=$ISSUE_URL" >> $GITHUB_OUTPUT
-          echo "✅ Issue created: $ISSUE_URL"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create branch and update doag.md
+      - name: Update dev branch
         if: steps.check_episodes.outputs.missing_episode != ''
-        id: create_branch
+        id: update_dev
         run: |
           TITLE=$(jq -r '.title' metadata.json)
-          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-          SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/-\+/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-50)
-          BRANCH_NAME="podcast-update-$TIMESTAMP-$SLUG"
+          echo "🌿 Updating dev branch with episode: $TITLE"
 
-          echo "🌿 Creating branch: $BRANCH_NAME"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH_NAME"
-
-          echo "📝 Updating doag.md with new episode..."
+          git checkout dev
+          git pull origin dev
 
           if [ "${{ github.event.inputs.dryRun }}" == "true" ]; then
             node scripts/workflows/podcast-update/update-doag.mjs --dry-run
             echo "🦁 DRY RUN: Skipping git commit and push."
           else
             node scripts/workflows/podcast-update/update-doag.mjs
-
             git add src/content/aboutme/doag.md
             git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
-            git push origin "$BRANCH_NAME"
+            git push origin dev
           fi
 
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          echo "episode_title=$TITLE" >> $GITHUB_OUTPUT
-
-      - name: Create Pull Request to dev
-        if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
-        id: create_pr_dev
+      - name: Update main branch
+        if: steps.check_episodes.outputs.missing_episode != '' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
+        id: update_main
         run: |
-          BRANCH_NAME="${{ steps.create_branch.outputs.branch_name }}"
-          TITLE="Podcast Update: DEV ${{ steps.create_branch.outputs.episode_title }}"
+          TITLE=$(jq -r '.title' metadata.json)
+          echo "🚀 Updating main branch with episode: $TITLE"
 
-          echo "📋 Creating PR from $BRANCH_NAME to dev..."
-          PR_URL=$(gh pr create --base dev --head "$BRANCH_NAME" --title "$TITLE" --body "Automated podcast update. See issue: ${{ steps.create_issue.outputs.issue_url }}")
-          echo "pr_dev_url=$PR_URL" >> $GITHUB_OUTPUT
-          echo "✅ PR created: $PR_URL"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git checkout main
+          git pull origin main
 
-      - name: Wait for PR checks to complete (dev)
-        if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
-        run: |
-          PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
-          PR_NUMBER=$(basename "$PR_URL")
-
-          echo "⏳ Merging PR #$PR_NUMBER with auto-merge (waits for checks if needed)..."
-          gh pr merge "$PR_NUMBER" --auto --squash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify PR dev is merged
-        if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
-        run: |
-          PR_URL="${{ steps.create_pr_dev.outputs.pr_dev_url }}"
-          PR_NUMBER=$(basename "$PR_URL")
-
-          echo "✅ Verifying PR #$PR_NUMBER is merged..."
-          PR_STATE=$(gh pr view "$PR_NUMBER" --json state | jq -r '.state')
-          echo "PR State: $PR_STATE"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout dev branch
-        if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
-        run: |
-          git fetch origin dev
-          git checkout dev
-          git pull origin dev
-
-      - name: Create Pull Request to main
-        if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
-        id: create_pr_main
-        run: |
-          TITLE="Podcast Update: PRD ${{ steps.create_branch.outputs.episode_title }}"
-
-          echo "📋 Creating PR from dev to main..."
-          PR_URL=$(gh pr create --base main --head dev --title "$TITLE" --body "Automated podcast update. See issue: ${{ steps.create_issue.outputs.issue_url }}")
-          echo "pr_main_url=$PR_URL" >> $GITHUB_OUTPUT
-          echo "✅ PR created: $PR_URL"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Wait for PR checks to complete (main)
-        if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
-        run: |
-          PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
-          PR_NUMBER=$(basename "$PR_URL")
-
-          echo "⏳ Merging PR #$PR_NUMBER with auto-merge (waits for checks if needed)..."
-          gh pr merge "$PR_NUMBER" --auto --squash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify PR main is merged
-        if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
-        run: |
-          PR_URL="${{ steps.create_pr_main.outputs.pr_main_url }}"
-          PR_NUMBER=$(basename "$PR_URL")
-
-          echo "✅ Verifying PR #$PR_NUMBER is merged..."
-          PR_STATE=$(gh pr view "$PR_NUMBER" --json state | jq -r '.state')
-          echo "PR State: $PR_STATE"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if [ "${{ github.event.inputs.dryRun }}" == "true" ]; then
+            node scripts/workflows/podcast-update/update-doag.mjs --dry-run
+            echo "🦁 DRY RUN: Skipping git commit and push."
+          else
+            node scripts/workflows/podcast-update/update-doag.mjs
+            git add src/content/aboutme/doag.md
+            git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
+            git push origin main
+          fi
 
       - name: Success summary
         if: steps.check_episodes.outputs.missing_episode != ''
         run: |
           echo ""
           echo "╔════════════════════════════════════════════════════════════╗"
-          echo "║  🎉 PODCAST UPDATE COMPLETED SUCCESSFULLY                  ║"
+          echo "║  🎉 Independent Podcast Update Completed Successfully      ║"
           echo "╚════════════════════════════════════════════════════════════╝"
           echo ""
           echo "📊 Summary:"
-          echo "  • Episode: ${{ steps.create_branch.outputs.episode_title }}"
-          echo "  • Issue: ${{ steps.create_issue.outputs.issue_url }}"
-          echo "  • PR (dev): ${{ steps.create_pr_dev.outputs.pr_dev_url }}"
-          echo "  • PR (main): ${{ steps.create_pr_main.outputs.pr_main_url }}"
+          echo "  • Episode: $(jq -r '.title' metadata.json)"
+          echo "  • Branches updated: dev ${{ (github.event.inputs.target == 'all' || github.event_name == 'schedule') && 'and main' || '' }}"
           echo ""
-          echo "✅ The new episode has been successfully added and deployed!"
+          echo "✅ Branches have been updated directly."
