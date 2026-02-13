@@ -202,6 +202,8 @@ jobs:
           echo "✅ Verifying PR #$PR_NUMBER is merged..."
           PR_STATE=$(gh pr view "$PR_NUMBER" --json state | jq -r '.state')
           echo "PR State: $PR_STATE"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout dev branch
         if: steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
