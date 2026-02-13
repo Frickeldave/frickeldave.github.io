@@ -2,4 +2,4 @@
 . "$(dirname "$0")/_/husky.sh"
 
 # Use Node.js to validate commit message (cross-platform)
-node "$(dirname "$0")/commit-msg-validate.js" "$1"
+node "$(dirname "$0")/commit-msg-validate.mjs" "$1"
