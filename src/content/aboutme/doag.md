@@ -30,6 +30,7 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+<<<<<<< podcast-update-20260213-231028-low-code-trifft-ki-wie-sich-softwareentwicklung-ne
   - id: doag-voices-21235
     title: Low-Code trifft KI: Wie sich Softwareentwicklung neu erfindet
     edition: DevLand
@@ -43,6 +44,8 @@ episodes:
       amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
     audioUrl: >-
       https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/698ad77af6349d3c6e6557f1/media.mp3
+=======
+>>>>>>> dev
   - id: "doag-voices-10384"
     title: "Physik, Modelle und die Dynamik der KI - Warum Systeme lebendig bleiben müssen"
     edition: "FutureAI"
