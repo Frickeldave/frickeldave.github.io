@@ -6,7 +6,7 @@
  * 2. Runs code quality checks (Prettier, ESLint, Vale)
  */
 
-const { execSync } = require("child_process");
+import { execSync } from "node:child_process";
 
 const commitEditMsgFile = process.argv[2];
 
@@ -29,7 +29,7 @@ try {
     stdio: "inherit",
   });
   console.log("✅ Commit message validated!\n");
-} catch (error) {
+} catch {
   console.log("\n");
   console.log("❌ COMMIT MESSAGE VALIDATION FAILED!\n");
   console.log(
