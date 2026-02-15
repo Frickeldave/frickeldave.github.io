@@ -20,40 +20,47 @@ i want to write about. Also it's a place for experimenting with astro and starli
 
 This blog is built with modern web technologies:
 
-- **[Astro](https://astro.build/)** - A lightweight static site generator that ships zero JavaScript by default
-- **[Tailwind CSS](https://tailwindcss.com/)** - A utility-first CSS framework for rapid UI development
-- **[TypeScript](https://www.typescriptlang.org/)** - Adds static typing to JavaScript for better code quality
-- **[Astrogon Theme](https://github.com/astrogon/astrogon)** - A clean and minimal theme for Starlight documentation
+- **[Astro](https://astro.build/)** - A lightweight static site generator that ships zero JavaScript
+  by default
+- **[Tailwind CSS](https://tailwindcss.com/)** - A utility-first CSS framework for rapid UI
+  development
+- **[TypeScript](https://www.typescriptlang.org/)** - Adds static typing to JavaScript for better
+  code quality
+- **[Astrogon Theme](https://github.com/astrogon/astrogon)** - A clean and minimal theme for
+  Starlight documentation
 - **[MDX](https://mdxjs.com/)** - Markdown with embedded JSX components for rich content
-- **[GitHub Pages](https://pages.github.com/)** - Free hosting and deployment via GitHub Actions  
+- **[GitHub Pages](https://pages.github.com/)** - Free hosting and deployment via GitHub Actions
 
 ## Features
-
 
 ## Documentation
 
 ### Onboarding & Setup
-- [Onboarding](./docs/10-onboard.md)
-- [Branching Strategy](./docs/11-branching.md)
-- [Categories and Tags](./docs/12-categories-and-tags.md)
-- [Structure](./docs/13-structure.md)
-- [Versioning](./docs/14-versioning.md)
-- [Branch Naming Strategy](./docs/15-branch-naming-strategy.md)
+
+- [Installation Guide](./docs/10-install.md)
+- [Commit Message Guidelines](./docs/11-commit-messages.md)
+- [Branching and Naming Strategy](./docs/12-branch-naming-strategy.md)
+- [Categories and Tags](./docs/13-categories-and-tags.md)
+- [Project Structure](./docs/14-structure.md)
+- [Architecture Decisions](./docs/40-architecture-decisions.md)
 
 ### Design
+
 - [Design System](./docs/20-design-system.md)
 
 ### Development
+
 - [Migration from WordPress](./docs/30-migration-from-wordpress.md)
 - [Prompt Summary](./docs/31-prompt-summary.md)
 
 ### Custom Features
+
 - [Redirects System](./docs/features/fr001-redirects.md)
-- [Versioning Feature](./docs/features/fr002-versioning.md)
 - [Product catalog](./docs/features/fr003-catalog.md)
 - [Automated Podcast Sync](./docs/features/fr005-podcast-sync.md)
 
 ### Linting & Code Quality
+
 - [Linter Setup](./docs/linter/01-linter-start.md)
 - [Husky Integration](./docs/linter/02-linter-husky.md)
 - [ESLint Configuration](./docs/linter/03-linter-eslint.md)

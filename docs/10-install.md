@@ -1,8 +1,8 @@
-# Contribute
+# Install
 
-Feel free to contribute with you own pull request to the frickeldave website. This contribution guide describe how to do that. 
+This describes how to install the development environment for the frickeldave.de website.
 
-- [Contribute](#contribute)
+- [Install](#install)
   - [Installation guide](#installation-guide)
     - [Prepare WSL (optional)](#prepare-wsl-optional)
     - [Install all prerequsites for linux with administrative previleges](#install-all-prerequsites-for-linux-with-administrative-previleges)
@@ -11,17 +11,17 @@ Feel free to contribute with you own pull request to the frickeldave website. Th
     - [Clone repo (works on powershell and bash)](#clone-repo-works-on-powershell-and-bash)
     - [Install node prerequisites](#install-node-prerequisites)
   - [🧞 Commands (by Astro)](#-commands-by-astro)
-  - [Internal additional information](#internal-additional-information)
   - [🧾 See Also](#-see-also)
-
 
 ## Installation guide
 
-This chapter explains, how to configure your system to to contributions to the frickeldave.de website.
+This chapter explains, how to configure your system to to contributions to the frickeldave.de
+website.
 
 ### Prepare WSL (optional)
 
-If you use a windows client but you feel more comfortable with linux, you can use use a WSL with debian or linux to setup the development environment.
+If you use a windows client but you feel more comfortable with linux, you can use use a WSL with
+debian or linux to setup the development environment.
 
 ```powershell
 wsl --install debian --name frickeldave
@@ -32,7 +32,8 @@ wsl -d frickeldave
 
 ### Install all prerequsites for linux with administrative previleges
 
-To configure a linux environment follow this steps. If you want to work directly on windows you can skip this chapter.
+To configure a linux environment follow this steps. If you want to work directly on windows you can
+skip this chapter.
 
 ```bash
 # Install git, when not exist
@@ -41,8 +42,8 @@ sudo apt install git -y
 sudo apt install curl -y
 # Install nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-# OPTIONAL: In some environments the profile is not executed (eg. code-server). 
-# In this case, add nvm to bashrc manual: 
+# OPTIONAL: In some environments the profile is not executed (eg. code-server).
+# In this case, add nvm to bashrc manual:
 echo "" >> ~/.bashrc
 echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
 echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc
@@ -50,7 +51,7 @@ source ~/.bashrc
 # Install node
 nvm install --lts
 
-#It is not needed for development, but it simplify the work to install GitHub (gh) CLI on the system. It is also used in some of the prompt files. 
+#It is not needed for development, but it simplify the work to install GitHub (gh) CLI on the system. It is also used in some of the prompt files.
 
 # Get the actual gh client version
 export GH_CLI_VERSION=$(curl -s https://api.github.com/repos/cli/cli/releases/latest | grep "tag_name" | cut -d : -f 2,3 | tr -d \"\ v,)
@@ -91,6 +92,7 @@ When all prerequisites are done, you can follow this steps.
 ### Clone repo (works on powershell and bash)
 
 These commands are working on windows as well as linux.
+
 ```shell
 cd ~
 mkdir dev
@@ -101,6 +103,7 @@ git config user.name "<YOURNAME>"
 git config user.email "<YOURMAILADDRESS>"
 
 ```
+
 ### Install node prerequisites
 
 To get all node prerequisites, run the following command.
@@ -122,27 +125,13 @@ All commands are run from the root of the project, from a terminal:
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 
-
-## Internal additional information
-
-- Das branching Konzept ist [hier](./branching.md) zu finden.
-- Dieses Projekt verwendet Husky, um Git-Hooks (z. B. `pre-commit`) aus dem Verzeichnis `.husky/` zu verwalten (siehe [husky](./linter/husky.md)).
-- Es sind diverse Linter aktiv, die Konfiguration der Linter ist [hier](./linter/linter.md) beschrieben.
-- Zu verwendene Kategorien findest du [hier](./categories.md)
-- Tags sind [hier](./tags.md) dokumentiert
-
-Folgende eigene Erweiterungen wurden hier integriert: 
-
-- [Link redirector](./features/redirects.md)
-- YouTube privacy component
-- Donwload page
-
-
 ## 🧾 See Also
 
-[Astro Documentation](https://docs.astro.build) - The official documentation for Astro. If there's an Astro topic you're confused about, you can probably find a consise and clear explanation here.
+[Astro Documentation](https://docs.astro.build) - The official documentation for Astro. If there's
+an Astro topic you're confused about, you can probably find a consise and clear explanation here.
 
-The [customization guideline from astrogon](https://github.com/astrogon/astrogon/blob/main/docs/customization.md) describes how to customize the theme. 
+The
+[customization guideline from astrogon](https://github.com/astrogon/astrogon/blob/main/docs/customization.md)
+describes how to customize the theme.
 
 See [Teckstack](https://github.com/astrogon/astrogon/blob/main/docs/tech-stack.md) for more details.
-
