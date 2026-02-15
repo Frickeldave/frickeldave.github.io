@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Deploy to Main",
+      "type": "shell",
+      "command": "git checkout main && git pull origin main && git merge dev --no-ff -m \"${input:commitMessage}\" && git push origin main && git checkout dev",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "commitMessage",
+      "type": "promptString",
+      "description": "Enter merge commit message",
+      "default": "Deploy dev to main"
+    }
+  ]
+}
