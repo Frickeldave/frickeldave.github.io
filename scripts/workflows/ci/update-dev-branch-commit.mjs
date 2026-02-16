@@ -11,7 +11,7 @@
 import { execSync } from "child_process";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,6 +47,20 @@ function main() {
     }
 
     run("git add .");
+
+    // Remove temporary workflow files from staging
+    // These should never be committed
+    const tempFiles = [
+      ".copilot-prompt-analyze.txt",
+      "scripts/workflows/ci/.state",
+    ];
+    for (const f of tempFiles) {
+      try {
+        execSync(`git reset HEAD -- ${f}`, { stdio: "ignore" });
+      } catch {
+        // File might not be staged, ignore
+      }
+    }
 
     // Commit
     // Use proper escaping for commit message
