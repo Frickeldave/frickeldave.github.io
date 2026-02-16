@@ -20,7 +20,8 @@
     "lint": "eslint ./src --fix",
     "lint:check": "eslint ./src",
     "install-vale": "node -e \"const cmd = process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File .vale/install-vale.ps1' : 'bash .vale/install-vale.sh'; require('child_process').exec(cmd, (err, stdout, stderr) => { if (err) { console.error(stderr); process.exit(1); } console.log(stdout); })\"",
-    "prose": "node -e \"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\""
+    "prose": "node -e \"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\"",
+    "deploy:dev": "node scripts/workflows/ci/update-dev-branch.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.4",

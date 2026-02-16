@@ -1,0 +1,15 @@
+{
+  "issueId": 211,
+  "issueTitle": "Add automated dev branch deployment script",
+  "issueUrl": "https://github.com/Frickeldave/frickeldave.github.io/issues/211",
+  "gitStatus": " M package.json\n?? .agent/rules/update-dev-branch.md\n?? .copilot-prompt-analyze.txt\n?? scripts/workflows/ci/\n",
+  "gitDiff": "diff --git a/package.json b/package.json\nindex aa52e8d..c2b72b5 100755\n--- a/package.json\n+++ b/package.json\n@@ -20,7 +20,8 @@\n     \"lint\": \"eslint ./src --fix\",\n     \"lint:check\": \"eslint ./src\",\n     \"install-vale\": \"node -e \\\"const cmd = process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File .vale/install-vale.ps1' : 'bash .vale/install-vale.sh'; require('child_process').exec(cmd, (err, stdout, stderr) => { if (err) { console.error(stderr); process.exit(1); } console.log(stdout); })\\\"\",\n-    \"prose\": \"node -e \\\"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\\\"\"\n+    \"prose\": \"node -e \\\"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\\\"\",\n+    \"deploy:dev\": \"node scripts/workflows/ci/update-dev-branch.mjs\"\n   },\n   \"dependencies\": {\n     \"@astrojs/mdx\": \"^4.3.4\",\n",
+  "analysis": {
+    "type": "ci",
+    "branchName": "ci/add-dev-deploy-script",
+    "commitMessage": "ci: add deploy:dev npm script for dev branch automation\n\nAdds a new npm script that runs the dev branch update workflow via scripts/workflows/ci/update-dev-branch.mjs. This enables CI/CD automation for deploying to the development branch.",
+    "issueTitle": "Add dev branch deployment automation script",
+    "issueBody": "## Description\nAdd a new `deploy:dev` npm script to automate deployment updates for the development branch.\n\n## Changes\n- New npm script: `deploy:dev` that executes `scripts/workflows/ci/update-dev-branch.mjs`\n- Supports automated dev branch updates in CI/CD workflows\n- Enables streamlined development branch management\n\n## Related Files\n- `scripts/workflows/ci/update-dev-branch.mjs` - Main deployment script\n- `package.json` - New npm script definition\n- `.agent/rules/update-dev-branch.md` - Documentation"
+  },
+  "branchName": "ci/add-dev-branch-deployment"
+}

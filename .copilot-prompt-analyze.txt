@@ -1,0 +1,43 @@
+
+Analyze the following git changes and determine the intent.
+
+GIT STATUS:
+ M package.json
+?? .agent/rules/update-dev-branch.md
+?? .copilot-prompt-analyze.txt
+?? scripts/workflows/ci/
+
+
+GIT DIFF (truncated):
+diff --git a/package.json b/package.json
+index aa52e8d..c2b72b5 100755
+--- a/package.json
++++ b/package.json
+@@ -20,7 +20,8 @@
+     "lint": "eslint ./src --fix",
+     "lint:check": "eslint ./src",
+     "install-vale": "node -e \"const cmd = process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File .vale/install-vale.ps1' : 'bash .vale/install-vale.sh'; require('child_process').exec(cmd, (err, stdout, stderr) => { if (err) { console.error(stderr); process.exit(1); } console.log(stdout); })\"",
+-    "prose": "node -e \"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\""
++    "prose": "node -e \"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\"",
++    "deploy:dev": "node scripts/workflows/ci/update-dev-branch.mjs"
+   },
+   "dependencies": {
+     "@astrojs/mdx": "^4.3.4",
+
+
+TASK:
+1. Identify the TYPE of change (feat, fix, docs, style, refactor, perf, test, ci, chore).
+2. Create a specific, kebab-case branch name (max 50 chars) following the pattern: <type>/<issue-id-if-present>-<description>.
+   - If issue ID is present (211), include it (e.g., feat/123-add-login).
+   - If no issue ID, just use description (e.g., feat/add-login).
+3. Create a conventional commit message.
+4. Create a title and body for a GitHub Issue (if we needed to create one).
+
+OUTPUT JSON format ONLY:
+{
+  "type": "feat",
+  "branchName": "feat/...",
+  "commitMessage": "feat(...): ...",
+  "issueTitle": "...",
+  "issueBody": "..."
+}
