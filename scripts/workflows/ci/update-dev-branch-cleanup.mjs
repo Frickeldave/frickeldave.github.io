@@ -45,9 +45,19 @@ function deleteBranch(branchName) {
     execSync("git checkout dev", { stdio: "ignore" });
   }
 
+  // Delete remote branch first
+  try {
+    console.log(`   Deleting remote branch origin/${branchName}...`);
+    execSync(`git push origin --delete ${branchName}`, { stdio: "inherit" });
+    console.log("✅ Remote branch deleted.");
+  } catch {
+    console.log("⚠️  Remote branch could not be deleted (may not exist).");
+  }
+
+  // Delete local branch (-D to force even if not fully merged)
   console.log(`   Deleting local branch ${branchName}...`);
-  execSync(`git branch -d ${branchName}`, { stdio: "inherit" });
-  console.log("✅ Branch deleted.");
+  execSync(`git branch -D ${branchName}`, { stdio: "inherit" });
+  console.log("✅ Local branch deleted.");
 }
 
 async function main() {
