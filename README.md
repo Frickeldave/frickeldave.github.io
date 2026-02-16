@@ -38,10 +38,11 @@ This blog is built with modern web technologies:
 ### Onboarding & Setup
 
 - [Installation Guide](./docs/10-install.md)
-- [Commit Message Guidelines](./docs/11-commit-messages.md)
-- [Branching and Naming Strategy](./docs/12-branch-naming-strategy.md)
-- [Categories and Tags](./docs/13-categories-and-tags.md)
-- [Project Structure](./docs/14-structure.md)
+- [Usage Guide](./docs/11-usage.md)
+- [Commit Message Guidelines](./docs/12-commit-messages.md)
+- [Branching and Naming Strategy](./docs/13-branch-naming-strategy.md)
+- [Categories and Tags](./docs/14-categories-and-tags.md)
+- [Project Structure](./docs/15-structure.md)
 - [Architecture Decisions](./docs/40-architecture-decisions.md)
 
 ### Design
@@ -58,6 +59,7 @@ This blog is built with modern web technologies:
 - [Redirects System](./docs/features/fr001-redirects.md)
 - [Product catalog](./docs/features/fr003-catalog.md)
 - [Automated Podcast Sync](./docs/features/fr005-podcast-sync.md)
+- [Automated Dev Deployment](./docs/features/fr006-autodeploy.md)
 
 ### Linting & Code Quality
 

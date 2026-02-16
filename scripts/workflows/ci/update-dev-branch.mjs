@@ -30,7 +30,7 @@
 import { spawnSync } from "child_process";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { writeFileSync, existsSync, mkdirSync } from "fs";
+import { writeFileSync, existsSync, mkdirSync, unlinkSync, rmSync } from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -38,6 +38,25 @@ const __dirname = dirname(__filename);
 // State file to persist data between steps
 const STATE_DIR = join(__dirname, ".state");
 const STATE_FILE = join(STATE_DIR, "workflow-state.json");
+
+// Temp file created by copilot understand step
+const WORKSPACE_ROOT = join(__dirname, "..", "..", "..");
+const COPILOT_PROMPT_FILE = join(WORKSPACE_ROOT, ".copilot-prompt-analyze.txt");
+
+// Cleanup temporary files (called on success and failure)
+function cleanup() {
+  try {
+    if (existsSync(COPILOT_PROMPT_FILE)) {
+      unlinkSync(COPILOT_PROMPT_FILE);
+    }
+    if (existsSync(STATE_DIR)) {
+      rmSync(STATE_DIR, { recursive: true, force: true });
+    }
+    console.log("🧹 Temporary files cleaned up.");
+  } catch {
+    // Ignore cleanup errors
+  }
+}
 
 // --- Parse CLI args ---
 const args = process.argv.slice(2);
@@ -116,8 +135,10 @@ for (const step of steps) {
       shell: true,
     });
 
+    cleanup();
     process.exit(1);
   }
 }
 
+cleanup();
 console.log("\n✅ Workflow completed successfully!");
