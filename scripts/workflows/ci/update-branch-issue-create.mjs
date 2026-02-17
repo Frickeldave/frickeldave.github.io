@@ -50,7 +50,7 @@ function run() {
       "--title",
       issueTitle,
       "--body",
-      issueBody || "Automated issue created by update-dev-branch workflow.",
+      issueBody || "Automated issue created by deployment workflow.",
     ],
     { encoding: "utf-8", shell: false }
   );

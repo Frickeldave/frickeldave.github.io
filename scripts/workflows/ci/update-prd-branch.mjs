@@ -1,30 +1,22 @@
 #!/usr/bin/env node
 
 /**
- * Main Orchestrator for update-dev-branch workflow
+ * Main Orchestrator for update-prd-branch workflow
  *
- * Executes the following steps (matching deploy-dev.md):
- * 1. Prereqs check
- * 2. Analyze changes
- * 3. Branch Management
- * 4. Quality Gates (lint, format, prose)
- * 5. Build & Test
- * 6. Dev-Server (if quality changes detected)
- * 7. Commit
- * 8. Push
- * 9. Issue Create (if needed)
- * 10. Merge to dev
+ * Executes the following steps (matching deploy-prd.md):
+ * 1. Prereqs check (dev branch, clean, pushed)
+ * 2. Issue Check (optional)
+ * 3. Analyze changes (main..dev)
+ * 4. Understand (Copilot analysis)
+ * 5. Issue Create (if needed)
+ * 6. Checkout main & Pull
+ * 7. Merge dev -> main
+ * 8. Build & Test
+ * 9. Quality Gates (on main)
+ * 10. Push main
  * 11. Deployment Check
- * 12. Cleanup
- * 13. Issue Close
- *
- * Note: Issue-Check and Understand (Copilot analysis) run early
- * to generate branch names and commit messages.
- *
- * CLI Arguments (for non-interactive mode):
- *   --issue-id <id>     Pre-set GitHub Issue ID (skip prompt)
- *   --auto-cleanup      Auto-delete feature branch after merge (skip prompt)
- *   --skip-devserver    Skip the dev-server review step
+ * 12. Issue Close
+ * 13. Cleanup & Summary
  */
 
 import { spawnSync } from "child_process";
@@ -65,15 +57,11 @@ const envOverrides = {};
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--issue-id" && args[i + 1]) {
     envOverrides.DEPLOY_ISSUE_ID = args[++i];
-  } else if (args[i] === "--auto-cleanup") {
-    envOverrides.DEPLOY_AUTO_CLEANUP = "y";
-  } else if (args[i] === "--skip-devserver") {
-    envOverrides.DEPLOY_SKIP_DEVSERVER = "true";
   }
 }
 
 // Merge into current env so child processes inherit these
-const childEnv = { ...process.env, ...envOverrides };
+const childEnv = { ...process.env, ...envOverrides, TARGET_BRANCH: "main" };
 
 // Ensure state dir exists
 if (!existsSync(STATE_DIR)) {
@@ -84,24 +72,20 @@ if (!existsSync(STATE_DIR)) {
 writeFileSync(STATE_FILE, JSON.stringify({}, null, 2));
 
 const steps = [
-  "update-dev-branch-prereqs.mjs",
+  "update-prd-branch-prereqs.mjs",
   "update-branch-issue-check.mjs",
-  "update-dev-branch-analyze.mjs",
-  "update-dev-branch-understand.mjs",
+  "update-prd-branch-analyze.mjs",
+  "update-prd-branch-understand.mjs",
   "update-branch-issue-create.mjs",
-  "update-dev-branch-branch-mgmt.mjs",
-  "update-branch-quality.mjs",
+  "update-prd-branch-merge.mjs", // Includes checkout main, pull, merge
   "update-branch-build.mjs",
-  "update-dev-branch-devserver.mjs",
-  "update-dev-branch-commit.mjs",
-  "update-dev-branch-push.mjs",
-  "update-dev-branch-merge.mjs",
-  "update-dev-branch-deploy-check.mjs",
-  "update-branch-cleanup.mjs",
+  "update-branch-quality.mjs",
+  "update-prd-branch-push.mjs",
+  "update-prd-branch-deploy-check.mjs",
   "update-branch-issue-close.mjs",
 ];
 
-console.log("🚀 Starting update-dev-branch workflow...");
+console.log("🚀 Starting update-prd-branch workflow...");
 if (Object.keys(envOverrides).length > 0) {
   console.log(
     `   CLI args: ${Object.entries(envOverrides)
@@ -130,15 +114,23 @@ for (const step of steps) {
     // Print status hint
     console.log("\n🔍 Current Status:");
     spawnSync("git", ["status"], { stdio: "inherit", shell: true });
-    spawnSync("git", ["log", "--oneline", "-5"], {
-      stdio: "inherit",
-      shell: true,
-    });
+
+    // Attempt rollback/cleanup hint
+    console.log(
+      "\n⚠️  If changes were merged to main, you may need to reset main manually or switch back to dev."
+    );
+    console.log("   git checkout dev");
 
     cleanup();
     process.exit(1);
   }
 }
 
+// Final cleanup and summary
 cleanup();
-console.log("\n✅ Workflow completed successfully!");
+
+console.log("\n---------------------------------------------------------");
+console.log("✅ Production Deployment erfolgreich!");
+console.log("---------------------------------------------------------");
+spawnSync("git", ["checkout", "dev"], { stdio: "inherit", shell: true });
+console.log("\nℹ️  Du bist wieder auf dev für weitere Entwicklung.");

@@ -41,8 +41,9 @@ function deleteBranch(branchName) {
     encoding: "utf-8",
   }).trim();
   if (current === branchName) {
-    console.log("   Switching to dev before deletion...");
-    execSync("git checkout dev", { stdio: "ignore" });
+    const targetBranch = process.env.TARGET_BRANCH || "dev";
+    console.log(`   Switching to ${targetBranch} before deletion...`);
+    execSync(`git checkout ${targetBranch}`, { stdio: "ignore" });
   }
 
   // Delete remote branch first
@@ -65,7 +66,9 @@ async function main() {
   const state = readState();
   const { branchName } = state;
 
-  if (!branchName || branchName === "dev" || branchName === "main") {
+  // Check if we are on a protected branch
+  const targetBranch = process.env.TARGET_BRANCH || "dev";
+  if (!branchName || branchName === targetBranch || branchName === "main") {
     console.log("ℹ️  No feature branch to clean up.");
     return;
   }

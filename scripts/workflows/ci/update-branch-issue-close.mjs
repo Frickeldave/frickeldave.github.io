@@ -32,7 +32,7 @@ function main() {
   try {
     console.log(`   Closing issue #${issueId}...`);
     execSync(
-      `gh issue close ${issueId} --comment "Completed via update-dev-branch workflow"`,
+      `gh issue close ${issueId} --comment "Completed via deployment workflow"`,
       { stdio: "inherit" }
     );
     console.log("✅ Issue closed.");
