@@ -36,20 +36,12 @@ episodes:
     guests: Dave König und Mirko Seifert
     date: 17. Februar 2026
     description: >-
-      Künstliche Intelligenz verspricht enorme Produktivitätsschübe in der Softwareentwicklung – doch viele Probleme entstehen lange vor dem ersten Code. Unternehmer und Softwarearchitekt Mirko Seifert spricht mit Dave König darüber, warum unklare Anforderungen oft die eigentlichen Projektkiller sind und wie KI durch gezielte Rückfragen bessere Anforderungen ermöglicht. Die Diskussion reicht von Product-Owner-Aufgaben über Architektur-Trends bis zur Frage, wie Realität und KI-generierte Fiktion noch zu unterscheiden sind.
-    links:
-      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
-      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
-      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
-    audioUrl: >-
-      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3
-  - id: doag-voices-13381
-    title: KI im Requirements Engineering: Warum gute Fragen wichtiger sind als perfekte Modelle
-    edition: FutureAI
-    guests: Dave König und Mirko Seifert
-    date: 17. Februar 2026
-    description: >-
-      Mirko Seifert, Unternehmer und Softwarearchitekt, spricht über die wahren Projektkiller in der Softwareentwicklung: unklare Anforderungen, überladene Backlogs und falsche Prioritäten. Im Gespräch mit Dave König erklärt er, wie sein KI-gestütztes Tool im Interview-Modus bessere Anforderungen durch gezielte Rückfragen ermöglicht. Gemeinsam diskutieren sie, ob KI Product Owner ersetzen kann, warum Architekturentscheidungen künftig auch KI-Nutzbarkeit berücksichtigen müssen und spielen eine Runde Tech-or-Myth mit KI-generierten Geschichten.
+      Künstliche Intelligenz verspricht enorme Produktivitätsschübe in der Softwareentwicklung –
+      doch viele Probleme entstehen lange vor dem ersten Code. Unternehmer und Softwarearchitekt
+      Mirko Seifert spricht mit Dave König darüber, warum unklare Anforderungen oft die eigentlichen
+      Projektkiller sind und wie KI durch gezielte Rückfragen bessere Anforderungen ermöglicht. Die
+      Diskussion reicht von Product-Owner-Aufgaben über Architektur-Trends bis zur Frage, wie
+      Realität und KI-generierte Fiktion noch zu unterscheiden sind.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
       apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
