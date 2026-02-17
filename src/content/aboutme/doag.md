@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-37265
+    title: Warum KI fragt statt ersetzt – mit Mirko Seifert
+    edition: FutureAI
+    guests: Dave König und Mirko Seifert
+    date: 17. Februar 2026
+    description: >-
+      Künstliche Intelligenz verspricht enorme Produktivitätsschübe in der Softwareentwicklung – doch viele Probleme entstehen lange vor dem ersten Code. Unternehmer und Softwarearchitekt Mirko Seifert spricht mit Dave König darüber, warum unklare Anforderungen oft die eigentlichen Projektkiller sind und wie KI durch gezielte Rückfragen bessere Anforderungen ermöglicht. Die Diskussion reicht von Product-Owner-Aufgaben über Architektur-Trends bis zur Frage, wie Realität und KI-generierte Fiktion noch zu unterscheiden sind.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3
   - id: "doag-voices-21235"
     title: "Low-Code trifft KI: Wie sich Softwareentwicklung neu erfindet"
     edition: "DevLand"
