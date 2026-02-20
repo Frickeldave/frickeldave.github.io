@@ -44,19 +44,10 @@ function main() {
     let targetBranch = currentBranch;
 
     if (currentBranch === "dev" || currentBranch === "main") {
-      const { branchName } = state.analysis || {};
-
-      if (!branchName) {
-        throw new Error(
-          "No branch name generated from analysis. Cannot create new branch."
-        );
-      }
-
-      console.log(`✨ Creating new branch: ${branchName}`);
-
-      // Create new branch from current HEAD — working tree changes stay intact
-      run(`git checkout -b ${branchName}`);
-      targetBranch = branchName;
+      console.log(
+        `✨ Working directly on ${currentBranch} without creating a feature branch.`
+      );
+      targetBranch = currentBranch;
     } else {
       // Already on a feature branch
       console.log(`🛠️  Working on existing branch: ${currentBranch}`);
