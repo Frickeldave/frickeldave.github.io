@@ -66,11 +66,10 @@ changes, which is then used to generate a meaningful commit message and issue de
 
 Determines the target branch for the deployment:
 
-- **On `dev` or `main`**: Creates a NEW temporary feature branch (e.g., `ci/auto-deploy-...`) to
-  perform the deployment steps. This keeps the working directory clean and avoids direct commits to
-  `dev`.
-- **On any other branch**: Stays on the current branch, assuming you are already working on a
-  dedicated feature branch.
+- **On `dev` or `main`**: Stays directly on the branch. No temporary feature branches are created.
+  Changes will be committed and pushed directly.
+- **On any other branch**: Stays on the current feature branch. The workflow will commit your
+  changes here and later merge them into `dev`.
 
 - Responsible script:
   [branch-mgmt.mjs](../../scripts/workflows/ci/update-dev-branch-branch-mgmt.mjs)
@@ -88,23 +87,23 @@ Runs automated checks:
 
 ### 6. Commit & Push
 
-Commits the changes to the temporary branch using the AI-generated message and pushes it to the
-remote repository (`origin`).
+Commits the changes using the AI-generated message and pushes to the remote repository (`origin`).
 
 - Responsible scripts: [commit.mjs](../../scripts/workflows/ci/update-dev-branch-commit.mjs),
   [push.mjs](../../scripts/workflows/ci/update-dev-branch-push.mjs)
 
 ### 7. Merge & Deployment
 
-Uses the GitHub CLI to merge the temporary branch into the `dev` branch. This triggers the GitHub
-Actions CI/CD pipeline for the actual deployment.
+If you executed the script from a feature branch, it merges it into the `dev` branch. If you were
+already on `dev`, it skips this step. The push to `dev` triggers the GitHub actions.
 
 - Responsible scripts: [merge.mjs](../../scripts/workflows/ci/update-dev-branch-merge.mjs),
   [deploy-check.mjs](../../scripts/workflows/ci/update-dev-branch-deploy-check.mjs)
 
 ### 8. Cleanup
 
-Removes temporary files, states, and the temporary local/remote branches after a successful merge.
+Removes temporary files, states, and optionally asks to delete the local/remote feature branch if
+you merged from one.
 
 - Responsible script: [cleanup.mjs](../../scripts/workflows/ci/update-dev-branch-cleanup.mjs)
 
