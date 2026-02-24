@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-71409
+    title: Souveräne KI aus Deutschland: Wie DeutschlandGPT Datenschutz, Innovation und Alltag verbindet
+    edition: FutureAI
+    guests: Dave König und Leonhard Benkert
+    date: 24. Februar 2026
+    description: >-
+      Künstliche Intelligenz ist im Alltag angekommen – doch zwischen Innovation und europäischem Datenschutz bestehen weiterhin Spannungsfelder. In dieser Folge spricht Dave König mit Leonhard Benkert, CEO von DeutschlandGPT, über den Aufbau einer leistungsfähigen und datenschutzkonformen KI-Plattform aus Deutschland. Die Episode zeigt: Entscheidend für den Erfolg von KI sind weniger Modelle als Vertrauen, Integration in bestehende Prozesse und echte Nutzbarkeit.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699d4c7be3f0d89ce202cb80/media.mp3
   - id: doag-voices-61082
     title: Warum KI fragt statt ersetzt – mit Mirko Seifert
     edition: FutureAI
