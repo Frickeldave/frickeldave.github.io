@@ -92,6 +92,20 @@ jobs:
             git push origin dev
           fi
 
+      - name: Trigger dev deployment
+        if: steps.update_dev.outcome == 'success' && steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-dev.yml',
+              ref: 'dev'
+            });
+            console.log('✅ Dev deployment workflow triggered');
+
       - name: Update main branch
         if: steps.check_episodes.outputs.missing_episode != '' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
         id: update_main
@@ -111,6 +125,20 @@ jobs:
             git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
             git push origin main
           fi
+
+      - name: Trigger production deployment
+        if: steps.update_main.outcome == 'success' && steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-prd.yml',
+              ref: 'main'
+            });
+            console.log('✅ Production deployment workflow triggered');
 
       - name: Success summary
         if: steps.check_episodes.outputs.missing_episode != ''
