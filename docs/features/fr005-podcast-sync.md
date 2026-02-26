@@ -1,7 +1,7 @@
 # FR005: Automatisierter Podcast-Update-Workflow
 
 **Status:** Aktiv  
-**Zuletzt aktualisiert:** 2026-02-11  
+**Zuletzt aktualisiert:** 2026-02-26  
 **Verantwortung:** frickeldave  
 
 ## Übersicht
@@ -38,18 +38,27 @@ Acast RSS-Feed
     ├─→ Zeile-für-Zeile-Struktur beibehalten
     └─→ Datei zurück schreiben
             ↓
-    Git-Operationen
-    ├─→ Feature-Branch erstellen
+    Git-Operationen (Branch-Updates)
+    ├─→ Checkout dev Branch
     ├─→ Mit --no-verify committen (Linter überspringen)
-    ├─→ Zu Origin pushen
-    └─→ PR zu dev erstellen
+    ├─→ Push zu origin/dev
+    │       ↓
+    │   Deployment-Trigger (via workflow_dispatch API)
+    │   └─→ deploy-dev.yml auf 'dev' triggern
+    │
+    ├─→ Checkout main Branch (bei target='all' oder schedule)
+    ├─→ Mit --no-verify committen
+    └─→ Push zu origin/main
             ↓
-    Auto-Merge (gh pr merge --auto)
-    ├─→ Auf CI-Checks warten
-    ├─→ Zu dev mergen (Squash)
-    ├─→ PR dev → main erstellen
-    └─→ Zu main mergen (Squash)
+    Deployment-Trigger (via workflow_dispatch API)
+    └─→ deploy-prd.yml auf 'main' triggern
+            ↓
+    Erfolgsmeldung
+    ├─→ Episode-Details anzeigen
+    └─→ Branch-Status bestätigen
 ```
+
+> **Hinweis:** Das Diagramm zeigt den aktuellen direkten Push-Workflow. Die Dokumentation in den Workflow-Schritten beschreibt teilweise noch den älteren PR-basierten Ansatz.
 
 ### Content-Struktur
 
@@ -131,7 +140,87 @@ episodes:
 - **Auto-Merge zu main** - Gleiche Merge-Strategie wie dev
 - **PR-Merge verifizieren** - Bestätige erfolgreiches Merge
 
-### 7. Erfolgsmeldung
+> **Hinweis:** Die aktuelle Implementierung verwendet direktes Pushing statt PRs. Schritte 4-6 beschreiben den ursprünglichen PR-basierten Workflow und sind teilweise veraltet.
+
+### 7. Automated Deployments
+
+**WARUM manuelle Deployment-Trigger notwendig sind:**
+
+GitHub Actions hat ein bewusst eingebautes Sicherheits-Feature: Workflows, die mit dem Standard-`GITHUB_TOKEN` einen Push durchführen, triggern **keine weiteren Workflows**. Das bedeutet, dass Push-Events vom Workflow nicht an andere Workflows weitergeleitet werden. Diese Limitierung verhindert:
+
+- **Endlose Workflow-Ketten**: Ein Workflow triggert einen anderen, der wieder einen triggert, usw.
+- **Rekursive Trigger-Loops**: Workflows, die sich gegenseitig aufrufen und nie terminieren
+- **Unbeabsichtigte Cascading-Effekte**: Automatisierte Änderungen lösen ungewollte weitere Automationen aus
+
+**Alternative Ansätze:**
+- **Personal Access Token (PAT)**: Ein PAT würde die Limitation umgehen und automatische Trigger ermöglichen
+  - ❌ **Nachteil**: Zusätzliches Secret-Management erforderlich
+  - ❌ **Sicherheitsrisiko**: PAT hat breitere Permissions als nötig
+  - ❌ **Wartungsaufwand**: Token müssen regelmäßig rotiert werden
+
+**WIE die expliziten Deployment-Trigger funktionieren:**
+
+Statt auf automatische Push-Trigger zu warten, verwendet der Workflow explizite `workflow_dispatch` API-Calls:
+
+1. **Dev-Deployment-Trigger** (nach erfolgreichem dev-Update):
+   ```yaml
+   - name: Trigger dev deployment
+     if: steps.update_dev.outcome == 'success' && 
+         steps.check_episodes.outputs.missing_episode != '' && 
+         github.event.inputs.dryRun != 'true'
+     continue-on-error: true
+     uses: actions/github-script@v7
+     with:
+       script: |
+         await github.rest.actions.createWorkflowDispatch({
+           owner: context.repo.owner,
+           repo: context.repo.repo,
+           workflow_id: 'deploy-dev.yml',
+           ref: 'dev'
+         });
+   ```
+
+2. **Main-Deployment-Trigger** (nach erfolgreichem main-Update):
+   ```yaml
+   - name: Trigger production deployment
+     if: steps.update_main.outcome == 'success' && 
+         steps.check_episodes.outputs.missing_episode != '' && 
+         github.event.inputs.dryRun != 'true'
+     continue-on-error: true
+     uses: actions/github-script@v7
+     with:
+       script: |
+         await github.rest.actions.createWorkflowDispatch({
+           owner: context.repo.owner,
+           repo: context.repo.repo,
+           workflow_id: 'deploy-prd.yml',
+           ref: 'main'
+         });
+   ```
+
+**Trigger-Conditions:**
+
+Die Deployment-Workflows werden nur getriggert wenn **alle** folgenden Bedingungen erfüllt sind:
+
+- ✅ `steps.update_*.outcome == 'success'` - Branch-Update war erfolgreich
+- ✅ `steps.check_episodes.outputs.missing_episode != ''` - Eine fehlende Episode wurde gefunden
+- ✅ `github.event.inputs.dryRun != 'true'` - Workflow läuft nicht im Dry-Run-Modus
+
+**Error-Handling:**
+
+Beide Deploy-Trigger verwenden `continue-on-error: true`. Das stellt sicher, dass:
+- Deploy-Fehler den Podcast-Update-Workflow nicht komplett blockieren
+- Episode-Updates als kritischer eingestuft werden (können nicht manuell nachgeholt werden)
+- Deployments bei Bedarf manuell nachgetriggert werden können
+
+**Vorteile dieser Architektur:**
+- ✅ Keine zusätzlichen Secrets erforderlich
+- ✅ Klare Trennung zwischen Content-Update und Deployment
+- ✅ Robustes Fehlerhandling (Deploy-Fehler blockieren nicht Episode-Updates)
+- ✅ Testbar über Dry-Run-Modus
+- ✅ Einfache Wartung und Debugging
+
+### 8. Erfolgsmeldung
 - Zeige Episode-Titel, Issue-Link und PR-Links
 - Bestätigungsmeldung
 

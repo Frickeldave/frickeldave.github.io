@@ -1,0 +1,123 @@
+
+Analyze the following git changes and determine the intent.
+
+GIT STATUS:
+ M .copilot-prompt-analyze.txt
+ M README.md
+ M docs/10-install.md
+ D docs/11-commit-messages.md
+ D docs/12-branch-naming-strategy.md
+ D docs/13-categories-and-tags.md
+ D docs/14-structure.md
+ M scripts/workflows/ci/.state/workflow-state.json
+ M scripts/workflows/ci/update-dev-branch.mjs
+?? docs/11-usage.md
+?? docs/12-commit-messages.md
+?? docs/13-branch-naming-strategy.md
+?? docs/14-categories-and-tags.md
+?? docs/15-structure.md
+?? docs/features/fr006-autodeploy.md
+
+
+GIT DIFF (truncated):
+diff --git a/.copilot-prompt-analyze.txt b/.copilot-prompt-analyze.txt
+index 41d1f21..8961ecd 100644
+--- a/.copilot-prompt-analyze.txt
++++ b/.copilot-prompt-analyze.txt
+@@ -2,77 +2,108 @@
+ Analyze the following git changes and determine the intent.
+ 
+ GIT STATUS:
+- D .copilot-prompt-analyze.txt
++ M .copilot-prompt-analyze.txt
++ M README.md
++ M docs/10-install.md
++ D docs/11-commit-messages.md
++ D docs/12-branch-naming-strategy.md
++ D docs/13-categories-and-tags.md
++ D docs/14-structure.md
+  M scripts/workflows/ci/.state/workflow-state.json
++ M scripts/workflows/ci/update-dev-branch.mjs
++?? docs/11-usage.md
++?? docs/12-commit-messages.md
++?? docs/13-branch-naming-strategy.md
++?? docs/14-categories-and-tags.md
++?? docs/15-structure.md
++?? docs/features/fr006-autodeploy.md
+ 
+ 
+ GIT DIFF (truncated):
+ diff --git a/.copilot-prompt-analyze.txt b/.copilot-prompt-analyze.txt
+-deleted file mode 100644
+-index d084e8e..0000000
++index 41d1f21..03ece98 100644
+ --- a/.copilot-prompt-analyze.txt
+-+++ /dev/null
+-@@ -1,42 +0,0 @@
+--
+--Analyze the following git changes and determine the intent.
+--
+--GIT STATUS:
+-- M package.json
+--?? .agent/rules/update-dev-branch.md
+--?? scripts/workflows/ci/
+--
+--
+--GIT DIFF (truncated):
+--diff --git a/package.json b/package.json
+--index aa52e8d..c2b72b5 100755
+----- a/package.json
+--+++ b/package.json
+--@@ -20,7 +20,8 @@
+--     "lint": "eslint ./src --fix",
+--     "lint:check": "eslint ./src",
+--     "install-vale": "node -e \"const cmd = process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File .vale/install-vale.ps1' : 'bash .vale/install-vale.sh'; require('child_process').exec(cmd, (err, stdout, stderr) => { if (err) { console.error(stderr); process.exit(1); } console.log(stdout); })\"",
+---    "prose": "node -e \"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\""
+--+    "prose": "node -e \"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\"",
+--+    "deploy:dev": "node scripts/workflows/ci/update-dev-branch.mjs"
+--   },
+--   "dependencies": {
+--     "@astrojs/mdx": "^4.3.4",
+--
+--
+--TASK:
+--1. Identify the TYPE of change (feat, fix, docs, style, refactor, perf, test, ci, chore).
+--2. Create a specific, kebab-case branch name (max 50 chars) following the pattern: <type>/<issue-id-if-present>-<description>.
+--   - If issue ID is present (undefined), include it (e.g., feat/123-add-login).
+--   - If no issue ID, just use description (e.g., feat/add-login).
+--3. Create a conventional commit message.
+--4. Create a title and body for a GitHub Issue (if we needed to create one).
+--
+--OUTPUT JSON format ONLY:
+--{
+--  "type": "feat",
+--  "branchName": "feat/...",
+--  "commitMessage": "feat(...): ...",
+--  "issueTitle": "...",
+--  "issueBody": "..."
+--}
+-diff --git a/scripts/workflows/ci/.state/workflow-state.json b/scripts/workflows/ci/.state/workflow-state.json
+-index 4d4405c..2b61834 100644
+---- a/scripts/workflows/ci/.state/workflow-state.json
+-+++ b/scripts/workflows/ci/.state/workflow-state.json
+-@@ -1,15 +1,5 @@
+- {
+--  "gitStatus": " M package.json\n?? .agent/rules/update-dev-branch.md\n?? scripts/workflows/ci/\n",
+--  "gitDiff": "diff --git a/package.json b/package.json\nindex aa52e8d..c2b72b5 100755\n--- a/package.json\n+++ b/package.json\n@@ -20,7 +20,8 @@\n     \"lint\": \"eslint ./src --fix\",\n     \"lint:check\": \"eslint ./src\",\n     \"install-vale\": \"node -e \\\"const cmd = process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File .vale/install-vale.ps1' : 'bash .vale/install-vale.sh'; require('child_process').exec(cmd, (err, stdout, stderr) => { if (err) { console.error(stderr); process.exit(1); } console.log(stdout); })\\\"\",\n-    \"prose\": \"node -e \\\"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\\\"\"\n+    \"prose\": \"node -e \\\"const { spawn } = require('child_process'); const path = require('path'); const cmd = process.platform === 'win32' ? path.join('.vale', 'vale.exe') : path.join('.vale', 'vale'); const proc = spawn(cmd, ['--config=.vale.ini', 'src/content'], { stdio: 'inherit' }); proc.on('close', (code) => process.exit(code));\\\"\",\n+    \"deploy:dev\": \"node scripts/workflows/ci/update-dev-branch.mjs\"\n   },\n   \"dependencies\": {\n     \"@ast
+
+TASK:
+1. Identify the TYPE of change (feat, fix, docs, style, refactor, perf, test, ci, chore).
+2. Create a specific, kebab-case branch name (max 50 chars) following the pattern: <type>/<issue-id-if-present>-<description>.
+   - If issue ID is present (214), include it (e.g., feat/123-add-login).
+   - If no issue ID, just use description (e.g., feat/add-login).
+3. Create a conventional commit message.
+4. Create a title and body for a GitHub Issue (if we needed to create one).
+
+OUTPUT JSON format ONLY:
+{
+  "type": "feat",
+  "branchName": "feat/...",
+  "commitMessage": "feat(...): ...",
+  "issueTitle": "...",
+  "issueBody": "..."
+}
