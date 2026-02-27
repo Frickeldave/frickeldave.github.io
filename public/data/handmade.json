@@ -48,16 +48,19 @@
       "category": "LA"
     },
     {
-      "name": "Vasen aus Steingut (Reysin)",
-      "description": "Test",
-      "tags": [],
+      "name": "TEST123",
+      "description": "TEST123",
+      "tags": [
+        "Geschenk",
+        "Weihnachten"
+      ],
       "price": 10,
-      "size": "5x5x10cm",
+      "size": "3x3x3",
       "visible": false,
       "customizable": true,
-      "salesCabinet": true,
-      "articleNumber": "SBYPG4",
-      "category": "SB"
+      "salesCabinet": false,
+      "articleNumber": "WO3PHO",
+      "category": "WO"
     }
   ]
 }
