@@ -13,6 +13,7 @@
       "size": "15cm x 10cm",
       "visible": true,
       "customizable": true,
+      "salesCabinet": false,
       "articleNumber": "3DND8D",
       "category": "3D"
     },
@@ -26,6 +27,7 @@
       "size": "15cm x 10cm",
       "visible": true,
       "customizable": true,
+      "salesCabinet": false,
       "articleNumber": "LAH3K3",
       "category": "LA"
     },
@@ -41,8 +43,21 @@
       "size": "10cm x 10cm",
       "visible": true,
       "customizable": true,
+      "salesCabinet": false,
       "articleNumber": "LAKBCD",
       "category": "LA"
+    },
+    {
+      "name": "Vasen aus Steingut (Reysin)",
+      "description": "Test",
+      "tags": [],
+      "price": 10,
+      "size": "5x5x10cm",
+      "visible": false,
+      "customizable": true,
+      "salesCabinet": true,
+      "articleNumber": "SBYPG4",
+      "category": "SB"
     }
   ]
 }
