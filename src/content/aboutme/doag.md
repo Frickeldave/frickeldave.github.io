@@ -36,7 +36,11 @@ episodes:
     guests: Dave König und Leonhard Benkert
     date: 24. Februar 2026
     description: >-
-      Leonhard Benkert, CEO von DeutschlandGPT, spricht über den Aufbau einer datenschutzkonformen KI-Plattform aus Deutschland. Die Episode zeigt, wie Unternehmen KI nutzen können, ohne die Kontrolle über ihre Daten zu verlieren, und warum Nutzerakzeptanz wichtiger ist als reine Modellleistung. Ein praxisnaher Einblick in die Herausforderungen und Lösungen für souveräne KI in Europa.
+      Leonhard Benkert, CEO von DeutschlandGPT, spricht über den Aufbau einer datenschutzkonformen
+      KI-Plattform aus Deutschland. Die Episode zeigt, wie Unternehmen KI nutzen können, ohne die
+      Kontrolle über ihre Daten zu verlieren, und warum Nutzerakzeptanz wichtiger ist als reine
+      Modellleistung. Ein praxisnaher Einblick in die Herausforderungen und Lösungen für souveräne
+      KI in Europa.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
       apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
