@@ -13,6 +13,7 @@
       "size": "15cm x 10cm",
       "visible": true,
       "customizable": true,
+      "salesCabinet": false,
       "articleNumber": "3DND8D",
       "category": "3D"
     },
@@ -26,6 +27,7 @@
       "size": "15cm x 10cm",
       "visible": true,
       "customizable": true,
+      "salesCabinet": false,
       "articleNumber": "LAH3K3",
       "category": "LA"
     },
@@ -41,8 +43,24 @@
       "size": "10cm x 10cm",
       "visible": true,
       "customizable": true,
+      "salesCabinet": false,
       "articleNumber": "LAKBCD",
       "category": "LA"
+    },
+    {
+      "name": "TEST123",
+      "description": "TEST123",
+      "tags": [
+        "Geschenk",
+        "Weihnachten"
+      ],
+      "price": 10,
+      "size": "3x3x3",
+      "visible": false,
+      "customizable": true,
+      "salesCabinet": false,
+      "articleNumber": "WO3PHO",
+      "category": "WO"
     }
   ]
 }

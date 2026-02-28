@@ -67,3 +67,7 @@ public/version.json
 .vale/styles/write-good
 .vale/vale
 .vale/vale.exe
+
+# CI workflow temp files (generated at runtime, must not be committed)
+scripts/workflows/ci/.state/
+.copilot-prompt-analyze.txt
