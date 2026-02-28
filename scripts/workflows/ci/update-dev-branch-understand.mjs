@@ -81,10 +81,11 @@ function runCopilot() {
 
   const result = spawnSync(
     "copilot",
-    ["-p", promptText, "--model", "claude-haiku-4.5"],
+    ["-p", promptText, "--model", "claude-haiku-4.5", "--no-ask-user"], // --no-ask-user for non-interactive
     {
       encoding: "utf-8",
       shell: false,
+      input: "", // Provide empty stdin to avoid waiting for interactive input
     }
   );
 
