@@ -85,15 +85,15 @@ function runCopilot() {
     {
       encoding: "utf-8",
       shell: false,
-      input: "", // Provide empty stdin to avoid waiting for interactive input
     }
   );
 
   if (result.error || result.status !== 0) {
-    console.error(
-      "❌ Error executing copilot:",
-      result.stderr || result.stdout
-    );
+    console.error("❌ Error executing copilot:");
+    console.error("   Status:", result.status);
+    console.error("   Error:", result.error ? result.error.message : "(none)");
+    console.error("   Stderr:", result.stderr ? result.stderr.substring(0, 500) : "(none)");
+    console.error("   Stdout:", result.stdout ? result.stdout.substring(0, 500) : "(none)");
     process.exit(1);
   }
 
@@ -109,6 +109,7 @@ function runCopilot() {
       updateState({ analysis: jsonData });
     } else {
       console.error("❌ Could not parse JSON from Copilot output.");
+      console.error("   Raw output (first 500 chars):", output ? output.substring(0, 500) : "(empty)");
       console.log("Output:", output);
       process.exit(1);
     }
