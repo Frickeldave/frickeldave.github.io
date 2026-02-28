@@ -91,6 +91,20 @@
       "salesCabinet": true,
       "articleNumber": "LA6TEK",
       "category": "LA"
+    },
+    {
+      "name": "TEST987",
+      "description": "TEST)87",
+      "tags": [
+        "Personalisierbar"
+      ],
+      "price": 2,
+      "size": "2x2x2",
+      "visible": true,
+      "customizable": false,
+      "salesCabinet": true,
+      "articleNumber": "LA9RV6",
+      "category": "LA"
     }
   ]
 }
