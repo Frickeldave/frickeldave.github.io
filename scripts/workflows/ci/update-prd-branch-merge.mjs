@@ -28,9 +28,10 @@ function main() {
 
     console.log("   Merging dev...");
     // --no-ff for explicit merge commit
+    // --no-verify to skip hooks (changes already validated on dev)
     // -m "chore: deploy dev to production"
     try {
-      run('git merge dev --no-ff -m "chore: deploy dev to production"');
+      run('git merge dev --no-ff --no-verify -m "chore: deploy dev to production"');
     } catch (mergeError) {
       console.error(`❌ Merge failed: ${mergeError.message}`);
       console.error("   This implies main has direct commits not in dev.");
