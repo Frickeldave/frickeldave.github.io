@@ -61,6 +61,21 @@
       "salesCabinet": false,
       "articleNumber": "WO3PHO",
       "category": "WO"
+    },
+    {
+      "name": "TEST321",
+      "description": "TEST321",
+      "tags": [
+        "Geschenk",
+        "Geburtstag"
+      ],
+      "price": 100,
+      "size": "10x10x10",
+      "visible": true,
+      "customizable": true,
+      "salesCabinet": true,
+      "articleNumber": "3D6VSR",
+      "category": "3D"
     }
   ]
 }
