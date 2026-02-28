@@ -30,7 +30,7 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
-  - id: doag-voices-47646
+  - id: doag-voices-92686
     title: Souveräne KI aus Deutschland – Wie DeutschlandGPT Datenschutz und Innovation verbindet
     edition: FutureAI
     guests: Dave König und Leonhard Benkert
