@@ -76,6 +76,21 @@
       "salesCabinet": true,
       "articleNumber": "3D6VSR",
       "category": "3D"
+    },
+    {
+      "name": "TEST567",
+      "description": "TEST567",
+      "tags": [
+        "Hochzeit",
+        "Personalisierbar"
+      ],
+      "price": 10,
+      "size": "5x5x2",
+      "visible": true,
+      "customizable": true,
+      "salesCabinet": true,
+      "articleNumber": "LA6TEK",
+      "category": "LA"
     }
   ]
 }
