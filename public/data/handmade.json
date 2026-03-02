@@ -61,6 +61,50 @@
       "salesCabinet": false,
       "articleNumber": "WO3PHO",
       "category": "WO"
+    },
+    {
+      "name": "TEST321",
+      "description": "TEST321",
+      "tags": [
+        "Geschenk",
+        "Geburtstag"
+      ],
+      "price": 100,
+      "size": "10x10x10",
+      "visible": true,
+      "customizable": true,
+      "salesCabinet": true,
+      "articleNumber": "3D6VSR",
+      "category": "3D"
+    },
+    {
+      "name": "TEST567",
+      "description": "TEST567",
+      "tags": [
+        "Hochzeit",
+        "Personalisierbar"
+      ],
+      "price": 10,
+      "size": "5x5x2",
+      "visible": true,
+      "customizable": true,
+      "salesCabinet": true,
+      "articleNumber": "LA6TEK",
+      "category": "LA"
+    },
+    {
+      "name": "TEST987",
+      "description": "TEST)87",
+      "tags": [
+        "Personalisierbar"
+      ],
+      "price": 2,
+      "size": "2x2x2",
+      "visible": true,
+      "customizable": false,
+      "salesCabinet": true,
+      "articleNumber": "LA9RV6",
+      "category": "LA"
     }
   ]
 }

@@ -1,127 +1,259 @@
-# FR006: Automated Dev Deployment
+# FR006: Automatisierte Deployment-Workflows
 
-This document describes the automated deployment workflow for the `dev` branch, triggered by
-`npm run deploy:dev`.
+Dieses Dokument beschreibt beide automatisierten Deployment-Workflows: `npm run deploy:dev` zum
+Deployen lokaler Änderungen in den `dev`-Branch, und `npm run deploy:prd` zum Promoten von `dev`
+in die Produktion auf `main`.
 
-- [FR006: Automated Dev Deployment](#fr006-automated-dev-deployment)
-  - [Overview](#overview)
-  - [Prerequisites](#prerequisites)
-  - [Workflow Steps](#workflow-steps)
-    - [1. Prerequisites Check](#1-prerequisites-check)
-    - [2. Issue Management](#2-issue-management)
-    - [3. Analysis \& AI Intent Understanding](#3-analysis--ai-intent-understanding)
-    - [4. Branch Management](#4-branch-management)
-    - [5. Quality Gates \& Build](#5-quality-gates--build)
-    - [6. Commit \& Push](#6-commit--push)
-    - [7. Merge \& Deployment](#7-merge--deployment)
-    - [8. Cleanup](#8-cleanup)
-  - [CLI Parameters](#cli-parameters)
+- [FR006: Automatisierte Deployment-Workflows](#fr006-automatisierte-deployment-workflows)
+  - [Übersicht](#übersicht)
+  - [Workflow-Diagramm](#workflow-diagramm)
+  - [Voraussetzungen](#voraussetzungen)
+  - [deploy:dev — Workflow-Schritte](#deploydev--workflow-schritte)
+    - [1. Voraussetzungen prüfen](#1-voraussetzungen-prüfen)
+    - [2. Analyse \& KI-Auswertung](#2-analyse--ki-auswertung)
+    - [3. Branch-Verwaltung](#3-branch-verwaltung)
+    - [4. Quality Gates \& Build](#4-quality-gates--build)
+    - [5. Commit \& Push](#5-commit--push)
+    - [6. Merge \& Deployment-Check](#6-merge--deployment-check)
+    - [7. Aufräumen](#7-aufräumen)
+  - [deploy:prd — Workflow-Schritte](#deployprd--workflow-schritte)
+    - [1. Voraussetzungen prüfen](#1-voraussetzungen-prüfen-1)
+    - [2. Issue-Verwaltung](#2-issue-verwaltung)
+    - [3. Analyse \& KI-Auswertung](#3-analyse--ki-auswertung)
+    - [4. Merge dev → main](#4-merge-dev--main)
+    - [5. Build \& Quality Gates](#5-build--quality-gates)
+    - [6. Push \& Deployment-Check](#6-push--deployment-check)
+    - [7. Issue schließen](#7-issue-schließen)
+  - [CLI-Parameter](#cli-parameter)
 
-## Overview
+## Übersicht
 
-The `deploy:dev` command orchestrates a multi-step process to safely deploy local changes to the
-`dev` branch. It ensures code quality, manages GitHub issues, and automates the merging process to
-maintain a clean and reliable development environment.
+Je nach Deployment-Ziel stehen zwei Befehle zur Verfügung:
 
-The core logic resides in [update-dev-branch.mjs](../../scripts/workflows/ci/update-dev-branch.mjs).
+- **`npm run deploy:dev`** — Committet und pusht lokale Änderungen nach `dev`. Führt Quality Gates
+  durch, nutzt die GitHub Copilot CLI zur Generierung einer Commit-Message und verifiziert das
+  GitHub Actions Deployment. GitHub Issues werden dabei nicht erstellt oder verändert.
+- **`npm run deploy:prd`** — Mergt `dev` in `main`, um ein Produktions-Deployment auszulösen.
+  Verwaltet GitHub Issues (erstellen + schließen), um den Release zu dokumentieren.
 
-## Prerequisites
+Die Kernlogik liegt in
+[update-dev-branch.mjs](../../scripts/workflows/ci/update-dev-branch.mjs) und
+[update-prd-branch.mjs](../../scripts/workflows/ci/update-prd-branch.mjs).
 
-To run this workflow, the following tools must be installed and configured:
+## Workflow-Diagramm
+
+```mermaid
+flowchart TD
+  start(["npm run deploy:dev / deploy:prd"])
+  prereqs["Prereqs Check"]
+  analyze["Analyze Changes"]
+  ai["AI Understanding"]
+  split{"deploy:dev\noder deploy:prd?"}
+
+  d1["Branch Management"]
+  d2["Quality Gates"]
+  d3["Build"]
+  d4["Commit"]
+  d5["Push to dev"]
+  d6["Merge to dev"]
+  d7["Deployment Check"]
+  d8["Cleanup"]
+
+  p1["Issue Check"]
+  p2["Issue Create"]
+  p3["Merge dev → main"]
+  p4["Build"]
+  p5["Quality Gates"]
+  p6["Push main"]
+  p7["Deployment Check"]
+  p8["Issue Close"]
+  p9["Checkout dev"]
+
+  start --> prereqs --> analyze --> ai --> split
+
+  split -->|"deploy:dev"| d1
+  d1 --> d2 --> d3 --> d4 --> d5 --> d6 --> d7 --> d8
+
+  split -->|"deploy:prd"| p1
+  p1 --> p2 --> p3 --> p4 --> p5 --> p6 --> p7 --> p8 --> p9
+
+  classDef shared fill:#1e40af,color:#fff,stroke:#1e3a8a
+  class prereqs,analyze,ai shared
+```
+
+> **Legende:** Blau markierte Schritte (Prereqs Check, Analyze Changes, AI Understanding) laufen
+> in beiden Workflows über gleichwertigen Script-Code.
+
+## Voraussetzungen
+
+Beide Workflows erfordern die folgenden installierten und konfigurierten Werkzeuge:
 
 - **Node.js**: >= 20.x
-- **Git**: Properly configured with user credentials.
-- **GitHub CLI (gh)**: Authenticated with the repository.
-- **GitHub Copilot CLI**: Used for analyzing change intent.
+- **Git**: Korrekt konfiguriert mit Benutzer-Credentials.
+- **GitHub CLI (`gh`)**: Authentifiziert am Repository.
+- **GitHub Copilot CLI**: Wird zur Analyse der Änderungsabsicht und zur Nachrichtengenerierung
+  verwendet.
 
-## Workflow Steps
+---
 
-### 1. Prerequisites Check
+## deploy:dev — Workflow-Schritte
 
-Verifies that all required tools (`npm`, `git`, `gh`, `copilot`) are installed and the user is
-authenticated.
+### 1. Voraussetzungen prüfen
 
-- Responsible script:
+Überprüft, ob alle benötigten Tools (`npm`, `git`, `gh`, `copilot`) installiert sind und der
+Nutzer authentifiziert ist.
+
+- Zuständiges Script:
   [update-dev-branch-prereqs.mjs](../../scripts/workflows/ci/update-dev-branch-prereqs.mjs)
 
-### 2. Issue Management
+### 2. Analyse & KI-Auswertung
 
-Checks if a GitHub issue ID was provided or if one is already associated with the changes. If not,
-it can interactively prompt to skip or create a new issue later.
+Analysiert alle staged und unstaged Änderungen (`git diff HEAD`). Die GitHub Copilot CLI generiert
+daraus einen Branch-Namen und eine aussagekräftige Commit-Message.
 
-- Responsible scripts:
-  [issue-check.mjs](../../scripts/workflows/ci/update-dev-branch-issue-check.mjs),
-  [issue-create.mjs](../../scripts/workflows/ci/update-dev-branch-issue-create.mjs),
-  [issue-close.mjs](../../scripts/workflows/ci/update-dev-branch-issue-close.mjs)
+- Zuständige Scripts:
+  [update-dev-branch-analyze.mjs](../../scripts/workflows/ci/update-dev-branch-analyze.mjs),
+  [update-dev-branch-understand.mjs](../../scripts/workflows/ci/update-dev-branch-understand.mjs)
 
-### 3. Analysis & AI Intent Understanding
+### 3. Branch-Verwaltung
 
-Analyzes the staged changes. It uses the GitHub Copilot CLI to "understand" the intent of the
-changes, which is then used to generate a meaningful commit message and issue description if needed.
+Bestimmt den Ziel-Branch für das Deployment:
 
-- Responsible scripts: [analyze.mjs](../../scripts/workflows/ci/update-dev-branch-analyze.mjs),
-  [understand.mjs](../../scripts/workflows/ci/update-dev-branch-understand.mjs)
+- **Auf `dev` oder `main`**: Bleibt direkt auf dem Branch. Änderungen werden direkt committet und
+  gepusht.
+- **Auf einem anderen Branch**: Bleibt auf dem aktuellen Feature-Branch. Der Workflow committet
+  dort und mergt später in `dev`.
 
-### 4. Branch Management
+- Zuständiges Script:
+  [update-dev-branch-branch-mgmt.mjs](../../scripts/workflows/ci/update-dev-branch-branch-mgmt.mjs)
 
-Determines the target branch for the deployment:
+### 4. Quality Gates & Build
 
-- **On `dev` or `main`**: Stays directly on the branch. No temporary feature branches are created.
-  Changes will be committed and pushed directly.
-- **On any other branch**: Stays on the current feature branch. The workflow will commit your
-  changes here and later merge them into `dev`.
+Führt automatisierte Prüfungen durch, um die Codequalität vor dem Commit sicherzustellen:
 
-- Responsible script:
-  [branch-mgmt.mjs](../../scripts/workflows/ci/update-dev-branch-branch-mgmt.mjs)
+- **Prettier**: Prüft die korrekte Code-Formatierung.
+- **ESLint**: Prüft auf Code-Qualitätsprobleme.
+- **Vale**: Validiert Dokumentation und Schreibstil.
+- **Build**: Führt `npm run build` aus, um sicherzustellen, dass das Projekt korrekt kompiliert.
 
-### 5. Quality Gates & Build
+- Zuständige Scripts:
+  [update-branch-quality.mjs](../../scripts/workflows/ci/update-branch-quality.mjs),
+  [update-branch-build.mjs](../../scripts/workflows/ci/update-branch-build.mjs)
 
-Runs automated checks:
+### 5. Commit & Push
 
-- **Prettier**: Ensures correct code formatting.
-- **ESLint**: Checks for code quality issues.
-- **Vale**: Validates documentation and prose style.
-- **Build**: Executes `npm run build` to ensure the project compiles correctly.
-- Responsible scripts: [quality.mjs](../../scripts/workflows/ci/update-dev-branch-quality.mjs),
-  [build.mjs](../../scripts/workflows/ci/update-dev-branch-build.mjs)
+Committet die Änderungen mit der KI-generierten Message und pusht zum Remote-Repository (`origin`).
 
-### 6. Commit & Push
+- Zuständige Scripts:
+  [update-dev-branch-commit.mjs](../../scripts/workflows/ci/update-dev-branch-commit.mjs),
+  [update-dev-branch-push.mjs](../../scripts/workflows/ci/update-dev-branch-push.mjs)
 
-Commits the changes using the AI-generated message and pushes to the remote repository (`origin`).
+### 6. Merge & Deployment-Check
 
-- Responsible scripts: [commit.mjs](../../scripts/workflows/ci/update-dev-branch-commit.mjs),
-  [push.mjs](../../scripts/workflows/ci/update-dev-branch-push.mjs)
+Bei Ausführung von einem Feature-Branch wird in `dev` gemergt. Ist man bereits auf `dev`, wird
+dieser Schritt übersprungen. Der Push nach `dev` löst den GitHub Actions Workflow aus. Das Script
+pollt anschließend den Workflow-Run, um ein erfolgreiches Deployment zu bestätigen.
 
-### 7. Merge & Deployment
+- Zuständige Scripts:
+  [update-dev-branch-merge.mjs](../../scripts/workflows/ci/update-dev-branch-merge.mjs),
+  [update-dev-branch-deploy-check.mjs](../../scripts/workflows/ci/update-dev-branch-deploy-check.mjs)
 
-If you executed the script from a feature branch, it merges it into the `dev` branch. If you were
-already on `dev`, it skips this step. The push to `dev` triggers the GitHub actions.
+### 7. Aufräumen
 
-- Responsible scripts: [merge.mjs](../../scripts/workflows/ci/update-dev-branch-merge.mjs),
-  [deploy-check.mjs](../../scripts/workflows/ci/update-dev-branch-deploy-check.mjs)
+Entfernt temporäre State-Dateien. Bei einem Merge von einem Feature-Branch wird optional
+angeboten, den lokalen und Remote-Feature-Branch zu löschen.
 
-### 8. Cleanup
+- Zuständiges Script:
+  [update-branch-cleanup.mjs](../../scripts/workflows/ci/update-branch-cleanup.mjs)
 
-Removes temporary files, states, and optionally asks to delete the local/remote feature branch if
-you merged from one.
+---
 
-- Responsible script: [cleanup.mjs](../../scripts/workflows/ci/update-dev-branch-cleanup.mjs)
+## deploy:prd — Workflow-Schritte
 
-## CLI Parameters
+### 1. Voraussetzungen prüfen
 
-The workflow can be controlled with the following flags:
+Überprüft alle benötigten Tools und erzwingt zusätzliche Produktionsbedingungen: Der aktuelle
+Branch muss `dev` sein, der Working Tree muss sauber sein, und `dev` muss vollständig nach
+`origin` gepusht sein.
 
-| Parameter          | Description                                            |
-| :----------------- | :----------------------------------------------------- |
-| `--issue-id <id>`  | Specify an existing GitHub issue ID.                   |
-| `--auto-cleanup`   | Automatically remove temporary branches after success. |
-| `--skip-devserver` | Skip the local dev server check (if applicable).       |
+- Zuständiges Script:
+  [update-prd-branch-prereqs.mjs](../../scripts/workflows/ci/update-prd-branch-prereqs.mjs)
 
-Example with all parameters:
+### 2. Issue-Verwaltung
 
-> **Important:** Always use the double dash `--` before your arguments so that they are passed
-> correctly to the underlying script!
+Prüft, ob eine GitHub-Issue-ID über `--issue-id` angegeben wurde. Falls nicht, wird interaktiv
+nachgefragt. Ein Issue wird erstellt, falls noch keines vorhanden ist.
+
+- Zuständige Scripts:
+  [update-branch-issue-check.mjs](../../scripts/workflows/ci/update-branch-issue-check.mjs),
+  [update-branch-issue-create.mjs](../../scripts/workflows/ci/update-branch-issue-create.mjs)
+
+### 3. Analyse & KI-Auswertung
+
+Analysiert den vollständigen Diff zwischen `origin/main` und `dev`. Die GitHub Copilot CLI
+generiert daraus eine Deployment-Zusammenfassung, die als Issue-Body und Release-Beschreibung
+verwendet wird.
+
+- Zuständige Scripts:
+  [update-prd-branch-analyze.mjs](../../scripts/workflows/ci/update-prd-branch-analyze.mjs),
+  [update-prd-branch-understand.mjs](../../scripts/workflows/ci/update-prd-branch-understand.mjs)
+
+### 4. Merge dev → main
+
+Checkt `main` aus, pullt die neuesten Änderungen und mergt `dev` mit einem No-Fast-Forward
+Merge-Commit.
+
+- Zuständiges Script:
+  [update-prd-branch-merge.mjs](../../scripts/workflows/ci/update-prd-branch-merge.mjs)
+
+### 5. Build & Quality Gates
+
+Führt den vollständigen Build und alle Quality-Checks auf dem `main`-Branch durch, um
+sicherzustellen, dass der gemergete Stand produktionsreif ist.
+
+- Zuständige Scripts:
+  [update-branch-build.mjs](../../scripts/workflows/ci/update-branch-build.mjs),
+  [update-branch-quality.mjs](../../scripts/workflows/ci/update-branch-quality.mjs)
+
+### 6. Push & Deployment-Check
+
+Pusht `main` nach `origin`, wodurch der `deploy-prd.yml` GitHub Actions Workflow ausgelöst wird.
+Das Script pollt den Workflow-Run, um ein erfolgreiches Produktions-Deployment zu bestätigen.
+
+- Zuständige Scripts:
+  [update-prd-branch-push.mjs](../../scripts/workflows/ci/update-prd-branch-push.mjs),
+  [update-prd-branch-deploy-check.mjs](../../scripts/workflows/ci/update-prd-branch-deploy-check.mjs)
+
+### 7. Issue schließen
+
+Schließt das zugehörige GitHub Issue und wechselt zurück auf den `dev`-Branch.
+
+- Zuständiges Script:
+  [update-branch-issue-close.mjs](../../scripts/workflows/ci/update-branch-issue-close.mjs)
+
+---
+
+## CLI-Parameter
+
+### deploy:dev
+
+| Parameter        | Beschreibung                                                   |
+| :--------------- | :------------------------------------------------------------- |
+| `--auto-cleanup` | Temporäre Feature-Branches nach erfolgreichem Merge automatisch löschen. |
+
+> **Wichtig:** Immer den doppelten Bindestrich `--` vor den Argumenten verwenden, damit sie
+> korrekt an das zugrunde liegende Script weitergegeben werden!
 
 ```bash
-npm run deploy:dev -- --issue-id 123 --auto-cleanup --skip-devserver
+npm run deploy:dev -- --auto-cleanup
+```
+
+### deploy:prd
+
+| Parameter         | Beschreibung                                   |
+| :---------------- | :--------------------------------------------- |
+| `--issue-id <id>` | Eine bestehende GitHub-Issue-ID angeben. |
+
+```bash
+npm run deploy:prd -- --issue-id 123
 ```

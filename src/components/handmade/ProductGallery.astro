@@ -39,14 +39,12 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
 
   <!-- Right Side: Main Image Display -->
   <div class="main-image-container flex-1">
-    <div
-      class="main-image-wrapper glass inline-block overflow-hidden rounded-lg"
-    >
+    <div class="main-image-wrapper glass block overflow-hidden rounded-lg">
       <Image
         src={displayImages[0]}
         alt={`${productName} - Hauptbild`}
         id="main-image"
-        class="h-64 w-auto object-contain md:h-96"
+        class="h-80 w-full object-contain md:h-[520px]"
         loading="eager"
       />
     </div>
@@ -139,7 +137,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   }
 
   .gallery-scroll {
-    height: 16rem; /* h-64 equivalent - same as main image */
+    height: 20rem; /* h-80 equivalent - same as main image */
     @apply overflow-y-auto;
     /* Hide scrollbars but keep functionality */
     scrollbar-width: none; /* Firefox */
@@ -153,7 +151,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
 
   @media (min-width: 768px) {
     .gallery-scroll {
-      height: 24rem; /* h-96 equivalent for md screens - same as main image */
+      height: 32.5rem; /* 520px equivalent for md screens - same as main image */
     }
   }
 
@@ -162,7 +160,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   }
 
   .main-image-wrapper {
-    @apply max-w-fit;
+    @apply w-full;
   }
 
   .main-image-container img {
@@ -170,7 +168,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   }
 
   #main-image {
-    @apply h-64 w-auto object-contain md:h-96;
+    @apply h-80 w-full object-contain md:h-[520px];
   }
 
   .thumbnail-btn {
