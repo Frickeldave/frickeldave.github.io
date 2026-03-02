@@ -22,7 +22,14 @@
 import { spawnSync } from "child_process";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { writeFileSync, existsSync, mkdirSync, unlinkSync, rmSync } from "fs";
+import {
+  writeFileSync,
+  readFileSync,
+  existsSync,
+  mkdirSync,
+  unlinkSync,
+  rmSync,
+} from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -94,11 +101,19 @@ if (Object.keys(envOverrides).length > 0) {
   );
 }
 
+// Backup state before merge step (git operations can delete untracked files)
+let stateBackup = null;
+
 for (const step of steps) {
   const scriptPath = join(__dirname, step);
   console.log(`\n---------------------------------------------------------`);
   console.log(`▶️  Running step: ${step}`);
   console.log(`---------------------------------------------------------`);
+
+  // Save state before merge (git merge can delete the state file)
+  if (step === "update-prd-branch-merge.mjs" && existsSync(STATE_FILE)) {
+    stateBackup = readFileSync(STATE_FILE, "utf-8");
+  }
 
   const result = spawnSync("node", [scriptPath], {
     stdio: "inherit",
@@ -106,6 +121,17 @@ for (const step of steps) {
     shell: true,
     env: childEnv,
   });
+
+  // Restore state after merge if git deleted it
+  if (step === "update-prd-branch-merge.mjs" && stateBackup) {
+    if (!existsSync(STATE_DIR)) {
+      mkdirSync(STATE_DIR, { recursive: true });
+    }
+    if (!existsSync(STATE_FILE)) {
+      console.log("   📋 Restoring workflow state after merge...");
+      writeFileSync(STATE_FILE, stateBackup);
+    }
+  }
 
   if (result.status !== 0) {
     console.error(`\n❌ Step failed: ${step}`);

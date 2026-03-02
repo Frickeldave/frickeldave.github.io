@@ -3,28 +3,21 @@
 /**
  * Main Orchestrator for update-dev-branch workflow
  *
- * Executes the following steps (matching deploy-dev.md):
+ * Executes the following steps:
  * 1. Prereqs check
  * 2. Analyze changes
- * 3. Branch Management
- * 4. Quality Gates (lint, format, prose)
- * 5. Build & Test
- * 6. Dev-Server (if quality changes detected)
+ * 3. Understand (Copilot analysis for commit message)
+ * 4. Branch Management
+ * 5. Quality Gates (lint, format, prose)
+ * 6. Build & Test
  * 7. Commit
  * 8. Push
- * 9. Issue Create (if needed)
- * 10. Merge to dev
- * 11. Deployment Check
- * 12. Cleanup
- * 13. Issue Close
- *
- * Note: Issue-Check and Understand (Copilot analysis) run early
- * to generate branch names and commit messages.
+ * 9. Merge to dev
+ * 10. Deployment Check
+ * 11. Cleanup
  *
  * CLI Arguments (for non-interactive mode):
- *   --issue-id <id>     Pre-set GitHub Issue ID (skip prompt)
  *   --auto-cleanup      Auto-delete feature branch after merge (skip prompt)
- *   --skip-devserver    Skip the dev-server review step
  */
 
 import { spawnSync } from "child_process";
@@ -63,12 +56,8 @@ const args = process.argv.slice(2);
 const envOverrides = {};
 
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--issue-id" && args[i + 1]) {
-    envOverrides.DEPLOY_ISSUE_ID = args[++i];
-  } else if (args[i] === "--auto-cleanup") {
+  if (args[i] === "--auto-cleanup") {
     envOverrides.DEPLOY_AUTO_CLEANUP = "y";
-  } else if (args[i] === "--skip-devserver") {
-    envOverrides.DEPLOY_SKIP_DEVSERVER = "true";
   }
 }
 
@@ -85,20 +74,16 @@ writeFileSync(STATE_FILE, JSON.stringify({}, null, 2));
 
 const steps = [
   "update-dev-branch-prereqs.mjs",
-  "update-branch-issue-check.mjs",
   "update-dev-branch-analyze.mjs",
   "update-dev-branch-understand.mjs",
-  "update-branch-issue-create.mjs",
   "update-dev-branch-branch-mgmt.mjs",
   "update-branch-quality.mjs",
   "update-branch-build.mjs",
-  "update-dev-branch-devserver.mjs",
   "update-dev-branch-commit.mjs",
   "update-dev-branch-push.mjs",
   "update-dev-branch-merge.mjs",
   "update-dev-branch-deploy-check.mjs",
   "update-branch-cleanup.mjs",
-  "update-branch-issue-close.mjs",
 ];
 
 console.log("🚀 Starting update-dev-branch workflow...");
