@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-53747
+    title: APIs, Verantwortung & Vielfalt in der Cloud
+    edition: DevLand
+    guests: Dave König und Anna Klara Kneller
+    date: 3. März 2026
+    description: >-
+      APIs sind das Rückgrat moderner IT – und zugleich eine der größten Quellen für Komplexität und Sicherheitsrisiken. Cloud- und API-Expertin Anna Klara Kneller spricht über ihre Arbeit im API-Management eines großen Public-Sector-Projekts und erklärt, warum erfolgreiche Schnittstellen vor allem Abstimmung zwischen Menschen erfordern. Außerdem: Wie KI-Traffic die Infrastruktur zunehmend belastet, warum API-Gateways nicht immer die Lösung sind – und weshalb Diversität und Women-in-Tech-Initiativen entscheidend für bessere Technologie sind.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69a686fd2d99077ec36de23e/media.mp3
   - id: doag-voices-92686
     title: Souveräne KI aus Deutschland – Wie DeutschlandGPT Datenschutz und Innovation verbindet
     edition: FutureAI
