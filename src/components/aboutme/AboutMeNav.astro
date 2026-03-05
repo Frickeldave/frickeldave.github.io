@@ -24,53 +24,136 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
 ---
 
 <nav class="space-y-6">
-  <div class="glass rounded-lg p-4">
-    <h3 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-lg font-bold">
-      Bereiche
-    </h3>
-    <ul class="space-y-2">
-      {
-        links.map(({ href, text }) => (
-          <li>
-            <a
-              href={href}
-              class:list={[
-                "glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all",
-                currentPath === href ||
-                (href !== "/aboutme" && currentPath.startsWith(href))
-                  ? "border-amber-600/50 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md"
-                  : "text-txt-p hover:bg-amber-500/20 dark:text-darkmode-txt-p",
-              ]}
-            >
-              {text}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+  {/* Bereiche Box */}
+  <div class="glass accordion-item overflow-hidden rounded-lg">
+    <button
+      class="accordion-header flex w-full items-center justify-between p-4 text-left lg:pointer-events-none lg:pb-3"
+      aria-expanded="false"
+    >
+      <h3 class="text-txt-h dark:text-darkmode-txt-h text-lg font-bold">
+        Bereiche
+      </h3>
+      <svg
+        class="chevron-icon h-5 w-5 transition-transform duration-300 lg:hidden"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+    <div
+      class="accordion-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out lg:max-h-none lg:px-4 lg:pb-4"
+    >
+      <div class="p-4 pt-0 lg:p-0">
+        <ul class="space-y-2">
+          {
+            links.map(({ href, text }) => (
+              <li>
+                <a
+                  href={href}
+                  class:list={[
+                    "glass-t block w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all",
+                    currentPath === href ||
+                    (href !== "/aboutme" && currentPath.startsWith(href))
+                      ? "border-amber-600/50 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md"
+                      : "text-txt-p hover:bg-amber-500/20 dark:text-darkmode-txt-p",
+                  ]}
+                >
+                  {text}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
   </div>
 
+  {/* Auf dieser Seite Box */}
   {
     toc && toc.length > 0 && (
-      <div class="glass rounded-lg p-4">
-        <h3 class="text-txt-h dark:text-darkmode-txt-h mb-3 text-lg font-bold">
-          Auf dieser Seite
-        </h3>
-        <ul class="space-y-2">
-          {toc.map((item) => (
-            <li class:list={[item.depth && item.depth > 2 && "pl-4"]}>
-              <a
-                href={`#${item.slug}`}
-                class="block py-1 text-sm text-txt-p transition-all hover:translate-x-1 hover:text-amber-600 dark:text-darkmode-txt-p dark:hover:text-amber-400"
-              >
-                {item.text}
-              </a>
-            </li>
-          ))}
-        </ul>
+      <div class="glass accordion-item overflow-hidden rounded-lg">
+        <button
+          class="accordion-header flex w-full items-center justify-between p-4 text-left lg:pointer-events-none lg:pb-3"
+          aria-expanded="false"
+        >
+          <h3 class="text-txt-h dark:text-darkmode-txt-h text-lg font-bold">
+            Auf dieser Seite
+          </h3>
+          <svg
+            class="chevron-icon h-5 w-5 transition-transform duration-300 lg:hidden"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        <div class="accordion-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out lg:max-h-none lg:px-4 lg:pb-4">
+          <div class="p-4 pt-0 lg:p-0">
+            <ul class="space-y-2">
+              {toc.map((item) => (
+                <li class:list={[item.depth && item.depth > 2 && "pl-4"]}>
+                  <a
+                    href={`#${item.slug}`}
+                    class="block py-1 text-sm text-txt-p transition-all hover:translate-x-1 hover:text-amber-600 dark:text-darkmode-txt-p dark:hover:text-amber-400"
+                  >
+                    {item.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     )
   }
 
   <slot />
 </nav>
+
+<style>
+  @media (max-width: 1023px) {
+    .accordion-item.is-active .accordion-content {
+      max-height: 500px; /* Large enough for the content */
+    }
+    .accordion-item.is-active .chevron-icon {
+      transform: rotate(180deg);
+    }
+  }
+</style>
+
+<script>
+  function setupAccordion() {
+    const accordionHeaders = document.querySelectorAll(".accordion-header");
+
+    accordionHeaders.forEach((header) => {
+      // Only attach listener if we are not on large screen (though button is disabled via pointer-events-none)
+      header.addEventListener("click", () => {
+        if (window.innerWidth >= 1024) return;
+
+        const item = header.closest(".accordion-item");
+        const isExpanded = header.getAttribute("aria-expanded") === "true";
+
+        header.setAttribute("aria-expanded", (!isExpanded).toString());
+        item?.classList.toggle("is-active");
+      });
+    });
+  }
+
+  // Setup on initial load
+  setupAccordion();
+
+  // Re-setup on view transitions
+  document.addEventListener("astro:after-swap", setupAccordion);
+</script>

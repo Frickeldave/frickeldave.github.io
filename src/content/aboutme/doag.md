@@ -36,7 +36,12 @@ episodes:
     guests: Dave König und Anna Klara Kneller
     date: 3. März 2026
     description: >-
-      APIs sind das Rückgrat moderner IT – und zugleich eine der größten Quellen für Komplexität und Sicherheitsrisiken. Cloud- und API-Expertin Anna Klara Kneller spricht über ihre Arbeit im API-Management eines großen Public-Sector-Projekts und erklärt, warum erfolgreiche Schnittstellen vor allem Abstimmung zwischen Menschen erfordern. Außerdem: Wie KI-Traffic die Infrastruktur zunehmend belastet, warum API-Gateways nicht immer die Lösung sind – und weshalb Diversität und Women-in-Tech-Initiativen entscheidend für bessere Technologie sind.
+      APIs sind das Rückgrat moderner IT – und zugleich eine der größten Quellen für Komplexität und
+      Sicherheitsrisiken. Cloud- und API-Expertin Anna Klara Kneller spricht über ihre Arbeit im
+      API-Management eines großen Public-Sector-Projekts und erklärt, warum erfolgreiche
+      Schnittstellen vor allem Abstimmung zwischen Menschen erfordern. Außerdem: Wie KI-Traffic die
+      Infrastruktur zunehmend belastet, warum API-Gateways nicht immer die Lösung sind – und weshalb
+      Diversität und Women-in-Tech-Initiativen entscheidend für bessere Technologie sind.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
       apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531

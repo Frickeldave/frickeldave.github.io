@@ -18,14 +18,16 @@ const { title, description, toc } = Astro.props;
   <PageHeader title="About Me" colorScheme="amber" />
 
   <section class="container p-4">
-    <div class="grid gap-8 lg:grid-cols-4">
-      <div class="space-y-6 lg:col-span-3">
-        <slot />
-      </div>
-      <div class="lg:col-span-1">
+    <div class="flex flex-col gap-8 lg:grid lg:grid-cols-4">
+      {/* Navigation: First in HTML for mobile top placement */}
+      <div class="order-1 lg:order-2 lg:col-span-1">
         <AboutMeNav toc={toc}>
           <slot name="nav-extra" />
         </AboutMeNav>
+      </div>
+      {/* Content: Second in HTML for mobile bottom placement */}
+      <div class="order-2 space-y-6 lg:order-1 lg:col-span-3">
+        <slot />
       </div>
     </div>
   </section>
