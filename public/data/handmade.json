@@ -12,7 +12,8 @@
       "size": "25cm x 15cm x 4cm",
       "visible": true,
       "customizable": true,
-      "salesCabinet": false,
+      "salesCabinet": 0,
+      "stock": 0,
       "articleNumber": "LAH3K3",
       "category": "LA"
     },
@@ -29,7 +30,8 @@
       "size": "12cm x 11cm x 4cm",
       "visible": true,
       "customizable": true,
-      "salesCabinet": true,
+      "salesCabinet": 1,
+      "stock": 0,
       "articleNumber": "LAKBCD",
       "category": "LA"
     },
@@ -44,7 +46,8 @@
       "size": "11cm x 5cm",
       "visible": false,
       "customizable": true,
-      "salesCabinet": false,
+      "salesCabinet": 0,
+      "stock": 0,
       "articleNumber": "EP3PHO",
       "category": "EP"
     },
@@ -58,7 +61,8 @@
       "size": "4cm x 4cm x 1,5cm oder 6cm x 6cm x 1,5cm",
       "visible": true,
       "customizable": true,
-      "salesCabinet": true,
+      "salesCabinet": 0,
+      "stock": 2,
       "articleNumber": "EP6TEK",
       "category": "EP"
     },
@@ -74,7 +78,8 @@
       "size": "10,5cm x 25,5cm",
       "visible": true,
       "customizable": true,
-      "salesCabinet": false,
+      "salesCabinet": 0,
+      "stock": 0,
       "articleNumber": "LAX",
       "category": "LA"
     },
@@ -86,7 +91,8 @@
       "size": "",
       "visible": false,
       "customizable": false,
-      "salesCabinet": false,
+      "salesCabinet": 0,
+      "stock": 0,
       "articleNumber": "LAVDP3",
       "category": "LA"
     },
@@ -102,9 +108,40 @@
       "size": "30cm x 30cm x 6mm",
       "visible": true,
       "customizable": true,
-      "salesCabinet": false,
+      "salesCabinet": 0,
+      "stock": 0,
       "articleNumber": "LAKNW4",
       "category": "LA"
+    },
+    {
+      "name": "TEST123",
+      "description": "TEST123",
+      "tags": [
+        "Geschenk"
+      ],
+      "price": 10,
+      "size": "",
+      "visible": false,
+      "customizable": false,
+      "salesCabinet": 0,
+      "stock": 0,
+      "articleNumber": "LA9MWF",
+      "category": "LA"
+    },
+    {
+      "name": "Vasen aus Reysin Steingut mit Holzsockel",
+      "description": "Diese exklusiven Vasen aus Reysin Steingut vereinen robuste Handwerkskunst mit einem modernen, facettierten Design in Weiß und Lila. Optional auf natürlichem Holzsockel präsentiert, brechen sie Licht durch dreieckige Strukturen und schaffen skulpturale Highlights in jedem Raum.\n\nDas zylindrische, reliefartige Muster verleiht Tiefe und Stil – ideal für Trockendekoration oder als reine Objekte. Reysin Steingut ist langlebig, hitzebeständig, hergestellt aus feiner, glasierter Keramik für Premium-Qualität und Alltagstauglichkeit.\n\nPerfekt für Sideboards, Regale oder Gruppierungen in Wohn- und Büroambientes – das Weiß für zeitlose Neutralität, oder fabig für edle Akzente. Robust und stabil durch den Holzsockel, geeignet für Trockenpflanzen oder minimalistische Präsentation.\n\nMit feuchtem Tuch säubern, weitere Farben auf Anfrage.",
+      "tags": [
+        "Deko"
+      ],
+      "price": 6,
+      "size": "12cm x 5cm",
+      "visible": true,
+      "customizable": false,
+      "salesCabinet": 2,
+      "stock": 2,
+      "articleNumber": "SBYI3C",
+      "category": "SB"
     }
   ]
 }
