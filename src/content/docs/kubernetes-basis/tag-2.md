@@ -3,7 +3,11 @@ visible: true
 title: k8s - Teil 2
 description: "Resources, Probes, Persistent Volumes, Ingress -- die komplette Plattform."
 draft: false
+image: "@assets/docs/kubernetes-basis/knba-003.png"
+imageAlt: "Kubernetes Basis - Teil 2 Workloads & Networking"
 ---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Workloads & Networking
 

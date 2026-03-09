@@ -3,7 +3,11 @@ visible: true
 title: k8s - Teil 0
 description: Vorbereitung und Trainings-Umgebung für die Kubernetes Basis Schulung.
 draft: false
+image: "@assets/docs/kubernetes-basis/knba-004.png"
+imageAlt: "Kubernetes Basis - Teil 0 Vorbereitung"
 ---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Vorbereitung
 

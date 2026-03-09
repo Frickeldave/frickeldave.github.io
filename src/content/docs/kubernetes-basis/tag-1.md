@@ -3,7 +3,11 @@ visible: true
 title: k8s - Teil 1
 description: "Grundlagen, erste Deployments mit Chromium und Code-Server."
 draft: false
+image: "@assets/docs/kubernetes-basis/knba-002.png"
+imageAlt: "Kubernetes Basis - Teil 1 Grundlagen"
 ---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Grundlagen & Einstieg
 
@@ -279,17 +283,17 @@ kubectl delete pod <pod-name>
 
 ### Vergleich
 
-| Ansatz         | Beschreibung          | Beispiel                           |
-| -------------- | --------------------- | ---------------------------------- |
-| **Imperativ**  | "Tue dies jetzt"      | `kubectl create deployment ...`    |
-| **Deklarativ** | "So soll es aussehen" | `kubectl apply -f deployment.yaml` |
+| Ansatz         | Beschreibung                | Beispiel                           |
+| -------------- | --------------------------- | ---------------------------------- |
+| **Imperativ**  | "Tue dies jetzt"            | `kubectl create deployment ...`    |
+| **Deklarativ** | "Gewuenschter Soll-Zustand" | `kubectl apply -f deployment.yaml` |
 
 In der Praxis wird fast ausschließlich deklarativ gearbeitet -- YAML-Manifeste werden in Git
 versioniert und per `kubectl apply` angewendet.
 
 ### YAML-Beispiel
 
-So würde unser imperativ erstelltes Chromium-Deployment als YAML aussehen:
+Das imperativ erstellte Chromium-Deployment sieht als YAML wie folgt aus:
 
 ```yaml
 apiVersion: apps/v1
