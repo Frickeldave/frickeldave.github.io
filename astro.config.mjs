@@ -8,6 +8,31 @@ import remarkCollapse from "remark-collapse";
 import remarkToc from "remark-toc";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
+
+/** Remark plugin: converts ```mermaid code blocks to raw HTML <pre class="mermaid">
+ *  so Shiki never touches them and mermaid.js can render them client-side. */
+function remarkMermaid() {
+  return function (tree) {
+    const replacements = [];
+    function walk(node, parent, index) {
+      if (node.type === "code" && node.lang === "mermaid") {
+        replacements.push([parent, index, node.value]);
+      }
+      if (Array.isArray(node.children)) {
+        node.children.forEach((child, i) => walk(child, node, i));
+      }
+    }
+    walk(tree, null, -1);
+    // Replace in reverse order to preserve indices
+    for (const [parent, index, value] of replacements.reverse()) {
+      parent.children[index] = {
+        type: "html",
+        value: `<pre class="mermaid">${value}</pre>`,
+      };
+    }
+  };
+}
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://frickeldave.github.io",
@@ -66,6 +91,7 @@ export default defineConfig({
   ],
   markdown: {
     remarkPlugins: [
+      remarkMermaid,
       remarkToc,
       [
         remarkCollapse,

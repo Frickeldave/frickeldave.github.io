@@ -60,6 +60,11 @@ await Promise.all(
   isGroup ? (
     <CollectionLayout collectionIndex={entry} entries={groupEntries} />
   ) : (
-    <EntryLayout entry={entry} browserMenu={browserMenu} />
+    <EntryLayout
+      entry={entry}
+      browserMenu={browserMenu.filter(
+        (item) => item.id === entry.id.split("/")[0]
+      )}
+    />
   )
 }
