@@ -85,7 +85,7 @@ function runCopilot() {
       input: promptText,
       encoding: "utf-8",
       shell: false,
-      timeout: 60000, // 60 second timeout
+      timeout: 180000, // 180 second timeout (3 minutes) - Copilot CLI can be slow on first run
     }
   );
 
