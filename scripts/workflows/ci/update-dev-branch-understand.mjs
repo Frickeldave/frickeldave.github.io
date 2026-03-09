@@ -38,7 +38,7 @@ GIT STATUS:
 ${state.gitStatus}
 
 GIT DIFF (truncated):
-${state.gitDiff ? state.gitDiff.substring(0, 5000) : ""}
+${state.gitDiff ? state.gitDiff.substring(0, 2000) : ""}
 
 TASK:
 1. Identify the TYPE of change (feat, fix, docs, style, refactor, perf, test, ci, chore).
@@ -75,16 +75,17 @@ function runCopilot() {
 
   console.log("⏳ Waiting for Copilot...");
 
-  // Use spawnSync with shell: false to avoid shell escaping issues.
-  // We pass arguments as an array, which Node.js handles correctly for both OSs.
-  console.log("Executing copilot via safe spawn...");
+  // Use stdin to pass the prompt (more reliable than -p parameter for large prompts)
+  console.log("Executing copilot via stdin...");
 
   const result = spawnSync(
     "copilot",
-    ["-p", promptText, "--model", "claude-haiku-4.5", "--no-ask-user"], // --no-ask-user for non-interactive
+    ["--model", "claude-haiku-4.5", "--no-ask-user", "--allow-all-tools", "--silent"],
     {
+      input: promptText,
       encoding: "utf-8",
       shell: false,
+      timeout: 180000, // 180 second timeout (3 minutes) - Copilot CLI can be slow on first run
     }
   );
 

@@ -261,3 +261,13 @@ Wiederverwendbarkeit in der Tabelle.
   gesamten Prompts.
 - Ist der Prompt länger als 500 Zeichen, erstelle eine Datei in
   .github/prompts/chats/yyyy-mm-dd-<titel>.md und verweise auf diese Datei.
+
+## Related Documentation
+
+Detailed docs in `./docs/`:
+- Architecture Decisions: `./docs/40-architecture-decisions.md`
+- Structure Guide: `./docs/15-structure.md`
+- Design System: `./docs/20-design-system.md`
+- Commit Messages: `./docs/12-commit-messages.md`
+- Linter Setup: `./docs/linter/01-linter-start.md`
+- Feature Implementations: `./docs/features/`

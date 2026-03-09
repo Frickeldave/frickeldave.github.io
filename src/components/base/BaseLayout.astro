@@ -108,6 +108,87 @@ const baseUrl = "https://janedoe.com";
     />
     <meta name="twitter:card" content="summary_large_image" />
 
+    <!-- Mermaid -->
+    <script>
+      import mermaid from "mermaid";
+
+      function getMermaidConfig() {
+        const isDark = document.documentElement.classList.contains("dark");
+        return {
+          startOnLoad: false,
+          theme: "base",
+          flowchart: { useMaxWidth: true, htmlLabels: true },
+          sequence: { useMaxWidth: true },
+          themeVariables: isDark
+            ? {
+                // Dark mode — site uses #222 bg, #ddd text, #444 border
+                background: "transparent",
+                primaryColor: "#383838",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#606060",
+                lineColor: "#909090",
+                secondaryColor: "#3e3e3e",
+                tertiaryColor: "#303030",
+                clusterBkg: "#2c2c2c",
+                clusterBorder: "#606060",
+                titleColor: "#e0e0e0",
+                edgeLabelBackground: "#2a2a2a",
+              }
+            : {
+                // Light mode — site uses #fff bg, #222 text, #ddd border
+                background: "transparent",
+                primaryColor: "#ebebeb",
+                primaryTextColor: "#111",
+                primaryBorderColor: "#aaa",
+                lineColor: "#555",
+                secondaryColor: "#f4f4f4",
+                tertiaryColor: "#e4e4e4",
+                clusterBkg: "#f0f0f0",
+                clusterBorder: "#aaa",
+                titleColor: "#111",
+                edgeLabelBackground: "#f5f5f5",
+              },
+        };
+      }
+
+      function renderMermaid() {
+        // Restore already-rendered diagrams so they can be re-rendered with new theme
+        document
+          .querySelectorAll("pre.mermaid[data-processed]")
+          .forEach((el) => {
+            const src = (el as HTMLElement).dataset.mermaidSrc;
+            if (src) {
+              el.textContent = src;
+              el.removeAttribute("data-processed");
+            }
+          });
+
+        // Save original source before mermaid replaces the content
+        document
+          .querySelectorAll("pre.mermaid:not([data-processed])")
+          .forEach((el) => {
+            if (!(el as HTMLElement).dataset.mermaidSrc) {
+              (el as HTMLElement).dataset.mermaidSrc = el.textContent ?? "";
+            }
+          });
+
+        mermaid.initialize(getMermaidConfig());
+        mermaid.run();
+      }
+
+      // Initial render
+      renderMermaid();
+
+      // Re-render after Astro View Transitions navigation
+      document.addEventListener("astro:page-load", renderMermaid);
+
+      // Re-render when dark/light mode toggles (class changes on <html>)
+      new MutationObserver(() => renderMermaid()).observe(
+        document.documentElement,
+        { attributes: true, attributeFilter: ["class"] }
+      );
+    </script>
+
     <!-- Katex -->
     <link
       rel="stylesheet"

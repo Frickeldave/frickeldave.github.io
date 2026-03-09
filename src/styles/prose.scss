@@ -24,6 +24,16 @@
   @apply prose-th:relative prose-th:z-10 prose-th:px-4 prose-th:py-2 prose-th:text-txt-p prose-th:dark:text-darkmode-txt-p;
   @apply prose-tr:border-border prose-tr:dark:border-darkmode-border;
   @apply prose-td:relative prose-td:z-10 prose-td:px-3 prose-td:py-2 prose-td:text-txt-s prose-td:dark:text-darkmode-txt-s;
+  // Mermaid diagrams — reset prose-pre styles, let SVG scale to container
+  pre.mermaid {
+    @apply overflow-visible rounded-none bg-transparent p-0 shadow-none dark:bg-transparent;
+    text-align: center;
+    svg {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  }
   // Lists
   @apply prose-li:text-txt-s prose-li:dark:text-darkmode-txt-s;
   li::marker {
