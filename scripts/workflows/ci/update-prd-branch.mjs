@@ -65,6 +65,9 @@ for (let i = 0; i < args.length; i++) {
   if (args[i] === "--issue-id" && args[i + 1]) {
     envOverrides.DEPLOY_ISSUE_ID = args[++i];
   }
+  if (args[i] === "--skip-issue") {
+    envOverrides.DEPLOY_SKIP_ISSUE = "true";
+  }
 }
 
 // Merge into current env so child processes inherit these

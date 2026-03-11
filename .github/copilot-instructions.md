@@ -55,7 +55,10 @@ die Orchestrierungs-Skripte, da diese Issue-Creation, AI-Commit-Messages und Qua
 npm run deploy:dev   # Standard Command: Pusht auf dev (unterstützt direktes Arbeiten auf dev)
 npm run deploy:dev -- --skip-devserver --auto-cleanup # Non-interactive Mode für automatisierte Deployments
 npm run deploy:prd   # Mergt dev in main und triggert den Production Build
+npm run deploy:prd -- --skip-issue # Non-interactive Mode für automatisierte Deployments
 ```
+
+Forder ich dich auf, in dev oder prd zu deployen, frage ich erst nach einer github issue id. Wenn ich diese nicht angebe, führe die non-interactive Variante aus (`--skip-devserver --auto-cleanup` für dev, `--skip-issue` für prd), damit die Skripte ohne Unterbrechung durchlaufen können.
 
 ### Linting (KRITISCH vor jedem Commit)
 

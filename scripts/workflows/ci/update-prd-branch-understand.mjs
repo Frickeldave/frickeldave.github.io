@@ -66,10 +66,12 @@ function runCopilot() {
 
   const result = spawnSync(
     "copilot",
-    ["-p", promptText, "--model", "claude-haiku-4.5", "--no-ask-user"], // Using fast model; --no-ask-user for non-interactive
+    ["--model", "claude-haiku-4.5", "--no-ask-user", "--allow-all-tools", "--silent"],
     {
+      input: promptText,
       encoding: "utf-8",
-      shell: false,
+      shell: true,
+      timeout: 180000,
     }
   );
 
