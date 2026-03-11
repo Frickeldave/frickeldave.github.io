@@ -60,10 +60,13 @@ function formatEpisodeEntry(id, metadata) {
     .map(([key, value]) => `      ${key}: ${value}`)
     .join("\n");
 
+  const safeTitle = metadata.title.includes(':') ? `"${metadata.title}"` : metadata.title;
+  const safeGuests = metadata.guests.includes(':') ? `"${metadata.guests}"` : metadata.guests;
+
   return `  - id: ${id}
-    title: ${metadata.title}
+    title: ${safeTitle}
     edition: ${metadata.edition}
-    guests: ${metadata.guests}
+    guests: ${safeGuests}
     date: ${metadata.date}
     description: >-
       ${metadata.description}

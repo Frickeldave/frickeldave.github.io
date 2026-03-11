@@ -31,12 +31,18 @@ podcast_platforms:
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
   - id: doag-voices-45333
-    title: Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)
+    title:
+      "Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung
+      (Teil 1 von 3)"
     edition: People
     guests: Niels de Bruijn
     date: 5. März 2026
     description: >-
-      Niels de Bruijn, APEX-Experte und Business Unit Manager Low Code bei Hyand, spricht über seinen Karriereweg von Utrecht bis zur Führung eines 40-köpfigen Teams. Im Fokus stehen strategische Plattformauswahl, Governance und das Preis-Leistungs-Verhältnis von Oracle APEX im Enterprise-Umfeld. Zudem teilt er Einblicke in Flows for APEX, KI-Integration und seine persönliche Motivation als Community-Akteur.
+      Niels de Bruijn, APEX-Experte und Business Unit Manager Low Code bei Hyand, spricht über
+      seinen Karriereweg von Utrecht bis zur Führung eines 40-köpfigen Teams. Im Fokus stehen
+      strategische Plattformauswahl, Governance und das Preis-Leistungs-Verhältnis von Oracle APEX
+      im Enterprise-Umfeld. Zudem teilt er Einblicke in Flows for APEX, KI-Integration und seine
+      persönliche Motivation als Community-Akteur.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
       apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
