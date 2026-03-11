@@ -60,10 +60,13 @@ function formatEpisodeEntry(id, metadata) {
     .map(([key, value]) => `      ${key}: ${value}`)
     .join("\n");
 
+  // Quote values containing ': ' to prevent YAML plain-scalar parse errors
+  const quoteIfNeeded = (s) => (s.includes(": ") ? `"${s}"` : s);
+
   return `  - id: ${id}
-    title: ${metadata.title}
+    title: ${quoteIfNeeded(metadata.title)}
     edition: ${metadata.edition}
-    guests: ${metadata.guests}
+    guests: ${quoteIfNeeded(metadata.guests)}
     date: ${metadata.date}
     description: >-
       ${metadata.description}

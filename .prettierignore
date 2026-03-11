@@ -24,6 +24,9 @@ yarn.lock
 .temp/
 .tmp/
 
+# Content collection files (structured YAML frontmatter must not be reformatted)
+src/content/
+
 # Editor directories and files
 .vscode/
 .idea/

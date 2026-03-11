@@ -31,7 +31,7 @@ podcast_platforms:
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
   - id: doag-voices-45333
-    title: Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)
+    title: "Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)"
     edition: People
     guests: Niels de Bruijn
     date: 5. März 2026
