@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-34348
+    title: "Low-Code im KI-Zeitalter: Niels de Bruijn über APEX, LLMs und die Zukunft der Entwicklung (Teil 2/3)"
+    edition: People
+    guests: Marcos López und Niels de Bruijn
+    date: 10. März 2026
+    description: >-
+      APEX-Experte Niels de Bruijn spricht über den praktischen Einsatz von KI in der Low-Code-Entwicklung mit Oracle APEX. Von Chat-Assistenten bis zur Code-Generierung zeigt er, wie Large-Language-Modelle bereits heute genutzt werden können. Dabei wird deutlich: Während KI Routineaufgaben übernimmt, rücken Architektur, Datenmodellierung und konzeptionelles Denken stärker in den Mittelpunkt der Entwicklungsarbeit.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69afc17cb58ea3074df5fee0/media.mp3
   - id: doag-voices-45333
     title: "Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)"
     edition: People
