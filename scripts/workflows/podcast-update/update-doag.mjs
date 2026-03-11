@@ -60,13 +60,13 @@ function formatEpisodeEntry(id, metadata) {
     .map(([key, value]) => `      ${key}: ${value}`)
     .join("\n");
 
-  const safeTitle = metadata.title.includes(':') ? `"${metadata.title}"` : metadata.title;
-  const safeGuests = metadata.guests.includes(':') ? `"${metadata.guests}"` : metadata.guests;
+  // Quote values containing ': ' to prevent YAML plain-scalar parse errors
+  const quoteIfNeeded = (s) => (s.includes(": ") ? `"${s}"` : s);
 
   return `  - id: ${id}
-    title: ${safeTitle}
+    title: ${quoteIfNeeded(metadata.title)}
     edition: ${metadata.edition}
-    guests: ${safeGuests}
+    guests: ${quoteIfNeeded(metadata.guests)}
     date: ${metadata.date}
     description: >-
       ${metadata.description}
