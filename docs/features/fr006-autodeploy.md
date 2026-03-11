@@ -46,10 +46,10 @@ Die Kernlogik liegt in
 flowchart TD
   start(["npm run deploy:dev / deploy:prd"])
   prereqs["Prereqs Check"]
-  analyze["Analyze Changes"]
-  ai["AI Understanding"]
   split{"deploy:dev\noder deploy:prd?"}
 
+  d_analyze["Analyze Changes"]
+  d_ai["AI Understanding"]
   d1["Branch Management"]
   d2["Quality Gates"]
   d3["Build"]
@@ -60,6 +60,8 @@ flowchart TD
   d8["Cleanup"]
 
   p1["Issue Check"]
+  p_analyze["Analyze Changes"]
+  p_ai["AI Understanding"]
   p2["Issue Create"]
   p3["Merge dev → main"]
   p4["Build"]
@@ -69,20 +71,14 @@ flowchart TD
   p8["Issue Close"]
   p9["Checkout dev"]
 
-  start --> prereqs --> analyze --> ai --> split
+  start --> prereqs --> split
 
-  split -->|"deploy:dev"| d1
-  d1 --> d2 --> d3 --> d4 --> d5 --> d6 --> d7 --> d8
+  split -->|"deploy:dev"| d_analyze
+  d_analyze --> d_ai --> d1 --> d2 --> d3 --> d4 --> d5 --> d6 --> d7 --> d8
 
   split -->|"deploy:prd"| p1
-  p1 --> p2 --> p3 --> p4 --> p5 --> p6 --> p7 --> p8 --> p9
-
-  classDef shared fill:#1e40af,color:#fff,stroke:#1e3a8a
-  class prereqs,analyze,ai shared
+  p1 --> p_analyze --> p_ai --> p2 --> p3 --> p4 --> p5 --> p6 --> p7 --> p8 --> p9
 ```
-
-> **Legende:** Blau markierte Schritte (Prereqs Check, Analyze Changes, AI Understanding) laufen
-> in beiden Workflows über gleichwertigen Script-Code.
 
 ## Voraussetzungen
 
@@ -182,7 +178,8 @@ Branch muss `dev` sein, der Working Tree muss sauber sein, und `dev` muss vollst
 ### 2. Issue-Verwaltung
 
 Prüft, ob eine GitHub-Issue-ID über `--issue-id` angegeben wurde. Falls nicht, wird interaktiv
-nachgefragt. Ein Issue wird erstellt, falls noch keines vorhanden ist.
+nachgefragt oder mit `--skip-issue` übersprungen. Ein Issue wird erstellt, falls noch keines
+vorhanden ist.
 
 - Zuständige Scripts:
   [update-branch-issue-check.mjs](../../scripts/workflows/ci/update-branch-issue-check.mjs),
@@ -237,9 +234,9 @@ Schließt das zugehörige GitHub Issue und wechselt zurück auf den `dev`-Branch
 
 ### deploy:dev
 
-| Parameter        | Beschreibung                                                   |
-| :--------------- | :------------------------------------------------------------- |
-| `--auto-cleanup` | Temporäre Feature-Branches nach erfolgreichem Merge automatisch löschen. |
+| Parameter        | Beschreibung                                                              |
+| :--------------- | :------------------------------------------------------------------------ |
+| `--auto-cleanup` | Feature-Branch nach erfolgreichem Merge automatisch löschen (skip prompt). |
 
 > **Wichtig:** Immer den doppelten Bindestrich `--` vor den Argumenten verwenden, damit sie
 > korrekt an das zugrunde liegende Script weitergegeben werden!
@@ -250,10 +247,12 @@ npm run deploy:dev -- --auto-cleanup
 
 ### deploy:prd
 
-| Parameter         | Beschreibung                                   |
-| :---------------- | :--------------------------------------------- |
-| `--issue-id <id>` | Eine bestehende GitHub-Issue-ID angeben. |
+| Parameter         | Beschreibung                                                              |
+| :---------------- | :------------------------------------------------------------------------ |
+| `--issue-id <id>` | Eine bestehende GitHub-Issue-ID angeben.                                  |
+| `--skip-issue`    | Issue-Abfrage überspringen (non-interactive Mode für Automation).         |
 
 ```bash
 npm run deploy:prd -- --issue-id 123
+npm run deploy:prd -- --skip-issue
 ```
