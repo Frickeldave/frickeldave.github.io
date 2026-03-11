@@ -63,6 +63,13 @@ function validateIssue(issueId) {
 async function main() {
   console.log("🎫 Step 1: Issue Check");
 
+  // Non-interactive skip
+  if (process.env.DEPLOY_SKIP_ISSUE === "true") {
+    console.log("   (non-interactive: skipping issue check)");
+    updateState({ issueId: null });
+    return;
+  }
+
   // Non-interactive: use env var if set
   const envIssueId = process.env.DEPLOY_ISSUE_ID;
   if (envIssueId) {
