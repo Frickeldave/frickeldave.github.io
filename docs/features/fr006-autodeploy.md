@@ -57,6 +57,7 @@ flowchart TD
   d6["6. Commit"]
   d7["7. Push"]
   d8["8. Merge to dev + Cleanup (nur Feature-Branch)"]
+  d9["9. Deploy Check (timeout 30s)"]
 
   p1["1. Prerequisites (strict)"]
   p2["2. Issue Check"]
@@ -66,12 +67,13 @@ flowchart TD
   p6["6. Quality Gates"]
   p7["7. Build"]
   p8["8. Push main"]
-  p9["9. Close Issue"]
-  p10["10. Switch to dev"]
+  p9["9. Deploy Check (timeout 30s)"]
+  p10["10. Close Issue"]
+  p11["11. Switch to dev"]
 
   start --> split
-  split -->|dev| d1 --> d2 --> d3 --> d4 --> d5 --> d6 --> d7 --> d8
-  split -->|prd| p1 --> p2 --> p3 --> p4 --> p5 --> p6 --> p7 --> p8 --> p9 --> p10
+  split -->|dev| d1 --> d2 --> d3 --> d4 --> d5 --> d6 --> d7 --> d8 --> d9
+  split -->|prd| p1 --> p2 --> p3 --> p4 --> p5 --> p6 --> p7 --> p8 --> p9 --> p10 --> p11
 ```
 
 ## Voraussetzungen
@@ -96,6 +98,7 @@ Beide Workflows erfordern:
 | **6. Commit**          | `git add .` (temp-Files ausgeschlossen), Commit mit `--no-verify` via `execFileSync`.                                     |
 | **7. Push**            | `git push -u origin <branch>`                                                                                             |
 | **8. Merge + Cleanup** | Nur bei Feature-Branches: Merge in `dev` mit `--no-ff --no-verify`, Push, optionale Branch-Löschung mit `--auto-cleanup`. |
+| **9. Deploy Check**    | Pollt den `deploy-dev.yml` Workflow-Run (max. 30s). Bei Erfolg/Fehler: Status anzeigen. Sonst: Link und weiter.           |
 
 ## deploy:prd — Workflow-Schritte
 
@@ -109,8 +112,9 @@ Beide Workflows erfordern:
 | **6. Quality Gates**   | Format + Lint auf `main`. Änderungen werden automatisch committet.                                                      |
 | **7. Build**           | `npm run build` auf `main`.                                                                                             |
 | **8. Push**            | `git push origin main` — triggert `deploy-prd.yml` GitHub Actions Workflow.                                             |
-| **9. Close Issue**     | Schließt das zugehörige GitHub Issue.                                                                                   |
-| **10. Switch to dev**  | Wechselt zurück auf den `dev`-Branch.                                                                                   |
+| **9. Deploy Check**    | Pollt den `deploy-prd.yml` Workflow-Run (max. 30s). Bei Erfolg/Fehler: Status anzeigen. Sonst: Link und weiter.         |
+| **10. Close Issue**    | Schließt das zugehörige GitHub Issue.                                                                                   |
+| **11. Switch to dev**  | Wechselt zurück auf den `dev`-Branch.                                                                                   |
 
 ## CLI-Parameter
 
@@ -155,18 +159,27 @@ Das Script gibt eine kompakte Fortschrittsanzeige aus:
 ```
 ─── deploy:dev ───
 
-[1/7] Prerequisites... ✓
-[2/7] Analyze changes... ✓
-[3/7] Generate commit message... ✓
-[4/7] Quality gates (format, lint)... ✓
-[5/7] Build... ✓
-[6/7] Commit... ✓
-[7/7] Push... ✓
+[1/9] Prerequisites... ✓
+[2/9] Analyze changes... ✓
+[3/9] Generate commit message... ✓
+[4/9] Quality gates (format, lint)... ✓
+[5/9] Build... ✓
+[6/9] Commit... ✓
+[7/9] Push... ✓
+[8/9] Deploy check...  Run: https://github.com/Frickeldave/frickeldave.github.io/actions/runs/...
+  Status: ✓ success
+ ✓
 
 ─── Done ───
 Branch:  dev
 Commit:  a1b2c3d
-Deploy:  https://github.com/Frickeldave/HomeNet/actions/workflows/host-waltraud.yaml
 ```
+
+Der **Deploy-Check** pollt bis zu 30 Sekunden auf Abschluss des Workflows:
+- **Bei Erfolg (< 30s)**: `Status: ✓ success`
+- **Bei Fehler (< 30s)**: `Status: ✗ <conclusion>` + Error-Log (letzte 15 Zeilen)
+- **Nach 30s Timeout**: `Status: ▶ in_progress (timeout after 30s)` + Monitor-Link
+  - Die Action läuft weiter, wird aber nicht mehr gewartet
+  - Link zum manuellen Überwachen wird ausgegeben
 
 Bei Fehlern werden die letzten 30 Zeilen der Ausgabe angezeigt.

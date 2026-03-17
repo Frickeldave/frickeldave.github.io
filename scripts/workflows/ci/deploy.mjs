@@ -276,7 +276,7 @@ function sleep(ms) {
 async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
   const repoFlag = owner && repoName ? `--repo ${owner}/${repoName}` : "";
   const maxWaitForStart = 30; // seconds to wait for run to appear
-  const maxWaitForFinish = 120; // seconds to wait for run to complete
+  const maxWaitForFinish = 30; // seconds to wait for run to complete (then just show link)
   const pushTime = Date.now();
 
   // Phase 1: Wait for the workflow run to appear
@@ -372,7 +372,7 @@ async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
     }
   } else {
     console.log(
-      `  Status: ${runData.status} (still running after ${maxWaitForFinish}s)`
+      `  Status: ▶ in_progress (timeout after ${maxWaitForFinish}s)`
     );
     console.log(`  Monitor: ${runData.url}`);
   }
