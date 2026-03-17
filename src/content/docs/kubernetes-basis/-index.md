@@ -21,3 +21,4 @@ Ingress-Routing erreichbar.
   Code-Server deployen
 - [k8s - Teil 2: Workloads & Networking](/docs/kubernetes-basis/tag-2) -- Resources, Probes, PVCs,
   Ingress
+- [Glossar](/docs/kubernetes-basis/glossar) -- Alle Kubernetes-Fachbegriffe auf einen Blick

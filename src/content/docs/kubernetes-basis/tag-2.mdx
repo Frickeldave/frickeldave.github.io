@@ -11,6 +11,11 @@ imageAlt: "Kubernetes Basis - Teil 2 Workloads & Networking"
 
 ## Workloads & Networking
 
+Am zweiten Tag machen wir unsere Deployments produktionsreif. Wir fügen Resource Limits, Health
+Checks und Deployment-Strategien hinzu, lagern Konfiguration in ConfigMaps und Secrets aus, deployen
+Home Assistant und Nextcloud mit persistentem Speicher und richten schließlich Ingress-Routing für
+alle vier Anwendungen ein.
+
 ## Zeitplan
 
 | Zeit           | Dauer  | Block                | Inhalt                                     |
@@ -35,7 +40,11 @@ imageAlt: "Kubernetes Basis - Teil 2 Workloads & Networking"
 
 ## Recap
 
-Chromium und Code-Server laufen seit Tag 1. Kurzer Status-Check:
+Tag 1 ist vorbei -- aber unsere Deployments laufen noch. Bevor wir sie produktionsreif machen,
+stellen wir sicher, dass alles noch läuft und die Services erreichbar sind. Hier ein kurzer
+Status-Check, dann beginnen wir mit Resource Limits, Health Checks und Deployment-Strategien.
+
+Kurzer Status-Check:
 
 ```bash
 kubectl get all -n k8s-training
@@ -58,13 +67,17 @@ kubectl logs <pod-name> -n k8s-training
 
 ## Pods im Detail
 
+Bisher haben wir Pods nur als einfache Container-Wrapper kennengelernt. Tatsächlich können Pods
+mehrere Container enthalten, die denselben Netzwerk-Namespace und dieselben Volumes teilen. Dieses
+Konzept wird genutzt, um eng gekoppelte Prozesse gemeinsam zu deployen und zu verwalten.
+
 ### Container-Typen
 
 | Typ                   | Zweck                                   | Lebensdauer                   |
 | --------------------- | --------------------------------------- | ----------------------------- |
-| **App-Container**     | Hauptanwendung                          | Läuft dauerhaft               |
-| **Init-Container**    | Initialisierung vor dem App-Start       | Läuft einmalig bis Abschluss  |
-| **Sidecar-Container** | Unterstützende Dienste (Logging, Proxy) | Läuft dauerhaft neben der App |
+| [**App-Container**](/docs/kubernetes-basis/glossar#app-container)     | Hauptanwendung                          | Läuft dauerhaft               |
+| [**Init-Container**](/docs/kubernetes-basis/glossar#init-container)    | Initialisierung vor dem App-Start       | Läuft einmalig bis Abschluss  |
+| [**Sidecar-Container**](/docs/kubernetes-basis/glossar#sidecar-container) | Unterstützende Dienste (Logging, Proxy) | Läuft dauerhaft neben der App |
 
 **Regel:** Mehrere Container im selben Pod nur, wenn sie eng gekoppelt sind. Ansonsten separate Pods
 verwenden.
@@ -132,16 +145,14 @@ spec:
           volumeMounts:
             - name: log-volume
               mountPath: /var/log
-      initContainers:
-        - name: log-shipper
+        - name: log-shipper      # Sidecar: zweiter Container im selben Pod
           image: busybox:1.28
-          restartPolicy: Always
           command:
             - sh
             - -c
             - "tail -F /var/log/app.log"
           volumeMounts:
-            - name: log-volume
+            - name: log-volume   # Dasselbe Volume wie der App-Container
               mountPath: /var/log
       volumes:
         - name: log-volume
@@ -152,8 +163,8 @@ spec:
 
 | Konzept      | Beschreibung                                                                     |
 | ------------ | -------------------------------------------------------------------------------- |
-| **requests** | Mindestgarantie -- Scheduler platziert Pod nur auf Nodes mit genügend Ressourcen |
-| **limits**   | Obergrenze -- CPU wird gedrosselt, bei Speicherüberschreitung OOM-Kill           |
+| [**requests**](/docs/kubernetes-basis/glossar#resource-limits) | Mindestgarantie -- Scheduler platziert Pod nur auf Nodes mit genügend Ressourcen |
+| [**limits**](/docs/kubernetes-basis/glossar#resource-limits)   | Obergrenze -- CPU wird gedrosselt, bei Speicherüberschreitung OOM-Kill           |
 
 **CPU-Einheiten:** `1` = 1 Kern, `500m` = 0,5 Kerne, `250m` = 0,25 Kerne.
 
@@ -161,7 +172,7 @@ spec:
 
 ### QoS-Klassen
 
-| QoS-Klasse     | Bedingung                               | Eviction-Priorität           |
+| [QoS-Klasse](/docs/kubernetes-basis/glossar#qos-klassen)     | Bedingung                               | Eviction-Priorität           |
 | -------------- | --------------------------------------- | ---------------------------- |
 | **Guaranteed** | requests == limits (für CPU und Memory) | Niedrigste (zuletzt evicted) |
 | **Burstable**  | requests < limits                       | Mittel                       |
@@ -271,7 +282,7 @@ kubectl apply -f code-server-deployment.yaml
 
 ### LimitRange
 
-Eine LimitRange setzt Standardwerte für alle Container, die keine eigenen Resources angeben.
+Eine [LimitRange](/docs/kubernetes-basis/glossar#limitrange) setzt Standardwerte für alle Container, die keine eigenen Resources angeben.
 
 Datei `limitrange.yaml`:
 
@@ -331,13 +342,17 @@ kubectl delete pod test-pod -n k8s-training
 
 ## Health Checks
 
+Kubernetes weiß nicht automatisch, ob eine Anwendung wirklich funktioniert -- nur ob ein Container
+läuft. Health Checks (Probes) geben Kubernetes diese Intelligenz: Sie prüfen regelmäßig den Zustand
+eines Containers und lösen automatische Aktionen aus, wenn etwas nicht stimmt.
+
 ### Probe-Typen
 
 | Probe               | Frage                                 | Aktion bei Fehlschlag                      |
 | ------------------- | ------------------------------------- | ------------------------------------------ |
-| **Liveness Probe**  | Läuft die Anwendung noch?             | Container wird neu gestartet               |
-| **Readiness Probe** | Kann die Anwendung Traffic empfangen? | Pod wird aus Service-Endpoints entfernt    |
-| **Startup Probe**   | Ist die Anwendung fertig gestartet?   | Liveness/Readiness pausiert bis Startup OK |
+| [**Liveness Probe**](/docs/kubernetes-basis/glossar#liveness-probe)  | Läuft die Anwendung noch?             | Container wird neu gestartet               |
+| [**Readiness Probe**](/docs/kubernetes-basis/glossar#readiness-probe) | Kann die Anwendung Traffic empfangen? | Pod wird aus Service-Endpoints entfernt    |
+| [**Startup Probe**](/docs/kubernetes-basis/glossar#startup-probe)   | Ist die Anwendung fertig gestartet?   | Liveness/Readiness pausiert bis Startup OK |
 
 ### Probe-Mechanismen
 
@@ -406,7 +421,20 @@ kubectl delete pod liveness-demo -n k8s-training
 
 ## Probes anwenden
 
+Jetzt konfigurieren wir Probes für unsere beiden Anwendungen. Chromium und Code-Server haben
+unterschiedliche Startzeiten -- Chromium ist speicher- und renderingintensiv und braucht beim Start
+deutlich länger als Code-Server. Die Probe-Konfiguration muss das berücksichtigen, sonst markiert
+Kubernetes neue Container zu früh als "ungesund" und startet sie endlos neu. Wir erweitern die
+bestehenden YAML-Manifeste um `startupProbe`, `livenessProbe` und `readinessProbe`.
+
 ### Chromium Probes
+
+<Notice type="warning">
+  **HTTP vs. HTTPS in Probes:** Chromium läuft auf HTTP (Port 3000) -- kein `scheme: HTTPS`
+  erforderlich. Code-Server hingegen läuft auf HTTPS (Port 8443) und benötigt `scheme: HTTPS`
+  explizit. Fehlt das Schema, schlägt die Probe **still fehl** -- kein Fehlermeldung, nur ein
+  Pod, der nie `Ready` wird. Typische Fehlerquelle beim ersten Aufsetzen!
+</Notice>
 
 Datei `chromium-deployment.yaml` erweitern (Resources + Probes):
 
@@ -512,18 +540,21 @@ spec:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             failureThreshold: 30
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             periodSeconds: 15
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             periodSeconds: 5
             failureThreshold: 1
 ```
@@ -561,11 +592,15 @@ Der Pod verschwindet aus den Endpoints und bekommt keinen Traffic mehr. Setze de
 
 ## Deploy-Strategien
 
+Wie Kubernetes alte Pods durch neue ersetzt, ist keine Kleinigkeit -- falsch konfiguriert entstehen
+Ausfallzeiten oder Datenkonflikte. Kubernetes bietet zwei Strategien, zwischen denen du je nach
+Anwendungstyp wählen kannst.
+
 ### Vergleich
 
 | Strategie         | Verhalten                                    | Ausfallzeit | Einsatz                                               |
 | ----------------- | -------------------------------------------- | ----------- | ----------------------------------------------------- |
-| **RollingUpdate** | Pods werden schrittweise ersetzt             | Keine       | Standard, Produktion                                  |
+| [**RollingUpdate**](/docs/kubernetes-basis/glossar#rollingupdate) | Pods werden schrittweise ersetzt             | Keine       | Standard, Produktion                                  |
 | **Recreate**      | Alle alten Pods beendet, dann neue gestartet | Kurz        | Wenn alte + neue Version nicht parallel laufen können |
 
 ### Konfiguration
@@ -632,18 +667,21 @@ spec:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             failureThreshold: 30
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             periodSeconds: 15
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             periodSeconds: 5
             failureThreshold: 1
 ```
@@ -651,6 +689,10 @@ spec:
 ---
 
 ## Rolling Updates
+
+Mit der konfigurierten RollingUpdate-Strategie führen wir jetzt ein echtes Update durch -- und
+lernen, im Fehlerfall sofort zurückzurollen. Als Beispiel aktualisieren wir den Code-Server auf
+eine neuere Version und beobachten den Prozess live.
 
 ### Image-Update
 
@@ -748,7 +790,7 @@ Deployment-YAML. Das hat Nachteile:
 
 ### ConfigMap
 
-Eine ConfigMap speichert nicht-sensible Konfigurationsdaten als Key-Value-Paare.
+Eine [ConfigMap](/docs/kubernetes-basis/glossar#configmap) speichert nicht-sensible Konfigurationsdaten als Key-Value-Paare.
 
 Datei `app-configmap.yaml`:
 
@@ -770,8 +812,21 @@ kubectl apply -f app-configmap.yaml
 
 ### Secret
 
-Ein Secret speichert sensible Daten (Passwörter, Tokens, Zertifikate). Werte werden Base64-kodiert
-gespeichert.
+Ein [Secret](/docs/kubernetes-basis/glossar#secret) speichert sensible Daten (Passwörter, Tokens, Zertifikate). Werte werden Base64-kodiert
+gespeichert. **Wichtig:** Base64 ist keine Verschlüsselung, sondern nur eine Kodierung -- die Daten
+sind im Cluster im Klartext lesbar. Für echte Produktions-Sicherheit braucht ihr Encryption at Rest
+oder ein externes Secret-Management (z.B. HashiCorp Vault).
+
+```bash
+# Das sieht aus wie Verschlüsselung:
+kubectl get secret code-server-secret -n k8s-training -o yaml
+# data:
+#   PASSWORD: dHJhaW5pbmcyMDI0
+
+# Aber Base64 ist trivial dekodierbar:
+echo "dHJhaW5pbmcyMDI0" | base64 -d
+# Ausgabe: training2024
+```
 
 Datei `code-server-secret.yaml` mit `stringData` (Klartext, wird automatisch kodiert):
 
@@ -858,18 +913,21 @@ spec:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             failureThreshold: 30
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             periodSeconds: 15
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /
               port: 8443
+              scheme: HTTPS
             periodSeconds: 5
             failureThreshold: 1
 ```
@@ -985,9 +1043,14 @@ kubectl create secret generic code-server-secret \
 
 ## Security
 
+Bisher laufen unsere Deployments ohne Sicherheitsrichtlinien -- Container starten standardmäßig mit
+mehr Rechten als nötig. Das Prinzip "Least Privilege" besagt: Ein Prozess bekommt nur genau die
+Rechte, die er wirklich braucht. `SecurityContext` setzt dieses Prinzip in Kubernetes um und schützt
+den Cluster vor Angriffen, die auf übermäßige Container-Berechtigungen setzen.
+
 ### SecurityContext
 
-Ein SecurityContext definiert Sicherheitseinstellungen für Pods und Container.
+Ein [SecurityContext](/docs/kubernetes-basis/glossar#securitycontext) definiert Sicherheitseinstellungen für Pods und Container.
 
 | Einstellung                | Beschreibung                              |
 | -------------------------- | ----------------------------------------- |
@@ -1103,13 +1166,18 @@ kubectl exec secure-nginx -n k8s-training -- touch /test.txt
 
 ## PVs & PVCs
 
+Container-Dateisysteme sind flüchtig -- stirbt ein Pod, sind alle Daten weg. Wie wir in Übung 4
+gesehen haben, verschwindet selbst eine einfache Textdatei nach einem Pod-Neustart. Für Anwendungen
+wie Home Assistant oder Nextcloud ist das keine Option. Persistent Volumes (PVs) und Persistent
+Volume Claims (PVCs) entkoppeln Storage von der Pod-Lebensdauer.
+
 ### Konzepte
 
 | Konzept                         | Beschreibung                                                          |
 | ------------------------------- | --------------------------------------------------------------------- |
-| **PersistentVolume (PV)**       | Ein Stück Storage im Cluster, bereitgestellt von Admin oder dynamisch |
-| **PersistentVolumeClaim (PVC)** | Anforderung eines Pods an Storage (Größe, Zugriffsart)                |
-| **StorageClass**                | Definiert, wie PVs dynamisch erstellt werden (Provisioner, Parameter) |
+| [**PersistentVolume (PV)**](/docs/kubernetes-basis/glossar#persistentvolume)       | Ein Stück Storage im Cluster, bereitgestellt von Admin oder dynamisch |
+| [**PersistentVolumeClaim (PVC)**](/docs/kubernetes-basis/glossar#persistentvolumeclaim) | Anforderung eines Pods an Storage (Größe, Zugriffsart)                |
+| [**StorageClass**](/docs/kubernetes-basis/glossar#storageclass)                | Definiert, wie PVs dynamisch erstellt werden (Provisioner, Parameter) |
 
 ### Lifecycle
 
@@ -1390,6 +1458,10 @@ kubectl exec $(kubectl get pod -l app=homeassistant -n k8s-training -o jsonpath=
 
 ## Services & DNS
 
+Vor dem Ingress-Setup stellen wir alle Services auf ClusterIP um und verstehen, wie
+Kubernetes-internes DNS funktioniert. Das ist die Grundlage dafür, dass der Ingress Controller die
+Services intern ansprechen kann -- ohne NodePorts nach außen zu exponieren.
+
 ### Service-Typen
 
 | Typ              | Zugriff                                    | Beispiel aus dem Projekt      |
@@ -1432,8 +1504,8 @@ kubectl run dns-test2 --rm -it --image=busybox:1.28 --restart=Never -n k8s-train
 
 ### Was ist Ingress?
 
-Ingress stellt HTTP/HTTPS-Routing von außen in den Cluster bereit. Statt jeden Service über einen
-eigenen NodePort zu exponieren, wird ein zentraler Ingress Controller verwendet.
+[Ingress](/docs/kubernetes-basis/glossar#ingress) stellt HTTP/HTTPS-Routing von außen in den Cluster bereit. Statt jeden Service über einen
+eigenen NodePort zu exponieren, wird ein zentraler [Ingress Controller](/docs/kubernetes-basis/glossar#ingress-controller) verwendet.
 
 **Host-basiertes Routing:** Verschiedene Hostnamen werden auf verschiedene Services geroutet:
 

@@ -1,0 +1,452 @@
+---
+visible: true
+title: k8s - Glossar
+description: Alle Kubernetes-Fachbegriffe der Basis-Schulung auf einen Blick.
+draft: false
+image: "@assets/docs/kubernetes-basis/knba-005.png"
+imageAlt: "Kubernetes Basis Schulung - Glossar"
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+Alle wichtigen Begriffe der Kubernetes Basis-Schulung auf einen Blick. In den Schulungsunterlagen
+sind Fachbegriffe bei ihrer ersten Verwendung mit diesem Glossar verlinkt.
+
+## Kernkonzepte
+
+### Cluster
+
+Eine Gruppe von Maschinen (physisch oder virtuell), die gemeinsam Container-Workloads ausführen.
+Ein Cluster besteht aus mindestens einer **Control Plane** und einem oder mehreren **Worker Nodes**.
+In der Schulung wird ein 3-Knoten-Cluster verwendet (1 Control Plane, 2 Worker Nodes).
+
+### Control Plane
+
+Das "Gehirn" eines Kubernetes-Clusters. Sie enthält alle Verwaltungskomponenten
+([kube-apiserver](#kube-apiserver), [etcd](#etcd), [kube-scheduler](#kube-scheduler),
+[kube-controller-manager](#kube-controller-manager)) und trifft alle Entscheidungen darüber, wo und
+wie Pods gestartet werden. Endnutzer interagieren mit der Control Plane über
+[kubectl](#kubectl).
+
+### Worker Node
+
+Eine Maschine im Cluster, auf der Container tatsächlich ausgeführt werden. Jeder Node enthält
+[kubelet](#kubelet), [kube-proxy](#kube-proxy) und eine [Container Runtime](#container-runtime). In
+einer [k3d](#k3d)-Umgebung sind Nodes Docker-Container; in der Produktion physische Server oder VMs.
+
+### Pod
+
+Die kleinste deploybare Einheit in Kubernetes. Ein Pod kapselt einen oder mehrere eng gekoppelte
+Container, die sich Netzwerk-Namespace und Volumes teilen. Pods sind kurzlebig -- werden sie
+gelöscht oder crashen sie, erstellt ein [Deployment](#deployment) automatisch einen Ersatz-Pod.
+
+### Deployment
+
+Beschreibt den **gewünschten Zustand** einer Anwendung (z.B. "1 Instanz von Chromium soll laufen").
+Kubernetes sorgt kontinuierlich dafür, dass dieser Soll-Zustand eingehalten wird. Ein Deployment
+verwaltet intern ein [ReplicaSet](#replicaset), das wiederum die einzelnen [Pods](#pod) steuert.
+
+### ReplicaSet
+
+Stellt sicher, dass zu jedem Zeitpunkt eine bestimmte Anzahl identischer Pods läuft. Wird in der
+Regel nicht direkt erstellt, sondern automatisch durch ein [Deployment](#deployment) verwaltet. Beim
+[Rolling Update](#rollingupdate) existieren kurzzeitig zwei ReplicaSets gleichzeitig (alt und neu).
+
+### Service
+
+Gibt einer Gruppe von Pods eine **stabile Netzwerk-Adresse**. Da Pods kurzlebig sind und bei jedem
+Neustart neue IP-Adressen bekommen, sorgt ein Service für konstante Erreichbarkeit. Er leitet
+Traffic über [Label-Selektoren](#label-und-selector) an die passenden Pods weiter.
+
+Wichtige Service-Typen:
+
+- **[ClusterIP](#clusterip)** -- nur innerhalb des Clusters erreichbar (Standard)
+- **[NodePort](#nodeport)** -- von außen über `<Node-IP>:<Port>` erreichbar
+- **LoadBalancer** -- nutzt einen externen Load Balancer (Cloud-Umgebungen)
+
+### Namespace
+
+Ein logischer Isolationsbereich innerhalb eines Clusters. Er trennt Ressourcen verschiedener Teams,
+Projekte oder Umgebungen (z.B. `dev`, `staging`, `prod`) voneinander. Berechtigungen und
+Ressourcenlimits lassen sich pro Namespace vergeben.
+
+Standard-Namespaces: `default`, `kube-system`, `kube-public`, `kube-node-lease`.
+
+```bash
+kubectl create namespace k8s-training         # Namespace anlegen
+kubectl get pods -n k8s-training              # Pods in einem Namespace anzeigen
+kubectl config set-context --current \
+  --namespace=k8s-training                    # Standard-Namespace setzen
+```
+
+### Label und Selector
+
+**Labels** sind Key-Value-Paare, die Kubernetes-Ressourcen angehängt werden (z.B. `app: chromium`).
+**Selektoren** filtern Ressourcen anhand dieser Labels. Services finden ihre Pods über
+Label-Selektoren; Deployments steuern damit ihre ReplicaSets.
+
+```yaml
+metadata:
+  labels:
+    app: chromium          # Label
+spec:
+  selector:
+    matchLabels:
+      app: chromium        # Selector -- findet Pods mit diesem Label
+```
+
+### Self-Healing
+
+Die Fähigkeit von Kubernetes, automatisch auf Ausfälle zu reagieren: Crashende oder gelöschte Pods
+werden durch das zugehörige [ReplicaSet](#replicaset) automatisch neu erstellt, bis die gewünschte
+Anzahl an Replicas wieder erreicht ist. Dieses Verhalten wird durch den
+[kube-controller-manager](#kube-controller-manager) gesteuert.
+
+## Netzwerk
+
+### Ingress
+
+Eine Ingress-Ressource definiert Routing-Regeln für eingehenden HTTP/HTTPS-Traffic. Sie ermöglicht
+es, mehrere Services über einen einzigen Einstiegspunkt (z.B. eine öffentliche IP) erreichbar zu
+machen, basierend auf dem Hostnamen (`chrome.beispiel.de`) oder dem URL-Pfad (`/api`). Für die
+Wirkung wird ein [Ingress Controller](#ingress-controller) benötigt.
+
+### Ingress Controller
+
+Ein laufender Proxy im Cluster (z.B. nginx-ingress), der [Ingress](#ingress)-Ressourcen auswertet
+und den Traffic entsprechend an die Ziel-Services weiterleitet. Ohne einen Ingress Controller haben
+Ingress-Ressourcen keine Wirkung.
+
+```bash
+kubectl get ingressclass    # Verfügbare Ingress Controller anzeigen
+kubectl get ingress -n k8s-training
+```
+
+### ClusterIP
+
+Der Standard-Service-Typ. Ein ClusterIP-Service ist **nur innerhalb des Clusters** erreichbar und
+erhält eine clusterinterne IP-Adresse. Er eignet sich für die interne Kommunikation zwischen Diensten
+(z.B. von Chromium zu einem Backend-Service).
+
+### NodePort
+
+Ein NodePort-Service öffnet einen statischen Port (Standard: 30000–32767) auf **jedem Worker Node**.
+Dadurch ist der Service von außen über `<Node-IP>:<NodePort>` erreichbar. In der Schulung wird
+NodePort für den ersten externen Zugriff auf Chromium und Code-Server verwendet, bevor Ingress
+eingerichtet wird.
+
+### NetworkPolicy
+
+Definiert Netzwerk-Zugangsregeln zwischen Pods innerhalb eines Clusters -- vergleichbar mit einer
+Firewall für Pod-to-Pod-Kommunikation. Ohne NetworkPolicy kann jeder Pod mit jedem anderen Pod im
+Cluster kommunizieren. In Firmen-Clustern sind NetworkPolicies häufig vorkonfiguriert und können
+einzelne Schulungsübungen einschränken.
+
+```bash
+kubectl get networkpolicies -n k8s-training   # Aktive Policies anzeigen
+```
+
+## Speicher
+
+### Volume
+
+Bindet einen Speicherbereich an einen oder mehrere Container in einem Pod. Anders als bei
+Docker-Volumes sind Kubernetes-Volumes an den Pod-Lebenszyklus gebunden -- mit Ausnahme von
+[PersistentVolumes](#persistentvolume).
+
+### emptyDir
+
+Wird erstellt, wenn ein Pod startet, und gelöscht, wenn der Pod entfernt wird. Eignet sich für
+temporäre Daten (z.B. Render-Caches) oder den Datenaustausch zwischen Containern im selben Pod. Mit
+`medium: Memory` wird das Volume im RAM angelegt -- schnell, aber flüchtig.
+
+```yaml
+volumes:
+  - name: shm
+    emptyDir:
+      medium: Memory
+      sizeLimit: 1Gi
+```
+
+### PersistentVolume
+
+Ein PersistentVolume (PV) ist ein Stück Speicher im Cluster, das **unabhängig vom Pod-Lebenszyklus**
+existiert. Es wird vom Cluster-Administrator oder dynamisch per [StorageClass](#storageclass)
+bereitgestellt und bleibt erhalten, auch wenn der Pod gelöscht wird.
+
+### PersistentVolumeClaim
+
+Ein PersistentVolumeClaim (PVC) ist eine **Anfrage** eines Pods nach persistentem Speicher. Er
+beschreibt die benötigte Größe und den Zugriffsmodus (`ReadWriteOnce`, `ReadWriteMany`). Kubernetes
+bindet den PVC automatisch an ein passendes [PersistentVolume](#persistentvolume).
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nextcloud-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+```
+
+### StorageClass
+
+Definiert, wie [PersistentVolumes](#persistentvolume) dynamisch erstellt werden. Sie gibt an,
+welcher Provisioner (z.B. für AWS EBS, NFS oder lokalen Speicher) verwendet wird. Bei Verwendung der
+Default-StorageClass werden PVCs automatisch erfüllt, ohne dass manuell ein PV angelegt werden muss.
+
+```bash
+kubectl get storageclass    # Verfügbare StorageClasses anzeigen
+```
+
+## Konfiguration
+
+### ConfigMap
+
+Speichert nicht-sensible Konfigurationsdaten als Key-Value-Paare. Container können auf ConfigMaps
+als Umgebungsvariablen (`envFrom`) oder als gemountete Dateien zugreifen. Passwörter oder Tokens
+gehören **nicht** in eine ConfigMap, sondern in ein [Secret](#secret).
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  PUID: "1000"
+  TZ: "Europe/Berlin"
+```
+
+### Secret
+
+Speichert sensible Daten wie Passwörter, API-Keys oder TLS-Zertifikate. Die Werte werden
+Base64-kodiert gespeichert -- das ist **keine Verschlüsselung**. Für echte Produktionssicherheit
+werden zusätzliche Maßnahmen wie Encryption at Rest oder externe Secret-Manager (z.B. HashiCorp
+Vault) benötigt.
+
+```bash
+kubectl get secret <name> -n k8s-training -o yaml
+kubectl get secret <name> -n k8s-training \
+  -o jsonpath='{.data.PASSWORD}' | base64 -d   # Wert dekodieren
+```
+
+### kubeconfig
+
+Eine YAML-Datei (Standard: `~/.kube/config`), die kubectl mitteilt, mit welchem Cluster es sich
+verbinden soll. Sie enthält Cluster-Adressen, Authentifizierungsinfos und Kontexte. Mehrere Cluster
+können in einer kubeconfig zusammengefasst und per Kontext gewechselt werden.
+
+```bash
+kubectl config view              # kubeconfig anzeigen
+kubectl config current-context   # aktiven Kontext anzeigen
+kubectl config use-context <name>  # Kontext wechseln
+```
+
+### YAML-Manifest
+
+Eine YAML-Datei, die den gewünschten Zustand einer Kubernetes-Ressource beschreibt. Alle Manifeste
+haben vier Pflichtfelder: `apiVersion`, `kind`, `metadata` und `spec`. Manifeste werden mit
+`kubectl apply -f <datei.yaml>` auf den Cluster angewendet (deklarativer Ansatz).
+
+```yaml
+apiVersion: apps/v1     # API-Version
+kind: Deployment        # Ressourcentyp
+metadata:
+  name: chromium        # Name
+  namespace: k8s-training
+spec:                   # Gewünschter Zustand
+  replicas: 1
+```
+
+## Betrieb und Gesundheit
+
+### Liveness Probe
+
+Prüft regelmäßig, ob ein Container noch funktioniert ("lebt"). Schlägt sie fehl, startet Kubernetes
+den Container automatisch neu. Eignet sich für die Erkennung von Deadlocks oder hängenden Prozessen,
+die nach außen noch erreichbar erscheinen, aber nicht mehr korrekt arbeiten.
+
+### Readiness Probe
+
+Prüft, ob ein Container bereit ist, Traffic zu empfangen. Solange sie fehlschlägt, wird der Pod aus
+den [Service](#service)-Endpoints entfernt und bekommt keinen Traffic. Eignet sich für Anwendungen,
+die nach dem Start noch Initialisierungszeit benötigen.
+
+### Startup Probe
+
+Prüft, ob eine Anwendung erfolgreich gestartet ist. Während die Startup Probe läuft, sind Liveness
+und Readiness Probe deaktiviert. Eignet sich für langsam startende Anwendungen (z.B. Chromium), bei
+denen die Liveness Probe sonst zu früh auslösen würde.
+
+### Resource Limits
+
+Definieren für jeden Container, wie viel CPU und Arbeitsspeicher er mindestens bekommt (`requests`)
+und maximal verbrauchen darf (`limits`). `requests` beeinflussen die Scheduling-Entscheidung des
+[kube-schedulers](#kube-scheduler); beim Überschreiten des Speicher-Limits wird der Container mit
+OOM-Kill beendet. CPU wird gedrosselt, aber nicht hart beendet.
+
+```yaml
+resources:
+  requests:
+    cpu: "250m"       # 0,25 CPU-Kerne (Mindestgarantie)
+    memory: "512Mi"   # 512 MiB RAM (Mindestgarantie)
+  limits:
+    cpu: "1000m"      # 1 CPU-Kern (Obergrenze)
+    memory: "1Gi"     # 1 GiB RAM (Obergrenze -- OOM-Kill bei Überschreitung)
+```
+
+### QoS-Klassen
+
+Kubernetes teilt Pods anhand ihrer Resource-Konfiguration in drei Quality-of-Service-Klassen ein,
+die die Eviction-Reihenfolge bei Ressourcenknappheit bestimmen:
+
+| Klasse         | Bedingung                        | Eviction-Priorität   |
+| -------------- | -------------------------------- | -------------------- |
+| **Guaranteed** | `requests == limits` (CPU + RAM) | Niedrigste (zuletzt) |
+| **Burstable**  | `requests < limits`              | Mittel               |
+| **BestEffort** | Keine `requests`/`limits`        | Höchste (zuerst)     |
+
+```bash
+kubectl describe pod <pod-name> -n k8s-training | grep "QoS Class"
+```
+
+### RollingUpdate
+
+Die Standard-Deployment-Strategie in Kubernetes. Alte Pods werden schrittweise durch neue ersetzt,
+sodass der Dienst während des Updates verfügbar bleibt. Die Parameter `maxSurge` und
+`maxUnavailable` steuern, wie viele Pods gleichzeitig hoch- bzw. runtergefahren werden. Mit
+`kubectl rollout undo` kann jederzeit zurückgerollt werden.
+
+```bash
+kubectl rollout status deployment/<name> -n k8s-training
+kubectl rollout history deployment/<name> -n k8s-training
+kubectl rollout undo deployment/<name> -n k8s-training
+```
+
+### SecurityContext
+
+Definiert Sicherheitsrichtlinien für Pods oder einzelne Container. Auf Pod-Ebene gelten die
+Einstellungen für alle Container; Container-Level-Einstellungen überschreiben Pod-Level.
+
+| Einstellung                | Beschreibung                              |
+| -------------------------- | ----------------------------------------- |
+| `runAsNonRoot`             | Container muss als nicht-root User laufen |
+| `allowPrivilegeEscalation` | Verhindert Privilege Escalation (setuid)  |
+| `readOnlyRootFilesystem`   | Root-Filesystem wird read-only gemountet  |
+| `capabilities.drop`        | Linux Capabilities entfernen              |
+
+### LimitRange
+
+Setzt Standardwerte und Obergrenzen für Ressourcen innerhalb eines [Namespaces](#namespace).
+Container ohne explizite Resource-Angaben bekommen automatisch die in der LimitRange definierten
+Defaults. Verhindert, dass ein einzelner Container den gesamten Node-Speicher beansprucht.
+
+## Container-Typen
+
+### App-Container
+
+Der Haupt-Container in einem Pod, der die eigentliche Anwendungslogik ausführt. Er läuft dauerhaft,
+solange der Pod existiert.
+
+### Init-Container
+
+Laufen **sequenziell**, bevor der App-Container startet. Jeder Init-Container muss erfolgreich
+abschließen (Exit-Code 0), bevor der nächste startet. Typische Aufgaben: auf eine Datenbank warten,
+Konfigurationsdateien vorbereiten, Schema-Migrationen ausführen.
+
+```yaml
+spec:
+  initContainers:
+    - name: wait-for-db
+      image: busybox:1.28
+      command: ["sh", "-c", "until nslookup db; do sleep 2; done"]
+  containers:
+    - name: app
+      image: myapp:1.0
+```
+
+### Sidecar-Container
+
+Laufen **dauerhaft** neben dem App-Container im selben Pod und teilen sich Netzwerk und Volumes.
+Typische Anwendungsfälle: Log-Aggregation, Metrics-Exporter, Service-Mesh-Proxies (z.B. Envoy).
+
+## Control Plane Komponenten
+
+### kube-apiserver
+
+Der zentrale Einstiegspunkt für alle Kubernetes-Operationen. Jeder `kubectl`-Befehl kommuniziert
+mit dem API-Server. Er authentifiziert Anfragen, validiert Ressourcen und speichert den Zustand in
+[etcd](#etcd).
+
+### etcd
+
+Eine verteilte Key-Value-Datenbank und das "Gedächtnis" des Clusters. Alle Kubernetes-Ressourcen
+(Pods, Deployments, Services ...) werden hier gespeichert. Ein Backup von etcd ist das Fundament
+jeder Cluster-Notfallwiederherstellung.
+
+### kube-scheduler
+
+Entscheidet, auf welchem Node ein neu erstellter Pod laufen soll. Er berücksichtigt dabei
+verfügbare Node-Ressourcen, [Resource Requests](#resource-limits), Affinitätsregeln sowie Taints und
+Tolerations.
+
+### kube-controller-manager
+
+Betreibt eine Reihe von Control-Loops (Controller), die den Cluster-Zustand überwachen und bei
+Abweichungen Maßnahmen ergreifen -- z.B. erstellt der ReplicaSet-Controller fehlende Pods nach
+([Self-Healing](#self-healing)).
+
+### kubelet
+
+Ein Agent, der auf jedem Worker Node läuft. Es kommuniziert mit dem [kube-apiserver](#kube-apiserver),
+empfängt Pod-Spezifikationen und sorgt dafür, dass die entsprechenden Container über die
+[Container Runtime](#container-runtime) gestartet werden.
+
+### kube-proxy
+
+Läuft auf jedem Node und pflegt die Netzwerkregeln (iptables/IPVS), die dafür sorgen, dass Traffic
+an [Services](#service) korrekt zu den zugehörigen Pods weitergeleitet wird.
+
+### Container Runtime
+
+Die Software, die Container tatsächlich startet und verwaltet. Kubernetes kommuniziert mit der
+Runtime über das Container Runtime Interface (CRI). Typische Runtimes: `containerd`, `CRI-O`.
+Docker ist in aktuellen Kubernetes-Versionen keine direkt unterstützte Runtime mehr.
+
+## Werkzeuge
+
+### kubectl
+
+Das Kommandozeilen-Tool zur Steuerung von Kubernetes-Clustern. Es kommuniziert über den
+[kube-apiserver](#kube-apiserver) mit dem Cluster. Die Verbindungskonfiguration kommt aus der
+[kubeconfig](#kubeconfig)-Datei.
+
+```bash
+kubectl get <ressource>                    # Auflisten
+kubectl get <ressource> -o wide            # Mit Details
+kubectl describe <ressource> <name>        # Detailansicht
+kubectl logs <pod>                         # Container-Logs
+kubectl apply -f <datei.yaml>              # Erstellen/Aktualisieren
+kubectl delete <ressource> <name>          # Löschen
+kubectl exec -it <pod> -- bash             # Shell im Container öffnen
+kubectl explain <ressource>                # Eingebaute Dokumentation
+```
+
+### k3d
+
+Ein Tool, das [k3s](https://k3s.io/) (eine leichtgewichtige Kubernetes-Distribution) in
+Docker-Containern ausführt. Es ermöglicht das schnelle Erstellen von Kubernetes-Clustern für lokale
+Entwicklung und Tests. In der Schulung werden Control Plane und Worker Nodes als Docker-Container auf
+dem lokalen System simuliert.
+
+```bash
+k3d cluster create mycluster --servers 1 --agents 2 \
+  -p "443:443@loadbalancer" -p "80:80@loadbalancer"
+k3d cluster list
+k3d cluster delete mycluster
+k3d kubeconfig get mycluster
+```
