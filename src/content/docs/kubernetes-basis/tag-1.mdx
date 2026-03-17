@@ -7,6 +7,9 @@ image: "@assets/docs/kubernetes-basis/knba-002.png"
 imageAlt: "Kubernetes Basis - Teil 1 Grundlagen"
 ---
 
+import { Image } from "astro:assets";
+import knba101 from "@assets/docs/kubernetes-basis/knba-101.png";
+
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Grundlagen & Einstieg
@@ -57,9 +60,10 @@ Am Ende der zwei Tage sieht unser Cluster so aus -- vier Anwendungen hinter eine
 ```mermaid
 graph TD
     IC["Ingress Controller"]
-    IC --> CHR["Chromium<br/>Browser"]
+    IC --> CR["Chromium<br/>Browser"]
     IC --> CS["Code-Server<br/>IDE"]
-    IC --> HANC["Home Assistant<br/>+ Nextcloud"]
+    IC --> HA["Home<br/>Assistant"]
+    IC --> NC["Nextcloud"]
 ```
 
 ### DevOps-Workflow
@@ -81,6 +85,12 @@ Entwicklung (Dev) und Betrieb (Ops).
 
 ### Analogie
 
+Um Kubernetes-Konzepte leichter zu verstehen, nutzen wir eine **Analogie zu einem Logistikzentrum**.
+Kubernetes verwaltet Container genauso, wie ein Logistikzentrum Pakete verwaltet: Es entscheidet,
+wo Pakete lagern, wie sie transportiert werden, und sorgt automatisch dafür, dass alles am richtigen
+Ort ist. Diese Analogie hilft dir, die oft abstrakten Konzepte in alltägliche Szenarien zu übersetzen
+und so schneller ein mentales Modell von Kubernetes aufzubauen.
+
 | Kubernetes-Konzept | Analogie                 | Beschreibung                                                              |
 | ------------------ | ------------------------ | ------------------------------------------------------------------------- |
 | **Cluster**        | Gesamtes Logistikzentrum | Alle Maschinen und Ressourcen, die zusammenarbeiten                       |
@@ -93,27 +103,7 @@ Entwicklung (Dev) und Betrieb (Ops).
 
 ### Cluster-Architektur
 
-```mermaid
-graph TB
-    subgraph Cluster
-        subgraph CP["Control Plane"]
-            API["kube-apiserver"]
-            ETCD["etcd"]
-            SCHED["kube-scheduler"]
-            CTRL["controller-manager"]
-        end
-        subgraph WN1["Worker Node 1"]
-            K1["kubelet"]
-            KP1["kube-proxy"]
-            CR1["Container Runtime"]
-        end
-        subgraph WN2["Worker Node 2"]
-            K2["kubelet"]
-            KP2["kube-proxy"]
-            CR2["Container Runtime"]
-        end
-    end
-```
+<Image src={knba101} alt="Kubernetes Architektur * Erstellt mit Nano Banana" />
 
 ### Control Plane
 
