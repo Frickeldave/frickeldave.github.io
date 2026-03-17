@@ -25,6 +25,8 @@ in die Produktion auf `main`.
     - [6. Push \& Deployment-Check](#6-push--deployment-check)
     - [7. Issue schließen](#7-issue-schließen)
   - [CLI-Parameter](#cli-parameter)
+    - [deploy:dev](#deploydev)
+    - [deploy:prd](#deployprd)
 
 ## Übersicht
 
@@ -46,7 +48,7 @@ Die Kernlogik liegt in
 flowchart TD
   start(["npm run deploy:dev / deploy:prd"])
   prereqs["Prereqs Check"]
-  split{"deploy:dev\noder deploy:prd?"}
+  split{"deploy:dev oder deploy:prd?"}
 
   d_analyze["Analyze Changes"]
   d_ai["AI Understanding"]
@@ -178,8 +180,12 @@ Branch muss `dev` sein, der Working Tree muss sauber sein, und `dev` muss vollst
 ### 2. Issue-Verwaltung
 
 Prüft, ob eine GitHub-Issue-ID über `--issue-id` angegeben wurde. Falls nicht, wird interaktiv
-nachgefragt oder mit `--skip-issue` übersprungen. Ein Issue wird erstellt, falls noch keines
-vorhanden ist.
+nachgefragt. Mit `--skip-issue` wird der prompt übersprungen.
+
+**Wichtig**: Wenn keine Issue-ID angegeben wird (weder per Flag noch interaktiv), wird
+**automatisch ein neues GitHub Issue erstellt**. Titel und Body werden dabei aus der KI-Analyse
+(Schritt 3) generiert. `--skip-issue` überspringt nur den interaktiven Prompt — die automatische
+Issue-Erstellung findet trotzdem statt.
 
 - Zuständige Scripts:
   [update-branch-issue-check.mjs](../../scripts/workflows/ci/update-branch-issue-check.mjs),
