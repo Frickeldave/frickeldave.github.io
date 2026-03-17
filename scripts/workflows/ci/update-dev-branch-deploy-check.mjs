@@ -17,7 +17,7 @@ function main() {
     execSync("ping 127.0.0.1 -n 6 > nul", { shell: true }); // Windows sleep hack or use setTimeout if async
 
     const command =
-      "gh run list --workflow=host-waltraud.yaml --limit 1 --json databaseId,status,conclusion,url";
+      "gh run list --repo Frickeldave/HomeNet --workflow=host-waltraud.yaml --limit 1 --json databaseId,status,conclusion,url";
     const output = execSync(command, { encoding: "utf-8" });
     const runs = JSON.parse(output);
 
