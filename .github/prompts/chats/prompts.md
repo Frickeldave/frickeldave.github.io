@@ -1,5 +1,6 @@
 |Date|Prompt|model|Satisfaction|
 |-|-|-|-|
+|2026-03-17|[.github/prompts/chats/2026-03-17-unified-deploy-script.md](2026-03-17-unified-deploy-script.md) - 23 Deploy-Scripts zu einem unified deploy.mjs konsolidiert|Claude Opus 4.6||
 |2026-03-02|FR006: Issue-Management und Devserver aus deploy:dev entfernen; --issue-id und --skip-devserver Flags entfernen; deploy:dev und deploy:prd Doku in fr006-autodeploy.md zusammenführen mit Mermaid-Diagramm|Claude Sonnet 4.6||
 |2026-02-28|deploy-dev.yml übergibt keinen Branch an HomeNet Workflow Dispatch → Container wird von main gebaut statt dev. Fix: source_branch Input ergänzt.|Claude Sonnet 4.6||
 |2026-02-10|[.github/prompts/podcast-update.ci.prompt.md](../podcast-update.ci.prompt.md) - Automated podcast update workflow with GitHub Actions|Claude Sonnet 4.5||
