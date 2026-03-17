@@ -117,10 +117,10 @@ jobs:
           git pull origin main
 
           if [ "${{ github.event.inputs.dryRun }}" == "true" ]; then
-            node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-            echo "🦁 DRY RUN: Skipping git commit and push."
+            echo "🦁 DRY RUN: Would copy doag.md from dev (same ID as dev)."
           else
-            node scripts/workflows/podcast-update/update-doag.mjs
+            # Copy doag.md directly from dev to avoid generating a new random ID
+            git checkout dev -- src/content/aboutme/doag.md
             git add src/content/aboutme/doag.md
             git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
             git push origin main

@@ -1,1089 +1,409 @@
-2026-02-17T11:42:30.3924361Z ##[debug]Starting: podcast-update
-2026-02-17T11:42:30.3952658Z ##[debug]Cleaning runner temp folder: /home/github/actions-runner-frickeldave-main/_work/_temp
-2026-02-17T11:42:30.4143567Z ##[debug]Starting: Set up job
-2026-02-17T11:42:30.4144922Z Current runner version: '2.331.0'
-2026-02-17T11:42:30.4148988Z Runner name: 'waltraud-frickeldave-main'
-2026-02-17T11:42:30.4149889Z Runner group name: 'Default'
-2026-02-17T11:42:30.4151243Z Machine name: 'Waltraud'
-2026-02-17T11:42:30.4156965Z ##[group]GITHUB_TOKEN Permissions
-2026-02-17T11:42:30.4159622Z Actions: write
-2026-02-17T11:42:30.4160244Z ArtifactMetadata: write
-2026-02-17T11:42:30.4160927Z Attestations: write
-2026-02-17T11:42:30.4161609Z Checks: write
-2026-02-17T11:42:30.4162170Z Contents: write
-2026-02-17T11:42:30.4162791Z Deployments: write
-2026-02-17T11:42:30.4163475Z Discussions: write
-2026-02-17T11:42:30.4164108Z Issues: write
-2026-02-17T11:42:30.4164718Z Metadata: read
-2026-02-17T11:42:30.4165315Z Models: read
-2026-02-17T11:42:30.4165938Z Packages: write
-2026-02-17T11:42:30.4166728Z Pages: write
-2026-02-17T11:42:30.4167414Z PullRequests: write
-2026-02-17T11:42:30.4168078Z RepositoryProjects: write
-2026-02-17T11:42:30.4168889Z SecurityEvents: write
-2026-02-17T11:42:30.4169523Z Statuses: write
-2026-02-17T11:42:30.4170130Z ##[endgroup]
-2026-02-17T11:42:30.4172577Z Secret source: Actions
-2026-02-17T11:42:30.4173572Z ##[debug]Primary repository: Frickeldave/frickeldave.github.io
-2026-02-17T11:42:30.4174542Z Prepare workflow directory
-2026-02-17T11:42:30.4453366Z ##[debug]Update context data
-2026-02-17T11:42:30.4457714Z ##[debug]Evaluating job-level environment variables
-2026-02-17T11:42:30.4724510Z ##[debug]Evaluating job container
-2026-02-17T11:42:30.4728414Z ##[debug]Evaluating job service containers
-2026-02-17T11:42:30.4731723Z ##[debug]Evaluating job defaults
-2026-02-17T11:42:30.4868164Z Prepare all required actions
-2026-02-17T11:42:30.4913533Z Getting action download info
-2026-02-17T11:42:31.0853443Z Download action repository 'actions/checkout@v3' (SHA:f43a0e5ff2bd294095638e18286ca9a3d1956744)
-2026-02-17T11:42:31.6505343Z ##[debug]Download 'https://api.github.com/repos/actions/checkout/tarball/f43a0e5ff2bd294095638e18286ca9a3d1956744' to '/home/github/actions-runner-frickeldave-main/_work/_actions/_temp_2b721f36-7776-48cb-a6b4-b53483e3272a/fedd6e0b-e630-4999-80a2-9f190c3c97a9.tar.gz'
-2026-02-17T11:42:31.6777109Z ##[debug]Unwrap 'actions-checkout-f43a0e5' to '/home/github/actions-runner-frickeldave-main/_work/_actions/actions/checkout/v3'
-2026-02-17T11:42:31.6892538Z ##[debug]Archive '/home/github/actions-runner-frickeldave-main/_work/_actions/_temp_2b721f36-7776-48cb-a6b4-b53483e3272a/fedd6e0b-e630-4999-80a2-9f190c3c97a9.tar.gz' has been unzipped into '/home/github/actions-runner-frickeldave-main/_work/_actions/actions/checkout/v3'.
-2026-02-17T11:42:31.6929890Z ##[debug]action.yml for action: '/home/github/actions-runner-frickeldave-main/_work/_actions/actions/checkout/v3/action.yml'.
-2026-02-17T11:42:31.7767425Z ##[debug]Set step '__actions_checkout' display name to: 'Checkout repository (main)'
-2026-02-17T11:42:31.7771255Z ##[debug]Set step '__run' display name to: 'Set git config'
-2026-02-17T11:42:31.7773476Z ##[debug]Set step '__run_2' display name to: 'Check Node.js version'
-2026-02-17T11:42:31.7775912Z ##[debug]Set step 'check_episodes' display name to: 'Global episode comparison (against main)'
-2026-02-17T11:42:31.7778307Z ##[debug]Set step '__run_3' display name to: 'Exit if no new episodes'
-2026-02-17T11:42:31.7780727Z ##[debug]Set step 'generate_metadata' display name to: 'Generate episode metadata using Copilot'
-2026-02-17T11:42:31.7783112Z ##[debug]Set step 'update_dev' display name to: 'Update dev branch'
-2026-02-17T11:42:31.7785283Z ##[debug]Set step 'update_main' display name to: 'Update main branch'
-2026-02-17T11:42:31.7787435Z ##[debug]Set step '__run_4' display name to: 'Success summary'
-2026-02-17T11:42:31.7788284Z Complete job name: podcast-update
-2026-02-17T11:42:31.7840523Z ##[debug]Collect running processes for tracking orphan processes.
-2026-02-17T11:42:31.8262088Z ##[debug]Finishing: Set up job
-2026-02-17T11:42:31.8400800Z ##[debug]Evaluating condition for step: 'Checkout repository (main)'
-2026-02-17T11:42:31.8444913Z ##[debug]Evaluating: success()
-2026-02-17T11:42:31.8450778Z ##[debug]Evaluating success:
-2026-02-17T11:42:31.8469556Z ##[debug]=> true
-2026-02-17T11:42:31.8477272Z ##[debug]Result: true
-2026-02-17T11:42:31.8503994Z ##[debug]Starting: Checkout repository (main)
-2026-02-17T11:42:31.8587965Z ##[debug]Register post job cleanup for action: actions/checkout@v3
-2026-02-17T11:42:31.8674042Z ##[debug]Loading inputs
-2026-02-17T11:42:31.8711949Z ##[debug]Evaluating: secrets.GITHUB_TOKEN
-2026-02-17T11:42:31.8713625Z ##[debug]Evaluating Index:
-2026-02-17T11:42:31.8715911Z ##[debug]..Evaluating secrets:
-2026-02-17T11:42:31.8717247Z ##[debug]..=> Object
-2026-02-17T11:42:31.8723482Z ##[debug]..Evaluating String:
-2026-02-17T11:42:31.8724515Z ##[debug]..=> 'GITHUB_TOKEN'
-2026-02-17T11:42:31.8729738Z ##[debug]=> '***'
-2026-02-17T11:42:31.8732112Z ##[debug]Result: '***'
-2026-02-17T11:42:31.8742355Z ##[debug]Evaluating: github.repository
-2026-02-17T11:42:31.8743030Z ##[debug]Evaluating Index:
-2026-02-17T11:42:31.8743595Z ##[debug]..Evaluating github:
-2026-02-17T11:42:31.8744175Z ##[debug]..=> Object
-2026-02-17T11:42:31.8744704Z ##[debug]..Evaluating String:
-2026-02-17T11:42:31.8745267Z ##[debug]..=> 'repository'
-2026-02-17T11:42:31.8746025Z ##[debug]=> 'Frickeldave/frickeldave.github.io'
-2026-02-17T11:42:31.8746810Z ##[debug]Result: 'Frickeldave/frickeldave.github.io'
-2026-02-17T11:42:31.8766343Z ##[debug]Loading env
-2026-02-17T11:42:31.8843370Z ##[group]Run actions/checkout@v3
-2026-02-17T11:42:31.8844227Z with:
-2026-02-17T11:42:31.8844674Z   fetch-depth: 0
-2026-02-17T11:42:31.8845347Z   token: ***
-2026-02-17T11:42:31.8845873Z   repository: Frickeldave/frickeldave.github.io
-2026-02-17T11:42:31.8846538Z   ssh-strict: true
-2026-02-17T11:42:31.8847017Z   persist-credentials: true
-2026-02-17T11:42:31.8847543Z   clean: true
-2026-02-17T11:42:31.8848010Z   sparse-checkout-cone-mode: true
-2026-02-17T11:42:31.8848627Z   fetch-tags: false
-2026-02-17T11:42:31.8849090Z   lfs: false
-2026-02-17T11:42:31.8849520Z   submodules: false
-2026-02-17T11:42:31.8849999Z   set-safe-directory: true
-2026-02-17T11:42:31.8850797Z ##[endgroup]
-2026-02-17T11:42:31.9754596Z ##[debug]GITHUB_WORKSPACE = '/home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io'
-2026-02-17T11:42:31.9757125Z ##[debug]qualified repository = 'Frickeldave/frickeldave.github.io'
-2026-02-17T11:42:31.9758387Z ##[debug]ref = 'refs/heads/main'
-2026-02-17T11:42:31.9759475Z ##[debug]commit = '86c3949760ecb91088f8e1fff099748c4433d7b7'
-2026-02-17T11:42:31.9760558Z ##[debug]clean = true
-2026-02-17T11:42:31.9761430Z ##[debug]fetch depth = 0
-2026-02-17T11:42:31.9762325Z ##[debug]fetch tags = false
-2026-02-17T11:42:31.9763214Z ##[debug]lfs = false
-2026-02-17T11:42:31.9764084Z ##[debug]submodules = false
-2026-02-17T11:42:31.9765038Z ##[debug]recursive submodules = false
-2026-02-17T11:42:31.9770462Z ##[debug]GitHub Host URL =
-2026-02-17T11:42:31.9773444Z ::add-matcher::/home/github/actions-runner-frickeldave-main/_work/_actions/actions/checkout/v3/dist/problem-matcher.json
-2026-02-17T11:42:31.9858030Z ##[debug]Added matchers: 'checkout-git'. Problem matchers scan action output for known warning or error strings and report these inline.
-2026-02-17T11:42:31.9864465Z Syncing repository: Frickeldave/frickeldave.github.io
-2026-02-17T11:42:31.9866216Z ::group::Getting Git version info
-2026-02-17T11:42:31.9867803Z ##[group]Getting Git version info
-2026-02-17T11:42:31.9869201Z Working directory is '/home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io'
-2026-02-17T11:42:31.9871658Z Unexpected error attempting to determine if executable file exists '/home/dave/ansible_venv/bin/git': Error: EACCES: permission denied, stat '/home/dave/ansible_venv/bin/git'
-2026-02-17T11:42:31.9873737Z ##[debug]Getting git version
-2026-02-17T11:42:31.9874362Z [command]/usr/bin/git version
-2026-02-17T11:42:31.9883982Z git version 2.39.5
-2026-02-17T11:42:31.9910678Z ##[debug]0
-2026-02-17T11:42:31.9911751Z ##[debug]git version 2.39.5
-2026-02-17T11:42:31.9912272Z ##[debug]
-2026-02-17T11:42:31.9913317Z ##[debug]Set git useragent to: git/2.39.5 (github-actions-checkout)
-2026-02-17T11:42:31.9914564Z ::endgroup::
-2026-02-17T11:42:31.9915074Z ##[endgroup]
-2026-02-17T11:42:31.9919373Z ::add-mask::***
-2026-02-17T11:42:31.9931260Z Temporarily overriding HOME='/home/github/actions-runner-frickeldave-main/_work/_temp/d86317d6-0fc8-4e22-b5f5-15a22d09f54a' before making global git config changes
-2026-02-17T11:42:31.9933297Z Adding repository directory to the temporary git global config as a safe directory
-2026-02-17T11:42:31.9935342Z [command]/usr/bin/git config --global --add safe.directory /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io
-2026-02-17T11:42:31.9961512Z ##[debug]0
-2026-02-17T11:42:31.9962398Z ##[debug]
-2026-02-17T11:42:31.9970601Z [command]/usr/bin/git config --local --get remote.origin.url
-2026-02-17T11:42:31.9988989Z https://github.com/Frickeldave/frickeldave.github.io
-2026-02-17T11:42:31.9994654Z ##[debug]0
-2026-02-17T11:42:31.9995765Z ##[debug]https://github.com/Frickeldave/frickeldave.github.io
-2026-02-17T11:42:31.9996511Z ##[debug]
-2026-02-17T11:42:32.0008632Z ::group::Removing previously created refs, to avoid conflicts
-2026-02-17T11:42:32.0009618Z ##[group]Removing previously created refs, to avoid conflicts
-2026-02-17T11:42:32.0010834Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
-2026-02-17T11:42:32.0030516Z refs/heads/main
-2026-02-17T11:42:32.0035156Z ##[debug]0
-2026-02-17T11:42:32.0036065Z ##[debug]refs/heads/main
-2026-02-17T11:42:32.0036573Z ##[debug]
-2026-02-17T11:42:32.0037661Z [command]/usr/bin/git checkout --detach
-2026-02-17T11:42:32.0105673Z HEAD ist jetzt bei 4786ab5 feat(podcast): Add episode 'KI im Requirements Engineering: Warum gute Fragen wichtiger sind als perfekte Modelle'
-2026-02-17T11:42:32.0107654Z M	missing-episode.json
-2026-02-17T11:42:32.0111774Z ##[debug]0
-2026-02-17T11:42:32.0112705Z ##[debug]M	missing-episode.json
-2026-02-17T11:42:32.0113248Z ##[debug]
-2026-02-17T11:42:32.0139772Z ##[debug]0
-2026-02-17T11:42:32.0140655Z ##[debug]
-2026-02-17T11:42:32.0141490Z ##[debug]stderr callback is:
-2026-02-17T11:42:32.0142431Z ##[debug]errline callback is:
-2026-02-17T11:42:32.0143429Z ##[debug]stdout callback is: refs/heads/dev
-2026-02-17T11:42:32.0144060Z ##[debug]refs/heads/main
-2026-02-17T11:42:32.0144542Z ##[debug]
-2026-02-17T11:42:32.0145488Z ##[debug]stdline callback is: refs/heads/dev,refs/heads/main
-2026-02-17T11:42:32.0146416Z [command]/usr/bin/git branch --delete --force dev
-2026-02-17T11:42:32.0171626Z Branch dev entfernt (war 1fd4001).
-2026-02-17T11:42:32.0176829Z ##[debug]0
-2026-02-17T11:42:32.0177756Z ##[debug]Branch dev entfernt (war 1fd4001).
-2026-02-17T11:42:32.0178362Z ##[debug]
-2026-02-17T11:42:32.0178972Z [command]/usr/bin/git branch --delete --force main
-2026-02-17T11:42:32.0207455Z Branch main entfernt (war 4786ab5).
-2026-02-17T11:42:32.0212165Z ##[debug]0
-2026-02-17T11:42:32.0213114Z ##[debug]Branch main entfernt (war 4786ab5).
-2026-02-17T11:42:32.0213721Z ##[debug]
-2026-02-17T11:42:32.0269010Z ##[debug]0
-2026-02-17T11:42:32.0269900Z ##[debug]
-2026-02-17T11:42:32.0270820Z ##[debug]stderr callback is:
-2026-02-17T11:42:32.0271754Z ##[debug]errline callback is:
-2026-02-17T11:42:32.0273063Z ##[debug]stdout callback is: refs/remotes/origin/chore/cleanup-workflow-state
-2026-02-17T11:42:32.0274047Z ##[debug]refs/remotes/origin/ci/add-dev-branch-deployment
-2026-02-17T11:42:32.0274769Z ##[debug]refs/remotes/origin/dev
-2026-02-17T11:42:32.0275489Z ##[debug]refs/remotes/origin/feat/standard-conventional-commits
-2026-02-17T11:42:32.0276368Z ##[debug]refs/remotes/origin/fix/doag-umlauts-correction
-2026-02-17T11:42:32.0277074Z ##[debug]refs/remotes/origin/main
-2026-02-17T11:42:32.0277615Z ##[debug]
-2026-02-17T11:42:32.0280704Z ##[debug]stdline callback is: refs/remotes/origin/chore/cleanup-workflow-state,refs/remotes/origin/ci/add-dev-branch-deployment,refs/remotes/origin/dev,refs/remotes/origin/feat/standard-conventional-commits,refs/remotes/origin/fix/doag-umlauts-correction,refs/remotes/origin/main
-2026-02-17T11:42:32.0283866Z ::endgroup::
-2026-02-17T11:42:32.0284308Z ##[endgroup]
-2026-02-17T11:42:32.0284896Z [command]/usr/bin/git submodule status
-2026-02-17T11:42:32.0483275Z ##[debug]0
-2026-02-17T11:42:32.0484161Z ##[debug]
-2026-02-17T11:42:32.0484933Z ##[debug]
-2026-02-17T11:42:32.0485765Z ::group::Cleaning the repository
-2026-02-17T11:42:32.0486365Z ##[group]Cleaning the repository
-2026-02-17T11:42:32.0487061Z [command]/usr/bin/git clean -ffdx
-2026-02-17T11:42:32.0532401Z Lösche metadata.json
-2026-02-17T11:42:32.0544111Z ##[debug]0
-2026-02-17T11:42:32.0545218Z ##[debug]Lösche metadata.json
-2026-02-17T11:42:32.0545763Z ##[debug]
-2026-02-17T11:42:32.0546330Z [command]/usr/bin/git reset --hard HEAD
-2026-02-17T11:42:32.0629719Z HEAD ist jetzt bei 4786ab5 feat(podcast): Add episode 'KI im Requirements Engineering: Warum gute Fragen wichtiger sind als perfekte Modelle'
-2026-02-17T11:42:32.0633599Z ##[debug]0
-2026-02-17T11:42:32.0635290Z ##[debug]HEAD ist jetzt bei 4786ab5 feat(podcast): Add episode 'KI im Requirements Engineering: Warum gute Fragen wichtiger sind als perfekte Modelle'
-2026-02-17T11:42:32.0636621Z ##[debug]
-2026-02-17T11:42:32.0637452Z ::endgroup::
-2026-02-17T11:42:32.0637886Z ##[endgroup]
-2026-02-17T11:42:32.0638769Z ::group::Disabling automatic garbage collection
-2026-02-17T11:42:32.0639502Z ##[group]Disabling automatic garbage collection
-2026-02-17T11:42:32.0640318Z [command]/usr/bin/git config --local gc.auto 0
-2026-02-17T11:42:32.0665348Z ##[debug]0
-2026-02-17T11:42:32.0666241Z ##[debug]
-2026-02-17T11:42:32.0667051Z ::endgroup::
-2026-02-17T11:42:32.0667487Z ##[endgroup]
-2026-02-17T11:42:32.0668310Z ::group::Setting up auth
-2026-02-17T11:42:32.0668835Z ##[group]Setting up auth
-2026-02-17T11:42:32.0671145Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
-2026-02-17T11:42:32.0695734Z ##[debug]1
-2026-02-17T11:42:32.0696636Z ##[debug]
-2026-02-17T11:42:32.0698819Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-2026-02-17T11:42:32.0903782Z ##[debug]0
-2026-02-17T11:42:32.0904661Z ##[debug]
-2026-02-17T11:42:32.0906449Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-2026-02-17T11:42:32.0930201Z ##[debug]1
-2026-02-17T11:42:32.0931073Z ##[debug]
-2026-02-17T11:42:32.0933022Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
-2026-02-17T11:42:32.1143195Z ##[debug]0
-2026-02-17T11:42:32.1144070Z ##[debug]
-2026-02-17T11:42:32.1149010Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
-2026-02-17T11:42:32.1173843Z ##[debug]0
-2026-02-17T11:42:32.1174729Z ##[debug]
-2026-02-17T11:42:32.1182510Z ::endgroup::
-2026-02-17T11:42:32.1182976Z ##[endgroup]
-2026-02-17T11:42:32.1183864Z ::group::Fetching the repository
-2026-02-17T11:42:32.1258571Z ##[group]Fetching the repository
-2026-02-17T11:42:32.1260776Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
-2026-02-17T11:42:32.5630198Z ##[debug]0
-2026-02-17T11:42:32.5631337Z ##[debug]
-2026-02-17T11:42:32.5632920Z [command]/usr/bin/git branch --list --remote origin/main
-2026-02-17T11:42:32.5679512Z   origin/main
-2026-02-17T11:42:32.5682725Z ##[debug]0
-2026-02-17T11:42:32.5683766Z ##[debug]  origin/main
-2026-02-17T11:42:32.5684372Z ##[debug]
-2026-02-17T11:42:32.5688247Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
-2026-02-17T11:42:32.5707379Z 86c3949760ecb91088f8e1fff099748c4433d7b7
-2026-02-17T11:42:32.5712308Z ##[debug]0
-2026-02-17T11:42:32.5713796Z ##[debug]86c3949760ecb91088f8e1fff099748c4433d7b7
-2026-02-17T11:42:32.5714630Z ##[debug]
-2026-02-17T11:42:32.5715657Z ::endgroup::
-2026-02-17T11:42:32.5716183Z ##[endgroup]
-2026-02-17T11:42:32.5717249Z ::group::Determining the checkout info
-2026-02-17T11:42:32.5718136Z ##[group]Determining the checkout info
-2026-02-17T11:42:32.5719297Z ::endgroup::
-2026-02-17T11:42:32.5719821Z ##[endgroup]
-2026-02-17T11:42:32.5720825Z ::group::Checking out the ref
-2026-02-17T11:42:32.5721510Z ##[group]Checking out the ref
-2026-02-17T11:42:32.5722693Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
-2026-02-17T11:42:32.5916383Z Warnung: Sie lassen 1 Commit zurück. Folgender Commit ist in
-2026-02-17T11:42:32.5917450Z keinem Ihrer Branches enthalten:
-2026-02-17T11:42:32.5917941Z
-2026-02-17T11:42:32.5918982Z   4786ab5 feat(podcast): Add episode 'KI im Requirements Engineering: Warum gute Fragen wichtiger sind als perfekte Modelle'
-2026-02-17T11:42:32.5920211Z
-2026-02-17T11:42:32.5920836Z Wenn Sie diese durch einen neuen Branch behalten möchten, dann könnte jetzt
-2026-02-17T11:42:32.5921984Z ein guter Zeitpunkt sein, dies zu tun mit:
-2026-02-17T11:42:32.5922532Z
-2026-02-17T11:42:32.5922922Z  git branch <neuer-Branchname> 4786ab5
-2026-02-17T11:42:32.5923459Z
-2026-02-17T11:42:32.5924159Z Zu neuem Branch 'main' gewechselt
-2026-02-17T11:42:32.5924991Z Branch 'main' folgt nun 'origin/main'.
-2026-02-17T11:42:32.5931031Z ##[debug]0
-2026-02-17T11:42:32.5932413Z ##[debug]Branch 'main' folgt nun 'origin/main'.
-2026-02-17T11:42:32.5933204Z ##[debug]
-2026-02-17T11:42:32.5934395Z ::endgroup::
-2026-02-17T11:42:32.5934923Z ##[endgroup]
-2026-02-17T11:42:32.5964720Z ##[debug]0
-2026-02-17T11:42:32.5966250Z ##[debug]commit 86c3949760ecb91088f8e1fff099748c4433d7b7
-2026-02-17T11:42:32.5967197Z ##[debug]Author: David Koenig <david.koenig09@gmail.com>
-2026-02-17T11:42:32.5968063Z ##[debug]Date:   Sat Feb 14 00:55:13 2026 +0100
-2026-02-17T11:42:32.5968775Z ##[debug]
-2026-02-17T11:42:32.5969439Z ##[debug]    refactor: remove legacy versioning system
-2026-02-17T11:42:32.5970220Z ##[debug]
-2026-02-17T11:42:32.5970943Z [command]/usr/bin/git log -1 --format='%H'
-2026-02-17T11:42:32.5992003Z '86c3949760ecb91088f8e1fff099748c4433d7b7'
-2026-02-17T11:42:32.5996630Z ##[debug]0
-2026-02-17T11:42:32.5997779Z ##[debug]'86c3949760ecb91088f8e1fff099748c4433d7b7'
-2026-02-17T11:42:32.5998526Z ##[debug]
-2026-02-17T11:42:32.6000134Z ##[debug]Unsetting HOME override
-2026-02-17T11:42:32.6004174Z ::remove-matcher owner=checkout-git::
-2026-02-17T11:42:32.6015619Z ##[debug]Removed matchers: 'checkout-git'
-2026-02-17T11:42:32.6073189Z ##[debug]Node Action run completed with exit code 0
-2026-02-17T11:42:32.6113538Z ##[debug]Save intra-action state isPost = true
-2026-02-17T11:42:32.6114620Z ##[debug]Save intra-action state setSafeDirectory = true
-2026-02-17T11:42:32.6116367Z ##[debug]Save intra-action state repositoryPath = /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io
-2026-02-17T11:42:32.6127274Z ##[debug]Finishing: Checkout repository (main)
-2026-02-17T11:42:32.6146780Z ##[debug]Evaluating condition for step: 'Set git config'
-2026-02-17T11:42:32.6150635Z ##[debug]Evaluating: success()
-2026-02-17T11:42:32.6151555Z ##[debug]Evaluating success:
-2026-02-17T11:42:32.6152581Z ##[debug]=> true
-2026-02-17T11:42:32.6153469Z ##[debug]Result: true
-2026-02-17T11:42:32.6154781Z ##[debug]Starting: Set git config
-2026-02-17T11:42:32.6172019Z ##[debug]Loading inputs
-2026-02-17T11:42:32.6174122Z ##[debug]Loading env
-2026-02-17T11:42:32.6197705Z ##[group]Run git config user.name "github-actions[bot]"
-2026-02-17T11:42:32.6198729Z [36;1mgit config user.name "github-actions[bot]"[0m
-2026-02-17T11:42:32.6199814Z [36;1mgit config user.email "github-actions[bot]@users.noreply.github.com"[0m
-2026-02-17T11:42:32.6215504Z shell: /usr/bin/bash -il {0}
-2026-02-17T11:42:32.6216172Z ##[endgroup]
-2026-02-17T11:42:32.6241151Z ##[debug]Overwrite 'shell' base on job defaults.
-2026-02-17T11:42:32.6263726Z ##[debug]/usr/bin/bash -il /home/github/actions-runner-frickeldave-main/_work/_temp/f76359e2-c404-4285-83e1-799f3c2be55c.sh
-2026-02-17T11:42:32.6288237Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
-2026-02-17T11:42:32.6289750Z bash: Keine Jobsteuerung in dieser Shell.
-2026-02-17T11:42:32.8530336Z ##[debug]Finishing: Set git config
-2026-02-17T11:42:32.8546070Z ##[debug]Evaluating condition for step: 'Check Node.js version'
-2026-02-17T11:42:32.8548902Z ##[debug]Evaluating: success()
-2026-02-17T11:42:32.8549836Z ##[debug]Evaluating success:
-2026-02-17T11:42:32.8550834Z ##[debug]=> true
-2026-02-17T11:42:32.8551705Z ##[debug]Result: true
-2026-02-17T11:42:32.8552870Z ##[debug]Starting: Check Node.js version
-2026-02-17T11:42:32.8568201Z ##[debug]Loading inputs
-2026-02-17T11:42:32.8585158Z ##[debug]Loading env
-2026-02-17T11:42:32.8596205Z ##[group]Run echo "🔍 Checking Node.js version..."
-2026-02-17T11:42:32.8597229Z [36;1mecho "🔍 Checking Node.js version..."[0m
-2026-02-17T11:42:32.8598137Z [36;1mexport NVM_DIR="$HOME/.nvm"[0m
-2026-02-17T11:42:32.8599018Z [36;1m[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"[0m
-2026-02-17T11:42:32.8600194Z [36;1mNODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)[0m
-2026-02-17T11:42:32.8601329Z [36;1mif [ "$NODE_VERSION" != "24" ]; then[0m
-2026-02-17T11:42:32.8602439Z [36;1m  echo "❌ Node.js v24 is required, but v$NODE_VERSION is installed."[0m
-2026-02-17T11:42:32.8603475Z [36;1m  exit 1[0m
-2026-02-17T11:42:32.8604032Z [36;1mfi[0m
-2026-02-17T11:42:32.8604613Z [36;1mecho "✅ Node.js v24 is available"[0m
-2026-02-17T11:42:32.8617672Z shell: /usr/bin/bash -il {0}
-2026-02-17T11:42:32.8618378Z ##[endgroup]
-2026-02-17T11:42:32.8622595Z ##[debug]Overwrite 'shell' base on job defaults.
-2026-02-17T11:42:32.8639328Z ##[debug]/usr/bin/bash -il /home/github/actions-runner-frickeldave-main/_work/_temp/53476b9f-bf9e-49a3-9191-464c08035d39.sh
-2026-02-17T11:42:32.8663548Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
-2026-02-17T11:42:32.8665208Z bash: Keine Jobsteuerung in dieser Shell.
-2026-02-17T11:42:33.0843817Z 🔍 Checking Node.js version...
-2026-02-17T11:42:33.2294315Z ✅ Node.js v24 is available
-2026-02-17T11:42:33.2305036Z ##[debug]Finishing: Check Node.js version
-2026-02-17T11:42:33.2326909Z ##[debug]Evaluating: format('{0}/episode-check.txt', github.workspace)
-2026-02-17T11:42:33.2328008Z ##[debug]Evaluating format:
-2026-02-17T11:42:33.2332899Z ##[debug]..Evaluating String:
-2026-02-17T11:42:33.2333683Z ##[debug]..=> '{0}/episode-check.txt'
-2026-02-17T11:42:33.2347227Z ##[debug]..Evaluating Index:
-2026-02-17T11:42:33.2347951Z ##[debug]....Evaluating github:
-2026-02-17T11:42:33.2348679Z ##[debug]....=> Object
-2026-02-17T11:42:33.2349327Z ##[debug]....Evaluating String:
-2026-02-17T11:42:33.2350094Z ##[debug]....=> 'workspace'
-2026-02-17T11:42:33.2351907Z ##[debug]..=> '/home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io'
-2026-02-17T11:42:33.2355093Z ##[debug]=> '/home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/episode-check.txt'
-2026-02-17T11:42:33.2357626Z ##[debug]Result: '/home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/episode-check.txt'
-2026-02-17T11:42:33.2367476Z ##[debug]Evaluating condition for step: 'Global episode comparison (against main)'
-2026-02-17T11:42:33.2370320Z ##[debug]Evaluating: success()
-2026-02-17T11:42:33.2371249Z ##[debug]Evaluating success:
-2026-02-17T11:42:33.2372263Z ##[debug]=> true
-2026-02-17T11:42:33.2373118Z ##[debug]Result: true
-2026-02-17T11:42:33.2374389Z ##[debug]Starting: Global episode comparison (against main)
-2026-02-17T11:42:33.2389627Z ##[debug]Loading inputs
-2026-02-17T11:42:33.2392106Z ##[debug]Loading env
-2026-02-17T11:42:33.2402509Z ##[group]Run echo "📡 Comparing RSS feed with main branch..."
-2026-02-17T11:42:33.2403568Z [36;1mecho "📡 Comparing RSS feed with main branch..."[0m
-2026-02-17T11:42:33.2404869Z [36;1mnode scripts/workflows/podcast-update/compare-episodes.mjs[0m
-2026-02-17T11:42:33.2417551Z shell: /usr/bin/bash -il {0}
-2026-02-17T11:42:33.2418175Z env:
-2026-02-17T11:42:33.2419526Z   GITHUB_OUTPUT: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/episode-check.txt
-2026-02-17T11:42:33.2421098Z ##[endgroup]
-2026-02-17T11:42:33.2424687Z ##[debug]Overwrite 'shell' base on job defaults.
-2026-02-17T11:42:33.2439913Z ##[debug]/usr/bin/bash -il /home/github/actions-runner-frickeldave-main/_work/_temp/3f182ea7-4e6a-484b-9762-d8effe1cfcd9.sh
-2026-02-17T11:42:33.2462860Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
-2026-02-17T11:42:33.2473574Z bash: Keine Jobsteuerung in dieser Shell.
-2026-02-17T11:42:33.4660770Z 📡 Comparing RSS feed with main branch...
-2026-02-17T11:42:33.5037432Z 📡 Fetching Acast RSS feed...
-2026-02-17T11:42:33.5819031Z 📋 Parsing RSS feed...
-2026-02-17T11:42:33.6117718Z Found 20 episodes in RSS feed
-2026-02-17T11:42:33.6119009Z 📖 Reading existing episodes from doag.md...
-2026-02-17T11:42:33.6128860Z 📖 Parsing 19 episodes from doag.md
-2026-02-17T11:42:33.6130740Z    └─ "Low-Code trifft KI: Wie sich Softwareentwicklung neu erfindet" (10. Februar 2026)
-2026-02-17T11:42:33.6133639Z    └─ "Physik, Modelle und die Dynamik der KI - Warum Systeme lebendig bleiben müssen" (3. Februar 2026)
-2026-02-17T11:42:33.6136612Z    └─ "KI-Modellauswahl statt Modellbau - Transfer Learning in der Praxis" (27. Januar 2026)
-2026-02-17T11:42:33.6139381Z    └─ "DevLand - Neue Konferenz für moderne Softwareentwicklung" (20. Januar 2026)
-2026-02-17T11:42:33.6141887Z    └─ "KI im Unternehmenseinsatz - Zwischen Hype und Wirksamkeit" (20. Januar 2026)
-2026-02-17T11:42:33.6144193Z    └─ "Menschen, Motivation und Verantwortung in der IT" (13. Januar 2026)
-2026-02-17T11:42:33.6146734Z    └─ "KI-Crawler dominieren das Web - Was bedeutet das für Content Creator?" (30. Dezember 2025)
-2026-02-17T11:42:33.6149692Z    └─ "KI-Transformation im Mittelstand - Kultur vor Technologie" (23. Dezember 2025)
-2026-02-17T11:42:33.6152615Z    └─ "Europäische Cloud-Souveränität und Security Made in Europe" (16. Dezember 2025)
-2026-02-17T11:42:33.6155672Z    └─ "Emergenz in Systemen - Software als organisches Wachstum" (9. Dezember 2025)
-2026-02-17T11:42:33.6158474Z    └─ "Production Ready Agentic AI Operations bei Audi (Teil 2)" (2. Dezember 2025)
-2026-02-17T11:42:33.6161514Z    └─ "Multi-Cloud-Transformation bei Audi - People First (Teil 1)" (2. Dezember 2025)
-2026-02-17T11:42:33.6164571Z    └─ "Von IBM Watson zu eigenem KI-Startup - Praktische KI für KMU" (24. November 2025)
-2026-02-17T11:42:33.6167492Z    └─ "AI Act und Regulierung - Bremse oder Chance für Innovation?" (18. November 2025)
-2026-02-17T11:42:33.6170521Z    └─ "KI-Agenten und Schwarmintelligenz - Die nächste Evolution" (11. November 2025)
-2026-02-17T11:42:33.6173476Z    └─ "GitHub Copilot und die Zukunft der Softwareentwicklung" (4. November 2025)
-2026-02-17T11:42:33.6176369Z    └─ "KI und die Zukunft der Arbeit - Chancen und Verantwortung" (28. Oktober 2025)
-2026-02-17T11:42:33.6179202Z    └─ "Agentische KI-Systeme und evolutionäre Algorithmen" (21. Oktober 2025)
-2026-02-17T11:42:33.6181741Z    └─ "Frickeldave - Vom Developer zum Maker" (17. Oktober 2025)
-2026-02-17T11:42:33.6183721Z Found 19 existing episodes
-2026-02-17T11:42:33.6185122Z 🔍 Comparing episodes...
-2026-02-17T11:42:33.6187731Z    ✅ Date match: "DOAG VOICES DevLand – mit Dave König, Vanessa Schmitz und Markus Bernhart" (10. Februar 2026)
-2026-02-17T11:42:33.6191497Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Dr. Benjamin Linnik" (3. Februar 2026)
-2026-02-17T11:42:33.6195074Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Dr. Melanie Sigl" (27. Januar 2026)
-2026-02-17T11:42:33.6198667Z    ✅ Date match: "DOAG VOICES DevLand – mit André Sept, Bernhard Findeiss und Jonas Janz" (20. Januar 2026)
-2026-02-17T11:42:33.6202256Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Benedikt Backhaus" (20. Januar 2026)
-2026-02-17T11:42:33.6205802Z    ✅ Date match: "DOAG VOICES People – mit Dave König und Dr. Jürgen Baier" (13. Januar 2026)
-2026-02-17T11:42:33.6209136Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Óscar Nájera" (30. Dezember 2025)
-2026-02-17T11:42:33.6212609Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Wido Fath" (23. Dezember 2025)
-2026-02-17T11:42:33.6215958Z    ✅ Date match: "DOAG VOICES CloudTalk – mit Dave König und Martin Mangold" (16. Dezember 2025)
-2026-02-17T11:42:33.6219971Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Dr. Ralf S. Engelschall" (9. Dezember 2025)
-2026-02-17T11:42:33.6223588Z    ✅ Date match: "DOAG VOICES CloudTalk – mit Dave König und Sebastian Kister | Teil 2 von 2" (2. Dezember 2025)
-2026-02-17T11:42:33.6227400Z    ✅ Date match: "DOAG VOICES CloudTalk – mit Dave König und Sebastian Kister | Teil 1 von 2" (2. Dezember 2025)
-2026-02-17T11:42:33.6230983Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Paul Niebler" (24. November 2025)
-2026-02-17T11:42:33.6234372Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Baltasar Cevc" (18. November 2025)
-2026-02-17T11:42:33.6237958Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Lyubomir Yordanov" (11. November 2025)
-2026-02-17T11:42:33.6241478Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Tobias Struckmeier" (4. November 2025)
-2026-02-17T11:42:33.6244940Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Oliver Szymanski" (28. Oktober 2025)
-2026-02-17T11:42:33.6248617Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Johann-Peter Hartmann" (21. Oktober 2025)
-2026-02-17T11:42:33.6252135Z    ✅ Date match: "DOAG VOICES People - mit David 'Dave' König aka Frickeldave" (17. Oktober 2025)
-2026-02-17T11:42:33.6254572Z 📝 Found 1 missing episode(s):
-2026-02-17T11:42:33.6256588Z    1. "DOAG VOICES FutureAI – mit Dave König und Mirko Seifert" (17. Februar 2026)
-2026-02-17T11:42:33.6258222Z
-2026-02-17T11:42:33.6259478Z 📌 Oldest missing episode: "DOAG VOICES FutureAI – mit Dave König und Mirko Seifert"
-2026-02-17T11:42:33.6261708Z    Published: 17. Februar 2026
-2026-02-17T11:42:33.6262547Z
-2026-02-17T11:42:33.6265438Z ✅ Missing episode details written to: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/missing-episode.json
-2026-02-17T11:42:33.6366578Z ##[debug]Set output missing_episode = {"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}
-2026-02-17T11:42:33.6438723Z ##[debug]Finishing: Global episode comparison (against main)
-2026-02-17T11:42:33.6464857Z ##[debug]Evaluating condition for step: 'Exit if no new episodes'
-2026-02-17T11:42:33.6477595Z ##[debug]Evaluating: (success() && (steps.check_episodes.outputs.missing_episode == ''))
-2026-02-17T11:42:33.6480194Z ##[debug]Evaluating And:
-2026-02-17T11:42:33.6483714Z ##[debug]..Evaluating success:
-2026-02-17T11:42:33.6485435Z ##[debug]..=> true
-2026-02-17T11:42:33.6486997Z ##[debug]..Evaluating Equal:
-2026-02-17T11:42:33.6489593Z ##[debug]....Evaluating Index:
-2026-02-17T11:42:33.6491310Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:33.6493007Z ##[debug]........Evaluating Index:
-2026-02-17T11:42:33.6494742Z ##[debug]..........Evaluating steps:
-2026-02-17T11:42:33.6496492Z ##[debug]..........=> Object
-2026-02-17T11:42:33.6498162Z ##[debug]..........Evaluating String:
-2026-02-17T11:42:33.6499958Z ##[debug]..........=> 'check_episodes'
-2026-02-17T11:42:33.6501757Z ##[debug]........=> Object
-2026-02-17T11:42:33.6503356Z ##[debug]........Evaluating String:
-2026-02-17T11:42:33.6505371Z ##[debug]........=> 'outputs'
-2026-02-17T11:42:33.6506964Z ##[debug]......=> Object
-2026-02-17T11:42:33.6508586Z ##[debug]......Evaluating String:
-2026-02-17T11:42:33.6510344Z ##[debug]......=> 'missing_episode'
-2026-02-17T11:42:33.6638390Z ##[debug]....=> '{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}'
-2026-02-17T11:42:33.6703497Z ##[debug]....Evaluating String:
-2026-02-17T11:42:33.6705064Z ##[debug]....=> ''
-2026-02-17T11:42:33.6710908Z ##[debug]..=> false
-2026-02-17T11:42:33.6712663Z ##[debug]=> false
-2026-02-17T11:42:33.6839449Z ##[debug]Expanded: (true && ('{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}' == ''))
-2026-02-17T11:42:33.6901631Z ##[debug]Result: false
-2026-02-17T11:42:33.6919374Z ##[debug]Evaluating condition for step: 'Generate episode metadata using Copilot'
-2026-02-17T11:42:33.6926679Z ##[debug]Evaluating: (success() && (steps.check_episodes.outputs.missing_episode != ''))
-2026-02-17T11:42:33.6928930Z ##[debug]Evaluating And:
-2026-02-17T11:42:33.6930404Z ##[debug]..Evaluating success:
-2026-02-17T11:42:33.6931899Z ##[debug]..=> true
-2026-02-17T11:42:33.6942960Z ##[debug]..Evaluating NotEqual:
-2026-02-17T11:42:33.6945703Z ##[debug]....Evaluating Index:
-2026-02-17T11:42:33.6947213Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:33.6948725Z ##[debug]........Evaluating Index:
-2026-02-17T11:42:33.6950352Z ##[debug]..........Evaluating steps:
-2026-02-17T11:42:33.6952044Z ##[debug]..........=> Object
-2026-02-17T11:42:33.6953530Z ##[debug]..........Evaluating String:
-2026-02-17T11:42:33.6955118Z ##[debug]..........=> 'check_episodes'
-2026-02-17T11:42:33.6956667Z ##[debug]........=> Object
-2026-02-17T11:42:33.6958094Z ##[debug]........Evaluating String:
-2026-02-17T11:42:33.6959637Z ##[debug]........=> 'outputs'
-2026-02-17T11:42:33.6961054Z ##[debug]......=> Object
-2026-02-17T11:42:33.6962488Z ##[debug]......Evaluating String:
-2026-02-17T11:42:33.6964001Z ##[debug]......=> 'missing_episode'
-2026-02-17T11:42:33.7083551Z ##[debug]....=> '{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}'
-2026-02-17T11:42:33.7144716Z ##[debug]....Evaluating String:
-2026-02-17T11:42:33.7146132Z ##[debug]....=> ''
-2026-02-17T11:42:33.7148077Z ##[debug]..=> true
-2026-02-17T11:42:33.7149635Z ##[debug]=> true
-2026-02-17T11:42:33.7270467Z ##[debug]Expanded: (true && ('{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}' != ''))
-2026-02-17T11:42:33.7331145Z ##[debug]Result: true
-2026-02-17T11:42:33.7333125Z ##[debug]Starting: Generate episode metadata using Copilot
-2026-02-17T11:42:33.7354042Z ##[debug]Loading inputs
-2026-02-17T11:42:33.7358456Z ##[debug]Evaluating: format('echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
-2026-02-17T11:42:33.7360363Z ##[debug]export GITHUB_TOKEN="{0}"
-2026-02-17T11:42:33.7362067Z ##[debug]node scripts/workflows/podcast-update/generate-metadata.mjs
-2026-02-17T11:42:33.7363649Z ##[debug]', secrets.COPILOT_GITHUB_TOKEN)
-2026-02-17T11:42:33.7364883Z ##[debug]Evaluating format:
-2026-02-17T11:42:33.7365952Z ##[debug]..Evaluating String:
-2026-02-17T11:42:33.7367524Z ##[debug]..=> 'echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
-2026-02-17T11:42:33.7369167Z ##[debug]export GITHUB_TOKEN="{0}"
-2026-02-17T11:42:33.7370650Z ##[debug]node scripts/workflows/podcast-update/generate-metadata.mjs
-2026-02-17T11:42:33.7372153Z ##[debug]'
-2026-02-17T11:42:33.7373199Z ##[debug]..Evaluating Index:
-2026-02-17T11:42:33.7374282Z ##[debug]....Evaluating secrets:
-2026-02-17T11:42:33.7375423Z ##[debug]....=> Object
-2026-02-17T11:42:33.7376444Z ##[debug]....Evaluating String:
-2026-02-17T11:42:33.7377564Z ##[debug]....=> 'COPILOT_GITHUB_TOKEN'
-2026-02-17T11:42:33.7379993Z ##[debug]..=> '***'
-2026-02-17T11:42:33.7381449Z ##[debug]=> 'echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
-2026-02-17T11:42:33.7384358Z ##[debug]export GITHUB_TOKEN="***"
-2026-02-17T11:42:33.7385843Z ##[debug]node scripts/workflows/podcast-update/generate-metadata.mjs
-2026-02-17T11:42:33.7387336Z ##[debug]'
-2026-02-17T11:42:33.7388903Z ##[debug]Result: 'echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
-2026-02-17T11:42:33.7391975Z ##[debug]export GITHUB_TOKEN="***"
-2026-02-17T11:42:33.7393467Z ##[debug]node scripts/workflows/podcast-update/generate-metadata.mjs
-2026-02-17T11:42:33.7394966Z ##[debug]'
-2026-02-17T11:42:33.7396032Z ##[debug]Loading env
-2026-02-17T11:42:33.7410438Z ##[group]Run echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
-2026-02-17T11:42:33.7412518Z [36;1mecho "🤖 Generating episode metadata using GitHub Copilot CLI..."[0m
-2026-02-17T11:42:33.7415481Z [36;1mexport GITHUB_TOKEN="***"[0m
-2026-02-17T11:42:33.7417003Z [36;1mnode scripts/workflows/podcast-update/generate-metadata.mjs[0m
-2026-02-17T11:42:33.7430757Z shell: /usr/bin/bash -il {0}
-2026-02-17T11:42:33.7431788Z ##[endgroup]
-2026-02-17T11:42:33.7437266Z ##[debug]Overwrite 'shell' base on job defaults.
-2026-02-17T11:42:33.7454390Z ##[debug]/usr/bin/bash -il /home/github/actions-runner-frickeldave-main/_work/_temp/6c69e593-314d-47f2-b062-6db720c303ad.sh
-2026-02-17T11:42:33.7481806Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
-2026-02-17T11:42:33.7484062Z bash: Keine Jobsteuerung in dieser Shell.
-2026-02-17T11:42:33.9688130Z 🤖 Generating episode metadata using GitHub Copilot CLI...
-2026-02-17T11:42:34.0010596Z 📖 Reading missing episode from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/missing-episode.json
-2026-02-17T11:42:34.0013089Z
-2026-02-17T11:42:34.0014113Z 📌 Processing episode: "DOAG VOICES FutureAI – mit Dave König und Mirko Seifert"
-2026-02-17T11:42:34.0015855Z 🤖 Calling GitHub Copilot CLI...
-2026-02-17T11:42:34.0017069Z 📤 Sending prompt to Copilot...
-2026-02-17T11:42:52.6377103Z 📥 Received response from Copilot
-2026-02-17T11:42:52.6381403Z ✅ Successfully parsed metadata from Copilot
-2026-02-17T11:42:52.6384062Z ✅ Metadata validation passed
-2026-02-17T11:42:52.6384481Z
-2026-02-17T11:42:52.6385389Z ✅ Metadata written to: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/metadata.json
-2026-02-17T11:42:52.6386414Z
-2026-02-17T11:42:52.6386811Z 📋 Generated metadata:
-2026-02-17T11:42:52.6387274Z    Title: Warum KI fragt statt ersetzt – mit Mirko Seifert
-2026-02-17T11:42:52.6387726Z    Edition: FutureAI
-2026-02-17T11:42:52.6388086Z    Guests: Dave König und Mirko Seifert
-2026-02-17T11:42:52.6388474Z    Date: 17. Februar 2026
-2026-02-17T11:42:52.6389341Z    Description: Künstliche Intelligenz verspricht enorme Produktivitätsschübe in der Softwareentwicklung – doch viel...
-2026-02-17T11:42:52.6390128Z
-2026-02-17T11:42:52.6390299Z 📄 Full metadata (JSON):
-2026-02-17T11:42:52.6390589Z {
-2026-02-17T11:42:52.6391371Z   "title": "Warum KI fragt statt ersetzt – mit Mirko Seifert",
-2026-02-17T11:42:52.6391832Z   "edition": "FutureAI",
-2026-02-17T11:42:52.6392210Z   "guests": "Dave König und Mirko Seifert",
-2026-02-17T11:42:52.6392603Z   "date": "17. Februar 2026",
-2026-02-17T11:42:52.6395889Z   "description": "Künstliche Intelligenz verspricht enorme Produktivitätsschübe in der Softwareentwicklung – doch viele Probleme entstehen lange vor dem ersten Code. Unternehmer und Softwarearchitekt Mirko Seifert spricht mit Dave König darüber, warum unklare Anforderungen oft die eigentlichen Projektkiller sind und wie KI durch gezielte Rückfragen bessere Anforderungen ermöglicht. Die Diskussion reicht von Product-Owner-Aufgaben über Architektur-Trends bis zur Frage, wie Realität und KI-generierte Fiktion noch zu unterscheiden sind.",
-2026-02-17T11:42:52.6398786Z   "links": {
-2026-02-17T11:42:52.6399261Z     "spotify": "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB",
-2026-02-17T11:42:52.6399988Z     "apple": "https://podcasts.apple.com/de/podcast/doag-voices/id1847181531",
-2026-02-17T11:42:52.6400872Z     "amazon": "https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices"
-2026-02-17T11:42:52.6401470Z   },
-2026-02-17T11:42:52.6402314Z   "audioUrl": "https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3"
-2026-02-17T11:42:52.6403024Z }
-2026-02-17T11:42:52.6442317Z ##[debug]Finishing: Generate episode metadata using Copilot
-2026-02-17T11:42:52.6451865Z ##[debug]Evaluating condition for step: 'Update dev branch'
-2026-02-17T11:42:52.6455998Z ##[debug]Evaluating: (success() && (steps.check_episodes.outputs.missing_episode != ''))
-2026-02-17T11:42:52.6456776Z ##[debug]Evaluating And:
-2026-02-17T11:42:52.6457181Z ##[debug]..Evaluating success:
-2026-02-17T11:42:52.6457662Z ##[debug]..=> true
-2026-02-17T11:42:52.6458139Z ##[debug]..Evaluating NotEqual:
-2026-02-17T11:42:52.6458559Z ##[debug]....Evaluating Index:
-2026-02-17T11:42:52.6458961Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:52.6459387Z ##[debug]........Evaluating Index:
-2026-02-17T11:42:52.6459804Z ##[debug]..........Evaluating steps:
-2026-02-17T11:42:52.6460224Z ##[debug]..........=> Object
-2026-02-17T11:42:52.6460630Z ##[debug]..........Evaluating String:
-2026-02-17T11:42:52.6461075Z ##[debug]..........=> 'check_episodes'
-2026-02-17T11:42:52.6461526Z ##[debug]........=> Object
-2026-02-17T11:42:52.6461913Z ##[debug]........Evaluating String:
-2026-02-17T11:42:52.6462343Z ##[debug]........=> 'outputs'
-2026-02-17T11:42:52.6462732Z ##[debug]......=> Object
-2026-02-17T11:42:52.6463125Z ##[debug]......Evaluating String:
-2026-02-17T11:42:52.6463534Z ##[debug]......=> 'missing_episode'
-2026-02-17T11:42:52.6506491Z ##[debug]....=> '{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}'
-2026-02-17T11:42:52.6528507Z ##[debug]....Evaluating String:
-2026-02-17T11:42:52.6528890Z ##[debug]....=> ''
-2026-02-17T11:42:52.6529229Z ##[debug]..=> true
-2026-02-17T11:42:52.6529561Z ##[debug]=> true
-2026-02-17T11:42:52.6573233Z ##[debug]Expanded: (true && ('{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}' != ''))
-2026-02-17T11:42:52.6595340Z ##[debug]Result: true
-2026-02-17T11:42:52.6596260Z ##[debug]Starting: Update dev branch
-2026-02-17T11:42:52.6618507Z ##[debug]Loading inputs
-2026-02-17T11:42:52.6621181Z ##[debug]Evaluating: format('TITLE=$(jq -r ''.title'' metadata.json)
-2026-02-17T11:42:52.6621949Z ##[debug]echo "🌿 Updating dev branch with episode: $TITLE"
-2026-02-17T11:42:52.6622343Z ##[debug]
-2026-02-17T11:42:52.6622563Z ##[debug]git checkout dev
-2026-02-17T11:42:52.6622845Z ##[debug]git pull origin dev
-2026-02-17T11:42:52.6623112Z ##[debug]
-2026-02-17T11:42:52.6623332Z ##[debug]if [ "{0}" == "true" ]; then
-2026-02-17T11:42:52.6623795Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-2026-02-17T11:42:52.6624374Z ##[debug]  echo "🦁 DRY RUN: Skipping git commit and push."
-2026-02-17T11:42:52.6624769Z ##[debug]else
-2026-02-17T11:42:52.6625099Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs
-2026-02-17T11:42:52.6625568Z ##[debug]  git add src/content/aboutme/doag.md
-2026-02-17T11:42:52.6626053Z ##[debug]  git commit -m "feat(podcast): Add episode ''$TITLE''" --no-verify
-2026-02-17T11:42:52.6626529Z ##[debug]  git push origin dev
-2026-02-17T11:42:52.6626810Z ##[debug]fi
-2026-02-17T11:42:52.6627066Z ##[debug]', github.event.inputs.dryRun)
-2026-02-17T11:42:52.6627437Z ##[debug]Evaluating format:
-2026-02-17T11:42:52.6627754Z ##[debug]..Evaluating String:
-2026-02-17T11:42:52.6628170Z ##[debug]..=> 'TITLE=$(jq -r ''.title'' metadata.json)
-2026-02-17T11:42:52.6628627Z ##[debug]echo "🌿 Updating dev branch with episode: $TITLE"
-2026-02-17T11:42:52.6629017Z ##[debug]
-2026-02-17T11:42:52.6629230Z ##[debug]git checkout dev
-2026-02-17T11:42:52.6629507Z ##[debug]git pull origin dev
-2026-02-17T11:42:52.6629897Z ##[debug]
-2026-02-17T11:42:52.6630697Z ##[debug]if [ "{0}" == "true" ]; then
-2026-02-17T11:42:52.6631162Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-2026-02-17T11:42:52.6631729Z ##[debug]  echo "🦁 DRY RUN: Skipping git commit and push."
-2026-02-17T11:42:52.6632121Z ##[debug]else
-2026-02-17T11:42:52.6632450Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs
-2026-02-17T11:42:52.6632917Z ##[debug]  git add src/content/aboutme/doag.md
-2026-02-17T11:42:52.6633418Z ##[debug]  git commit -m "feat(podcast): Add episode ''$TITLE''" --no-verify
-2026-02-17T11:42:52.6633897Z ##[debug]  git push origin dev
-2026-02-17T11:42:52.6634175Z ##[debug]fi
-2026-02-17T11:42:52.6634377Z ##[debug]'
-2026-02-17T11:42:52.6634907Z ##[debug]..Evaluating Index:
-2026-02-17T11:42:52.6635228Z ##[debug]....Evaluating Index:
-2026-02-17T11:42:52.6635540Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:52.6635849Z ##[debug]........Evaluating github:
-2026-02-17T11:42:52.6636243Z ##[debug]........=> Object
-2026-02-17T11:42:52.6636594Z ##[debug]........Evaluating String:
-2026-02-17T11:42:52.6636923Z ##[debug]........=> 'event'
-2026-02-17T11:42:52.6637240Z ##[debug]......=> Object
-2026-02-17T11:42:52.6637536Z ##[debug]......Evaluating String:
-2026-02-17T11:42:52.6637846Z ##[debug]......=> 'inputs'
-2026-02-17T11:42:52.6638156Z ##[debug]....=> null
-2026-02-17T11:42:52.6638448Z ##[debug]..=> null
-2026-02-17T11:42:52.6638822Z ##[debug]=> 'TITLE=$(jq -r ''.title'' metadata.json)
-2026-02-17T11:42:52.6639282Z ##[debug]echo "🌿 Updating dev branch with episode: $TITLE"
-2026-02-17T11:42:52.6639686Z ##[debug]
-2026-02-17T11:42:52.6639900Z ##[debug]git checkout dev
-2026-02-17T11:42:52.6640176Z ##[debug]git pull origin dev
-2026-02-17T11:42:52.6640440Z ##[debug]
-2026-02-17T11:42:52.6640657Z ##[debug]if [ "" == "true" ]; then
-2026-02-17T11:42:52.6641107Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-2026-02-17T11:42:52.6641676Z ##[debug]  echo "🦁 DRY RUN: Skipping git commit and push."
-2026-02-17T11:42:52.6642069Z ##[debug]else
-2026-02-17T11:42:52.6642403Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs
-2026-02-17T11:42:52.6642876Z ##[debug]  git add src/content/aboutme/doag.md
-2026-02-17T11:42:52.6643360Z ##[debug]  git commit -m "feat(podcast): Add episode ''$TITLE''" --no-verify
-2026-02-17T11:42:52.6643831Z ##[debug]  git push origin dev
-2026-02-17T11:42:52.6644111Z ##[debug]fi
-2026-02-17T11:42:52.6644313Z ##[debug]'
-2026-02-17T11:42:52.6644669Z ##[debug]Result: 'TITLE=$(jq -r ''.title'' metadata.json)
-2026-02-17T11:42:52.6645324Z ##[debug]echo "🌿 Updating dev branch with episode: $TITLE"
-2026-02-17T11:42:52.6645710Z ##[debug]
-2026-02-17T11:42:52.6645926Z ##[debug]git checkout dev
-2026-02-17T11:42:52.6646203Z ##[debug]git pull origin dev
-2026-02-17T11:42:52.6646464Z ##[debug]
-2026-02-17T11:42:52.6646682Z ##[debug]if [ "" == "true" ]; then
-2026-02-17T11:42:52.6647129Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-2026-02-17T11:42:52.6647701Z ##[debug]  echo "🦁 DRY RUN: Skipping git commit and push."
-2026-02-17T11:42:52.6648091Z ##[debug]else
-2026-02-17T11:42:52.6648423Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs
-2026-02-17T11:42:52.6648892Z ##[debug]  git add src/content/aboutme/doag.md
-2026-02-17T11:42:52.6649378Z ##[debug]  git commit -m "feat(podcast): Add episode ''$TITLE''" --no-verify
-2026-02-17T11:42:52.6649854Z ##[debug]  git push origin dev
-2026-02-17T11:42:52.6650161Z ##[debug]fi
-2026-02-17T11:42:52.6650401Z ##[debug]'
-2026-02-17T11:42:52.6650942Z ##[debug]Loading env
-2026-02-17T11:42:52.6656131Z ##[group]Run TITLE=$(jq -r '.title' metadata.json)
-2026-02-17T11:42:52.6656593Z [36;1mTITLE=$(jq -r '.title' metadata.json)[0m
-2026-02-17T11:42:52.6657059Z [36;1mecho "🌿 Updating dev branch with episode: $TITLE"[0m
-2026-02-17T11:42:52.6657467Z [36;1m[0m
-2026-02-17T11:42:52.6657681Z [36;1mgit checkout dev[0m
-2026-02-17T11:42:52.6657965Z [36;1mgit pull origin dev[0m
-2026-02-17T11:42:52.6658378Z [36;1m[0m
-2026-02-17T11:42:52.6658613Z [36;1mif [ "" == "true" ]; then[0m
-2026-02-17T11:42:52.6659079Z [36;1m  node scripts/workflows/podcast-update/update-doag.mjs --dry-run[0m
-2026-02-17T11:42:52.6659654Z [36;1m  echo "🦁 DRY RUN: Skipping git commit and push."[0m
-2026-02-17T11:42:52.6660055Z [36;1melse[0m
-2026-02-17T11:42:52.6660400Z [36;1m  node scripts/workflows/podcast-update/update-doag.mjs[0m
-2026-02-17T11:42:52.6660885Z [36;1m  git add src/content/aboutme/doag.md[0m
-2026-02-17T11:42:52.6661371Z [36;1m  git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify[0m
-2026-02-17T11:42:52.6661858Z [36;1m  git push origin dev[0m
-2026-02-17T11:42:52.6662135Z [36;1mfi[0m
-2026-02-17T11:42:52.6674816Z shell: /usr/bin/bash -il {0}
-2026-02-17T11:42:52.6675119Z ##[endgroup]
-2026-02-17T11:42:52.6677104Z ##[debug]Overwrite 'shell' base on job defaults.
-2026-02-17T11:42:52.6691538Z ##[debug]/usr/bin/bash -il /home/github/actions-runner-frickeldave-main/_work/_temp/0d5bcbfa-e319-48f1-b72c-3e0a8f54b49a.sh
-2026-02-17T11:42:52.6711157Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
-2026-02-17T11:42:52.6711930Z bash: Keine Jobsteuerung in dieser Shell.
-2026-02-17T11:42:52.9228043Z 🌿 Updating dev branch with episode: Warum KI fragt statt ersetzt – mit Mirko Seifert
-2026-02-17T11:42:52.9337411Z Zu neuem Branch 'dev' gewechselt
-2026-02-17T11:42:52.9337859Z M	missing-episode.json
-2026-02-17T11:42:52.9338204Z Branch 'dev' folgt nun 'origin/dev'.
-2026-02-17T11:42:53.3433427Z Von https://github.com/Frickeldave/frickeldave.github.io
-2026-02-17T11:42:53.3434004Z  * branch            dev        -> FETCH_HEAD
-2026-02-17T11:42:53.3510947Z Bereits aktuell.
-2026-02-17T11:42:53.3839035Z 📖 Reading metadata from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/metadata.json
-2026-02-17T11:42:53.3840292Z
-2026-02-17T11:42:53.3840792Z 📌 Updating doag.md with episode: "Warum KI fragt statt ersetzt – mit Mirko Seifert"
-2026-02-17T11:42:53.3842091Z 📖 Reading doag.md from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/src/content/aboutme/doag.md
-2026-02-17T11:42:53.3844896Z Found 1 existing episodes
-2026-02-17T11:42:53.3847222Z
-2026-02-17T11:42:53.3856298Z 🆔 Generated unique ID: doag-voices-61082
-2026-02-17T11:42:53.3856966Z 📝 Inserting new episode into doag.md...
-2026-02-17T11:42:53.3857247Z
-2026-02-17T11:42:53.3857432Z ✅ Successfully updated doag.md
-2026-02-17T11:42:53.3857646Z
-2026-02-17T11:42:53.3858058Z 📋 Episode details:
-2026-02-17T11:42:53.3858366Z    ID: doag-voices-61082
-2026-02-17T11:42:53.3858807Z    Title: Warum KI fragt statt ersetzt – mit Mirko Seifert
-2026-02-17T11:42:53.3859246Z    Edition: FutureAI
-2026-02-17T11:42:53.3859542Z    Date: 17. Februar 2026
-2026-02-17T11:42:53.4063231Z [dev 4337273] feat(podcast): Add episode 'Warum KI fragt statt ersetzt – mit Mirko Seifert'
-2026-02-17T11:42:53.4064318Z  1 file changed, 13 insertions(+)
-2026-02-17T11:42:53.6781743Z Hinweis: Der '.husky/pre-push' Hook wurde ignoriert, weil er nicht als ausführbar markiert ist.
-2026-02-17T11:42:53.6785168Z Hinweis: Sie können diese Warnung mit `git config advice.ignoredHook false` deaktivieren.
-2026-02-17T11:42:54.2140583Z To https://github.com/Frickeldave/frickeldave.github.io
-2026-02-17T11:42:54.2141396Z    1fd4001..4337273  dev -> dev
-2026-02-17T11:42:54.2213008Z ##[debug]Finishing: Update dev branch
-2026-02-17T11:42:54.2225278Z ##[debug]Evaluating condition for step: 'Update main branch'
-2026-02-17T11:42:54.2235030Z ##[debug]Evaluating: (success() && (steps.check_episodes.outputs.missing_episode != '') && ((github.event.inputs.target == 'all') || (github.event_name == 'schedule')))
-2026-02-17T11:42:54.2236573Z ##[debug]Evaluating And:
-2026-02-17T11:42:54.2237111Z ##[debug]..Evaluating success:
-2026-02-17T11:42:54.2237761Z ##[debug]..=> true
-2026-02-17T11:42:54.2238296Z ##[debug]..Evaluating NotEqual:
-2026-02-17T11:42:54.2238856Z ##[debug]....Evaluating Index:
-2026-02-17T11:42:54.2239401Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:54.2239955Z ##[debug]........Evaluating Index:
-2026-02-17T11:42:54.2240516Z ##[debug]..........Evaluating steps:
-2026-02-17T11:42:54.2241101Z ##[debug]..........=> Object
-2026-02-17T11:42:54.2241651Z ##[debug]..........Evaluating String:
-2026-02-17T11:42:54.2242254Z ##[debug]..........=> 'check_episodes'
-2026-02-17T11:42:54.2243033Z ##[debug]........=> Object
-2026-02-17T11:42:54.2243695Z ##[debug]........Evaluating String:
-2026-02-17T11:42:54.2244336Z ##[debug]........=> 'outputs'
-2026-02-17T11:42:54.2244962Z ##[debug]......=> Object
-2026-02-17T11:42:54.2245570Z ##[debug]......Evaluating String:
-2026-02-17T11:42:54.2246213Z ##[debug]......=> 'missing_episode'
-2026-02-17T11:42:54.2316155Z ##[debug]....=> '{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}'
-2026-02-17T11:42:54.2351922Z ##[debug]....Evaluating String:
-2026-02-17T11:42:54.2352551Z ##[debug]....=> ''
-2026-02-17T11:42:54.2353072Z ##[debug]..=> true
-2026-02-17T11:42:54.2353759Z ##[debug]..Evaluating Or:
-2026-02-17T11:42:54.2358463Z ##[debug]....Evaluating Equal:
-2026-02-17T11:42:54.2359160Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:54.2359819Z ##[debug]........Evaluating Index:
-2026-02-17T11:42:54.2360489Z ##[debug]..........Evaluating Index:
-2026-02-17T11:42:54.2361158Z ##[debug]............Evaluating github:
-2026-02-17T11:42:54.2361913Z ##[debug]............=> Object
-2026-02-17T11:42:54.2362558Z ##[debug]............Evaluating String:
-2026-02-17T11:42:54.2363211Z ##[debug]............=> 'event'
-2026-02-17T11:42:54.2363854Z ##[debug]..........=> Object
-2026-02-17T11:42:54.2364478Z ##[debug]..........Evaluating String:
-2026-02-17T11:42:54.2365118Z ##[debug]..........=> 'inputs'
-2026-02-17T11:42:54.2365709Z ##[debug]........=> null
-2026-02-17T11:42:54.2366284Z ##[debug]......=> null
-2026-02-17T11:42:54.2366854Z ##[debug]......Evaluating String:
-2026-02-17T11:42:54.2367454Z ##[debug]......=> 'all'
-2026-02-17T11:42:54.2386219Z ##[debug]....=> false
-2026-02-17T11:42:54.2386861Z ##[debug]....Evaluating Equal:
-2026-02-17T11:42:54.2387516Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:54.2388190Z ##[debug]........Evaluating github:
-2026-02-17T11:42:54.2388859Z ##[debug]........=> Object
-2026-02-17T11:42:54.2389815Z ##[debug]........Evaluating String:
-2026-02-17T11:42:54.2390563Z ##[debug]........=> 'event_name'
-2026-02-17T11:42:54.2391234Z ##[debug]......=> 'schedule'
-2026-02-17T11:42:54.2391861Z ##[debug]......Evaluating String:
-2026-02-17T11:42:54.2392472Z ##[debug]......=> 'schedule'
-2026-02-17T11:42:54.2393039Z ##[debug]....=> true
-2026-02-17T11:42:54.2393591Z ##[debug]..=> true
-2026-02-17T11:42:54.2394663Z ##[debug]=> true
-2026-02-17T11:42:54.2469765Z ##[debug]Expanded: (true && ('{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}' != '') && ((null == 'all') || ('schedule' == 'schedule')))
-2026-02-17T11:42:54.2504068Z ##[debug]Result: true
-2026-02-17T11:42:54.2505107Z ##[debug]Starting: Update main branch
-2026-02-17T11:42:54.2518182Z ##[debug]Loading inputs
-2026-02-17T11:42:54.2520943Z ##[debug]Evaluating: format('TITLE=$(jq -r ''.title'' metadata.json)
-2026-02-17T11:42:54.2521676Z ##[debug]echo "🚀 Updating main branch with episode: $TITLE"
-2026-02-17T11:42:54.2522199Z ##[debug]
-2026-02-17T11:42:54.2522491Z ##[debug]git checkout main
-2026-02-17T11:42:54.2522861Z ##[debug]git pull origin main
-2026-02-17T11:42:54.2523222Z ##[debug]
-2026-02-17T11:42:54.2523512Z ##[debug]if [ "{0}" == "true" ]; then
-2026-02-17T11:42:54.2524137Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-2026-02-17T11:42:54.2524888Z ##[debug]  echo "🦁 DRY RUN: Skipping git commit and push."
-2026-02-17T11:42:54.2525403Z ##[debug]else
-2026-02-17T11:42:54.2525839Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs
-2026-02-17T11:42:54.2526488Z ##[debug]  git add src/content/aboutme/doag.md
-2026-02-17T11:42:54.2527137Z ##[debug]  git commit -m "feat(podcast): Add episode ''$TITLE''" --no-verify
-2026-02-17T11:42:54.2527797Z ##[debug]  git push origin main
-2026-02-17T11:42:54.2528168Z ##[debug]fi
-2026-02-17T11:42:54.2528481Z ##[debug]', github.event.inputs.dryRun)
-2026-02-17T11:42:54.2529378Z ##[debug]Evaluating format:
-2026-02-17T11:42:54.2529785Z ##[debug]..Evaluating String:
-2026-02-17T11:42:54.2530327Z ##[debug]..=> 'TITLE=$(jq -r ''.title'' metadata.json)
-2026-02-17T11:42:54.2530935Z ##[debug]echo "🚀 Updating main branch with episode: $TITLE"
-2026-02-17T11:42:54.2531444Z ##[debug]
-2026-02-17T11:42:54.2531731Z ##[debug]git checkout main
-2026-02-17T11:42:54.2532104Z ##[debug]git pull origin main
-2026-02-17T11:42:54.2532455Z ##[debug]
-2026-02-17T11:42:54.2532746Z ##[debug]if [ "{0}" == "true" ]; then
-2026-02-17T11:42:54.2533358Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-2026-02-17T11:42:54.2534124Z ##[debug]  echo "🦁 DRY RUN: Skipping git commit and push."
-2026-02-17T11:42:54.2534638Z ##[debug]else
-2026-02-17T11:42:54.2535087Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs
-2026-02-17T11:42:54.2535710Z ##[debug]  git add src/content/aboutme/doag.md
-2026-02-17T11:42:54.2536355Z ##[debug]  git commit -m "feat(podcast): Add episode ''$TITLE''" --no-verify
-2026-02-17T11:42:54.2536991Z ##[debug]  git push origin main
-2026-02-17T11:42:54.2537364Z ##[debug]fi
-2026-02-17T11:42:54.2537621Z ##[debug]'
-2026-02-17T11:42:54.2538091Z ##[debug]..Evaluating Index:
-2026-02-17T11:42:54.2538493Z ##[debug]....Evaluating Index:
-2026-02-17T11:42:54.2538904Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:54.2539306Z ##[debug]........Evaluating github:
-2026-02-17T11:42:54.2539763Z ##[debug]........=> Object
-2026-02-17T11:42:54.2540167Z ##[debug]........Evaluating String:
-2026-02-17T11:42:54.2540583Z ##[debug]........=> 'event'
-2026-02-17T11:42:54.2540985Z ##[debug]......=> Object
-2026-02-17T11:42:54.2541376Z ##[debug]......Evaluating String:
-2026-02-17T11:42:54.2541780Z ##[debug]......=> 'inputs'
-2026-02-17T11:42:54.2542401Z ##[debug]....=> null
-2026-02-17T11:42:54.2542741Z ##[debug]..=> null
-2026-02-17T11:42:54.2553344Z ##[debug]=> 'TITLE=$(jq -r ''.title'' metadata.json)
-2026-02-17T11:42:54.2553926Z ##[debug]echo "🚀 Updating main branch with episode: $TITLE"
-2026-02-17T11:42:54.2554376Z ##[debug]
-2026-02-17T11:42:54.2554620Z ##[debug]git checkout main
-2026-02-17T11:42:54.2554946Z ##[debug]git pull origin main
-2026-02-17T11:42:54.2555256Z ##[debug]
-2026-02-17T11:42:54.2555492Z ##[debug]if [ "" == "true" ]; then
-2026-02-17T11:42:54.2556011Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-2026-02-17T11:42:54.2556656Z ##[debug]  echo "🦁 DRY RUN: Skipping git commit and push."
-2026-02-17T11:42:54.2557092Z ##[debug]else
-2026-02-17T11:42:54.2557472Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs
-2026-02-17T11:42:54.2557995Z ##[debug]  git add src/content/aboutme/doag.md
-2026-02-17T11:42:54.2558759Z ##[debug]  git commit -m "feat(podcast): Add episode ''$TITLE''" --no-verify
-2026-02-17T11:42:54.2559333Z ##[debug]  git push origin main
-2026-02-17T11:42:54.2559643Z ##[debug]fi
-2026-02-17T11:42:54.2559869Z ##[debug]'
-2026-02-17T11:42:54.2560294Z ##[debug]Result: 'TITLE=$(jq -r ''.title'' metadata.json)
-2026-02-17T11:42:54.2560835Z ##[debug]echo "🚀 Updating main branch with episode: $TITLE"
-2026-02-17T11:42:54.2561277Z ##[debug]
-2026-02-17T11:42:54.2561515Z ##[debug]git checkout main
-2026-02-17T11:42:54.2561831Z ##[debug]git pull origin main
-2026-02-17T11:42:54.2562130Z ##[debug]
-2026-02-17T11:42:54.2562374Z ##[debug]if [ "" == "true" ]; then
-2026-02-17T11:42:54.2562890Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-2026-02-17T11:42:54.2563524Z ##[debug]  echo "🦁 DRY RUN: Skipping git commit and push."
-2026-02-17T11:42:54.2563958Z ##[debug]else
-2026-02-17T11:42:54.2564331Z ##[debug]  node scripts/workflows/podcast-update/update-doag.mjs
-2026-02-17T11:42:54.2564866Z ##[debug]  git add src/content/aboutme/doag.md
-2026-02-17T11:42:54.2565413Z ##[debug]  git commit -m "feat(podcast): Add episode ''$TITLE''" --no-verify
-2026-02-17T11:42:54.2565970Z ##[debug]  git push origin main
-2026-02-17T11:42:54.2566280Z ##[debug]fi
-2026-02-17T11:42:54.2566505Z ##[debug]'
-2026-02-17T11:42:54.2567086Z ##[debug]Loading env
-2026-02-17T11:42:54.2572618Z ##[group]Run TITLE=$(jq -r '.title' metadata.json)
-2026-02-17T11:42:54.2573120Z [36;1mTITLE=$(jq -r '.title' metadata.json)[0m
-2026-02-17T11:42:54.2573632Z [36;1mecho "🚀 Updating main branch with episode: $TITLE"[0m
-2026-02-17T11:42:54.2574088Z [36;1m[0m
-2026-02-17T11:42:54.2574336Z [36;1mgit checkout main[0m
-2026-02-17T11:42:54.2574659Z [36;1mgit pull origin main[0m
-2026-02-17T11:42:54.2574963Z [36;1m[0m
-2026-02-17T11:42:54.2575203Z [36;1mif [ "" == "true" ]; then[0m
-2026-02-17T11:42:54.2575723Z [36;1m  node scripts/workflows/podcast-update/update-doag.mjs --dry-run[0m
-2026-02-17T11:42:54.2576388Z [36;1m  echo "🦁 DRY RUN: Skipping git commit and push."[0m
-2026-02-17T11:42:54.2576831Z [36;1melse[0m
-2026-02-17T11:42:54.2577222Z [36;1m  node scripts/workflows/podcast-update/update-doag.mjs[0m
-2026-02-17T11:42:54.2577761Z [36;1m  git add src/content/aboutme/doag.md[0m
-2026-02-17T11:42:54.2578309Z [36;1m  git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify[0m
-2026-02-17T11:42:54.2578840Z [36;1m  git push origin main[0m
-2026-02-17T11:42:54.2579159Z [36;1mfi[0m
-2026-02-17T11:42:54.2592464Z shell: /usr/bin/bash -il {0}
-2026-02-17T11:42:54.2592802Z ##[endgroup]
-2026-02-17T11:42:54.2595014Z ##[debug]Overwrite 'shell' base on job defaults.
-2026-02-17T11:42:54.2608503Z ##[debug]/usr/bin/bash -il /home/github/actions-runner-frickeldave-main/_work/_temp/746195b0-effd-4ded-918b-29950c9f0f3d.sh
-2026-02-17T11:42:54.2627479Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
-2026-02-17T11:42:54.2628256Z bash: Keine Jobsteuerung in dieser Shell.
-2026-02-17T11:42:54.5155539Z 🚀 Updating main branch with episode: Warum KI fragt statt ersetzt – mit Mirko Seifert
-2026-02-17T11:42:54.5245491Z Zu Branch 'main' gewechselt
-2026-02-17T11:42:54.5245896Z M	missing-episode.json
-2026-02-17T11:42:54.5246308Z Ihr Branch ist auf demselben Stand wie 'origin/main'.
-2026-02-17T11:42:54.9342349Z Von https://github.com/Frickeldave/frickeldave.github.io
-2026-02-17T11:42:54.9342948Z  * branch            main       -> FETCH_HEAD
-2026-02-17T11:42:54.9424471Z Bereits aktuell.
-2026-02-17T11:42:54.9769490Z 📖 Reading metadata from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/metadata.json
-2026-02-17T11:42:54.9771068Z
-2026-02-17T11:42:54.9771503Z 📌 Updating doag.md with episode: "Warum KI fragt statt ersetzt – mit Mirko Seifert"
-2026-02-17T11:42:54.9772717Z 📖 Reading doag.md from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/src/content/aboutme/doag.md
-2026-02-17T11:42:54.9774587Z Found 0 existing episodes
-2026-02-17T11:42:54.9775026Z
-2026-02-17T11:42:54.9775368Z 🆔 Generated unique ID: doag-voices-37265
-2026-02-17T11:42:54.9776933Z 📝 Inserting new episode into doag.md...
-2026-02-17T11:42:54.9780241Z
-2026-02-17T11:42:54.9782348Z ✅ Successfully updated doag.md
-2026-02-17T11:42:54.9782579Z
-2026-02-17T11:42:54.9783265Z 📋 Episode details:
-2026-02-17T11:42:54.9783608Z    ID: doag-voices-37265
-2026-02-17T11:42:54.9784042Z    Title: Warum KI fragt statt ersetzt – mit Mirko Seifert
-2026-02-17T11:42:54.9784487Z    Edition: FutureAI
-2026-02-17T11:42:54.9784789Z    Date: 17. Februar 2026
-2026-02-17T11:42:54.9978160Z [main daf91ca] feat(podcast): Add episode 'Warum KI fragt statt ersetzt – mit Mirko Seifert'
-2026-02-17T11:42:54.9978823Z  1 file changed, 13 insertions(+)
-2026-02-17T11:42:55.3115279Z Hinweis: Der '.husky/pre-push' Hook wurde ignoriert, weil er nicht als ausführbar markiert ist.
-2026-02-17T11:42:55.3117991Z Hinweis: Sie können diese Warnung mit `git config advice.ignoredHook false` deaktivieren.
-2026-02-17T11:42:55.8526929Z To https://github.com/Frickeldave/frickeldave.github.io
-2026-02-17T11:42:55.8528440Z    86c3949..daf91ca  main -> main
-2026-02-17T11:42:55.8628940Z ##[debug]Finishing: Update main branch
-2026-02-17T11:42:55.8638385Z ##[debug]Evaluating condition for step: 'Success summary'
-2026-02-17T11:42:55.8641173Z ##[debug]Evaluating: (success() && (steps.check_episodes.outputs.missing_episode != ''))
-2026-02-17T11:42:55.8659298Z ##[debug]Evaluating And:
-2026-02-17T11:42:55.8659711Z ##[debug]..Evaluating success:
-2026-02-17T11:42:55.8660297Z ##[debug]..=> true
-2026-02-17T11:42:55.8660686Z ##[debug]..Evaluating NotEqual:
-2026-02-17T11:42:55.8661092Z ##[debug]....Evaluating Index:
-2026-02-17T11:42:55.8661500Z ##[debug]......Evaluating Index:
-2026-02-17T11:42:55.8662048Z ##[debug]........Evaluating Index:
-2026-02-17T11:42:55.8662490Z ##[debug]..........Evaluating steps:
-2026-02-17T11:42:55.8663007Z ##[debug]..........=> Object
-2026-02-17T11:42:55.8663443Z ##[debug]..........Evaluating String:
-2026-02-17T11:42:55.8663915Z ##[debug]..........=> 'check_episodes'
-2026-02-17T11:42:55.8664661Z ##[debug]........=> Object
-2026-02-17T11:42:55.8665088Z ##[debug]........Evaluating String:
-2026-02-17T11:42:55.8665567Z ##[debug]........=> 'outputs'
-2026-02-17T11:42:55.8665971Z ##[debug]......=> Object
-2026-02-17T11:42:55.8666388Z ##[debug]......Evaluating String:
-2026-02-17T11:42:55.8666828Z ##[debug]......=> 'missing_episode'
-2026-02-17T11:42:55.8714800Z ##[debug]....=> '{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}'
-2026-02-17T11:42:55.8742059Z ##[debug]....Evaluating String:
-2026-02-17T11:42:55.8742507Z ##[debug]....=> ''
-2026-02-17T11:42:55.8742895Z ##[debug]..=> true
-2026-02-17T11:42:55.8743274Z ##[debug]=> true
-2026-02-17T11:42:55.8796803Z ##[debug]Expanded: (true && ('{"title":"DOAG VOICES FutureAI – mit Dave König und Mirko Seifert","pubDate":"2026-02-17T07:00:00.000Z","pubDateFormatted":"17. Februar 2026","description":"Warum gute Anforderungen wichtiger sind als perfekte Modelle — und weshalb KI eher fragt als ersetzt.K&#252;nstliche Intelligenz verspricht enorme Produktivit&#228;tssch&#252;be in der Softwareentwicklung — doch viele Probleme entstehen lange vor dem ersten Code. In dieser Folge spricht Host Dave K&#246;nig mit Unternehmer und Softwarearchitekt Mirko Seifert dar&#252;ber, warum unklare Anforderungen, &#252;berladene Backlogs und falsche Priorit&#228;ten oft die eigentlichen Projektkiller sind — und wie KI hier sinnvoll unterst&#252;tzen kann.Seifert erz&#228;hlt von seinem Weg vom C64-Programmierer &#252;ber die Forschung zu dom&#228;nenspezifischen Sprachen bis zum Gr&#252;nder zweier Tech-Firmen mit der Mission, bessere Software zu erm&#246;glichen. Im Zentrum steht sein KI-gest&#252;tztes Tool, das Anforderungen nicht einfach generiert, sondern im Interview-Modus hinterfragt. „Selbst sehr intelligente Menschen vergessen Dinge — eine KI, die nachfragt, ver&#228;ndert Denkprozesse“, so Seifert.Gemeinsam diskutieren die beiden, ob KI Product Owner ersetzen kann, warum Jira trotz Kritik dominiert und weshalb Microservices im Zeitalter gro&#223;er Sprachmodelle neue Vorteile haben k&#246;nnten. Auch Architektur-Trends zwischen Monolith-Renaissance und Serverless-Vision sowie die wachsende Komplexit&#228;t moderner Systeme stehen im Fokus.Ein besonderes Highlight ist das Spiel „Tech-or-Myth?“, bei dem zwei KI-generierte Geschichten gegeneinander antreten — eine wahr, eine erfunden. Dabei zeigt sich, wie schwer Realit&#228;t und plausibel klingende Fiktion inzwischen zu unterscheiden sind.Diese Episode ist kein KI-Hype, sondern ein ehrlicher Blick darauf, wie Technologie Arbeit ver&#228;ndert, ohne sie automatisch zu vereinfachen.–––Kapitel&#252;bersicht:00:00 – Intro DOAG VOICES FutureAI00:16 – Vom C64 zur KI-FirmaSeiferts Weg vom fr&#252;hen Programmieren &#252;ber Forschung bis zur Gr&#252;ndung von Beratungs- und Produktfirmen.07:56 – Warum Anforderungen scheiternUser Stories, Konflikte zwischen Fachbereichen und Entwicklung sowie typische Probleme im Requirements Engineering.12:35 – KI im Interview-ModusWie gezielte R&#252;ckfragen durch KI bessere Anforderungen erm&#246;glichen und Denkprozesse erweitern.18:18 – Kontext statt HalluzinationenWarum Projektwissen aus Tickets, Code und Dokumentation entscheidend f&#252;r sinnvolle KI-Ergebnisse ist.24:21 – Tech-or-Myth? – Das SpielZwei KI-Geschichten treten gegeneinander an — und zeigen, wie plausibel Fiktion wirken kann.28:30 – Kann KI Product Owner ersetzen?Warum Priorisierung und Verantwortung weiterhin menschliche Aufgaben bleiben.35:14 – Architektur neu gedachtMonolith, Microservices und Serverless im Spannungsfeld moderner Softwareentwicklung.41:53 – Komplexit&#228;t und DevOps-Realit&#228;tWarum Infrastruktur und Teamrollen immer anspruchsvoller werden.48:36 – Legacy vs. GreenfieldUnterschiedliche Herausforderungen bei neuen Systemen und gewachsenen Codebasen.51:24 – Outro DOAG VOICES FutureAI–––Die Top 3 Learnings dieser Episode:1. KI verbessert Anforderungen vor allem durch Fragen — nicht durch fertige Antworten.2. Softwareprobleme sind h&#228;ufig organisatorisch, nicht technisch.3. Architekturentscheidungen m&#252;ssen k&#252;nftig auch KI-Nutzbarkeit ber&#252;cksichtigen.–––Mehr &#252;ber Mirko Seifert:https://www.linkedin.com/in/mirko-seifert/---Mehr &#252;ber Dave K&#246;nig aka Frickeldave:https://frickeldave.de---Mehr &#252;ber die DOAG:https://www.doag.org---Anstehende DOAG-Konferenzen:DevLand 2026 | 12. & 13. M&#228;rz | Europa-Park Rusthttps://www.devland.eu/de/APEX connect 2026 | 18. - 20. Mai | Heide Park Soltauhttps://apex.doag.org/de/home/DOAG 2026 Datenbank mit Cloud Infrastructure | 18. - 19. Mai | Heide Park Soltauhttps://datenbank.doag.org/de/home/CloudLand 2026 | 19. - 22. Mai | Heide Park Soltauhttps://www.cloudland.org/de/home/–––Ein ganz besonderer Dank von Mirko Seifert geht an das ganze Team, das \"hinter der Kamera\" die lustig-spannenden Clips mit gro&#223;em Erfolg realisiert. Hosted on Acast. See acast.com/privacy for more information.","audioUrl":"https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699411fc86ac45e7f855952e/media.mp3","link":"https://shows.acast.com/doag-voices-arbeitstitel/episodes/699411fc86ac45e7f855952e","guid":"699411fc86ac45e7f855952e"}' != ''))
-2026-02-17T11:42:55.8824032Z ##[debug]Result: true
-2026-02-17T11:42:55.8824907Z ##[debug]Starting: Success summary
-2026-02-17T11:42:55.8836660Z ##[debug]Loading inputs
-2026-02-17T11:42:55.8839111Z ##[debug]Evaluating: format('echo ""
-2026-02-17T11:42:55.8839640Z ##[debug]echo "╔════════════════════════════════════════════════════════════╗"
-2026-02-17T11:42:55.8840371Z ##[debug]echo "║  🎉 Independent Podcast Update Completed Successfully      ║"
-2026-02-17T11:42:55.8841093Z ##[debug]echo "╚════════════════════════════════════════════════════════════╝"
-2026-02-17T11:42:55.8841614Z ##[debug]echo ""
-2026-02-17T11:42:55.8841927Z ##[debug]echo "📊 Summary:"
-2026-02-17T11:42:55.8842404Z ##[debug]echo "  • Episode: $(jq -r ''.title'' metadata.json)"
-2026-02-17T11:42:55.8842946Z ##[debug]echo "  • Branches updated: dev {0}"
-2026-02-17T11:42:55.8843346Z ##[debug]echo ""
-2026-02-17T11:42:55.8843702Z ##[debug]echo "✅ Branches have been updated directly."
-2026-02-17T11:42:55.8844505Z ##[debug]', ((((github.event.inputs.target == 'all') || (github.event_name == 'schedule')) && 'and main') || ''))
-2026-02-17T11:42:55.8845322Z ##[debug]Evaluating format:
-2026-02-17T11:42:55.8845695Z ##[debug]..Evaluating String:
-2026-02-17T11:42:55.8846092Z ##[debug]..=> 'echo ""
-2026-02-17T11:42:55.8846529Z ##[debug]echo "╔════════════════════════════════════════════════════════════╗"
-2026-02-17T11:42:55.8847242Z ##[debug]echo "║  🎉 Independent Podcast Update Completed Successfully      ║"
-2026-02-17T11:42:55.8847955Z ##[debug]echo "╚════════════════════════════════════════════════════════════╝"
-2026-02-17T11:42:55.8848496Z ##[debug]echo ""
-2026-02-17T11:42:55.8848777Z ##[debug]echo "📊 Summary:"
-2026-02-17T11:42:55.8849447Z ##[debug]echo "  • Episode: $(jq -r ''.title'' metadata.json)"
-2026-02-17T11:42:55.8850009Z ##[debug]echo "  • Branches updated: dev {0}"
-2026-02-17T11:42:55.8850415Z ##[debug]echo ""
-2026-02-17T11:42:55.8850772Z ##[debug]echo "✅ Branches have been updated directly."
-2026-02-17T11:42:55.8851206Z ##[debug]'
-2026-02-17T11:42:55.8851637Z ##[debug]..Evaluating Or:
-2026-02-17T11:42:55.8852007Z ##[debug]....Evaluating And:
-2026-02-17T11:42:55.8852369Z ##[debug]......Evaluating Or:
-2026-02-17T11:42:55.8852743Z ##[debug]........Evaluating Equal:
-2026-02-17T11:42:55.8853135Z ##[debug]..........Evaluating Index:
-2026-02-17T11:42:55.8853538Z ##[debug]............Evaluating Index:
-2026-02-17T11:42:55.8853937Z ##[debug]..............Evaluating Index:
-2026-02-17T11:42:55.8854361Z ##[debug]................Evaluating github:
-2026-02-17T11:42:55.8854794Z ##[debug]................=> Object
-2026-02-17T11:42:55.8855196Z ##[debug]................Evaluating String:
-2026-02-17T11:42:55.8855791Z ##[debug]................=> 'event'
-2026-02-17T11:42:55.8856220Z ##[debug]..............=> Object
-2026-02-17T11:42:55.8856595Z ##[debug]..............Evaluating String:
-2026-02-17T11:42:55.8857000Z ##[debug]..............=> 'inputs'
-2026-02-17T11:42:55.8857380Z ##[debug]............=> null
-2026-02-17T11:42:55.8857722Z ##[debug]..........=> null
-2026-02-17T11:42:55.8858081Z ##[debug]..........Evaluating String:
-2026-02-17T11:42:55.8858466Z ##[debug]..........=> 'all'
-2026-02-17T11:42:55.8858852Z ##[debug]........=> false
-2026-02-17T11:42:55.8859205Z ##[debug]........Evaluating Equal:
-2026-02-17T11:42:55.8859590Z ##[debug]..........Evaluating Index:
-2026-02-17T11:42:55.8859975Z ##[debug]............Evaluating github:
-2026-02-17T11:42:55.8860372Z ##[debug]............=> Object
-2026-02-17T11:42:55.8860750Z ##[debug]............Evaluating String:
-2026-02-17T11:42:55.8861137Z ##[debug]............=> 'event_name'
-2026-02-17T11:42:55.8861532Z ##[debug]..........=> 'schedule'
-2026-02-17T11:42:55.8861914Z ##[debug]..........Evaluating String:
-2026-02-17T11:42:55.8862305Z ##[debug]..........=> 'schedule'
-2026-02-17T11:42:55.8862658Z ##[debug]........=> true
-2026-02-17T11:42:55.8862981Z ##[debug]......=> true
-2026-02-17T11:42:55.8863305Z ##[debug]......Evaluating String:
-2026-02-17T11:42:55.8863665Z ##[debug]......=> 'and main'
-2026-02-17T11:42:55.8864006Z ##[debug]....=> 'and main'
-2026-02-17T11:42:55.8864335Z ##[debug]..=> 'and main'
-2026-02-17T11:42:55.8864701Z ##[debug]=> 'echo ""
-2026-02-17T11:42:55.8865125Z ##[debug]echo "╔════════════════════════════════════════════════════════════╗"
-2026-02-17T11:42:55.8865852Z ##[debug]echo "║  🎉 Independent Podcast Update Completed Successfully      ║"
-2026-02-17T11:42:55.8866566Z ##[debug]echo "╚════════════════════════════════════════════════════════════╝"
-2026-02-17T11:42:55.8867075Z ##[debug]echo ""
-2026-02-17T11:42:55.8867360Z ##[debug]echo "📊 Summary:"
-2026-02-17T11:42:55.8867805Z ##[debug]echo "  • Episode: $(jq -r ''.title'' metadata.json)"
-2026-02-17T11:42:55.8868381Z ##[debug]echo "  • Branches updated: dev and main"
-2026-02-17T11:42:55.8868835Z ##[debug]echo ""
-2026-02-17T11:42:55.8869186Z ##[debug]echo "✅ Branches have been updated directly."
-2026-02-17T11:42:55.8869631Z ##[debug]'
-2026-02-17T11:42:55.8869949Z ##[debug]Result: 'echo ""
-2026-02-17T11:42:55.8870494Z ##[debug]echo "╔════════════════════════════════════════════════════════════╗"
-2026-02-17T11:42:55.8871214Z ##[debug]echo "║  🎉 Independent Podcast Update Completed Successfully      ║"
-2026-02-17T11:42:55.8871916Z ##[debug]echo "╚════════════════════════════════════════════════════════════╝"
-2026-02-17T11:42:55.8872433Z ##[debug]echo ""
-2026-02-17T11:42:55.8872719Z ##[debug]echo "📊 Summary:"
-2026-02-17T11:42:55.8873156Z ##[debug]echo "  • Episode: $(jq -r ''.title'' metadata.json)"
-2026-02-17T11:42:55.8873713Z ##[debug]echo "  • Branches updated: dev and main"
-2026-02-17T11:42:55.8874153Z ##[debug]echo ""
-2026-02-17T11:42:55.8874503Z ##[debug]echo "✅ Branches have been updated directly."
-2026-02-17T11:42:55.8875133Z ##[debug]'
-2026-02-17T11:42:55.8875812Z ##[debug]Loading env
-2026-02-17T11:42:55.8888988Z ##[group]Run echo ""
-2026-02-17T11:42:55.8889324Z [36;1mecho ""[0m
-2026-02-17T11:42:55.8889744Z [36;1mecho "╔════════════════════════════════════════════════════════════╗"[0m
-2026-02-17T11:42:55.8890497Z [36;1mecho "║  🎉 Independent Podcast Update Completed Successfully      ║"[0m
-2026-02-17T11:42:55.8891223Z [36;1mecho "╚════════════════════════════════════════════════════════════╝"[0m
-2026-02-17T11:42:55.8891744Z [36;1mecho ""[0m
-2026-02-17T11:42:55.8892039Z [36;1mecho "📊 Summary:"[0m
-2026-02-17T11:42:55.8892489Z [36;1mecho "  • Episode: $(jq -r '.title' metadata.json)"[0m
-2026-02-17T11:42:55.8893051Z [36;1mecho "  • Branches updated: dev and main"[0m
-2026-02-17T11:42:55.8893494Z [36;1mecho ""[0m
-2026-02-17T11:42:55.8893854Z [36;1mecho "✅ Branches have been updated directly."[0m
-2026-02-17T11:42:55.8908472Z shell: /usr/bin/bash -il {0}
-2026-02-17T11:42:55.8908865Z ##[endgroup]
-2026-02-17T11:42:55.8911465Z ##[debug]Overwrite 'shell' base on job defaults.
-2026-02-17T11:42:55.8927993Z ##[debug]/usr/bin/bash -il /home/github/actions-runner-frickeldave-main/_work/_temp/50383491-5305-4c31-8e3f-1db50c26c1d4.sh
-2026-02-17T11:42:55.8951010Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
-2026-02-17T11:42:55.8951954Z bash: Keine Jobsteuerung in dieser Shell.
-2026-02-17T11:42:56.1288013Z
-2026-02-17T11:42:56.1289023Z ╔════════════════════════════════════════════════════════════╗
-2026-02-17T11:42:56.1289664Z ║  🎉 Independent Podcast Update Completed Successfully      ║
-2026-02-17T11:42:56.1290267Z ╚════════════════════════════════════════════════════════════╝
-2026-02-17T11:42:56.1290547Z
-2026-02-17T11:42:56.1290663Z 📊 Summary:
-2026-02-17T11:42:56.1608875Z   • Episode: Warum KI fragt statt ersetzt – mit Mirko Seifert
-2026-02-17T11:42:56.1609397Z   • Branches updated: dev and main
-2026-02-17T11:42:56.1609653Z
-2026-02-17T11:42:56.1609822Z ✅ Branches have been updated directly.
-2026-02-17T11:42:56.1620253Z ##[debug]Finishing: Success summary
-2026-02-17T11:42:56.1629637Z ##[debug]Evaluating condition for step: 'Post Checkout repository (main)'
-2026-02-17T11:42:56.1634232Z ##[debug]Evaluating: always()
-2026-02-17T11:42:56.1634659Z ##[debug]Evaluating always:
-2026-02-17T11:42:56.1635503Z ##[debug]=> true
-2026-02-17T11:42:56.1635945Z ##[debug]Result: true
-2026-02-17T11:42:56.1636631Z ##[debug]Starting: Post Checkout repository (main)
-2026-02-17T11:42:56.1688189Z ##[debug]Loading inputs
-2026-02-17T11:42:56.1689695Z ##[debug]Evaluating: secrets.GITHUB_TOKEN
-2026-02-17T11:42:56.1690077Z ##[debug]Evaluating Index:
-2026-02-17T11:42:56.1690375Z ##[debug]..Evaluating secrets:
-2026-02-17T11:42:56.1690683Z ##[debug]..=> Object
-2026-02-17T11:42:56.1690961Z ##[debug]..Evaluating String:
-2026-02-17T11:42:56.1691253Z ##[debug]..=> 'GITHUB_TOKEN'
-2026-02-17T11:42:56.1691798Z ##[debug]=> '***'
-2026-02-17T11:42:56.1692219Z ##[debug]Result: '***'
-2026-02-17T11:42:56.1693197Z ##[debug]Evaluating: github.repository
-2026-02-17T11:42:56.1693585Z ##[debug]Evaluating Index:
-2026-02-17T11:42:56.1693869Z ##[debug]..Evaluating github:
-2026-02-17T11:42:56.1694163Z ##[debug]..=> Object
-2026-02-17T11:42:56.1694424Z ##[debug]..Evaluating String:
-2026-02-17T11:42:56.1694711Z ##[debug]..=> 'repository'
-2026-02-17T11:42:56.1695057Z ##[debug]=> 'Frickeldave/frickeldave.github.io'
-2026-02-17T11:42:56.1695497Z ##[debug]Result: 'Frickeldave/frickeldave.github.io'
-2026-02-17T11:42:56.1715152Z ##[debug]Loading env
-2026-02-17T11:42:56.1720981Z Post job cleanup.
-2026-02-17T11:42:56.2532900Z Unexpected error attempting to determine if executable file exists '/home/dave/ansible_venv/bin/git': Error: EACCES: permission denied, stat '/home/dave/ansible_venv/bin/git'
-2026-02-17T11:42:56.2568605Z ##[debug]Getting git version
-2026-02-17T11:42:56.2579015Z [command]/usr/bin/git version
-2026-02-17T11:42:56.2613259Z git version 2.39.5
-2026-02-17T11:42:56.2639628Z ##[debug]0
-2026-02-17T11:42:56.2640148Z ##[debug]git version 2.39.5
-2026-02-17T11:42:56.2640422Z ##[debug]
-2026-02-17T11:42:56.2641415Z ##[debug]Set git useragent to: git/2.39.5 (github-actions-checkout)
-2026-02-17T11:42:56.2644921Z ::add-mask::***
-2026-02-17T11:42:56.2662267Z Temporarily overriding HOME='/home/github/actions-runner-frickeldave-main/_work/_temp/ea8bbcdc-79f5-4d78-92e2-2d20f5923811' before making global git config changes
-2026-02-17T11:42:56.2663559Z Adding repository directory to the temporary git global config as a safe directory
-2026-02-17T11:42:56.2667207Z [command]/usr/bin/git config --global --add safe.directory /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io
-2026-02-17T11:42:56.2692613Z ##[debug]0
-2026-02-17T11:42:56.2693093Z ##[debug]
-2026-02-17T11:42:56.2698876Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
-2026-02-17T11:42:56.2723462Z ##[debug]1
-2026-02-17T11:42:56.2723954Z ##[debug]
-2026-02-17T11:42:56.2727417Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-2026-02-17T11:42:56.2934522Z ##[debug]0
-2026-02-17T11:42:56.2935136Z ##[debug]
-2026-02-17T11:42:56.2938258Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-2026-02-17T11:42:56.2958213Z http.https://github.com/.extraheader
-2026-02-17T11:42:56.2964344Z ##[debug]0
-2026-02-17T11:42:56.2964937Z ##[debug]http.https://github.com/.extraheader
-2026-02-17T11:42:56.2965307Z ##[debug]
-2026-02-17T11:42:56.2968712Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
-2026-02-17T11:42:56.2993724Z ##[debug]0
-2026-02-17T11:42:56.2994222Z ##[debug]
-2026-02-17T11:42:56.2996580Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
-2026-02-17T11:42:56.3201726Z ##[debug]0
-2026-02-17T11:42:56.3202204Z ##[debug]
-2026-02-17T11:42:56.3203016Z ##[debug]Unsetting HOME override
-2026-02-17T11:42:56.3273017Z ##[debug]Node Action run completed with exit code 0
-2026-02-17T11:42:56.3275861Z ##[debug]Finishing: Post Checkout repository (main)
-2026-02-17T11:42:56.3321819Z ##[debug]Starting: Complete job
-2026-02-17T11:42:56.3323900Z Uploading runner diagnostic logs
-2026-02-17T11:42:56.3335944Z ##[debug]Starting diagnostic file upload.
-2026-02-17T11:42:56.3336348Z ##[debug]Setting up diagnostic log folders.
-2026-02-17T11:42:56.3338818Z ##[debug]Creating diagnostic log files folder.
-2026-02-17T11:42:56.3354132Z ##[debug]Copying 1 worker diagnostic logs.
-2026-02-17T11:42:56.3368321Z ##[debug]Copying 1 runner diagnostic logs.
-2026-02-17T11:42:56.3398426Z ##[debug]Zipping diagnostic files.
-2026-02-17T11:42:56.3721348Z ##[debug]Uploading diagnostic metadata file.
-2026-02-17T11:42:56.3753965Z ##[debug]Diagnostic file upload complete.
-2026-02-17T11:42:56.3754603Z Completed runner diagnostic log upload
-2026-02-17T11:42:56.3754947Z Cleaning up orphan processes
-2026-02-17T11:42:56.4301937Z ##[debug]Finishing: Complete job
-2026-02-17T11:42:56.4337092Z ##[debug]Finishing: podcast-update
+2026-03-10T08:53:29.5611766Z Current runner version: '2.332.0'
+2026-03-10T08:53:29.5618881Z Runner name: 'waltraud-frickeldave-main'
+2026-03-10T08:53:29.5619801Z Runner group name: 'Default'
+2026-03-10T08:53:29.5620908Z Machine name: 'Waltraud'
+2026-03-10T08:53:29.5626545Z ##[group]GITHUB_TOKEN Permissions
+2026-03-10T08:53:29.5629088Z Actions: write
+2026-03-10T08:53:29.5629844Z ArtifactMetadata: write
+2026-03-10T08:53:29.5630715Z Attestations: write
+2026-03-10T08:53:29.5631373Z Checks: write
+2026-03-10T08:53:29.5632058Z Contents: write
+2026-03-10T08:53:29.5632656Z Deployments: write
+2026-03-10T08:53:29.5633288Z Discussions: write
+2026-03-10T08:53:29.5633934Z Issues: write
+2026-03-10T08:53:29.5634503Z Metadata: read
+2026-03-10T08:53:29.5635113Z Models: read
+2026-03-10T08:53:29.5635634Z Packages: write
+2026-03-10T08:53:29.5636326Z Pages: write
+2026-03-10T08:53:29.5636926Z PullRequests: write
+2026-03-10T08:53:29.5637508Z RepositoryProjects: write
+2026-03-10T08:53:29.5638270Z SecurityEvents: write
+2026-03-10T08:53:29.5639108Z Statuses: write
+2026-03-10T08:53:29.5639868Z ##[endgroup]
+2026-03-10T08:53:29.5642199Z Secret source: Actions
+2026-03-10T08:53:29.5643089Z Prepare workflow directory
+2026-03-10T08:53:29.6489336Z Prepare all required actions
+2026-03-10T08:53:29.6536683Z Getting action download info
+2026-03-10T08:53:30.2682692Z Download action repository 'actions/checkout@v3' (SHA:f43a0e5ff2bd294095638e18286ca9a3d1956744)
+2026-03-10T08:53:30.7953953Z Download action repository 'actions/github-script@v7' (SHA:f28e40c7f34bde8b3046d885e986cb6290c5673b)
+2026-03-10T08:53:31.4046760Z Complete job name: podcast-update
+2026-03-10T08:53:31.5179945Z ##[group]Run actions/checkout@v3
+2026-03-10T08:53:31.5180973Z with:
+2026-03-10T08:53:31.5181465Z   fetch-depth: 0
+2026-03-10T08:53:31.5182263Z   token: ***
+2026-03-10T08:53:31.5182831Z   repository: Frickeldave/frickeldave.github.io
+2026-03-10T08:53:31.5183526Z   ssh-strict: true
+2026-03-10T08:53:31.5184051Z   persist-credentials: true
+2026-03-10T08:53:31.5184619Z   clean: true
+2026-03-10T08:53:31.5185126Z   sparse-checkout-cone-mode: true
+2026-03-10T08:53:31.5185777Z   fetch-tags: false
+2026-03-10T08:53:31.5186274Z   lfs: false
+2026-03-10T08:53:31.5186758Z   submodules: false
+2026-03-10T08:53:31.5187293Z   set-safe-directory: true
+2026-03-10T08:53:31.5188140Z ##[endgroup]
+2026-03-10T08:53:31.6207032Z Syncing repository: Frickeldave/frickeldave.github.io
+2026-03-10T08:53:31.6209416Z ##[group]Getting Git version info
+2026-03-10T08:53:31.6210841Z Working directory is '/home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io'
+2026-03-10T08:53:31.6213281Z Unexpected error attempting to determine if executable file exists '/home/dave/ansible_venv/bin/git': Error: EACCES: permission denied, stat '/home/dave/ansible_venv/bin/git'
+2026-03-10T08:53:31.6215394Z [command]/usr/bin/git version
+2026-03-10T08:53:31.6216029Z git version 2.39.5
+2026-03-10T08:53:31.6229010Z ##[endgroup]
+2026-03-10T08:53:31.6246017Z Temporarily overriding HOME='/home/github/actions-runner-frickeldave-main/_work/_temp/5516a09c-4a20-496a-8139-2dc52662fb97' before making global git config changes
+2026-03-10T08:53:31.6248121Z Adding repository directory to the temporary git global config as a safe directory
+2026-03-10T08:53:31.6250222Z [command]/usr/bin/git config --global --add safe.directory /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io
+2026-03-10T08:53:31.6285165Z [command]/usr/bin/git config --local --get remote.origin.url
+2026-03-10T08:53:31.6302833Z https://github.com/Frickeldave/frickeldave.github.io
+2026-03-10T08:53:31.6323109Z ##[group]Removing previously created refs, to avoid conflicts
+2026-03-10T08:53:31.6324928Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+2026-03-10T08:53:31.6344857Z refs/heads/main
+2026-03-10T08:53:31.6356986Z [command]/usr/bin/git checkout --detach
+2026-03-10T08:53:31.9422804Z HEAD ist jetzt bei b24ed2d chore: deploy dev to production
+2026-03-10T08:53:31.9425644Z M	package-lock.json
+2026-03-10T08:53:31.9459815Z [command]/usr/bin/git branch --delete --force main
+2026-03-10T08:53:31.9490037Z Branch main entfernt (war b24ed2d).
+2026-03-10T08:53:31.9558628Z ##[endgroup]
+2026-03-10T08:53:31.9559289Z [command]/usr/bin/git submodule status
+2026-03-10T08:53:31.9766960Z ##[group]Cleaning the repository
+2026-03-10T08:53:31.9768859Z [command]/usr/bin/git clean -ffdx
+2026-03-10T08:53:33.1706131Z Lösche .astro/
+2026-03-10T08:53:33.1712901Z Lösche .husky/_/
+2026-03-10T08:53:33.1713880Z Lösche .vale/dictionaries/
+2026-03-10T08:53:33.1715015Z Lösche .vale/styles/Microsoft/
+2026-03-10T08:53:33.1716196Z Lösche dist/
+2026-03-10T08:53:33.1717065Z Lösche node_modules/
+2026-03-10T08:53:33.1721675Z [command]/usr/bin/git reset --hard HEAD
+2026-03-10T08:53:33.1833406Z HEAD ist jetzt bei b24ed2d chore: deploy dev to production
+2026-03-10T08:53:33.1840531Z ##[endgroup]
+2026-03-10T08:53:33.1842240Z ##[group]Disabling automatic garbage collection
+2026-03-10T08:53:33.1843813Z [command]/usr/bin/git config --local gc.auto 0
+2026-03-10T08:53:33.1870528Z ##[endgroup]
+2026-03-10T08:53:33.1872059Z ##[group]Setting up auth
+2026-03-10T08:53:33.1874657Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-03-10T08:53:33.1903602Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-03-10T08:53:33.2114314Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-03-10T08:53:33.2142056Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-03-10T08:53:33.2351788Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-03-10T08:53:33.2390781Z ##[endgroup]
+2026-03-10T08:53:33.2392923Z ##[group]Fetching the repository
+2026-03-10T08:53:33.2399529Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-03-10T08:53:33.8095907Z [command]/usr/bin/git branch --list --remote origin/main
+2026-03-10T08:53:33.8140547Z   origin/main
+2026-03-10T08:53:33.8146534Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2026-03-10T08:53:33.8167061Z b24ed2dc8cca03ce4767d50f231cac05cea5ef25
+2026-03-10T08:53:33.8172890Z ##[endgroup]
+2026-03-10T08:53:33.8175167Z ##[group]Determining the checkout info
+2026-03-10T08:53:33.8177617Z ##[endgroup]
+2026-03-10T08:53:33.8179745Z ##[group]Checking out the ref
+2026-03-10T08:53:33.8182036Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-03-10T08:53:33.8333168Z Zu neuem Branch 'main' gewechselt
+2026-03-10T08:53:33.8335269Z Branch 'main' folgt nun 'origin/main'.
+2026-03-10T08:53:33.8341258Z ##[endgroup]
+2026-03-10T08:53:33.8377602Z [command]/usr/bin/git log -1 --format='%H'
+2026-03-10T08:53:33.8403062Z 'b24ed2dc8cca03ce4767d50f231cac05cea5ef25'
+2026-03-10T08:53:33.8622114Z ##[group]Run git config user.name "github-actions[bot]"
+2026-03-10T08:53:33.8624105Z [36;1mgit config user.name "github-actions[bot]"[0m
+2026-03-10T08:53:33.8626279Z [36;1mgit config user.email "github-actions[bot]@users.noreply.github.com"[0m
+2026-03-10T08:53:33.8643404Z shell: /usr/bin/bash -il {0}
+2026-03-10T08:53:33.8644613Z ##[endgroup]
+2026-03-10T08:53:33.8730675Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
+2026-03-10T08:53:33.8733348Z bash: Keine Jobsteuerung in dieser Shell.
+2026-03-10T08:53:33.8832153Z bash: /home/github/.cache/oh-my-posh/init.26.17.3.c20cd1a6aae54898.0.sh: Datei oder Verzeichnis nicht gefunden
+2026-03-10T08:53:34.1151022Z ##[group]Run echo "🔍 Checking Node.js version..."
+2026-03-10T08:53:34.1152684Z [36;1mecho "🔍 Checking Node.js version..."[0m
+2026-03-10T08:53:34.1154095Z [36;1mexport NVM_DIR="$HOME/.nvm"[0m
+2026-03-10T08:53:34.1155715Z [36;1m[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"[0m
+2026-03-10T08:53:34.1157608Z [36;1mNODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)[0m
+2026-03-10T08:53:34.1159431Z [36;1mif [ "$NODE_VERSION" != "24" ]; then[0m
+2026-03-10T08:53:34.1161215Z [36;1m  echo "❌ Node.js v24 is required, but v$NODE_VERSION is installed."[0m
+2026-03-10T08:53:34.1162952Z [36;1m  exit 1[0m
+2026-03-10T08:53:34.1163824Z [36;1mfi[0m
+2026-03-10T08:53:34.1164767Z [36;1mecho "✅ Node.js v24 is available"[0m
+2026-03-10T08:53:34.1178393Z shell: /usr/bin/bash -il {0}
+2026-03-10T08:53:34.1179487Z ##[endgroup]
+2026-03-10T08:53:34.1227084Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
+2026-03-10T08:53:34.1229776Z bash: Keine Jobsteuerung in dieser Shell.
+2026-03-10T08:53:34.3428708Z 🔍 Checking Node.js version...
+2026-03-10T08:53:34.7465121Z ✅ Node.js v24 is available
+2026-03-10T08:53:34.7591685Z ##[group]Run echo "📡 Comparing RSS feed with main branch..."
+2026-03-10T08:53:34.7593503Z [36;1mecho "📡 Comparing RSS feed with main branch..."[0m
+2026-03-10T08:53:34.7595344Z [36;1mnode scripts/workflows/podcast-update/compare-episodes.mjs[0m
+2026-03-10T08:53:34.7609307Z shell: /usr/bin/bash -il {0}
+2026-03-10T08:53:34.7610314Z env:
+2026-03-10T08:53:34.7612578Z   GITHUB_OUTPUT: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/episode-check.txt
+2026-03-10T08:53:34.7615268Z ##[endgroup]
+2026-03-10T08:53:34.7661086Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
+2026-03-10T08:53:34.7663582Z bash: Keine Jobsteuerung in dieser Shell.
+2026-03-10T08:53:34.9839968Z 📡 Comparing RSS feed with main branch...
+2026-03-10T08:53:35.1059403Z 📡 Fetching Acast RSS feed...
+2026-03-10T08:53:35.5751531Z 📋 Parsing RSS feed...
+2026-03-10T08:53:35.6238302Z Found 24 episodes in RSS feed
+2026-03-10T08:53:35.6239320Z 📖 Reading existing episodes from doag.md...
+2026-03-10T08:53:35.6250942Z 📖 Parsing 22 episodes from doag.md
+2026-03-10T08:53:35.6257982Z    └─ "APIs, Verantwortung & Vielfalt in der Cloud" (3. März 2026)
+2026-03-10T08:53:35.6259254Z    └─ "Souveräne KI aus Deutschland – Wie DeutschlandGPT Datenschutz und Innovation verbindet" (24. Februar 2026)
+2026-03-10T08:53:35.6260227Z    └─ "Warum KI fragt statt ersetzt – mit Mirko Seifert" (17. Februar 2026)
+2026-03-10T08:53:35.6261037Z    └─ "Low-Code trifft KI: Wie sich Softwareentwicklung neu erfindet" (10. Februar 2026)
+2026-03-10T08:53:35.6262010Z    └─ "Physik, Modelle und die Dynamik der KI - Warum Systeme lebendig bleiben müssen" (3. Februar 2026)
+2026-03-10T08:53:35.6263018Z    └─ "KI-Modellauswahl statt Modellbau - Transfer Learning in der Praxis" (27. Januar 2026)
+2026-03-10T08:53:35.6263913Z    └─ "DevLand - Neue Konferenz für moderne Softwareentwicklung" (20. Januar 2026)
+2026-03-10T08:53:35.6264782Z    └─ "KI im Unternehmenseinsatz - Zwischen Hype und Wirksamkeit" (20. Januar 2026)
+2026-03-10T08:53:35.6265602Z    └─ "Menschen, Motivation und Verantwortung in der IT" (13. Januar 2026)
+2026-03-10T08:53:35.6266479Z    └─ "KI-Crawler dominieren das Web - Was bedeutet das für Content Creator?" (30. Dezember 2025)
+2026-03-10T08:53:35.6267400Z    └─ "KI-Transformation im Mittelstand - Kultur vor Technologie" (23. Dezember 2025)
+2026-03-10T08:53:35.6268295Z    └─ "Europäische Cloud-Souveränität und Security Made in Europe" (16. Dezember 2025)
+2026-03-10T08:53:35.6269169Z    └─ "Emergenz in Systemen - Software als organisches Wachstum" (9. Dezember 2025)
+2026-03-10T08:53:35.6272967Z    └─ "Production Ready Agentic AI Operations bei Audi (Teil 2)" (2. Dezember 2025)
+2026-03-10T08:53:35.6273982Z    └─ "Multi-Cloud-Transformation bei Audi - People First (Teil 1)" (2. Dezember 2025)
+2026-03-10T08:53:35.6274872Z    └─ "Von IBM Watson zu eigenem KI-Startup - Praktische KI für KMU" (24. November 2025)
+2026-03-10T08:53:35.6275779Z    └─ "AI Act und Regulierung - Bremse oder Chance für Innovation?" (18. November 2025)
+2026-03-10T08:53:35.6277020Z    └─ "KI-Agenten und Schwarmintelligenz - Die nächste Evolution" (11. November 2025)
+2026-03-10T08:53:35.6277862Z    └─ "GitHub Copilot und die Zukunft der Softwareentwicklung" (4. November 2025)
+2026-03-10T08:53:35.6278659Z    └─ "KI und die Zukunft der Arbeit - Chancen und Verantwortung" (28. Oktober 2025)
+2026-03-10T08:53:35.6279456Z    └─ "Agentische KI-Systeme und evolutionäre Algorithmen" (21. Oktober 2025)
+2026-03-10T08:53:35.6280166Z    └─ "Frickeldave - Vom Developer zum Maker" (17. Oktober 2025)
+2026-03-10T08:53:35.6280672Z Found 22 existing episodes
+2026-03-10T08:53:35.6281024Z 🔍 Comparing episodes...
+2026-03-10T08:53:35.6281665Z    ✅ Title match: "DOAG VOICES DevLand – APIs, Verantwortung & Vielfalt in der Cloud"
+2026-03-10T08:53:35.6282970Z    ✅ Date match: "DOAG VOICES Future AI – Souveräne KI aus Deutschland: Wie DeutschlandGPT Datenschutz, Innovation und Alltag verbindet" (24. Februar 2026)
+2026-03-10T08:53:35.6284442Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Mirko Seifert" (17. Februar 2026)
+2026-03-10T08:53:35.6285518Z    ✅ Date match: "DOAG VOICES DevLand – mit Dave König, Vanessa Schmitz und Markus Bernhart" (10. Februar 2026)
+2026-03-10T08:53:35.6286545Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Dr. Benjamin Linnik" (3. Februar 2026)
+2026-03-10T08:53:35.6287760Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Dr. Melanie Sigl" (27. Januar 2026)
+2026-03-10T08:53:35.6288811Z    ✅ Date match: "DOAG VOICES DevLand – mit André Sept, Bernhard Findeiss und Jonas Janz" (20. Januar 2026)
+2026-03-10T08:53:35.6289811Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Benedikt Backhaus" (20. Januar 2026)
+2026-03-10T08:53:35.6290735Z    ✅ Date match: "DOAG VOICES People – mit Dave König und Dr. Jürgen Baier" (13. Januar 2026)
+2026-03-10T08:53:35.6291713Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Óscar Nájera" (30. Dezember 2025)
+2026-03-10T08:53:35.6292699Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Wido Fath" (23. Dezember 2025)
+2026-03-10T08:53:35.6293649Z    ✅ Date match: "DOAG VOICES CloudTalk – mit Dave König und Martin Mangold" (16. Dezember 2025)
+2026-03-10T08:53:35.6297669Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Dr. Ralf S. Engelschall" (9. Dezember 2025)
+2026-03-10T08:53:35.6299499Z    ✅ Date match: "DOAG VOICES CloudTalk – mit Dave König und Sebastian Kister | Teil 2 von 2" (2. Dezember 2025)
+2026-03-10T08:53:35.6300616Z    ✅ Date match: "DOAG VOICES CloudTalk – mit Dave König und Sebastian Kister | Teil 1 von 2" (2. Dezember 2025)
+2026-03-10T08:53:35.6301974Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Paul Niebler" (24. November 2025)
+2026-03-10T08:53:35.6302975Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Baltasar Cevc" (18. November 2025)
+2026-03-10T08:53:35.6304047Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Lyubomir Yordanov" (11. November 2025)
+2026-03-10T08:53:35.6305087Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dave König und Tobias Struckmeier" (4. November 2025)
+2026-03-10T08:53:35.6307372Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Oliver Szymanski" (28. Oktober 2025)
+2026-03-10T08:53:35.6308486Z    ✅ Date match: "DOAG VOICES FutureAI – mit Dr. Benjamin Linnik und Johann-Peter Hartmann" (21. Oktober 2025)
+2026-03-10T08:53:35.6309515Z    ✅ Date match: "DOAG VOICES People - mit David 'Dave' König aka Frickeldave" (17. Oktober 2025)
+2026-03-10T08:53:35.6310339Z 📝 Found 2 missing episode(s):
+2026-03-10T08:53:35.6311315Z    1. "DOAG VOICES People – Low-Code im KI-Zeitalter: Niels de Bruijn über APEX, LLMs und die Zukunft der Entwicklung (Teil 2/3)" (10. März 2026)
+2026-03-10T08:53:35.6312837Z    2. "DOAG VOICES People – Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)" (5. März 2026)
+2026-03-10T08:53:35.6313671Z 
+2026-03-10T08:53:35.6314523Z 📌 Oldest missing episode: "DOAG VOICES People – Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)"
+2026-03-10T08:53:35.6315789Z    Published: 5. März 2026
+2026-03-10T08:53:35.6316004Z 
+2026-03-10T08:53:35.6316867Z ✅ Missing episode details written to: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/missing-episode.json
+2026-03-10T08:53:35.6567270Z ##[group]Run echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
+2026-03-10T08:53:35.6568057Z [36;1mecho "🤖 Generating episode metadata using GitHub Copilot CLI..."[0m
+2026-03-10T08:53:35.6569305Z [36;1mexport GITHUB_TOKEN="***"[0m
+2026-03-10T08:53:35.6569809Z [36;1mnode scripts/workflows/podcast-update/generate-metadata.mjs[0m
+2026-03-10T08:53:35.6581479Z shell: /usr/bin/bash -il {0}
+2026-03-10T08:53:35.6581797Z ##[endgroup]
+2026-03-10T08:53:35.6614912Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
+2026-03-10T08:53:35.6615781Z bash: Keine Jobsteuerung in dieser Shell.
+2026-03-10T08:53:35.8892203Z 🤖 Generating episode metadata using GitHub Copilot CLI...
+2026-03-10T08:53:35.9223109Z 📖 Reading missing episode from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/missing-episode.json
+2026-03-10T08:53:35.9226471Z 
+2026-03-10T08:53:35.9227835Z 📌 Processing episode: "DOAG VOICES People – Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)"
+2026-03-10T08:53:35.9228955Z 🤖 Calling GitHub Copilot CLI...
+2026-03-10T08:53:35.9229460Z 📤 Sending prompt to Copilot...
+2026-03-10T08:53:53.8869425Z 📥 Received response from Copilot
+2026-03-10T08:53:53.8873981Z ✅ Successfully parsed metadata from Copilot
+2026-03-10T08:53:53.8874584Z ✅ Metadata validation passed
+2026-03-10T08:53:53.8890915Z 
+2026-03-10T08:53:53.8892215Z ✅ Metadata written to: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/metadata.json
+2026-03-10T08:53:53.8893048Z 
+2026-03-10T08:53:53.8893221Z 📋 Generated metadata:
+2026-03-10T08:53:53.8894025Z    Title: Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)
+2026-03-10T08:53:53.8894791Z    Edition: People
+2026-03-10T08:53:53.8895102Z    Guests: Niels de Bruijn
+2026-03-10T08:53:53.8895461Z    Date: 5. März 2026
+2026-03-10T08:53:53.8896228Z    Description: Niels de Bruijn, APEX-Experte und Business Unit Manager Low Code bei Hyand, spricht über seinen Karr...
+2026-03-10T08:53:53.8896876Z 
+2026-03-10T08:53:53.8897026Z 📄 Full metadata (JSON):
+2026-03-10T08:53:53.8897316Z {
+2026-03-10T08:53:53.8898066Z   "title": "Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)",
+2026-03-10T08:53:53.8898853Z   "edition": "People",
+2026-03-10T08:53:53.8899187Z   "guests": "Niels de Bruijn",
+2026-03-10T08:53:53.8899530Z   "date": "5. März 2026",
+2026-03-10T08:53:53.8902194Z   "description": "Niels de Bruijn, APEX-Experte und Business Unit Manager Low Code bei Hyand, spricht über seinen Karriereweg von Utrecht bis zur Führung eines 40-köpfigen Teams. Im Fokus stehen strategische Plattformauswahl, Governance und das Preis-Leistungs-Verhältnis von Oracle APEX im Enterprise-Umfeld. Zudem teilt er Einblicke in Flows for APEX, KI-Integration und seine persönliche Motivation als Community-Akteur.",
+2026-03-10T08:53:53.8904557Z   "links": {
+2026-03-10T08:53:53.8905024Z     "spotify": "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB",
+2026-03-10T08:53:53.8905785Z     "apple": "https://podcasts.apple.com/de/podcast/doag-voices/id1847181531",
+2026-03-10T08:53:53.8906710Z     "amazon": "https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices"
+2026-03-10T08:53:53.8907332Z   },
+2026-03-10T08:53:53.8908035Z   "audioUrl": "https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69a929fc97f00280f0bb9d42/media.mp3"
+2026-03-10T08:53:53.8909065Z }
+2026-03-10T08:53:53.9042511Z ##[group]Run TITLE=$(jq -r '.title' metadata.json)
+2026-03-10T08:53:53.9043013Z [36;1mTITLE=$(jq -r '.title' metadata.json)[0m
+2026-03-10T08:53:53.9043490Z [36;1mecho "🌿 Updating dev branch with episode: $TITLE"[0m
+2026-03-10T08:53:53.9043911Z [36;1m[0m
+2026-03-10T08:53:53.9044135Z [36;1mgit checkout dev[0m
+2026-03-10T08:53:53.9044435Z [36;1mgit pull origin dev[0m
+2026-03-10T08:53:53.9044723Z [36;1m[0m
+2026-03-10T08:53:53.9044946Z [36;1mif [ "" == "true" ]; then[0m
+2026-03-10T08:53:53.9045436Z [36;1m  node scripts/workflows/podcast-update/update-doag.mjs --dry-run[0m
+2026-03-10T08:53:53.9046041Z [36;1m  echo "🦁 DRY RUN: Skipping git commit and push."[0m
+2026-03-10T08:53:53.9046450Z [36;1melse[0m
+2026-03-10T08:53:53.9046807Z [36;1m  node scripts/workflows/podcast-update/update-doag.mjs[0m
+2026-03-10T08:53:53.9047296Z [36;1m  git add src/content/aboutme/doag.md[0m
+2026-03-10T08:53:53.9047845Z [36;1m  git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify[0m
+2026-03-10T08:53:53.9048351Z [36;1m  git push origin dev[0m
+2026-03-10T08:53:53.9048645Z [36;1mfi[0m
+2026-03-10T08:53:53.9060247Z shell: /usr/bin/bash -il {0}
+2026-03-10T08:53:53.9060561Z ##[endgroup]
+2026-03-10T08:53:53.9092887Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
+2026-03-10T08:53:53.9093703Z bash: Keine Jobsteuerung in dieser Shell.
+2026-03-10T08:53:54.1628620Z 🌿 Updating dev branch with episode: Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)
+2026-03-10T08:53:54.1735697Z Zu neuem Branch 'dev' gewechselt
+2026-03-10T08:53:54.1736105Z M	missing-episode.json
+2026-03-10T08:53:54.1736458Z Branch 'dev' folgt nun 'origin/dev'.
+2026-03-10T08:53:54.6171312Z Von https://github.com/Frickeldave/frickeldave.github.io
+2026-03-10T08:53:54.6172188Z  * branch            dev        -> FETCH_HEAD
+2026-03-10T08:53:54.6288083Z Bereits aktuell.
+2026-03-10T08:53:54.6669076Z 📖 Reading metadata from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/metadata.json
+2026-03-10T08:53:54.6670265Z 
+2026-03-10T08:53:54.6671144Z 📌 Updating doag.md with episode: "Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)"
+2026-03-10T08:53:54.6672722Z 📖 Reading doag.md from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/src/content/aboutme/doag.md
+2026-03-10T08:53:54.6673963Z Found 3 existing episodes
+2026-03-10T08:53:54.6674740Z 
+2026-03-10T08:53:54.6676934Z 🆔 Generated unique ID: doag-voices-45333
+2026-03-10T08:53:54.6677416Z 📝 Inserting new episode into doag.md...
+2026-03-10T08:53:54.6680146Z 
+2026-03-10T08:53:54.6680586Z ✅ Successfully updated doag.md
+2026-03-10T08:53:54.6681113Z 
+2026-03-10T08:53:54.6681347Z 📋 Episode details:
+2026-03-10T08:53:54.6681689Z    ID: doag-voices-45333
+2026-03-10T08:53:54.6682743Z    Title: Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)
+2026-03-10T08:53:54.6683647Z    Edition: People
+2026-03-10T08:53:54.6684157Z    Date: 5. März 2026
+2026-03-10T08:53:54.6863898Z [dev 3486fa8] feat(podcast): Add episode 'Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)'
+2026-03-10T08:53:54.6864883Z  1 file changed, 13 insertions(+)
+2026-03-10T08:53:54.9597089Z Hinweis: Der '.husky/pre-push' Hook wurde ignoriert, weil er nicht als ausführbar markiert ist.
+2026-03-10T08:53:54.9599886Z Hinweis: Sie können diese Warnung mit `git config advice.ignoredHook false` deaktivieren.
+2026-03-10T08:53:55.9063429Z To https://github.com/Frickeldave/frickeldave.github.io
+2026-03-10T08:53:55.9065041Z    c31e022..3486fa8  dev -> dev
+2026-03-10T08:53:55.9317231Z ##[group]Run actions/github-script@v7
+2026-03-10T08:53:55.9317634Z with:
+2026-03-10T08:53:55.9318857Z   script: await github.rest.actions.createWorkflowDispatch({
+  owner: context.repo.owner,
+  repo: context.repo.repo,
+  workflow_id: 'deploy-dev.yml',
+  ref: 'dev'
+});
+console.log('✅ Dev deployment workflow triggered');
+
+2026-03-10T08:53:55.9320599Z   github-token: ***
+2026-03-10T08:53:55.9320886Z   debug: false
+2026-03-10T08:53:55.9321171Z   user-agent: actions/github-script
+2026-03-10T08:53:55.9321544Z   result-encoding: json
+2026-03-10T08:53:55.9321834Z   retries: 0
+2026-03-10T08:53:55.9322146Z   retry-exempt-status-codes: 400,401,403,404,422
+2026-03-10T08:53:55.9322560Z ##[endgroup]
+2026-03-10T08:53:57.2860392Z ✅ Dev deployment workflow triggered
+2026-03-10T08:53:57.3917305Z ##[group]Run TITLE=$(jq -r '.title' metadata.json)
+2026-03-10T08:53:57.3917810Z [36;1mTITLE=$(jq -r '.title' metadata.json)[0m
+2026-03-10T08:53:57.3918289Z [36;1mecho "🚀 Updating main branch with episode: $TITLE"[0m
+2026-03-10T08:53:57.3918708Z [36;1m[0m
+2026-03-10T08:53:57.3918939Z [36;1mgit checkout main[0m
+2026-03-10T08:53:57.3919243Z [36;1mgit pull origin main[0m
+2026-03-10T08:53:57.3919550Z [36;1m[0m
+2026-03-10T08:53:57.3919781Z [36;1mif [ "" == "true" ]; then[0m
+2026-03-10T08:53:57.3920265Z [36;1m  node scripts/workflows/podcast-update/update-doag.mjs --dry-run[0m
+2026-03-10T08:53:57.3920869Z [36;1m  echo "🦁 DRY RUN: Skipping git commit and push."[0m
+2026-03-10T08:53:57.3921275Z [36;1melse[0m
+2026-03-10T08:53:57.3921630Z [36;1m  node scripts/workflows/podcast-update/update-doag.mjs[0m
+2026-03-10T08:53:57.3922125Z [36;1m  git add src/content/aboutme/doag.md[0m
+2026-03-10T08:53:57.3922703Z [36;1m  git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify[0m
+2026-03-10T08:53:57.3923205Z [36;1m  git push origin main[0m
+2026-03-10T08:53:57.3923502Z [36;1mfi[0m
+2026-03-10T08:53:57.3935006Z shell: /usr/bin/bash -il {0}
+2026-03-10T08:53:57.3935315Z ##[endgroup]
+2026-03-10T08:53:57.3967733Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
+2026-03-10T08:53:57.3968540Z bash: Keine Jobsteuerung in dieser Shell.
+2026-03-10T08:53:57.6460721Z 🚀 Updating main branch with episode: Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)
+2026-03-10T08:53:57.6527505Z Zu Branch 'main' gewechselt
+2026-03-10T08:53:57.6527914Z M	missing-episode.json
+2026-03-10T08:53:57.6528329Z Ihr Branch ist auf demselben Stand wie 'origin/main'.
+2026-03-10T08:53:58.0714511Z Von https://github.com/Frickeldave/frickeldave.github.io
+2026-03-10T08:53:58.0715342Z  * branch            main       -> FETCH_HEAD
+2026-03-10T08:53:58.0811998Z Bereits aktuell.
+2026-03-10T08:53:58.1186404Z 📖 Reading metadata from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/metadata.json
+2026-03-10T08:53:58.1187684Z 
+2026-03-10T08:53:58.1188481Z 📌 Updating doag.md with episode: "Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)"
+2026-03-10T08:53:58.1190159Z 📖 Reading doag.md from: /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io/src/content/aboutme/doag.md
+2026-03-10T08:53:58.1191392Z Found 3 existing episodes
+2026-03-10T08:53:58.1193288Z 
+2026-03-10T08:53:58.1194031Z 🆔 Generated unique ID: doag-voices-55044
+2026-03-10T08:53:58.1194511Z 📝 Inserting new episode into doag.md...
+2026-03-10T08:53:58.1197008Z 
+2026-03-10T08:53:58.1197305Z ✅ Successfully updated doag.md
+2026-03-10T08:53:58.1197554Z 
+2026-03-10T08:53:58.1197694Z 📋 Episode details:
+2026-03-10T08:53:58.1198006Z    ID: doag-voices-55044
+2026-03-10T08:53:58.1198816Z    Title: Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)
+2026-03-10T08:53:58.1199580Z    Edition: People
+2026-03-10T08:53:58.1199883Z    Date: 5. März 2026
+2026-03-10T08:53:58.1379533Z [main e356e95] feat(podcast): Add episode 'Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)'
+2026-03-10T08:53:58.1380518Z  1 file changed, 13 insertions(+)
+2026-03-10T08:53:58.4240390Z Hinweis: Der '.husky/pre-push' Hook wurde ignoriert, weil er nicht als ausführbar markiert ist.
+2026-03-10T08:53:58.4243146Z Hinweis: Sie können diese Warnung mit `git config advice.ignoredHook false` deaktivieren.
+2026-03-10T08:53:58.9477490Z To https://github.com/Frickeldave/frickeldave.github.io
+2026-03-10T08:53:58.9479143Z    b24ed2d..e356e95  main -> main
+2026-03-10T08:53:58.9710594Z ##[group]Run actions/github-script@v7
+2026-03-10T08:53:58.9710957Z with:
+2026-03-10T08:53:58.9712114Z   script: await github.rest.actions.createWorkflowDispatch({
+  owner: context.repo.owner,
+  repo: context.repo.repo,
+  workflow_id: 'deploy-prd.yml',
+  ref: 'main'
+});
+console.log('✅ Production deployment workflow triggered');
+
+2026-03-10T08:53:58.9713549Z   github-token: ***
+2026-03-10T08:53:58.9713805Z   debug: false
+2026-03-10T08:53:58.9714063Z   user-agent: actions/github-script
+2026-03-10T08:53:58.9714400Z   result-encoding: json
+2026-03-10T08:53:58.9714660Z   retries: 0
+2026-03-10T08:53:58.9714961Z   retry-exempt-status-codes: 400,401,403,404,422
+2026-03-10T08:53:58.9715335Z ##[endgroup]
+2026-03-10T08:54:00.2057916Z ✅ Production deployment workflow triggered
+2026-03-10T08:54:00.3098448Z ##[group]Run echo ""
+2026-03-10T08:54:00.3098771Z [36;1mecho ""[0m
+2026-03-10T08:54:00.3099131Z [36;1mecho "╔════════════════════════════════════════════════════════════╗"[0m
+2026-03-10T08:54:00.3099764Z [36;1mecho "║  🎉 Independent Podcast Update Completed Successfully      ║"[0m
+2026-03-10T08:54:00.3100383Z [36;1mecho "╚════════════════════════════════════════════════════════════╝"[0m
+2026-03-10T08:54:00.3100823Z [36;1mecho ""[0m
+2026-03-10T08:54:00.3101073Z [36;1mecho "📊 Summary:"[0m
+2026-03-10T08:54:00.3101469Z [36;1mecho "  • Episode: $(jq -r '.title' metadata.json)"[0m
+2026-03-10T08:54:00.3101949Z [36;1mecho "  • Branches updated: dev and main"[0m
+2026-03-10T08:54:00.3102327Z [36;1mecho ""[0m
+2026-03-10T08:54:00.3102641Z [36;1mecho "✅ Branches have been updated directly."[0m
+2026-03-10T08:54:00.3114198Z shell: /usr/bin/bash -il {0}
+2026-03-10T08:54:00.3114511Z ##[endgroup]
+2026-03-10T08:54:00.3146751Z bash: Kann die Prozessgruppe des Terminals nicht setzen (541).: Unpassender IOCTL (I/O-Control) für das Gerät
+2026-03-10T08:54:00.3147558Z bash: Keine Jobsteuerung in dieser Shell.
+2026-03-10T08:54:00.5352371Z 
+2026-03-10T08:54:00.5353051Z ╔════════════════════════════════════════════════════════════╗
+2026-03-10T08:54:00.5353710Z ║  🎉 Independent Podcast Update Completed Successfully      ║
+2026-03-10T08:54:00.5354364Z ╚════════════════════════════════════════════════════════════╝
+2026-03-10T08:54:00.5354665Z 
+2026-03-10T08:54:00.5354788Z 📊 Summary:
+2026-03-10T08:54:00.5673731Z   • Episode: Low-Code mit Haltung: Niels de Bruijn über APEX, Community und unternehmerische Verantwortung (Teil 1 von 3)
+2026-03-10T08:54:00.5674565Z   • Branches updated: dev and main
+2026-03-10T08:54:00.5674809Z 
+2026-03-10T08:54:00.5674988Z ✅ Branches have been updated directly.
+2026-03-10T08:54:00.5764230Z Post job cleanup.
+2026-03-10T08:54:00.6571901Z Unexpected error attempting to determine if executable file exists '/home/dave/ansible_venv/bin/git': Error: EACCES: permission denied, stat '/home/dave/ansible_venv/bin/git'
+2026-03-10T08:54:00.6614470Z [command]/usr/bin/git version
+2026-03-10T08:54:00.6648151Z git version 2.39.5
+2026-03-10T08:54:00.6697987Z Temporarily overriding HOME='/home/github/actions-runner-frickeldave-main/_work/_temp/05ef8398-91db-4e45-9e5d-d32d88457c2b' before making global git config changes
+2026-03-10T08:54:00.6699324Z Adding repository directory to the temporary git global config as a safe directory
+2026-03-10T08:54:00.6702704Z [command]/usr/bin/git config --global --add safe.directory /home/github/actions-runner-frickeldave-main/_work/frickeldave.github.io/frickeldave.github.io
+2026-03-10T08:54:00.6734450Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-03-10T08:54:00.6763634Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-03-10T08:54:00.6978007Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-03-10T08:54:00.6997192Z http.https://github.com/.extraheader
+2026-03-10T08:54:00.7007637Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-03-10T08:54:00.7035922Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-03-10T08:54:00.7362068Z Cleaning up orphan processes
