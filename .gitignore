@@ -71,3 +71,9 @@ public/version.json
 # CI workflow temp files (generated at runtime, must not be committed)
 scripts/workflows/ci/.state/
 .copilot-prompt-analyze.txt
+
+# Debug/temp output files
+build-output.txt
+build-test.txt
+deploy-output.txt
+pagefind-output.txt

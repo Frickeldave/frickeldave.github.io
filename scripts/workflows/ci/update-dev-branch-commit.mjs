@@ -33,6 +33,12 @@ function main() {
   const { commitMessage } = state.analysis || {};
 
   if (!commitMessage) {
+    // Check if there are actually any changes to commit
+    const pendingChanges = execSync("git status --porcelain", { encoding: "utf-8" }).trim();
+    if (!pendingChanges) {
+      console.log("ℹ️  No changes to commit and no commit message. Nothing to do.");
+      process.exit(0);
+    }
     console.error("❌ No commit message found in state.");
     process.exit(1);
   }
