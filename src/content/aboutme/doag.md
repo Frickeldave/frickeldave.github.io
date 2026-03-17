@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-80268
+    title: "Zwischen Code, Community und Konzertbühne: Niels de Bruijn über Fokus, Work-Life-Balance und Werte (Teil 3/3)"
+    edition: People
+    guests: Niels de Bruijn
+    date: 17. März 2026
+    description: >-
+      Im Abschluss der dreiteiligen Gesprächsreihe richtet Host Marcos López den Blick auf die persönliche Seite des Oracle-APEX-Experten Niels de Bruijn. Es geht um nachhaltige Produktivität durch Fokus statt lange Arbeitszeiten, um Musik, Brettspiele und Lesen als kreative Ausgleiche sowie um die Bedeutung gesellschaftlicher Themen jenseits der IT-Welt. De Bruijn teilt seine Erkenntnisse zu Motivation, Balance und der Frage, wie sich kontinuierliches Lernen und Community-Engagement mit einem erfüllten Leben verbinden lassen.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69b8fbfaa28dd9d562d9017e/media.mp3
   - id: doag-voices-34348
     title: "Low-Code im KI-Zeitalter: Niels de Bruijn über APEX, LLMs und die Zukunft der Entwicklung (Teil 2/3)"
     edition: People
