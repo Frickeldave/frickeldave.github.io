@@ -165,7 +165,9 @@ function checkPrereqs(extraChecks = []) {
   run("git --version", { silent: true });
 
   // git repo with origin
-  const isRepo = run("git rev-parse --is-inside-work-tree", { silent: true }).trim();
+  const isRepo = run("git rev-parse --is-inside-work-tree", {
+    silent: true,
+  }).trim();
   if (isRepo !== "true") throw new Error("Not inside a git repository");
   const remotes = run("git remote", { silent: true });
   if (!remotes.includes("origin")) throw new Error('No remote "origin" found');
@@ -217,13 +219,19 @@ function runBuild() {
 function askCopilot(promptText) {
   const result = spawnSync(
     "copilot",
-    ["--model", "claude-haiku-4.5", "--no-ask-user", "--allow-all-tools", "--silent"],
+    [
+      "--model",
+      "claude-haiku-4.5",
+      "--no-ask-user",
+      "--allow-all-tools",
+      "--silent",
+    ],
     {
       input: promptText,
       encoding: "utf-8",
       cwd: ROOT,
       timeout: 120000,
-    },
+    }
   );
 
   if (result.error || result.status !== 0) return null;
@@ -278,7 +286,7 @@ async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
     try {
       const result = run(
         `gh run list ${repoFlag} --workflow=${workflowFile} --limit 1 --json databaseId,status,conclusion,url,createdAt`,
-        { silent: true },
+        { silent: true }
       );
       const runs = JSON.parse(result);
       if (runs.length > 0) {
@@ -296,7 +304,9 @@ async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
 
   if (!runData) {
     console.log(`  ⚠ No workflow run detected within ${maxWaitForStart}s.`);
-    console.log(`  Check manually: https://github.com/${owner || GITHUB_REPO_OWNER}/${repoName || GITHUB_REPO_PAGES}/actions/workflows/${workflowFile}`);
+    console.log(
+      `  Check manually: https://github.com/${owner || GITHUB_REPO_OWNER}/${repoName || GITHUB_REPO_PAGES}/actions/workflows/${workflowFile}`
+    );
     return;
   }
 
@@ -310,7 +320,7 @@ async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
     try {
       const result = run(
         `gh run view ${runData.databaseId} ${repoFlag} --json status,conclusion,jobs`,
-        { silent: true },
+        { silent: true }
       );
       const updated = JSON.parse(result);
       runData.status = updated.status;
@@ -319,14 +329,16 @@ async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
       if (updated.status === "completed") {
         // Check for failed jobs and extract error details
         if (updated.conclusion !== "success" && updated.jobs) {
-          const failedJobs = updated.jobs.filter((j) => j.conclusion === "failure");
+          const failedJobs = updated.jobs.filter(
+            (j) => j.conclusion === "failure"
+          );
           if (failedJobs.length > 0) {
             runData.failedJobs = failedJobs.map((j) => j.name);
             // Try to get log snippet for the failed job
             try {
               const logResult = run(
                 `gh run view ${runData.databaseId} ${repoFlag} --log-failed`,
-                { silent: true },
+                { silent: true }
               );
               // Take last 15 lines of the failed log
               const logLines = logResult.trim().split("\n");
@@ -359,7 +371,9 @@ async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
       }
     }
   } else {
-    console.log(`  Status: ${runData.status} (still running after ${maxWaitForFinish}s)`);
+    console.log(
+      `  Status: ${runData.status} (still running after ${maxWaitForFinish}s)`
+    );
     console.log(`  Monitor: ${runData.url}`);
   }
 }
@@ -386,9 +400,13 @@ async function deployDev() {
     if (!status) {
       // Check for unpushed commits
       try {
-        const unpushed = run(`git log origin/${branch}..${branch} --oneline`, { silent: true }).trim();
+        const unpushed = run(`git log origin/${branch}..${branch} --oneline`, {
+          silent: true,
+        }).trim();
         if (!unpushed) {
-          throw new Error("No changes to deploy. Working tree is clean and all commits are pushed.");
+          throw new Error(
+            "No changes to deploy. Working tree is clean and all commits are pushed."
+          );
         }
       } catch {
         // Remote tracking branch may not exist — that's fine, we have local commits
@@ -424,7 +442,9 @@ Return JSON:
   });
 
   // 4. Quality Gates (auto-fix)
-  const qualityChanged = await step("Quality gates (format, lint)", () => runQualityGates());
+  const qualityChanged = await step("Quality gates (format, lint)", () =>
+    runQualityGates()
+  );
 
   // 5. Build
   await step("Build", () => runBuild());
@@ -435,7 +455,10 @@ Return JSON:
     run("git add .", { silent: true });
 
     // Unstage temp files
-    for (const f of [".copilot-prompt-analyze.txt", "scripts/workflows/ci/.state"]) {
+    for (const f of [
+      ".copilot-prompt-analyze.txt",
+      "scripts/workflows/ci/.state",
+    ]) {
       try {
         run(`git reset HEAD -- ${f}`, { silent: true });
       } catch {
@@ -444,7 +467,9 @@ Return JSON:
     }
 
     // Check if there's anything to commit
-    const staged = run("git diff --cached --name-only", { silent: true }).trim();
+    const staged = run("git diff --cached --name-only", {
+      silent: true,
+    }).trim();
     if (!staged) {
       // Nothing to commit — maybe everything was already committed
       return run("git rev-parse --short HEAD", { silent: true }).trim();
@@ -470,7 +495,14 @@ Return JSON:
 
       run("git checkout dev", { silent: true });
       run("git pull origin dev", { silent: true });
-      runFile("git", ["merge", analysis.branch, "--no-ff", "--no-verify", "-m", mergeMsg]);
+      runFile("git", [
+        "merge",
+        analysis.branch,
+        "--no-ff",
+        "--no-verify",
+        "-m",
+        mergeMsg,
+      ]);
       run("git push origin dev", { silent: true });
 
       // Optional cleanup
@@ -517,20 +549,29 @@ async function deployPrd() {
   await step("Prerequisites", () =>
     checkPrereqs([
       () => {
-        const branch = run("git branch --show-current", { silent: true }).trim();
-        if (branch !== "dev") throw new Error(`Must be on 'dev' branch, currently on '${branch}'`);
+        const branch = run("git branch --show-current", {
+          silent: true,
+        }).trim();
+        if (branch !== "dev")
+          throw new Error(`Must be on 'dev' branch, currently on '${branch}'`);
       },
       () => {
         const status = run("git status --porcelain", { silent: true }).trim();
-        if (status) throw new Error("Working tree is dirty. Commit or stash changes first.");
+        if (status)
+          throw new Error(
+            "Working tree is dirty. Commit or stash changes first."
+          );
       },
       () => {
         run("git fetch origin dev", { silent: true });
         const local = run("git rev-parse dev", { silent: true }).trim();
         const remote = run("git rev-parse origin/dev", { silent: true }).trim();
-        if (local !== remote) throw new Error("Local dev is not in sync with origin/dev. Push first.");
+        if (local !== remote)
+          throw new Error(
+            "Local dev is not in sync with origin/dev. Push first."
+          );
       },
-    ]),
+    ])
   );
 
   // 2. Issue check
@@ -539,7 +580,9 @@ async function deployPrd() {
   await step("Issue check", () => {
     if (issueId) {
       // Validate existing issue
-      const result = run(`gh issue view ${issueId} --json title,number`, { silent: true });
+      const result = run(`gh issue view ${issueId} --json title,number`, {
+        silent: true,
+      });
       const issue = JSON.parse(result);
       issueId = issue.number;
     }
@@ -551,7 +594,9 @@ async function deployPrd() {
     const answer = await prompt("GitHub Issue ID (Enter to skip): ");
     if (answer) {
       try {
-        const result = run(`gh issue view ${answer} --json title,number`, { silent: true });
+        const result = run(`gh issue view ${answer} --json title,number`, {
+          silent: true,
+        });
         issueId = JSON.parse(result).number;
       } catch {
         fatal(`Issue #${answer} not found.`);
@@ -598,7 +643,14 @@ Return JSON:
 
     // Create issue if none exists
     if (!issueId) {
-      const ghResult = runFile("gh", ["issue", "create", "--title", issueTitle, "--body", issueBody]);
+      const ghResult = runFile("gh", [
+        "issue",
+        "create",
+        "--title",
+        issueTitle,
+        "--body",
+        issueBody,
+      ]);
       const match = ghResult.match(/\/issues\/(\d+)/);
       if (match) {
         issueId = parseInt(match[1], 10);
@@ -614,7 +666,14 @@ Return JSON:
     run("git pull origin main", { silent: true });
 
     try {
-      runFile("git", ["merge", "dev", "--no-ff", "--no-verify", "-m", "chore: deploy dev to production"]);
+      runFile("git", [
+        "merge",
+        "dev",
+        "--no-ff",
+        "--no-verify",
+        "-m",
+        "chore: deploy dev to production",
+      ]);
       mergedToMain = true;
     } catch (err) {
       // Rollback merge attempt
@@ -635,7 +694,9 @@ Return JSON:
       run("git checkout dev", { silent: true });
       console.log("  ↩ Rolled back main to origin/main, switched to dev.");
     } catch {
-      console.error("  ⚠ Manual rollback needed: git checkout main && git reset --hard origin/main && git checkout dev");
+      console.error(
+        "  ⚠ Manual rollback needed: git checkout main && git reset --hard origin/main && git checkout dev"
+      );
     }
   };
 
@@ -646,7 +707,12 @@ Return JSON:
       if (changed) {
         // Quality gates changed files on main — commit them
         run("git add .", { silent: true });
-        runFile("git", ["commit", "--no-verify", "-m", "style: auto-fix formatting"]);
+        runFile("git", [
+          "commit",
+          "--no-verify",
+          "-m",
+          "style: auto-fix formatting",
+        ]);
       }
     });
 
@@ -670,7 +736,13 @@ Return JSON:
     await step("Close issue", () => {
       if (issueId) {
         try {
-          runFile("gh", ["issue", "close", String(issueId), "--comment", "Deployed via deploy:prd"]);
+          runFile("gh", [
+            "issue",
+            "close",
+            String(issueId),
+            "--comment",
+            "Deployed via deploy:prd",
+          ]);
         } catch {
           // non-fatal
         }
@@ -686,12 +758,16 @@ Return JSON:
       // Check if we already pushed
       try {
         const localMain = run("git rev-parse main", { silent: true }).trim();
-        const remoteMain = run("git rev-parse origin/main", { silent: true }).trim();
+        const remoteMain = run("git rev-parse origin/main", {
+          silent: true,
+        }).trim();
         if (localMain !== remoteMain) {
           // Not pushed yet — safe to rollback
           rollbackMain();
         } else {
-          console.error("  ⚠ Main was already pushed. Manual intervention may be needed.");
+          console.error(
+            "  ⚠ Main was already pushed. Manual intervention may be needed."
+          );
           run("git checkout dev", { silent: true });
         }
       } catch {
@@ -705,7 +781,9 @@ Return JSON:
   console.log(`\n─── Done ───`);
   console.log(`Branch:  dev`);
   if (issueId) console.log(`Issue:   #${issueId}`);
-  console.log(`Deploy:  https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_PAGES}/actions/workflows/${PRD_WORKFLOW}`);
+  console.log(
+    `Deploy:  https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_PAGES}/actions/workflows/${PRD_WORKFLOW}`
+  );
 }
 
 // ---------------------------------------------------------------------------
