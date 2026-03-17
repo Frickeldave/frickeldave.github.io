@@ -14,13 +14,12 @@ jobs:
     # Only run when dev branch is the target OR when manually dispatched
     #if: ${{ github.base_ref == 'dev' || github.event_name == 'workflow_dispatch' }}
     steps:
-      
       - name: Print branch information
         run: |
           echo "Triggered by branch: ${{ github.ref_name }}"
           echo "Commit SHA: ${{ github.sha }}"
-          
-      - name: Trigger HomeNet Ansible Deployment by calling waltrauds playbook with tag frickeldave-astro-build
+
+      - name: Trigger HomeNet Ansible Deployment by calling waltrauds playbook with tag fd
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.HOMENET_PAT }}
@@ -33,7 +32,7 @@ jobs:
                 ref: 'main',
                 inputs: {
                   homeassistant_reset: 'false',
-                  tag_select: 'frickeldave-astro-build',
+                  tag_select: 'fd',
                   source_branch: '${{ github.ref_name }}'
                 }
               });
@@ -50,5 +49,4 @@ jobs:
           echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (build)"
           echo "Target: waltraud-dc.yaml playbook"
           echo "Limit: waltraud"
-          echo "Variables: homeassistant_reset=false, tag_select=frickeldave-astro-build, source_branch=${{ github.ref_name }}"
-
+          echo "Variables: homeassistant_reset=false, tag_select=fd, source_branch=${{ github.ref_name }}"

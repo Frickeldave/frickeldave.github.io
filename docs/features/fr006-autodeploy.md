@@ -1,8 +1,8 @@
 # FR006: Automatisierte Deployment-Workflows
 
 Dieses Dokument beschreibt die automatisierten Deployment-Workflows: `npm run deploy:dev` zum
-Deployen lokaler Änderungen in den `dev`-Branch, und `npm run deploy:prd` zum Promoten von `dev`
-in die Produktion auf `main`.
+Deployen lokaler Änderungen in den `dev`-Branch, und `npm run deploy:prd` zum Promoten von `dev` in
+die Produktion auf `main`.
 
 - [FR006: Automatisierte Deployment-Workflows](#fr006-automatisierte-deployment-workflows)
   - [Übersicht](#übersicht)
@@ -11,6 +11,8 @@ in die Produktion auf `main`.
   - [deploy:dev — Workflow-Schritte](#deploydev--workflow-schritte)
   - [deploy:prd — Workflow-Schritte](#deployprd--workflow-schritte)
   - [CLI-Parameter](#cli-parameter)
+    - [deploy:dev](#deploydev)
+    - [deploy:prd](#deployprd)
   - [Fehlerbehandlung \& Rollback](#fehlerbehandlung--rollback)
   - [Output-Design](#output-design)
 
@@ -21,16 +23,15 @@ Beide Deployment-Modi werden über ein einziges Script gesteuert:
 - **`npm run deploy:dev`** — Committet und pusht lokale Änderungen nach `dev`. Führt Quality Gates
   mit Auto-Fix durch, generiert per Copilot CLI (oder Fallback) eine Commit-Message, und gibt den
   Link zum GitHub Actions Deployment aus.
-- **`npm run deploy:prd`** — Mergt `dev` in `main` für ein Produktions-Deployment. Verwaltet
-  GitHub Issues (erstellen + schließen) zur Release-Dokumentation.
+- **`npm run deploy:prd`** — Mergt `dev` in `main` für ein Produktions-Deployment. Verwaltet GitHub
+  Issues (erstellen + schließen) zur Release-Dokumentation.
 
-Die gesamte Logik liegt in einem Script:
-[deploy.mjs](../../scripts/workflows/ci/deploy.mjs)
+Die gesamte Logik liegt in einem Script: [deploy.mjs](../../scripts/workflows/ci/deploy.mjs)
 
 ## Architektur
 
-Das Script ersetzt die vorherige Architektur aus 23 Einzelscripts mit geteiltem State-File. Die
-neue Lösung:
+Das Script ersetzt die vorherige Architektur aus 23 Einzelscripts mit geteiltem State-File. Die neue
+Lösung:
 
 - **Ein Script, zwei Modi** — `deploy.mjs dev` oder `deploy.mjs prd`
 - **Kein State-File** — Alle Daten werden im Speicher gehalten (kein `.state/`-Ordner)
@@ -85,31 +86,31 @@ Beide Workflows erfordern:
 
 ## deploy:dev — Workflow-Schritte
 
-| Schritt | Beschreibung |
-| :------ | :----------- |
-| **1. Prerequisites** | Prüft `npm`, `git`, `gh` und Git-Repo-Validität. `copilot` wird als optional geprüft. |
-| **2. Analyze** | Liest `git status` und `git diff HEAD` ein. Bricht ab, wenn keine Änderungen vorhanden sind. |
-| **3. Commit Message** | Nutzt Copilot CLI zur Analyse der Änderungen. Fallback: `chore: update N files` aus Diff-Statistik. |
-| **4. Quality Gates** | Führt `npm run format` und `npm run lint` aus (mit Auto-Fix). `npm run prose` wird optional ausgeführt. |
-| **5. Build** | `npm run build` — Output wird nur im Fehlerfall angezeigt. |
-| **6. Commit** | `git add .` (temp-Files ausgeschlossen), Commit mit `--no-verify` via `execFileSync`. |
-| **7. Push** | `git push -u origin <branch>` |
+| Schritt                | Beschreibung                                                                                                              |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| **1. Prerequisites**   | Prüft `npm`, `git`, `gh` und Git-Repo-Validität. `copilot` wird als optional geprüft.                                     |
+| **2. Analyze**         | Liest `git status` und `git diff HEAD` ein. Bricht ab, wenn keine Änderungen vorhanden sind.                              |
+| **3. Commit Message**  | Nutzt Copilot CLI zur Analyse der Änderungen. Fallback: `chore: update N files` aus Diff-Statistik.                       |
+| **4. Quality Gates**   | Führt `npm run format` und `npm run lint` aus (mit Auto-Fix). `npm run prose` wird optional ausgeführt.                   |
+| **5. Build**           | `npm run build` — Output wird nur im Fehlerfall angezeigt.                                                                |
+| **6. Commit**          | `git add .` (temp-Files ausgeschlossen), Commit mit `--no-verify` via `execFileSync`.                                     |
+| **7. Push**            | `git push -u origin <branch>`                                                                                             |
 | **8. Merge + Cleanup** | Nur bei Feature-Branches: Merge in `dev` mit `--no-ff --no-verify`, Push, optionale Branch-Löschung mit `--auto-cleanup`. |
 
 ## deploy:prd — Workflow-Schritte
 
-| Schritt | Beschreibung |
-| :------ | :----------- |
-| **1. Prerequisites** | Wie dev + zusätzlich: Branch muss `dev` sein, Working Tree sauber, `dev` in Sync mit `origin/dev`. |
-| **2. Issue Check** | Prüft `--issue-id` oder fragt interaktiv ab. `--skip-issue` überspringt den Prompt. |
-| **3. Analyze** | `git diff origin/main..dev` — Diff-Statistik und Commit-Log. |
-| **4. Summary + Issue** | Copilot CLI generiert Titel und Body (Fallback: automatisch). Erstellt Issue, falls keines angegeben. |
-| **5. Merge** | `git checkout main && git pull && git merge dev --no-ff --no-verify`. Bei Konflikt: automatischer Rollback und Abbruch. |
-| **6. Quality Gates** | Format + Lint auf `main`. Änderungen werden automatisch committet. |
-| **7. Build** | `npm run build` auf `main`. |
-| **8. Push** | `git push origin main` — triggert `deploy-prd.yml` GitHub Actions Workflow. |
-| **9. Close Issue** | Schließt das zugehörige GitHub Issue. |
-| **10. Switch to dev** | Wechselt zurück auf den `dev`-Branch. |
+| Schritt                | Beschreibung                                                                                                            |
+| :--------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| **1. Prerequisites**   | Wie dev + zusätzlich: Branch muss `dev` sein, Working Tree sauber, `dev` in Sync mit `origin/dev`.                      |
+| **2. Issue Check**     | Prüft `--issue-id` oder fragt interaktiv ab. `--skip-issue` überspringt den Prompt.                                     |
+| **3. Analyze**         | `git diff origin/main..dev` — Diff-Statistik und Commit-Log.                                                            |
+| **4. Summary + Issue** | Copilot CLI generiert Titel und Body (Fallback: automatisch). Erstellt Issue, falls keines angegeben.                   |
+| **5. Merge**           | `git checkout main && git pull && git merge dev --no-ff --no-verify`. Bei Konflikt: automatischer Rollback und Abbruch. |
+| **6. Quality Gates**   | Format + Lint auf `main`. Änderungen werden automatisch committet.                                                      |
+| **7. Build**           | `npm run build` auf `main`.                                                                                             |
+| **8. Push**            | `git push origin main` — triggert `deploy-prd.yml` GitHub Actions Workflow.                                             |
+| **9. Close Issue**     | Schließt das zugehörige GitHub Issue.                                                                                   |
+| **10. Switch to dev**  | Wechselt zurück auf den `dev`-Branch.                                                                                   |
 
 ## CLI-Parameter
 
@@ -136,8 +137,8 @@ npm run deploy:prd -- --issue-id 123
 npm run deploy:prd -- --skip-issue
 ```
 
-> **Wichtig:** Immer den doppelten Bindestrich `--` vor den Argumenten verwenden, damit sie
-> korrekt an das zugrunde liegende Script weitergegeben werden!
+> **Wichtig:** Immer den doppelten Bindestrich `--` vor den Argumenten verwenden, damit sie korrekt
+> an das zugrunde liegende Script weitergegeben werden!
 
 ## Fehlerbehandlung & Rollback
 

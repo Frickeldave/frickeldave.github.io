@@ -60,7 +60,9 @@ npm run deploy:prd   # Mergt dev in main und triggert den Production Build
 npm run deploy:prd -- --skip-issue # Non-interactive Mode für automatisierte Deployments
 ```
 
-Forder ich dich auf, in dev oder prd zu deployen, frage ich erst nach einer github issue id. Wenn ich diese nicht angebe, führe die non-interactive Variante aus (`--auto-cleanup` für dev, `--skip-issue` für prd), damit die Skripte ohne Unterbrechung durchlaufen können.
+Forder ich dich auf, in dev oder prd zu deployen, frage ich erst nach einer github issue id. Wenn
+ich diese nicht angebe, führe die non-interactive Variante aus (`--auto-cleanup` für dev,
+`--skip-issue` für prd), damit die Skripte ohne Unterbrechung durchlaufen können.
 
 Detaillierte Dokumentation: `./docs/features/fr006-autodeploy.md`
 
@@ -272,6 +274,7 @@ Wiederverwendbarkeit in der Tabelle.
 ## Related Documentation
 
 Detailed docs in `./docs/`:
+
 - Architecture Decisions: `./docs/40-architecture-decisions.md`
 - Structure Guide: `./docs/15-structure.md`
 - Design System: `./docs/20-design-system.md`

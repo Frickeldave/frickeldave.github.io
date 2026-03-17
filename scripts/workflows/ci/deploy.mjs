@@ -98,13 +98,13 @@ function runFile(cmd, cmdArgs, { silent = false } = {}) {
 let totalSteps = 0;
 let currentStep = 0;
 
-function step(label, fn) {
+async function step(label, fn) {
   currentStep++;
   const prefix = `[${currentStep}/${totalSteps}]`;
   process.stdout.write(`${prefix} ${label}...`);
 
   try {
-    const result = fn();
+    const result = await fn();
     console.log(" ✓");
     return result;
   } catch (err) {
@@ -165,7 +165,9 @@ function checkPrereqs(extraChecks = []) {
   run("git --version", { silent: true });
 
   // git repo with origin
-  const isRepo = run("git rev-parse --is-inside-work-tree", { silent: true }).trim();
+  const isRepo = run("git rev-parse --is-inside-work-tree", {
+    silent: true,
+  }).trim();
   if (isRepo !== "true") throw new Error("Not inside a git repository");
   const remotes = run("git remote", { silent: true });
   if (!remotes.includes("origin")) throw new Error('No remote "origin" found');
@@ -217,13 +219,19 @@ function runBuild() {
 function askCopilot(promptText) {
   const result = spawnSync(
     "copilot",
-    ["--model", "claude-haiku-4.5", "--no-ask-user", "--allow-all-tools", "--silent"],
+    [
+      "--model",
+      "claude-haiku-4.5",
+      "--no-ask-user",
+      "--allow-all-tools",
+      "--silent",
+    ],
     {
       input: promptText,
       encoding: "utf-8",
       cwd: ROOT,
       timeout: 120000,
-    },
+    }
   );
 
   if (result.error || result.status !== 0) return null;
@@ -249,21 +257,142 @@ function fallbackCommitMessage() {
   return `chore: update ${fileCount} files`;
 }
 
+/** Sleep helper (ms). */
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Check a GitHub Actions workflow run after push.
+ * Polls for up to ~90s to find and monitor the triggered run.
+ * Reports success/failure/error details.
+ *
+ * @param {string} repo - GitHub repo (owner/name format is handled via gh defaults)
+ * @param {string} workflowFile - Workflow filename (e.g. "deploy-dev.yml")
+ * @param {object} options
+ * @param {string} [options.owner] - Repo owner (for cross-repo checks)
+ * @param {string} [options.repoName] - Repo name (for cross-repo checks)
+ */
+async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
+  const repoFlag = owner && repoName ? `--repo ${owner}/${repoName}` : "";
+  const maxWaitForStart = 30; // seconds to wait for run to appear
+  const maxWaitForFinish = 120; // seconds to wait for run to complete
+  const pushTime = Date.now();
+
+  // Phase 1: Wait for the workflow run to appear
+  let runData = null;
+  for (let elapsed = 0; elapsed < maxWaitForStart; elapsed += 3) {
+    await sleep(3000);
+    try {
+      const result = run(
+        `gh run list ${repoFlag} --workflow=${workflowFile} --limit 1 --json databaseId,status,conclusion,url,createdAt`,
+        { silent: true }
+      );
+      const runs = JSON.parse(result);
+      if (runs.length > 0) {
+        const created = new Date(runs[0].createdAt).getTime();
+        // Only pick up runs created after our push (with 30s tolerance)
+        if (created > pushTime - 30000) {
+          runData = runs[0];
+          break;
+        }
+      }
+    } catch {
+      // gh CLI error — retry
+    }
+  }
+
+  if (!runData) {
+    console.log(`  ⚠ No workflow run detected within ${maxWaitForStart}s.`);
+    console.log(
+      `  Check manually: https://github.com/${owner || GITHUB_REPO_OWNER}/${repoName || GITHUB_REPO_PAGES}/actions/workflows/${workflowFile}`
+    );
+    return;
+  }
+
+  console.log(`  Run: ${runData.url}`);
+
+  // Phase 2: Poll until run completes or timeout
+  for (let elapsed = 0; elapsed < maxWaitForFinish; elapsed += 5) {
+    if (runData.status === "completed") break;
+
+    await sleep(5000);
+    try {
+      const result = run(
+        `gh run view ${runData.databaseId} ${repoFlag} --json status,conclusion,jobs`,
+        { silent: true }
+      );
+      const updated = JSON.parse(result);
+      runData.status = updated.status;
+      runData.conclusion = updated.conclusion;
+
+      if (updated.status === "completed") {
+        // Check for failed jobs and extract error details
+        if (updated.conclusion !== "success" && updated.jobs) {
+          const failedJobs = updated.jobs.filter(
+            (j) => j.conclusion === "failure"
+          );
+          if (failedJobs.length > 0) {
+            runData.failedJobs = failedJobs.map((j) => j.name);
+            // Try to get log snippet for the failed job
+            try {
+              const logResult = run(
+                `gh run view ${runData.databaseId} ${repoFlag} --log-failed`,
+                { silent: true }
+              );
+              // Take last 15 lines of the failed log
+              const logLines = logResult.trim().split("\n");
+              runData.errorLog = logLines.slice(-15).join("\n");
+            } catch {
+              // log fetch failed — non-critical
+            }
+          }
+        }
+        break;
+      }
+    } catch {
+      // transient error — retry
+    }
+  }
+
+  // Report result
+  if (runData.status === "completed") {
+    if (runData.conclusion === "success") {
+      console.log(`  Status: ✓ success`);
+    } else {
+      console.log(`  Status: ✗ ${runData.conclusion}`);
+      if (runData.failedJobs) {
+        console.log(`  Failed jobs: ${runData.failedJobs.join(", ")}`);
+      }
+      if (runData.errorLog) {
+        console.log(`  --- Error Log ---`);
+        console.log(runData.errorLog);
+        console.log(`  ---`);
+      }
+    }
+  } else {
+    console.log(
+      `  Status: ${runData.status} (still running after ${maxWaitForFinish}s)`
+    );
+    console.log(`  Monitor: ${runData.url}`);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // deploy:dev
 // ---------------------------------------------------------------------------
 
 async function deployDev() {
-  totalSteps = 8; // prereqs, analyze, understand, quality, build, commit, push, merge/cleanup
+  totalSteps = 9; // prereqs, analyze, understand, quality, build, commit, push, merge/cleanup, deploy-check
   currentStep = 0;
 
   console.log("─── deploy:dev ───\n");
 
   // 1. Prereqs
-  step("Prerequisites", () => checkPrereqs());
+  await step("Prerequisites", () => checkPrereqs());
 
   // 2. Analyze
-  const analysis = step("Analyze changes", () => {
+  const analysis = await step("Analyze changes", () => {
     const status = run("git status --porcelain", { silent: true }).trim();
     const branch = run("git branch --show-current", { silent: true }).trim();
 
@@ -271,9 +400,13 @@ async function deployDev() {
     if (!status) {
       // Check for unpushed commits
       try {
-        const unpushed = run(`git log origin/${branch}..${branch} --oneline`, { silent: true }).trim();
+        const unpushed = run(`git log origin/${branch}..${branch} --oneline`, {
+          silent: true,
+        }).trim();
         if (!unpushed) {
-          throw new Error("No changes to deploy. Working tree is clean and all commits are pushed.");
+          throw new Error(
+            "No changes to deploy. Working tree is clean and all commits are pushed."
+          );
         }
       } catch {
         // Remote tracking branch may not exist — that's fine, we have local commits
@@ -285,7 +418,7 @@ async function deployDev() {
   });
 
   // 3. Understand (AI commit message)
-  const commitInfo = step("Generate commit message", () => {
+  const commitInfo = await step("Generate commit message", () => {
     const copilotAvailable = hasCopilot();
 
     if (copilotAvailable) {
@@ -309,18 +442,23 @@ Return JSON:
   });
 
   // 4. Quality Gates (auto-fix)
-  const qualityChanged = step("Quality gates (format, lint)", () => runQualityGates());
+  const qualityChanged = await step("Quality gates (format, lint)", () =>
+    runQualityGates()
+  );
 
   // 5. Build
-  step("Build", () => runBuild());
+  await step("Build", () => runBuild());
 
   // 6. Commit
-  const commitHash = step("Commit", () => {
+  const commitHash = await step("Commit", () => {
     // Stage all changes
     run("git add .", { silent: true });
 
     // Unstage temp files
-    for (const f of [".copilot-prompt-analyze.txt", "scripts/workflows/ci/.state"]) {
+    for (const f of [
+      ".copilot-prompt-analyze.txt",
+      "scripts/workflows/ci/.state",
+    ]) {
       try {
         run(`git reset HEAD -- ${f}`, { silent: true });
       } catch {
@@ -329,7 +467,9 @@ Return JSON:
     }
 
     // Check if there's anything to commit
-    const staged = run("git diff --cached --name-only", { silent: true }).trim();
+    const staged = run("git diff --cached --name-only", {
+      silent: true,
+    }).trim();
     if (!staged) {
       // Nothing to commit — maybe everything was already committed
       return run("git rev-parse --short HEAD", { silent: true }).trim();
@@ -344,18 +484,25 @@ Return JSON:
   });
 
   // 7. Push
-  step("Push", () => {
+  await step("Push", () => {
     run(`git push -u origin ${analysis.branch}`, { silent: true });
   });
 
   // 8. Merge to dev + Cleanup (if on feature branch)
   if (analysis.branch !== "dev" && analysis.branch !== "main") {
-    step("Merge to dev & cleanup", () => {
+    await step("Merge to dev & cleanup", () => {
       const mergeMsg = `merge: ${analysis.branch} into dev`;
 
       run("git checkout dev", { silent: true });
       run("git pull origin dev", { silent: true });
-      runFile("git", ["merge", analysis.branch, "--no-ff", "--no-verify", "-m", mergeMsg]);
+      runFile("git", [
+        "merge",
+        analysis.branch,
+        "--no-ff",
+        "--no-verify",
+        "-m",
+        mergeMsg,
+      ]);
       run("git push origin dev", { silent: true });
 
       // Optional cleanup
@@ -370,15 +517,22 @@ Return JSON:
     });
   } else {
     // Adjust step count since we skip merge
-    totalSteps = 7;
+    totalSteps = 9;
   }
+
+  // Deploy check (always runs — checks the deploy-dev.yml workflow on the pages repo)
+  await step("Deploy check", async () => {
+    await checkDeployment("pages", "deploy-dev.yml", {
+      owner: GITHUB_REPO_OWNER,
+      repoName: GITHUB_REPO_PAGES,
+    });
+  });
 
   // Summary
   const finalBranch = run("git branch --show-current", { silent: true }).trim();
   console.log(`\n─── Done ───`);
   console.log(`Branch:  ${finalBranch}`);
   console.log(`Commit:  ${commitHash}`);
-  console.log(`Deploy:  https://github.com/${GITHUB_REPO_OWNER}/${HOMENET_REPO}/actions/workflows/${DEV_WORKFLOW}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -386,38 +540,49 @@ Return JSON:
 // ---------------------------------------------------------------------------
 
 async function deployPrd() {
-  totalSteps = 10;
+  totalSteps = 11;
   currentStep = 0;
 
   console.log("─── deploy:prd ───\n");
 
   // 1. Prereqs (strict: must be on dev, clean, pushed)
-  step("Prerequisites", () =>
+  await step("Prerequisites", () =>
     checkPrereqs([
       () => {
-        const branch = run("git branch --show-current", { silent: true }).trim();
-        if (branch !== "dev") throw new Error(`Must be on 'dev' branch, currently on '${branch}'`);
+        const branch = run("git branch --show-current", {
+          silent: true,
+        }).trim();
+        if (branch !== "dev")
+          throw new Error(`Must be on 'dev' branch, currently on '${branch}'`);
       },
       () => {
         const status = run("git status --porcelain", { silent: true }).trim();
-        if (status) throw new Error("Working tree is dirty. Commit or stash changes first.");
+        if (status)
+          throw new Error(
+            "Working tree is dirty. Commit or stash changes first."
+          );
       },
       () => {
         run("git fetch origin dev", { silent: true });
         const local = run("git rev-parse dev", { silent: true }).trim();
         const remote = run("git rev-parse origin/dev", { silent: true }).trim();
-        if (local !== remote) throw new Error("Local dev is not in sync with origin/dev. Push first.");
+        if (local !== remote)
+          throw new Error(
+            "Local dev is not in sync with origin/dev. Push first."
+          );
       },
-    ]),
+    ])
   );
 
   // 2. Issue check
   let issueId = opts.issueId ? parseInt(opts.issueId, 10) : null;
 
-  step("Issue check", () => {
+  await step("Issue check", () => {
     if (issueId) {
       // Validate existing issue
-      const result = run(`gh issue view ${issueId} --json title,number`, { silent: true });
+      const result = run(`gh issue view ${issueId} --json title,number`, {
+        silent: true,
+      });
       const issue = JSON.parse(result);
       issueId = issue.number;
     }
@@ -429,7 +594,9 @@ async function deployPrd() {
     const answer = await prompt("GitHub Issue ID (Enter to skip): ");
     if (answer) {
       try {
-        const result = run(`gh issue view ${answer} --json title,number`, { silent: true });
+        const result = run(`gh issue view ${answer} --json title,number`, {
+          silent: true,
+        });
         issueId = JSON.parse(result).number;
       } catch {
         fatal(`Issue #${answer} not found.`);
@@ -438,7 +605,7 @@ async function deployPrd() {
   }
 
   // 3. Analyze changes
-  const prdAnalysis = step("Analyze changes (main..dev)", () => {
+  const prdAnalysis = await step("Analyze changes (main..dev)", () => {
     run("git fetch origin", { silent: true });
     const diffStat = run("git diff origin/main..dev --stat", { silent: true });
     const log = run("git log origin/main..dev --oneline", { silent: true });
@@ -447,7 +614,7 @@ async function deployPrd() {
   });
 
   // 4. AI understanding + Issue creation
-  step("Generate deployment summary", () => {
+  await step("Generate deployment summary", () => {
     const copilotAvailable = hasCopilot();
     let issueTitle = "deploy: production release";
     let issueBody = `Commits:\n${prdAnalysis.log}\n\nDiff:\n${prdAnalysis.diffStat}`;
@@ -476,7 +643,14 @@ Return JSON:
 
     // Create issue if none exists
     if (!issueId) {
-      const ghResult = runFile("gh", ["issue", "create", "--title", issueTitle, "--body", issueBody]);
+      const ghResult = runFile("gh", [
+        "issue",
+        "create",
+        "--title",
+        issueTitle,
+        "--body",
+        issueBody,
+      ]);
       const match = ghResult.match(/\/issues\/(\d+)/);
       if (match) {
         issueId = parseInt(match[1], 10);
@@ -487,12 +661,19 @@ Return JSON:
   // 5. Merge dev → main
   let mergedToMain = false;
 
-  step("Merge dev → main", () => {
+  await step("Merge dev → main", () => {
     run("git checkout main", { silent: true });
     run("git pull origin main", { silent: true });
 
     try {
-      runFile("git", ["merge", "dev", "--no-ff", "--no-verify", "-m", "chore: deploy dev to production"]);
+      runFile("git", [
+        "merge",
+        "dev",
+        "--no-ff",
+        "--no-verify",
+        "-m",
+        "chore: deploy dev to production",
+      ]);
       mergedToMain = true;
     } catch (err) {
       // Rollback merge attempt
@@ -513,42 +694,63 @@ Return JSON:
       run("git checkout dev", { silent: true });
       console.log("  ↩ Rolled back main to origin/main, switched to dev.");
     } catch {
-      console.error("  ⚠ Manual rollback needed: git checkout main && git reset --hard origin/main && git checkout dev");
+      console.error(
+        "  ⚠ Manual rollback needed: git checkout main && git reset --hard origin/main && git checkout dev"
+      );
     }
   };
 
   try {
     // 6. Quality Gates (on main)
-    step("Quality gates (format, lint)", () => {
+    await step("Quality gates (format, lint)", () => {
       const changed = runQualityGates();
       if (changed) {
         // Quality gates changed files on main — commit them
         run("git add .", { silent: true });
-        runFile("git", ["commit", "--no-verify", "-m", "style: auto-fix formatting"]);
+        runFile("git", [
+          "commit",
+          "--no-verify",
+          "-m",
+          "style: auto-fix formatting",
+        ]);
       }
     });
 
     // 7. Build
-    step("Build", () => runBuild());
+    await step("Build", () => runBuild());
 
     // 8. Push main
-    step("Push main", () => {
+    await step("Push main", () => {
       run("git push origin main", { silent: true });
     });
 
-    // 9. Close issue
-    step("Close issue", () => {
+    // 9. Deploy check
+    await step("Deploy check", async () => {
+      await checkDeployment("pages", PRD_WORKFLOW, {
+        owner: GITHUB_REPO_OWNER,
+        repoName: GITHUB_REPO_PAGES,
+      });
+    });
+
+    // 10. Close issue
+    await step("Close issue", () => {
       if (issueId) {
         try {
-          runFile("gh", ["issue", "close", String(issueId), "--comment", "Deployed via deploy:prd"]);
+          runFile("gh", [
+            "issue",
+            "close",
+            String(issueId),
+            "--comment",
+            "Deployed via deploy:prd",
+          ]);
         } catch {
           // non-fatal
         }
       }
     });
 
-    // 10. Return to dev
-    step("Switch to dev", () => {
+    // 11. Return to dev
+    await step("Switch to dev", () => {
       run("git checkout dev", { silent: true });
     });
   } catch (err) {
@@ -556,12 +758,16 @@ Return JSON:
       // Check if we already pushed
       try {
         const localMain = run("git rev-parse main", { silent: true }).trim();
-        const remoteMain = run("git rev-parse origin/main", { silent: true }).trim();
+        const remoteMain = run("git rev-parse origin/main", {
+          silent: true,
+        }).trim();
         if (localMain !== remoteMain) {
           // Not pushed yet — safe to rollback
           rollbackMain();
         } else {
-          console.error("  ⚠ Main was already pushed. Manual intervention may be needed.");
+          console.error(
+            "  ⚠ Main was already pushed. Manual intervention may be needed."
+          );
           run("git checkout dev", { silent: true });
         }
       } catch {
@@ -575,7 +781,9 @@ Return JSON:
   console.log(`\n─── Done ───`);
   console.log(`Branch:  dev`);
   if (issueId) console.log(`Issue:   #${issueId}`);
-  console.log(`Deploy:  https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_PAGES}/actions/workflows/${PRD_WORKFLOW}`);
+  console.log(
+    `Deploy:  https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_PAGES}/actions/workflows/${PRD_WORKFLOW}`
+  );
 }
 
 // ---------------------------------------------------------------------------
