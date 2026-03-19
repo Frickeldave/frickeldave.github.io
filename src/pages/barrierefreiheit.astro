@@ -1,0 +1,211 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+
+const title = "Barrierefreiheitserklärung";
+const description =
+  "Informationen zur Barrierefreiheit der Website frickeldave.de gemäß BITV 2.0";
+const currentYear = new Date().getFullYear();
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="section">
+    <div class="container">
+      <div class="row justify-center">
+        <div class="lg:col-10">
+          <div class="glass rounded-lg p-8">
+            <h1 class="mb-6 text-4xl font-bold">Barrierefreiheitserklärung</h1>
+            <p class="mb-8 text-sm text-gray-600 dark:text-gray-400">
+              Stand: {currentYear} | Gültig für frickeldave.de
+            </p>
+
+            <section class="mb-8">
+              <p class="mb-4">
+                Diese Erklärung zur Barrierefreiheit gilt für die Website
+                <a href="https://frickeldave.de" class="text-primary hover:underline"
+                  >frickeldave.de</a
+                >
+                und wurde am {currentYear} erstellt.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                1. Was ist Barrierefreiheit?
+              </h2>
+              <p class="mb-4">
+                Barrierefreiheit bedeutet, dass Websites, Apps und anderen digitalen
+                Angebote von möglichst allen Menschen – mit und ohne Behinderung –
+                gleichberechtigt genutzt werden können.
+              </p>
+              <p class="mb-4">
+                Diese Website bemüht sich, entsprechend den Richtlinien der BITV 2.0
+                (Barrierefreie-Informationstechnik-Verordnung) barrierefrei zu sein.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                2. Barrierefreiheitsstatus
+              </h2>
+              <p class="mb-4">
+                Diese Website ist teilweise barrierefrei. Sie erfüllt nicht alle
+                Anforderungen der Barrierefreien-Informationstechnik-Verordnung (BITV
+                2.0), dem deutschen Umsetzungsgesetz zur EU-Richtlinie zur
+                Barrierefreiheit von Websites und Apps öffentlicher Stellen.
+              </p>
+              <p class="mb-4">
+                Die Website basiert auf dem Astrogon Theme, das grundlegende
+                Barrierefreiheitsstandards berücksichtigt, aber nicht alle
+                Anforderungen erfüllt.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                3. Bekannte Barrierefreiheitsprobleme
+              </h2>
+              <p class="mb-4">
+                Die folgenden Bereiche der Website weisen bekannte Probleme mit der
+                Barrierefreiheit auf:
+              </p>
+
+              <ul class="mb-4 list-disc space-y-2 pl-6">
+                <li>
+                  <strong>Bilder ohne ausreichende Alternativtexte:</strong>
+                  Einige Bilder, insbesondere in den DIY-Anleitungen und
+                  Produktgalerien, haben möglicherweise unzureichende
+                  Alternativbeschreibungen.
+                </li>
+                <li>
+                  <strong>Kontrastverhältnisse:</strong>
+                  Einige Texte erfüllen möglicherweise nicht das erforderliche
+                  Kontrastverhältnis von 4.5:1 für normale Texte bzw. 3:1 für große
+                  Texte.
+                </li>
+                <li>
+                  <strong>Tastaturnavigation:</strong>
+                  Die Tastaturnavigation kann in einigen interaktiven Elementen
+                  verbessert werden, insbesondere bei der Navigation durch Galerien.
+                </li>
+                <li>
+                  <strong>Sprachnavigation:</strong>
+                  Die Sprache der Seite ist korrekt angegeben, aber bei
+                  mehrsprachigen Inhalten fehlt die korrekte Sprachauszeichnung.
+                </li>
+                <li>
+                  <strong>Formularelemente:</strong>
+                  Einige Formularelemente im Download-Bereich haben möglicherweise
+                  unzureichende Beschriftungen für Screenreader.
+                </li>
+              </ul>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                4. Erstellungsdatum und letzte Bewertung
+              </h2>
+              <p class="mb-4">
+                Diese Barrierefreiheitserklärung wurde am {currentYear} erstellt und
+                basiert auf einer Selbstbewertung der Website.
+              </p>
+              <p class="mb-4">
+                Letzte Überprüfung: {currentYear}
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                5. Feedback und Kontakt
+              </h2>
+              <p class="mb-4">
+                Wir sind bestrebt, unsere Website so barrierefrei wie möglich zu
+                gestalten. Wenn Sie:
+              </p>
+
+              <ul class="mb-4 list-disc space-y-2 pl-6">
+                <li>
+                  Schwierigkeiten haben, auf Inhalte zuzugreifen
+                </li>
+                <li>
+                  glauben, dass Inhalte unserer Website nicht barrierefrei sind
+                </li>
+                <li>
+                  eine barrierefreie Alternative zu einem Inhalt benötigen
+                </li>
+                <li>
+                  allgemeine Fragen zur Barrierefreiheit haben
+                </li>
+              </ul>
+
+              <p class="mb-4">
+                ...dann kontaktieren Sie uns bitte:
+              </p>
+
+              <div class="mb-4 rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
+                <p class="font-medium">Kontakt für Barrierefreiheitsanfragen:</p>
+                <p>Frickeldave (David König)</p>
+                <p>Bgm. Heimbrand Straße 10</p>
+                <p>85413 Hörgertshausen</p>
+                <p>E-Mail: <a href="mailto:handmade@frickeldave.de" class="text-primary hover:underline">handmade@frickeldave.de</a></p>
+                <p>Telefon: +49 8764 9490205</p>
+              </div>
+
+              <p class="mb-4">
+                Wir bemühen uns, Anfragen innerhalb von 5 Werktagen zu beantworten.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                6. Durchsetzungsverfahren
+              </h2>
+              <p class="mb-4">
+                Wenn Sie mit einer Antwort von uns nicht zufrieden sind, können Sie
+                sich an die folgende Schlichtungsstelle wenden:
+              </p>
+
+              <div class="mb-4 rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
+                <p class="font-medium">Schlichtungsstelle nach dem Behindertengleichstellungsgesetz</p>
+                <p>Deutscher Behindertenrat e.V.</p>
+                <p>Reinhardtstraße 7</p>
+                <p>10117 Berlin</p>
+                <p>
+                  Website:
+                  <a href="https://www.behindertenbeauftragter.de" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
+                    www.behindertenbeauftragter.de
+                  </a>
+                </p>
+              </div>
+
+              <p class="mb-4">
+                Weitere Informationen zum Schlichtungsverfahren finden Sie auf der
+                Website der Schlichtungsstelle.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                7. Technische Informationen
+              </h2>
+              <p class="mb-4">
+                Diese Website wurde mit folgenden Technologien erstellt:
+              </p>
+
+              <ul class="mb-4 list-disc space-y-2 pl-6">
+                <li>Astro.build (Version 5.13)</li>
+                <li>HTML5, CSS3, JavaScript</li>
+                <li>React Islands für interaktive Komponenten</li>
+                <li>Tailwind CSS und benutzerdefinierte SCSS-Klassen</li>
+              </ul>
+
+              <p class="mb-4">
+                Die Website ist weitgehend konform mit den WCAG 2.1 Level AA
+                Richtlinien, weist aber die oben genannten Einschränkungen auf.
+              </p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,150 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+
+const title = "Bildnachweis";
+const description =
+  "Quellen und Urheberrecht für alle auf dieser Website verwendeten Bilder gemäß deutschem Urheberrecht (UrhG)";
+const currentYear = new Date().getFullYear();
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="section">
+    <div class="container">
+      <div class="row justify-center">
+        <div class="lg:col-10">
+          <div class="glass rounded-lg p-8">
+            <h1 class="mb-6 text-4xl font-bold">Bildnachweis</h1>
+            <p class="mb-8 text-sm text-gray-600 dark:text-gray-400">
+              Stand: {currentYear} | Gültig für frickeldave.de
+            </p>
+
+            <section class="mb-8">
+              <p class="mb-4">
+                Gemäß § 63 und § 64 des deutschen Urheberrechtsgesetzes (UrhG) geben wir
+                hiermit den Urhebern von auf dieser Website genutzten Bildern das Recht
+                zur kostenlosen Nutzung und Veröffentlichung ihrer Werke.
+              </p>
+
+              <p class="mb-4">
+                Soweit nicht anders angegeben, sind alle Bilder auf dieser Website
+                Originalwerke des Betreibers Frickeldave (David König) oder wurden mit
+                Genehmigung der Urheber eingesetzt. Aus diesem Grund ist eine explizite
+                Namensnennung im Rahmen der Website nicht erforderlich.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                1. Eigenproduktionen
+              </h2>
+              <p class="mb-4">
+                Alle Fotos von handgefertigten Produkten, DIY-Projekten, 3D-Druck-Erzeugnissen
+                und persönlichen Arbeiten sind Originalwerke von Frickeldave (David König)
+                und unterliegen dem Urheberrecht des Erstellers.
+              </p>
+
+              <ul class="mb-4 list-disc space-y-2 pl-6">
+                <li>Fotos von handgefertigten Deko-Artikeln</li>
+                <li>Bilder von DIY-Projekten und Bastelanleitungen</li>
+                <li>Fotos von 3D-Druck-Erzeugnissen</li>
+                <li>Bilder von IT-Projekten und Smart-Home-Installationen</li>
+                <li>Porträtfotos und Arbeitsplatz-Aufnahmen</li>
+              </ul>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                2. KI-generierte Bilder
+              </h2>
+              <p class="mb-4">
+                Für Illustrationen und Bilder, die nicht zu den Eigenproduktionen gehören,
+                wurden KI-generierte Bilder verwendet, die über Perplexity erstellt wurden:
+              </p>
+
+              <div class="mb-4 rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
+                <p class="font-medium mb-2">Perplexity AI</p>
+                <p>Verschiedene Illustrationen und Icons wurden mit folgenden KI-Tools erstellt:</p>
+                <p>Generatoren: Google Banana, OpenAI Image1</p>
+                <p>Lizenz: Kommerzielle Nutzung erlaubt</p>
+                <p>URL: <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">https://www.perplexity.ai</a></p>
+              </div>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                3. Produktdarstellungen
+              </h2>
+              <p class="mb-4">
+                Bei Produktbildern von Drittherstellern wurden ausschließlich offizielle
+                Pressematerialien und Produktfotos verwendet, für die eine kommerzielle
+                Nutzung erlaubt ist oder die unter einer offenen Lizenz stehen.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                4. Software-Screenshots
+              </h2>
+              <p class="mb-4">
+                Screenshots von Software-Oberflächen dienen rein dokumentarischen Zwecken
+                im Rahmen von Anleitungen und Tutorials. Sie unterliegen den
+                Urheberrechten der jeweiligen Softwarehersteller.
+              </p>
+              <p class="mb-4">
+                Bei kommerzieller Software erfolgte die Darstellung gemäß den
+                Richtlinien zur redaktionellen Nutzung (fair use).
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                5. Rechte Dritter
+              </h2>
+              <p class="mb-4">
+                Sollten Sie als Urheber eines auf dieser Website verwendeten Bildes
+                Ihre Einwilligung widerrufen oder einen Anspruch auf Entfernung
+                geltend machen, kontaktieren Sie uns bitte unter:
+              </p>
+
+              <div class="mb-4 rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
+                <p>Frickeldave (David König)</p>
+                <p>Bgm. Heimbrand Straße 10</p>
+                <p>85413 Hörgertshausen</p>
+                <p>E-Mail: <a href="mailto:handmade@frickeldave.de" class="text-primary hover:underline">handmade@frickeldave.de</a></p>
+                <p>Telefon: +49 8764 9490205</p>
+              </div>
+
+              <p class="mb-4">
+                Wir werden in diesem Fall umgehend prüfen und gegebenenfalls das Bild
+                entfernen oder durch ein alternatives ersetzen.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <h2 class="mb-4 text-2xl font-semibold">
+                6. Urheberrechtshinweis
+              </h2>
+              <p class="mb-4">
+                Alle auf dieser Website veröffentlichten Inhalte (Bilder, Texte,
+                Layout) unterliegen deutschem Urheberrecht. Das Herunterladen,
+                Vervielfältigen oder Verwenden von Inhalten außerhalb der engen
+                privaten Nutzung bedarf der schriftlichen Zustimmung des
+                Website-Betreibers.
+              </p>
+              <p class="mb-4">
+                Ausnahmen gelten für Inhalte, die explizit als lizenzfrei gekennzeichnet
+                sind oder für deren Nutzung eine entsprechende Lizenz erworben wurde.
+              </p>
+            </section>
+
+            <section class="mb-8">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                &copy; {currentYear} Frickeldave. Alle Rechte vorbehalten.
+              </p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
