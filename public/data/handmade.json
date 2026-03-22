@@ -290,7 +290,7 @@
       "tags": [
         "Weihnachten"
       ],
-      "price": 80,
+      "price": 60,
       "size": "50cm x 20cm x 20cm",
       "visible": true,
       "customizable": false,
@@ -298,6 +298,37 @@
       "stock": 0,
       "articleNumber": "WO4MEQ",
       "category": "WO"
+    },
+    {
+      "name": "Adventskalender personalisiert",
+      "description": "Personalisierbarer Adventskalender aus Holz mit Stoffbeuteln – perfekt zum Befüllen und Verschenken.\n\nProduktbeschreibung\nDieser liebevoll gestaltete Adventskalender aus hochwertigem Holz wird zum echten Hingucker in der Weihnachtszeit.\nOb für Kinder oder Erwachsene – durch die personalisierte Gravur mit Namen wird jeder Kalender zu einem ganz persönlichen Unikat. Die 24 Stoffbeutel können individuell befüllt werden (z.B. mit Süßigkeiten, kleinen Spielzeugen, Gutscheinen oder Botschaften) und sind mehrfach wiederverwendbar.\n\nPersonalisierung\nName / Wunschtext frei wählbar\n\nVerschiedene Motive (z.B. Rentier, Sterne, Weihnachtsmotive – je nach Auswahl im Shop)\n\nAuf Wunsch unterschiedliche Schriftarten möglich (falls angeboten)\n\nDetails\nMaterial: Holz (graviert) und Stoffbeutel mit Zugband\n\nAnzahl Beutel: 24 Stück\n\nWiederverwendbar für jedes Jahr\n\nIdeal als Geschenk für Kinder, Familie, Freunde oder als Deko im Wohnzimmer/Kinderzimmer",
+      "tags": [
+        "Weihnachten"
+      ],
+      "price": 25,
+      "size": "32cm x 29cm",
+      "visible": true,
+      "customizable": true,
+      "salesCabinet": 0,
+      "stock": 0,
+      "articleNumber": "LANKP3",
+      "category": "LA"
+    },
+    {
+      "name": "Türkranz personalisierbar",
+      "description": "Personalisierbarer Türkranz „Familie“ mit Lavendel – individuelle Haustürdekoration.\n\nProduktbeschreibung\nDieser elegante Türkranz aus hochwertigem Holz mit liebevoll gebundenem Lavendel setzt ein stilvolles Statement an jeder Haustür. Durch die personalisierte Gestaltung mit Familiennamen, Vornamen und optional kleinen Symbolen (z.B. Tiere) wird aus dem Kranz ein einzigartiges Dekoelement. Der Kranz eignet sich sowohl für die eigene Wohnung als auch als besonderes Geschenk zum Einzug, zur Hochzeit oder zu anderen Anlässen.\n\nPersonalisierung\nFamilienname frei wählbar\n\nVornamen aller Familienmitglieder individuell eintragbar\n\nOptional zusätzliche Motive/Silhouetten (z.B. Haustiere, je nach Auswahl im Shop)\n\nVerschiedene Schleifen- oder Bandfarben möglich, sofern auswählbar\n\nDetails\nMaterial: graviertes / gelasertes Holz, künstlicher oder getrockneter Lavendel (je nach Variante)\n\nAufhängung: Band oder Schleife zum direkten Aufhängen an Tür oder Wand\n\nFür den Innenbereich oder geschützten Außenbereich geeignet\n\nIdeal als personalisierte Willkommensdekoration und Geschenkidee",
+      "tags": [
+        "Geschenk",
+        "Deko"
+      ],
+      "price": 30,
+      "size": "ca 30 cm",
+      "visible": true,
+      "customizable": true,
+      "salesCabinet": 0,
+      "stock": 0,
+      "articleNumber": "LA10ZY",
+      "category": "LA"
     }
   ]
 }
