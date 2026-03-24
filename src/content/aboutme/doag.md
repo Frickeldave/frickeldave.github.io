@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-34250
+    title: "Europas KI-Souveränität: Agentische Systeme, Infrastruktur und der Weg zur T-Cloud"
+    edition: FutureAI
+    guests: Dave König und Sven Giesselbach
+    date: 24. März 2026
+    description: >-
+      Dave König spricht mit Sven Giesselbach von T-Systems über die Praxis von KI-Projekten und warum viele Initiativen scheitern. Im Fokus stehen agentische Systeme, Foundation Models und die entscheidende Frage nach europäischer KI-Souveränität. Sven erklärt, warum Datenkontrolle, Infrastruktur und Hardware strategisch zusammengehören und welche Rolle Projekte wie SOPHI und die Industrial AI Cloud dabei spielen.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69c0e4f81861d127d58ea0b0/media.mp3
   - id: doag-voices-80268
     title: "Zwischen Code, Community und Konzertbühne: Niels de Bruijn über Fokus, Work-Life-Balance und Werte (Teil 3/3)"
     edition: People
