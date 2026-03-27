@@ -179,11 +179,13 @@ function checkPrereqs(extraChecks = []) {
   for (const check of extraChecks) check();
 }
 
-/** Check if copilot CLI is available. Returns boolean. */
+/** Check if copilot CLI is available. Returns boolean.
+ *  Note: The VS Code copilot shim exits 0 even when the real CLI is missing,
+ *  so we must verify the output actually contains a version string. */
 function hasCopilot() {
   try {
-    run("copilot --version", { silent: true });
-    return true;
+    const out = run("copilot --version", { silent: true });
+    return /\d+\.\d+/.test(out);
   } catch {
     return false;
   }
@@ -210,9 +212,13 @@ function runQualityGates() {
   return statusBefore !== statusAfter;
 }
 
-/** Run build. */
+/** Run build — show output so the user can see progress. */
 function runBuild() {
-  run("npm run build", { silent: true });
+  execSync("npm run build", {
+    encoding: "utf-8",
+    stdio: "inherit",
+    cwd: ROOT,
+  });
 }
 
 /** Ask Copilot CLI to generate commit message. Returns JSON or null. */
@@ -371,9 +377,7 @@ async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
       }
     }
   } else {
-    console.log(
-      `  Status: ▶ in_progress (timeout after ${maxWaitForFinish}s)`
-    );
+    console.log(`  Status: ▶ in_progress (timeout after ${maxWaitForFinish}s)`);
     console.log(`  Monitor: ${runData.url}`);
   }
 }
