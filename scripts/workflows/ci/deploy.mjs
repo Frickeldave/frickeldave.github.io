@@ -227,14 +227,20 @@ function runBuild() {
 
     const updateLine = () => {
       const frame = spinnerFrames[spinnerIdx++ % spinnerFrames.length];
-      const display = lastLine ? `  ${frame} ${lastLine.slice(0, 70)}` : `  ${frame}`;
+      const display = lastLine
+        ? `  ${frame} ${lastLine.slice(0, 70)}`
+        : `  ${frame}`;
       process.stdout.write("\r" + display.padEnd(82));
     };
 
     const interval = setInterval(updateLine, 80);
 
     const parseLine = (data) => {
-      const lines = data.toString().split("\n").map((l) => l.trim()).filter(Boolean);
+      const lines = data
+        .toString()
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
       if (lines.length > 0) lastLine = lines[lines.length - 1];
     };
 
