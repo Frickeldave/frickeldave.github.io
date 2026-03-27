@@ -1,0 +1,112 @@
+---
+visible: true
+title: 02 Ziele / Methoden
+description: Lernziele, didaktisches Konzept und Methoden der Kubernetes Basis Schulung.
+draft: false
+image: "@assets/docs/kubernetes-basis/knba-02-001.png"
+imageAlt: "Kubernetes Basis - 02 Ziele / Methoden"
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Groblernziele
+
+Nach Abschluss der 2-tägigen Schulung sind die Teilnehmer in der Lage:
+
+1. **Kubernetes-Architektur verstehen** -- Die Kernkomponenten eines Clusters benennen, deren
+   Zusammenspiel erklären und den Weg eines Deployment-Befehls durch das System nachvollziehen.
+
+2. **Workloads deployen und verwalten** -- Anwendungen in einem Kubernetes-Cluster eigenständig
+   deployen, konfigurieren, überwachen und bei Bedarf zurückrollen.
+
+3. **Netzwerk und Speicher konfigurieren** -- Services, Ingress-Routing und PersistentVolumeClaims
+   einrichten, um Anwendungen intern und extern erreichbar zu machen und Daten persistent zu
+   speichern.
+
+4. **Produktionsreife Deployments erstellen** -- Resource Limits, Health Checks, ConfigMaps,
+   Secrets und grundlegende Security-Einstellungen anwenden, um Deployments für den realen
+   Einsatz zu ertüchtigen.
+
+---
+
+## Feinlernziele
+
+### Tag 1 -- Grundlagen und erste Deployments
+
+Nach dem ersten Schulungstag können die Teilnehmer:
+
+- Die Kubernetes-Architektur (Control Plane, Worker Nodes) und die Funktion jeder Komponente
+  erklären (kube-apiserver, etcd, kube-scheduler, kube-controller-manager, kubelet, kube-proxy)
+- `kubectl` für das Abfragen, Erstellen, Aktualisieren und Löschen von Ressourcen anwenden
+- Namespaces für die logische Trennung von Workloads anlegen und als Standard-Kontext setzen
+- Den Unterschied zwischen imperativem und deklarativem Arbeiten erklären und anwenden
+- YAML-Manifeste für Pods, Deployments und Services lesen, verstehen und selbst erstellen
+- Das Self-Healing-Verhalten von Kubernetes beobachten und dessen Mechanismus erklären
+- NodePort-Services für den externen Zugriff auf Anwendungen konfigurieren
+- Zwei echte Anwendungen (Chromium Browser, Code-Server) im Cluster zum Laufen bringen
+
+### Tag 2 -- Produktionsreife und vollständige Plattform
+
+Nach dem zweiten Schulungstag können die Teilnehmer:
+
+- Resource Requests und Limits für CPU und Arbeitsspeicher definieren und deren Einfluss auf
+  Scheduling und QoS-Klassen erklären
+- Liveness-, Readiness- und Startup Probes konfigurieren und die Unterschiede erläutern
+- Rolling Updates durchführen, den Rollout-Status überwachen und einen Rollback einleiten
+- Konfiguration mit ConfigMaps auslagern und sensible Daten in Secrets verwalten
+- SecurityContext-Einstellungen (runAsNonRoot, readOnlyRootFilesystem, capabilities.drop) anwenden
+- PersistentVolumeClaims anlegen, an Deployments binden und den Unterschied zu emptyDir erklären
+- Ingress-Ressourcen für host-basiertes Routing mehrerer Anwendungen erstellen
+- Alle vier Schulungsanwendungen (Chromium, Code-Server, Home Assistant, Nextcloud) vollständig
+  deployen und über Ingress erreichbar machen
+
+---
+
+## Methoden
+
+### Didaktischer Ansatz
+
+Die Schulung folgt dem Prinzip **"Theorie trifft sofortige Praxis"**: Jeder Theorie-Block ist
+kurz gehalten und wird unmittelbar durch eine Hands-on-Übung am echten Cluster vertieft.
+Teilnehmer lernen nicht durch Zuschauen, sondern durch eigenständiges Tun.
+
+### Eingesetzte Methoden
+
+| Methode                          | Beschreibung                                                                 |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| **Instruktion (Kurzvortrag)**    | Kompakter Theorie-Input (15–60 min) mit Visualisierungen und Analogien       |
+| **Hands-on Übungen**             | Praktische Aufgaben am eigenen Cluster direkt nach jedem Theorie-Block       |
+| **Analogie-Lernen**              | Logistikzentrum-Analogie für abstrakte Cluster-Konzepte                      |
+| **Endprodukt-orientiertes Lernen** | Alle Übungen bauen auf ein konkretes Ziel hin (vier deployierte Anwendungen) |
+| **Progressives Aufbauprinzip**   | Übungen von Tag 1 werden an Tag 2 erweitert statt neu begonnen               |
+| **Produktives Scheitern**        | Bewusst eingebaute Fehlersituationen (z.B. Datenverlust bei emptyDir)        |
+| **Referenzmaterial**             | kubectl-Spickzettel und Glossar zur Nachbereitung und als Lernhilfe          |
+
+### Analogie: Das Logistikzentrum
+
+Für abstrakte Kubernetes-Konzepte wird durchgehend eine Analogie zu einem Logistikzentrum
+genutzt. Sie hilft, technische Begriffe in vertraute Bilder zu übersetzen:
+
+| Kubernetes-Konzept | Analogie           |
+| ------------------ | ------------------ |
+| Cluster            | Logistikzentrum    |
+| Control Plane      | Büro / Zentrale    |
+| Worker Node        | Arbeitsplatz / LKW |
+| Pod                | Paket              |
+| Deployment         | Arbeitsanweisung   |
+| Service            | Telefonnummer      |
+| Namespace          | Abteilung          |
+
+---
+
+## Lernerfolgskontrolle
+
+Eine formale Prüfung ist nicht vorgesehen. Der Lernerfolg zeigt sich praktisch:
+
+- **Tag 1 -- Checkpoint**: Chromium und Code-Server laufen im eigenen Namespace und sind über
+  NodePort erreichbar
+- **Tag 2 -- Checkpoint**: Alle vier Anwendungen laufen produktionsreif (Resource Limits, Probes,
+  PVCs, Ingress) und sind über individuelle Hostnamen erreichbar
+
+Fragen und Diskussionen werden gezielt nach den Übungsblöcken gesammelt, um den Praxisfluss nicht
+zu unterbrechen.
