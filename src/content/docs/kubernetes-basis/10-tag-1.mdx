@@ -1,14 +1,14 @@
 ---
 visible: true
-title: k8s - Teil 1
+title: 10 Tag 1
 description: "Grundlagen, erste Deployments mit Chromium und Code-Server."
 draft: false
-image: "@assets/docs/kubernetes-basis/knba-002.png"
-imageAlt: "Kubernetes Basis - Teil 1 Grundlagen"
+image: "@assets/docs/kubernetes-basis/knba-10-001.png"
+imageAlt: "Kubernetes Basis - 10 Tag 1"
 ---
 
 import { Image } from "astro:assets";
-import knba101 from "@assets/docs/kubernetes-basis/knba-101.png";
+import knba101 from "@assets/docs/kubernetes-basis/knba-10-002.png";
 
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
@@ -48,7 +48,7 @@ Cloud Native Computing Foundation (CNCF) gepflegt.
 ### Wozu K8s?
 
 - **Container-Orchestrierung** -- Verwaltung hunderter Container über mehrere Server
-- **[Self-Healing](/docs/kubernetes-basis/glossar#self-healing)** -- Automatischer Neustart ausgefallener Container
+- **[Self-Healing](/docs/kubernetes-basis/90-glossar#self-healing)** -- Automatischer Neustart ausgefallener Container
 - **Skalierung** -- Hoch- und Runterskalieren per Befehl oder automatisch
 - **Rolling Updates** -- Anwendungen ohne Ausfallzeit aktualisieren
 - **Service Discovery** -- Automatische Namensauflösung zwischen Anwendungen
@@ -93,13 +93,13 @@ und so schneller ein mentales Modell von Kubernetes aufzubauen.
 
 | Kubernetes-Konzept | Analogie                 | Beschreibung                                                              |
 | ------------------ | ------------------------ | ------------------------------------------------------------------------- |
-| [**Cluster**](/docs/kubernetes-basis/glossar#cluster)        | Gesamtes Logistikzentrum | Alle Maschinen und Ressourcen, die zusammenarbeiten                       |
-| [**Control Plane**](/docs/kubernetes-basis/glossar#control-plane)  | Büro / Zentrale          | Trifft alle Entscheidungen: was läuft wo, was passiert bei Problemen      |
-| [**Worker Node**](/docs/kubernetes-basis/glossar#worker-node)    | Arbeitsplatz / LKW       | Die Maschine, auf der Container tatsächlich laufen                        |
-| [**Pod**](/docs/kubernetes-basis/glossar#pod)            | Paket / Liefereinheit    | Kleinste deploybare Einheit, enthält einen oder mehrere Container         |
-| [**Deployment**](/docs/kubernetes-basis/glossar#deployment)     | Arbeitsanweisung         | Beschreibt den gewünschten Zustand ("2 Chromium-Instanzen sollen laufen") |
-| [**Service**](/docs/kubernetes-basis/glossar#service)        | Telefonnummer            | Stabile Adresse, über die eine Anwendung erreichbar bleibt                |
-| [**Namespace**](/docs/kubernetes-basis/glossar#namespace)      | Abteilung                | Logische Trennung innerhalb eines Clusters                                |
+| [**Cluster**](/docs/kubernetes-basis/90-glossar#cluster)        | Gesamtes Logistikzentrum | Alle Maschinen und Ressourcen, die zusammenarbeiten                       |
+| [**Control Plane**](/docs/kubernetes-basis/90-glossar#control-plane)  | Büro / Zentrale          | Trifft alle Entscheidungen: was läuft wo, was passiert bei Problemen      |
+| [**Worker Node**](/docs/kubernetes-basis/90-glossar#worker-node)    | Arbeitsplatz / LKW       | Die Maschine, auf der Container tatsächlich laufen                        |
+| [**Pod**](/docs/kubernetes-basis/90-glossar#pod)            | Paket / Liefereinheit    | Kleinste deploybare Einheit, enthält einen oder mehrere Container         |
+| [**Deployment**](/docs/kubernetes-basis/90-glossar#deployment)     | Arbeitsanweisung         | Beschreibt den gewünschten Zustand ("2 Chromium-Instanzen sollen laufen") |
+| [**Service**](/docs/kubernetes-basis/90-glossar#service)        | Telefonnummer            | Stabile Adresse, über die eine Anwendung erreichbar bleibt                |
+| [**Namespace**](/docs/kubernetes-basis/90-glossar#namespace)      | Abteilung                | Logische Trennung innerhalb eines Clusters                                |
 
 ### Cluster-Architektur
 
@@ -116,10 +116,10 @@ dafür, dass der gewünschte Soll-Zustand immer mit dem tatsächlichen Ist-Zusta
 
 | Komponente                  | Funktion                                                     |
 | --------------------------- | ------------------------------------------------------------ |
-| [**kube-apiserver**](/docs/kubernetes-basis/glossar#kube-apiserver)          | Zentraler Einstiegspunkt. Jeder kubectl-Befehl geht hierhin. |
-| [**etcd**](/docs/kubernetes-basis/glossar#etcd)                    | Key-Value-Datenbank. Speichert den gesamten Cluster-Zustand. |
-| [**kube-scheduler**](/docs/kubernetes-basis/glossar#kube-scheduler)          | Entscheidet, auf welchem Node ein neuer Pod laufen soll.     |
-| [**kube-controller-manager**](/docs/kubernetes-basis/glossar#kube-controller-manager) | Gleicht Ist-Zustand ständig mit Soll-Zustand ab.             |
+| [**kube-apiserver**](/docs/kubernetes-basis/90-glossar#kube-apiserver)          | Zentraler Einstiegspunkt. Jeder kubectl-Befehl geht hierhin. |
+| [**etcd**](/docs/kubernetes-basis/90-glossar#etcd)                    | Key-Value-Datenbank. Speichert den gesamten Cluster-Zustand. |
+| [**kube-scheduler**](/docs/kubernetes-basis/90-glossar#kube-scheduler)          | Entscheidet, auf welchem Node ein neuer Pod laufen soll.     |
+| [**kube-controller-manager**](/docs/kubernetes-basis/90-glossar#kube-controller-manager) | Gleicht Ist-Zustand ständig mit Soll-Zustand ab.             |
 
 ### Worker Nodes
 
@@ -128,9 +128,9 @@ drei Kernkomponenten, die eng mit der Control Plane zusammenarbeiten.
 
 | Komponente            | Funktion                                                          |
 | --------------------- | ----------------------------------------------------------------- |
-| [**kubelet**](/docs/kubernetes-basis/glossar#kubelet)           | Agent auf jedem Node. Sorgt dafür, dass Container in Pods laufen. |
-| [**kube-proxy**](/docs/kubernetes-basis/glossar#kube-proxy)        | Netzwerk-Proxy. Verwaltet Netzwerkregeln für Services.            |
-| [**Container Runtime**](/docs/kubernetes-basis/glossar#container-runtime) | Führt Container aus (z.B. containerd, CRI-O).                     |
+| [**kubelet**](/docs/kubernetes-basis/90-glossar#kubelet)           | Agent auf jedem Node. Sorgt dafür, dass Container in Pods laufen. |
+| [**kube-proxy**](/docs/kubernetes-basis/90-glossar#kube-proxy)        | Netzwerk-Proxy. Verwaltet Netzwerkregeln für Services.            |
+| [**Container Runtime**](/docs/kubernetes-basis/90-glossar#container-runtime) | Führt Container aus (z.B. containerd, CRI-O).                     |
 
 ---
 
@@ -509,8 +509,8 @@ die passenden Pods weiter.
 
 | Service-Typ   | Erreichbarkeit                    | Anwendungsfall                  |
 | ------------- | --------------------------------- | ------------------------------- |
-| [**ClusterIP**](/docs/kubernetes-basis/glossar#clusterip) | Nur innerhalb des Clusters        | Standard, interne Kommunikation |
-| [**NodePort**](/docs/kubernetes-basis/glossar#nodeport)  | Von außen über `<Node-IP>:<Port>` | Entwicklung, Tests, Schulungen  |
+| [**ClusterIP**](/docs/kubernetes-basis/90-glossar#clusterip) | Nur innerhalb des Clusters        | Standard, interne Kommunikation |
+| [**NodePort**](/docs/kubernetes-basis/90-glossar#nodeport)  | Von außen über `<Node-IP>:<Port>` | Entwicklung, Tests, Schulungen  |
 
 Wir verwenden heute **NodePort**, um unsere Anwendungen im Browser zu öffnen. In Tag 2 lernen wir
 den eleganteren Weg über Ingress.
@@ -595,8 +595,8 @@ kubectl get endpoints
 3. Erstelle im Code-Server eine Datei unter `/config/workspace/test.txt` mit beliebigem Inhalt.
 4. Lösche den Code-Server-Pod: `kubectl delete pod <code-server-pod-name>`
 5. Warte, bis Kubernetes den Pod neu erstellt hat, und öffne Code-Server erneut.
-6. **Ist die Datei `test.txt` noch da?** -- NEIN! Ein [`emptyDir`](/docs/kubernetes-basis/glossar#emptydir)-Volume wird gelöscht, wenn der Pod
-   stirbt. In Tag 2 lösen wir das mit [PersistentVolumeClaims (PVCs)](/docs/kubernetes-basis/glossar#persistentvolumeclaim)!
+6. **Ist die Datei `test.txt` noch da?** -- NEIN! Ein [`emptyDir`](/docs/kubernetes-basis/90-glossar#emptydir)-Volume wird gelöscht, wenn der Pod
+   stirbt. In Tag 2 lösen wir das mit [PersistentVolumeClaims (PVCs)](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim)!
 
 ```bash
 # Endpoints prüfen -- zeigt die Pod-IPs hinter den Services
@@ -620,7 +620,7 @@ Erwartete Ausgabe:
 | Ressource   | Anzahl | Details                                     |
 | ----------- | ------ | ------------------------------------------- |
 | Deployments | 2      | chromium, code-server                       |
-| [ReplicaSets](/docs/kubernetes-basis/glossar#replicaset) | 2      | je 1 pro Deployment                         |
+| [ReplicaSets](/docs/kubernetes-basis/90-glossar#replicaset) | 2      | je 1 pro Deployment                         |
 | Pods        | 2      | je 1 Running pro Deployment                 |
 | Services    | 2      | chromium (30000/30001), code-server (30443) |
 
@@ -657,9 +657,9 @@ kubectl get all -n <namespace>                  # Alle Ressourcen im Namespace
 
 ### Ausblick Tag 2
 
-Morgen machen wir eure Deployments **produktionsreif**: [Resource Limits](/docs/kubernetes-basis/glossar#resource-limits), Health Checks und
-[Rolling Updates](/docs/kubernetes-basis/glossar#rollingupdate). Dann lagern wir Konfiguration in
-[**ConfigMaps**](/docs/kubernetes-basis/glossar#configmap) und [**Secrets**](/docs/kubernetes-basis/glossar#secret) aus, schauen uns
+Morgen machen wir eure Deployments **produktionsreif**: [Resource Limits](/docs/kubernetes-basis/90-glossar#resource-limits), Health Checks und
+[Rolling Updates](/docs/kubernetes-basis/90-glossar#rollingupdate). Dann lagern wir Konfiguration in
+[**ConfigMaps**](/docs/kubernetes-basis/90-glossar#configmap) und [**Secrets**](/docs/kubernetes-basis/90-glossar#secret) aus, schauen uns
 **Security-Grundlagen** an, deployen Home Assistant und Nextcloud mit
-[**persistentem Speicher** (PVCs)](/docs/kubernetes-basis/glossar#persistentvolumeclaim) und richten
-[**Ingress-Routing**](/docs/kubernetes-basis/glossar#ingress) für alle vier Anwendungen ein.
+[**persistentem Speicher** (PVCs)](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) und richten
+[**Ingress-Routing**](/docs/kubernetes-basis/90-glossar#ingress) für alle vier Anwendungen ein.

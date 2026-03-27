@@ -12,7 +12,7 @@
  *   prd — Merge dev into main and trigger production deployment.
  */
 
-import { execSync, execFileSync, spawnSync } from "child_process";
+import { execSync, execFileSync, spawnSync, spawn } from "child_process";
 import { createInterface } from "readline";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -179,11 +179,13 @@ function checkPrereqs(extraChecks = []) {
   for (const check of extraChecks) check();
 }
 
-/** Check if copilot CLI is available. Returns boolean. */
+/** Check if copilot CLI is available. Returns boolean.
+ *  Note: The VS Code copilot shim exits 0 even when the real CLI is missing,
+ *  so we must verify the output actually contains a version string. */
 function hasCopilot() {
   try {
-    run("copilot --version", { silent: true });
-    return true;
+    const out = run("copilot --version", { silent: true });
+    return /\d+\.\d+/.test(out);
   } catch {
     return false;
   }
@@ -210,9 +212,48 @@ function runQualityGates() {
   return statusBefore !== statusAfter;
 }
 
-/** Run build. */
+/** Run build with a live spinner that shows the last output line.
+ *  Returns the last non-empty line of build output. */
 function runBuild() {
-  run("npm run build", { silent: true });
+  const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  let spinnerIdx = 0;
+  let lastLine = "";
+
+  return new Promise((resolve, reject) => {
+    const proc = spawn("npm", ["run", "build"], {
+      cwd: ROOT,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    const updateLine = () => {
+      const frame = spinnerFrames[spinnerIdx++ % spinnerFrames.length];
+      const display = lastLine
+        ? `  ${frame} ${lastLine.slice(0, 70)}`
+        : `  ${frame}`;
+      process.stdout.write("\r" + display.padEnd(82));
+    };
+
+    const interval = setInterval(updateLine, 80);
+
+    const parseLine = (data) => {
+      const lines = data
+        .toString()
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      if (lines.length > 0) lastLine = lines[lines.length - 1];
+    };
+
+    proc.stdout.on("data", parseLine);
+    proc.stderr.on("data", parseLine);
+
+    proc.on("close", (code) => {
+      clearInterval(interval);
+      process.stdout.write("\r" + " ".repeat(84) + "\r"); // clear spinner line
+      if (code !== 0) reject(new Error(`Build failed with exit code ${code}`));
+      else resolve(lastLine);
+    });
+  });
 }
 
 /** Ask Copilot CLI to generate commit message. Returns JSON or null. */
@@ -371,9 +412,7 @@ async function checkDeployment(repo, workflowFile, { owner, repoName } = {}) {
       }
     }
   } else {
-    console.log(
-      `  Status: ▶ in_progress (timeout after ${maxWaitForFinish}s)`
-    );
+    console.log(`  Status: ▶ in_progress (timeout after ${maxWaitForFinish}s)`);
     console.log(`  Monitor: ${runData.url}`);
   }
 }
@@ -440,6 +479,8 @@ Return JSON:
     // Fallback: auto-generate from diff stat
     return { commitMessage: null, branchName: null, type: "chore" };
   });
+  if (commitInfo.commitMessage) console.log(`  └─ ${commitInfo.commitMessage}`);
+  else console.log(`  └─ (fallback: will be generated from diff stat)`);
 
   // 4. Quality Gates (auto-fix)
   const qualityChanged = await step("Quality gates (format, lint)", () =>
@@ -447,7 +488,8 @@ Return JSON:
   );
 
   // 5. Build
-  await step("Build", () => runBuild());
+  const buildLastLine = await step("Build", () => runBuild());
+  if (buildLastLine) console.log(`  └─ ${buildLastLine}`);
 
   // 6. Commit
   const commitHash = await step("Commit", () => {

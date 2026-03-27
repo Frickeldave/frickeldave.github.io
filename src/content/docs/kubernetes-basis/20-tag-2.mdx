@@ -1,10 +1,10 @@
 ---
 visible: true
-title: k8s - Teil 2
+title: 20 Tag 2
 description: "Resources, Probes, Persistent Volumes, Ingress -- die komplette Plattform."
 draft: false
-image: "@assets/docs/kubernetes-basis/knba-003.png"
-imageAlt: "Kubernetes Basis - Teil 2 Workloads & Networking"
+image: "@assets/docs/kubernetes-basis/knba-20-001.png"
+imageAlt: "Kubernetes Basis - 20 Tag 2"
 ---
 
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
@@ -75,9 +75,9 @@ Konzept wird genutzt, um eng gekoppelte Prozesse gemeinsam zu deployen und zu ve
 
 | Typ                   | Zweck                                   | Lebensdauer                   |
 | --------------------- | --------------------------------------- | ----------------------------- |
-| [**App-Container**](/docs/kubernetes-basis/glossar#app-container)     | Hauptanwendung                          | Läuft dauerhaft               |
-| [**Init-Container**](/docs/kubernetes-basis/glossar#init-container)    | Initialisierung vor dem App-Start       | Läuft einmalig bis Abschluss  |
-| [**Sidecar-Container**](/docs/kubernetes-basis/glossar#sidecar-container) | Unterstützende Dienste (Logging, Proxy) | Läuft dauerhaft neben der App |
+| [**App-Container**](/docs/kubernetes-basis/90-glossar#app-container)     | Hauptanwendung                          | Läuft dauerhaft               |
+| [**Init-Container**](/docs/kubernetes-basis/90-glossar#init-container)    | Initialisierung vor dem App-Start       | Läuft einmalig bis Abschluss  |
+| [**Sidecar-Container**](/docs/kubernetes-basis/90-glossar#sidecar-container) | Unterstützende Dienste (Logging, Proxy) | Läuft dauerhaft neben der App |
 
 **Regel:** Mehrere Container im selben Pod nur, wenn sie eng gekoppelt sind. Ansonsten separate Pods
 verwenden.
@@ -163,8 +163,8 @@ spec:
 
 | Konzept      | Beschreibung                                                                     |
 | ------------ | -------------------------------------------------------------------------------- |
-| [**requests**](/docs/kubernetes-basis/glossar#resource-limits) | Mindestgarantie -- Scheduler platziert Pod nur auf Nodes mit genügend Ressourcen |
-| [**limits**](/docs/kubernetes-basis/glossar#resource-limits)   | Obergrenze -- CPU wird gedrosselt, bei Speicherüberschreitung OOM-Kill           |
+| [**requests**](/docs/kubernetes-basis/90-glossar#resource-limits) | Mindestgarantie -- Scheduler platziert Pod nur auf Nodes mit genügend Ressourcen |
+| [**limits**](/docs/kubernetes-basis/90-glossar#resource-limits)   | Obergrenze -- CPU wird gedrosselt, bei Speicherüberschreitung OOM-Kill           |
 
 **CPU-Einheiten:** `1` = 1 Kern, `500m` = 0,5 Kerne, `250m` = 0,25 Kerne.
 
@@ -172,7 +172,7 @@ spec:
 
 ### QoS-Klassen
 
-| [QoS-Klasse](/docs/kubernetes-basis/glossar#qos-klassen)     | Bedingung                               | Eviction-Priorität           |
+| [QoS-Klasse](/docs/kubernetes-basis/90-glossar#qos-klassen)     | Bedingung                               | Eviction-Priorität           |
 | -------------- | --------------------------------------- | ---------------------------- |
 | **Guaranteed** | requests == limits (für CPU und Memory) | Niedrigste (zuletzt evicted) |
 | **Burstable**  | requests < limits                       | Mittel                       |
@@ -282,7 +282,7 @@ kubectl apply -f code-server-deployment.yaml
 
 ### LimitRange
 
-Eine [LimitRange](/docs/kubernetes-basis/glossar#limitrange) setzt Standardwerte für alle Container, die keine eigenen Resources angeben.
+Eine [LimitRange](/docs/kubernetes-basis/90-glossar#limitrange) setzt Standardwerte für alle Container, die keine eigenen Resources angeben.
 
 Datei `limitrange.yaml`:
 
@@ -350,9 +350,9 @@ eines Containers und lösen automatische Aktionen aus, wenn etwas nicht stimmt.
 
 | Probe               | Frage                                 | Aktion bei Fehlschlag                      |
 | ------------------- | ------------------------------------- | ------------------------------------------ |
-| [**Liveness Probe**](/docs/kubernetes-basis/glossar#liveness-probe)  | Läuft die Anwendung noch?             | Container wird neu gestartet               |
-| [**Readiness Probe**](/docs/kubernetes-basis/glossar#readiness-probe) | Kann die Anwendung Traffic empfangen? | Pod wird aus Service-Endpoints entfernt    |
-| [**Startup Probe**](/docs/kubernetes-basis/glossar#startup-probe)   | Ist die Anwendung fertig gestartet?   | Liveness/Readiness pausiert bis Startup OK |
+| [**Liveness Probe**](/docs/kubernetes-basis/90-glossar#liveness-probe)  | Läuft die Anwendung noch?             | Container wird neu gestartet               |
+| [**Readiness Probe**](/docs/kubernetes-basis/90-glossar#readiness-probe) | Kann die Anwendung Traffic empfangen? | Pod wird aus Service-Endpoints entfernt    |
+| [**Startup Probe**](/docs/kubernetes-basis/90-glossar#startup-probe)   | Ist die Anwendung fertig gestartet?   | Liveness/Readiness pausiert bis Startup OK |
 
 ### Probe-Mechanismen
 
@@ -600,7 +600,7 @@ Anwendungstyp wählen kannst.
 
 | Strategie         | Verhalten                                    | Ausfallzeit | Einsatz                                               |
 | ----------------- | -------------------------------------------- | ----------- | ----------------------------------------------------- |
-| [**RollingUpdate**](/docs/kubernetes-basis/glossar#rollingupdate) | Pods werden schrittweise ersetzt             | Keine       | Standard, Produktion                                  |
+| [**RollingUpdate**](/docs/kubernetes-basis/90-glossar#rollingupdate) | Pods werden schrittweise ersetzt             | Keine       | Standard, Produktion                                  |
 | **Recreate**      | Alle alten Pods beendet, dann neue gestartet | Kurz        | Wenn alte + neue Version nicht parallel laufen können |
 
 ### Konfiguration
@@ -790,7 +790,7 @@ Deployment-YAML. Das hat Nachteile:
 
 ### ConfigMap
 
-Eine [ConfigMap](/docs/kubernetes-basis/glossar#configmap) speichert nicht-sensible Konfigurationsdaten als Key-Value-Paare.
+Eine [ConfigMap](/docs/kubernetes-basis/90-glossar#configmap) speichert nicht-sensible Konfigurationsdaten als Key-Value-Paare.
 
 Datei `app-configmap.yaml`:
 
@@ -812,7 +812,7 @@ kubectl apply -f app-configmap.yaml
 
 ### Secret
 
-Ein [Secret](/docs/kubernetes-basis/glossar#secret) speichert sensible Daten (Passwörter, Tokens, Zertifikate). Werte werden Base64-kodiert
+Ein [Secret](/docs/kubernetes-basis/90-glossar#secret) speichert sensible Daten (Passwörter, Tokens, Zertifikate). Werte werden Base64-kodiert
 gespeichert. **Wichtig:** Base64 ist keine Verschlüsselung, sondern nur eine Kodierung -- die Daten
 sind im Cluster im Klartext lesbar. Für echte Produktions-Sicherheit braucht ihr Encryption at Rest
 oder ein externes Secret-Management (z.B. HashiCorp Vault).
@@ -1050,7 +1050,7 @@ den Cluster vor Angriffen, die auf übermäßige Container-Berechtigungen setzen
 
 ### SecurityContext
 
-Ein [SecurityContext](/docs/kubernetes-basis/glossar#securitycontext) definiert Sicherheitseinstellungen für Pods und Container.
+Ein [SecurityContext](/docs/kubernetes-basis/90-glossar#securitycontext) definiert Sicherheitseinstellungen für Pods und Container.
 
 | Einstellung                | Beschreibung                              |
 | -------------------------- | ----------------------------------------- |
@@ -1175,9 +1175,9 @@ Volume Claims (PVCs) entkoppeln Storage von der Pod-Lebensdauer.
 
 | Konzept                         | Beschreibung                                                          |
 | ------------------------------- | --------------------------------------------------------------------- |
-| [**PersistentVolume (PV)**](/docs/kubernetes-basis/glossar#persistentvolume)       | Ein Stück Storage im Cluster, bereitgestellt von Admin oder dynamisch |
-| [**PersistentVolumeClaim (PVC)**](/docs/kubernetes-basis/glossar#persistentvolumeclaim) | Anforderung eines Pods an Storage (Größe, Zugriffsart)                |
-| [**StorageClass**](/docs/kubernetes-basis/glossar#storageclass)                | Definiert, wie PVs dynamisch erstellt werden (Provisioner, Parameter) |
+| [**PersistentVolume (PV)**](/docs/kubernetes-basis/90-glossar#persistentvolume)       | Ein Stück Storage im Cluster, bereitgestellt von Admin oder dynamisch |
+| [**PersistentVolumeClaim (PVC)**](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) | Anforderung eines Pods an Storage (Größe, Zugriffsart)                |
+| [**StorageClass**](/docs/kubernetes-basis/90-glossar#storageclass)                | Definiert, wie PVs dynamisch erstellt werden (Provisioner, Parameter) |
 
 ### Lifecycle
 
@@ -1504,8 +1504,8 @@ kubectl run dns-test2 --rm -it --image=busybox:1.28 --restart=Never -n k8s-train
 
 ### Was ist Ingress?
 
-[Ingress](/docs/kubernetes-basis/glossar#ingress) stellt HTTP/HTTPS-Routing von außen in den Cluster bereit. Statt jeden Service über einen
-eigenen NodePort zu exponieren, wird ein zentraler [Ingress Controller](/docs/kubernetes-basis/glossar#ingress-controller) verwendet.
+[Ingress](/docs/kubernetes-basis/90-glossar#ingress) stellt HTTP/HTTPS-Routing von außen in den Cluster bereit. Statt jeden Service über einen
+eigenen NodePort zu exponieren, wird ein zentraler [Ingress Controller](/docs/kubernetes-basis/90-glossar#ingress-controller) verwendet.
 
 **Host-basiertes Routing:** Verschiedene Hostnamen werden auf verschiedene Services geroutet:
 

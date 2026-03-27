@@ -13,12 +13,11 @@ Im Laufe der zwei Tage baut jeder Teilnehmer eine vollständige Container-Umgebu
 Anwendungen auf: Chromium Browser, Code-Server, Home Assistant und Nextcloud -- alles hinter
 Ingress-Routing erreichbar.
 
-## Trainingstage
+## Inhaltsverzeichnis
 
-- [k8s - Teil 0: Vorbereitung](/docs/kubernetes-basis/tag-0) -- Umgebung einrichten, Tools
-  installieren
-- [k8s - Teil 1: Grundlagen](/docs/kubernetes-basis/tag-1) -- Kubernetes-Konzepte, Chromium und
-  Code-Server deployen
-- [k8s - Teil 2: Workloads & Networking](/docs/kubernetes-basis/tag-2) -- Resources, Probes, PVCs,
-  Ingress
-- [Glossar](/docs/kubernetes-basis/glossar) -- Alle Kubernetes-Fachbegriffe auf einen Blick
+- [01 Einleitung](/docs/kubernetes-basis/01-einleitung) -- Worum geht es, was entsteht am Ende
+- [02 Ziele / Methoden](/docs/kubernetes-basis/02-ziele-methoden) -- Lernziele und didaktisches Konzept
+- [03 Vorbereitung](/docs/kubernetes-basis/03-vorbereitung) -- Umgebung einrichten, Tools installieren
+- [10 Tag 1](/docs/kubernetes-basis/10-tag-1) -- Kubernetes-Konzepte, Chromium und Code-Server deployen
+- [20 Tag 2](/docs/kubernetes-basis/20-tag-2) -- Resources, Probes, PVCs, Ingress
+- [90 Glossar](/docs/kubernetes-basis/90-glossar) -- Alle Kubernetes-Fachbegriffe auf einen Blick

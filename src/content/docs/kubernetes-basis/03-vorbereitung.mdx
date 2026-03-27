@@ -1,10 +1,10 @@
 ---
 visible: true
-title: k8s - Teil 0
+title: 03 Vorbereitung
 description: Vorbereitung und Trainings-Umgebung für die Kubernetes Basis Schulung.
 draft: false
-image: "@assets/docs/kubernetes-basis/knba-004.png"
-imageAlt: "Kubernetes Basis - Teil 0 Vorbereitung"
+image: "@assets/docs/kubernetes-basis/knba-03-001.png"
+imageAlt: "Kubernetes Basis - 03 Vorbereitung"
 ---
 
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
@@ -57,7 +57,7 @@ Volume-Struktur, Web-UIs für sofortiges visuelles Feedback.
 
 ## Installation von kubectl
 
-[kubectl](/docs/kubernetes-basis/glossar#kubectl) ist das Kommandozeilen-Tool zur Steuerung von Kubernetes-Clustern.
+[kubectl](/docs/kubernetes-basis/90-glossar#kubectl) ist das Kommandozeilen-Tool zur Steuerung von Kubernetes-Clustern.
 
 - **Windows (winget):** `winget install Kubernetes.kubectl`
 - **macOS (Homebrew):** `brew install kubectl`
@@ -77,9 +77,9 @@ Für die Schulung wird ein **3-Knoten-Cluster** als Voraussetzung benötigt:
 
 | Node   | Rolle         | Beschreibung                                    |
 | ------ | ------------- | ----------------------------------------------- |
-| node-1 | [Control Plane](/docs/kubernetes-basis/glossar#control-plane) | API-Server, etcd, Scheduler, Controller Manager |
-| node-2 | [Worker Node](/docs/kubernetes-basis/glossar#worker-node)    | Workload-Ausführung                             |
-| node-3 | [Worker Node](/docs/kubernetes-basis/glossar#worker-node)    | Workload-Ausführung                             |
+| node-1 | [Control Plane](/docs/kubernetes-basis/90-glossar#control-plane) | API-Server, etcd, Scheduler, Controller Manager |
+| node-2 | [Worker Node](/docs/kubernetes-basis/90-glossar#worker-node)    | Workload-Ausführung                             |
+| node-3 | [Worker Node](/docs/kubernetes-basis/90-glossar#worker-node)    | Workload-Ausführung                             |
 
 Die folgenden Kapitel beschreiben mögliche Optionen zur Installation / Bereitstellung des Clusters.
 
@@ -114,7 +114,7 @@ Folgende Schritte geschehen in der wsl. Diese kann einfach mit `wsl` aufgerufen 
 - Docker enablen `sudo systemctl enable --now docker`
 - User berechtigen `sudo usermod -aG docker $USER`
 - Terminal session neu starten
-- [k3d](/docs/kubernetes-basis/glossar#k3d) runterladen `curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
+- [k3d](/docs/kubernetes-basis/90-glossar#k3d) runterladen `curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
 - kubctl runterladen: `curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"`
 - Rechte setzen für kubectl `chmod +x kubectl`
 - Verschieben von kubectl `sudo mv kubectl /usr/local/bin/`
@@ -138,7 +138,7 @@ eb207e4211cf   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint�
 
 **Vom host auf die Kubernetes Installation verbinden**
 
-- Erzeugen der [kubeconfig](/docs/kubernetes-basis/glossar#kubeconfig): `wsl k3d kubeconfig get mycluster > $env:USERPROFILE\.kube\wsl`
+- Erzeugen der [kubeconfig](/docs/kubernetes-basis/90-glossar#kubeconfig): `wsl k3d kubeconfig get mycluster > $env:USERPROFILE\.kube\wsl`
 - Aufruf mit neuer config: `kubectl --kubeconfig=$env:USERPROFILE\.kube\wsl get nodes`
 
 ### Welche Option ist die richtige?
@@ -171,11 +171,11 @@ Wer in der eigenen Firma bereits Zugang zu einem Kubernetes-Cluster hat, kann di
 
 | Anforderung | Details |
 | --- | --- |
-| [Namespace](/docs/kubernetes-basis/glossar#namespace)-Zugriff | Du benötigst einen eigenen Namespace mit vollen Rechten (create, delete, patch für Pods, Services, Deployments, Ingress, PVC) |
-| [kubectl](/docs/kubernetes-basis/glossar#kubectl)-Zugriff | Eine gültige [kubeconfig](/docs/kubernetes-basis/glossar#kubeconfig) muss lokal vorliegen (`kubectl get nodes` funktioniert) |
-| Mindestens 2 [Worker Nodes](/docs/kubernetes-basis/glossar#worker-node) | Für einige Übungen werden Pod-Scheduling-Entscheidungen auf mehreren Nodes demonstriert |
-| [StorageClass](/docs/kubernetes-basis/glossar#storageclass) vorhanden | Für [PersistentVolumeClaims](/docs/kubernetes-basis/glossar#persistentvolumeclaim) wird eine Default-StorageClass benötigt (`kubectl get storageclass`) |
-| [Ingress Controller](/docs/kubernetes-basis/glossar#ingress-controller) | Ein Ingress Controller muss im Cluster laufen (z. B. nginx), damit die Schulungsprojekte per URL erreichbar sind |
+| [Namespace](/docs/kubernetes-basis/90-glossar#namespace)-Zugriff | Du benötigst einen eigenen Namespace mit vollen Rechten (create, delete, patch für Pods, Services, Deployments, Ingress, PVC) |
+| [kubectl](/docs/kubernetes-basis/90-glossar#kubectl)-Zugriff | Eine gültige [kubeconfig](/docs/kubernetes-basis/90-glossar#kubeconfig) muss lokal vorliegen (`kubectl get nodes` funktioniert) |
+| Mindestens 2 [Worker Nodes](/docs/kubernetes-basis/90-glossar#worker-node) | Für einige Übungen werden Pod-Scheduling-Entscheidungen auf mehreren Nodes demonstriert |
+| [StorageClass](/docs/kubernetes-basis/90-glossar#storageclass) vorhanden | Für [PersistentVolumeClaims](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) wird eine Default-StorageClass benötigt (`kubectl get storageclass`) |
+| [Ingress Controller](/docs/kubernetes-basis/90-glossar#ingress-controller) | Ein Ingress Controller muss im Cluster laufen (z. B. nginx), damit die Schulungsprojekte per URL erreichbar sind |
 | Internetzugang des Clusters | Die Nodes müssen Images von externen Registries ziehen können (z. B. `lscr.io`, `ghcr.io`) – oder ein lokaler Mirror ist konfiguriert |
 | DNS / Hostnamen | Entweder ein echter DNS-Eintrag für deine Schulungs-URLs oder die Nutzung von `/etc/hosts` auf deinem lokalen Rechner |
 

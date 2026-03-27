@@ -21,8 +21,10 @@ description:
   Starten des kubernetes-learning-review Agents</Funktionsaufruf>\\nAssistent: \"Hier ist meine
   Überprüfung mit Feedback zu Klarheit, Verbesserungsvorschlägen und
   Übungsempfehlungen.\"\\n</example>"
-tools: Glob, Grep, Read, WebFetch, WebSearch, Agent
+tools: [Glob, Grep, Read, WebFetch, WebSearch, Agent]
 model: haiku
+color: green
+memory: project
 ---
 
 Du bist ein erfahrener Kubernetes-Ausbilder und Lehrplanchef mit tiefer Kenntnis darüber, wie
