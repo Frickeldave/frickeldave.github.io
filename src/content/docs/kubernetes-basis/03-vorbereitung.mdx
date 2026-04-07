@@ -9,51 +9,26 @@ imageAlt: "Kubernetes Basis - 03 Vorbereitung"
 
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
-## Vorbereitung
+## Voraussetzungen
 
-### Voraussetzungen
-
-- Grundlegende Linux-Kommandozeile (cd, ls, cat, vi/nano)
+- Grundlegende Linux- oder Powershell Kommandozeile (cd, ls, cat, vi/nano)
 - Grundverständnis von Containern (Docker-Basics)
 - Texteditor-Grundlagen (YAML-Dateien bearbeiten)
 
-### Hardware
+## Hardware
+
+Solltest du deinen Kubernetes Cluster lokal (zum Beispiel mit k3d) betreiben, sind die folgenden Hardwarevoraussetzungen 
+empfohlen.
 
 | Komponente     | Minimum        | Empfohlen      |
 | -------------- | -------------- | -------------- |
-| RAM pro Worker | 8 GB           | 16 GB          |
-| CPU pro Worker | 4 Kerne        | 8 Kerne        |
+| RAM            | 8 GB           | 16 GB          |
+| CPU            | 4 Kerne        | 8 Kerne        |
 | Festplatte     | 50 GB frei     | 100 GB frei    |
 | Netzwerk       | Internetzugang | Internetzugang |
 
 Die höheren Anforderungen ergeben sich aus den linuxserver.io-Containern (Chromium ist
 speicherintensiv).
-
-## Schulungsprojekt
-
-Am Ende der Schulung laufen vier Anwendungen in eurem Kubernetes-Cluster:
-
-| Anwendung        | Image                             | URL                                |
-| ---------------- | --------------------------------- | ---------------------------------- |
-| Chromium Browser | lscr.io/linuxserver/chromium      | chrome.k8s-training.frickeldave.de |
-| Code-Server      | lscr.io/linuxserver/code-server   | code.k8s-training.frickeldave.de   |
-| Home Assistant   | lscr.io/linuxserver/homeassistant | ha.k8s-training.frickeldave.de     |
-| Nextcloud        | lscr.io/linuxserver/nextcloud     | drive.k8s-training.frickeldave.de  |
-
-```mermaid
-graph TD
-    IC["Ingress Controller"]
-    IC --> C["Chromium<br/>chrome.*"]
-    IC --> CS["Code-Server<br/>code.*"]
-    IC --> HA["Home Assistant<br/>ha.*"]
-    IC --> NC["Nextcloud + PVC<br/>drive.*"]
-```
-
-### Was ist linuxserver.io?
-
-[linuxserver.io](https://www.linuxserver.io/) ist eine Community, die standardisierte Docker-Images
-pflegt. Alle Images folgen dem gleichen Pattern: PUID/PGID für Berechtigungen, einheitliche
-Volume-Struktur, Web-UIs für sofortiges visuelles Feedback.
 
 ## Installation von kubectl
 
@@ -232,3 +207,5 @@ kubectl api-resources | grep -E "(pods|services|deployments|ingress)"  # Berecht
 - [ ] Namespace mit ausreichenden Rechten vorhanden (`kubectl get pods -n <namespace>` fehlerfrei)
 - [ ] Ingress Controller verfügbar (`kubectl get ingressclass`)
 - [ ] DNS-Einträge oder `/etc/hosts`-Einträge für Schulungs-URLs konfiguriert
+
+Weiter: [Ziele und Methoden](/docs/kubernetes-basis/02-ziele-methoden)

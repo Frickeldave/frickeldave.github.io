@@ -3,7 +3,7 @@ visible: true
 title: Kubernetes Basis
 description: Praxisnahe 2-tägige Kubernetes-Schulung mit linuxserver.io-Containern.
 draft: false
-image: "@assets/docs/kubernetes-basis/knba-001.png"
+image: "@assets/docs/kubernetes-basis/knba-00-001.png"
 imageAlt: "Kubernetes Basis Schulung - Überblick"
 ---
 

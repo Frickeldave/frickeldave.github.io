@@ -141,6 +141,12 @@ src/components/
 - [`./docs/14-categories-and-tags.md`](./docs/14-categories-and-tags.md) — Taxonomie
 - [`./docs/15-structure.md`](./docs/15-structure.md) — Projektstruktur
 
+### Custom Agents
+
+- `/.github/agents/compliance-checker.agent.md` — Compliance Checking Agent
+- `/.github/agents/gender-neutral-language-review.agent.md` — Gender-Neutral Language Review Agent
+- `/.github/agents/kubernetes-learning-review.agent.md` — Kubernetes Learning Review Agent
+
 ### Architecture & Design
 
 - [`./docs/40-architecture-decisions.md`](./docs/40-architecture-decisions.md) — ADRs
@@ -160,3 +166,7 @@ src/components/
 - [`./docs/linter/03-linter-eslint.md`](./docs/linter/03-linter-eslint.md) — ESLint Config
 - [`./docs/linter/04-linter-prettier.md`](./docs/linter/04-linter-prettier.md) — Prettier Config
 - [`./docs/linter/05-linter-vale.md`](./docs/linter/05-linter-vale.md) — Vale Markdown
+
+### Skills & Agents
+
+- [`./docs/skills/gender-neutral-language.md`](./docs/skills/gender-neutral-language.md) — Gender-Neutral Language Skill
