@@ -39,6 +39,97 @@ speicherintensiv).
 - **Linux (apt):** `sudo apt-get update && sudo apt-get install -y kubectl`
 - **Installation prüfen:** `kubectl version --client`
 
+Für die Konfiguration der Verbindung muss noch eine "kubeconfig" Datei erstellt werden. Die kubeconfig wird unter 
+Windows in der Datei ```%USERPROFILE%\.kube\config``` abgelegt, unter Linux und MacOS in der Datei ```~/.kube/config```.
+Eine korrekt konfigurierte kubeconfig bekommst du im Falle eines Firmencluster aus deinem k8s Portal (Rancher, AWS, Azure, ...).
+Im Falle einer lokalen Installation mit k3d siehe unten. 
+
+### Optional: Tuning Linux
+
+``` bash
+
+BASHRC="$HOME/.bashrc"
+
+# Alias hinzufügen (nur wenn nicht vorhanden)
+if ! grep -q "alias k=kubectl" "$BASHRC" 2>/dev/null; then
+    echo 'alias k=kubectl' >> "$BASHRC"
+fi
+
+# Completion laden (für aktuelle Session)
+source <(kubectl completion bash 2>/dev/null || true)
+
+# Complete-Zeile hinzufügen (nur wenn nicht vorhanden)
+if ! grep -q "complete -o default -F __start_kubectl k" "$BASHRC" 2>/dev/null; then
+    echo 'complete -o default -F __start_kubectl k' >> "$BASHRC"
+fi
+
+echo "✓ .bashrc gepatcht und Completion aktiviert!"
+echo "  Neuen Terminal starten oder 'source ~/.bashrc'"
+
+```
+
+Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#enable-shell-autocompletion" target="_blank" rel="noopener noreferrer">kubernetes.io</a>.
+
+### Optional: Tuning Windows
+
+``` powershell
+
+$profilePath = $PROFILE
+$profileDir  = Split-Path -Parent $profilePath
+
+if (-not (Test-Path $profileDir)) {
+    New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+}
+
+if (-not (Test-Path $profilePath)) {
+    New-Item -ItemType File -Path $profilePath -Force | Out-Null
+}
+
+$startMarker = "# >>> kubectl completion >>>"
+$endMarker   = "# <<< kubectl completion <<<"
+
+$snippet = @"
+$startMarker
+if (Get-Command kubectl -ErrorAction SilentlyContinue) {
+    kubectl completion powershell | Out-String | Invoke-Expression
+    Set-Alias -Name k -Value kubectl
+    Register-ArgumentCompleter -CommandName k -ScriptBlock `$__kubectlCompleterBlock
+}
+$endMarker
+"@
+
+$content = Get-Content -Path $profilePath -Raw -ErrorAction SilentlyContinue
+if ($null -eq $content) { $content = "" }
+
+$pattern = [regex]::Escape($startMarker) + '.*?' + [regex]::Escape($endMarker)
+
+if ($content -match $pattern) {
+    $newContent = [regex]::Replace($content, $pattern, $snippet, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+} else {
+    if ($content.Length -gt 0 -and -not $content.EndsWith("`r`n")) {
+        $content += "`r`n"
+    }
+    $newContent = $content + "`r`n" + $snippet + "`r`n"
+}
+
+Set-Content -Path $profilePath -Value $newContent -Encoding UTF8
+
+. $PROFILE
+
+```
+
+Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/" target="_blank" rel="noopener noreferrer">kubernetes.io</a>.
+
+### Optional: Tuning MacOS
+
+``` bash
+
+brew install bash-completion@2
+
+```
+Autocompletion can be enabled with the same script as for linux. 
+Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/" target="_blank" rel="noopener noreferrer">kubernetes.io</a>.
+
 ## Editor (empfohlen)
 
 **VS Code** mit Extensions:
@@ -90,10 +181,7 @@ Folgende Schritte geschehen in der wsl. Diese kann einfach mit `wsl` aufgerufen 
 - User berechtigen `sudo usermod -aG docker $USER`
 - Terminal session neu starten
 - [k3d](/docs/kubernetes-basis/90-glossar#k3d) runterladen `curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
-- kubctl runterladen: `curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"`
-- Rechte setzen für kubectl `chmod +x kubectl`
-- Verschieben von kubectl `sudo mv kubectl /usr/local/bin/`
-- Prüfen `kubectl version --client`
+- kubctl installieren wie oben
 - Cluster hochfahren `k3d cluster create mycluster --servers 1 --agents 2 -p "443:443@loadbalancer" -p "80:80@loadbalancer"`
 - Installation checken `kubectl get nodes`
 
@@ -109,7 +197,6 @@ eb207e4211cf   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint�
 9520af54f61d   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   20 hours ago   Up 17 hours                                     k3d-mycluster-agent-0 
 20ce57831256   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   20 hours ago   Up 17 hours                                     k3d-mycluster-server-0
 ```
-
 
 **Vom host auf die Kubernetes Installation verbinden**
 

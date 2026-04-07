@@ -14,6 +14,41 @@ sind Fachbegriffe bei ihrer ersten Verwendung mit diesem Glossar verlinkt.
 
 ## Kernkonzepte
 
+### Container-Orchestrierung
+
+Die automatisierte Verwaltung von Container-Workloads über mehrere Server hinweg. Container-Orchestrierung übernimmt Aufgaben wie Scheduling (auf welchem Node läuft ein Container?), [Self-Healing](#self-healing), [Skalierung](#skalierung) und [Rolling Updates](#rolling-updates). Kubernetes ist die de-facto-Standardplattform für Container-Orchestrierung.
+
+### Skalierung
+
+Kubernetes kann Anwendungen **manuell** oder **automatisch** skalieren -- also die Anzahl laufender Pods erhöhen oder verringern:
+
+- **Horizontal Pod Autoscaler (HPA)** -- skaliert automatisch anhand von CPU- oder Speicherauslastung
+- **Manuell** -- über `kubectl scale` oder das Anpassen von `spec.replicas` in einem [Deployment](#deployment)
+
+```bash
+kubectl scale deployment chromium --replicas=3   # Auf 3 Instanzen skalieren
+kubectl scale deployment chromium --replicas=1   # Wieder auf 1 reduzieren
+```
+
+### Rolling Updates
+
+Eine Strategie, bei der Kubernetes eine neue Version einer Anwendung schrittweise ausrollt, ohne Ausfallzeit: Neue Pods werden gestartet, bevor alte entfernt werden. Dabei existieren kurzzeitig zwei [ReplicaSets](#replicaset) gleichzeitig -- eines für die alte, eines für die neue Version. Bei Fehlern kann mit `kubectl rollout undo` auf die vorherige Version zurückgerollt werden.
+
+```bash
+kubectl rollout status deployment/chromium      # Laufenden Rollout beobachten
+kubectl rollout undo deployment/chromium        # Auf vorherige Version zurückrollen
+kubectl rollout history deployment/chromium     # Rollout-Verlauf anzeigen
+```
+
+### Service Discovery
+
+Der Mechanismus, über den Pods und Services sich gegenseitig im Cluster finden, ohne feste IP-Adressen zu kennen. Kubernetes betreibt einen internen DNS-Dienst (CoreDNS): Jeder [Service](#service) erhält automatisch einen vollqualifizierten DNS-Namen im Format `<service-name>.<namespace>.svc.cluster.local`. Anwendungen können so andere Services über ihren Namen ansprechen, unabhängig davon, auf welchem Node sie gerade laufen.
+
+```bash
+# Beispiel: Code-Server spricht Chromium über DNS an
+curl http://chromium.k8s-training.svc.cluster.local:3000
+```
+
 ### Cluster
 
 Eine Gruppe von Maschinen (physisch oder virtuell), die gemeinsam Container-Workloads ausführen.
