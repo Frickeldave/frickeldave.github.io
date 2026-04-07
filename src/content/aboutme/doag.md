@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-15602
+    title: "Cloud-Transformation im Reality-Check: Automatisierung, Kosten und Kulturwandel"
+    edition: CloudTalk
+    guests: Dave König und Christian Reineke
+    date: 31. März 2026
+    description: >-
+      Cloud-Experte Christian Reineke (RIS AG / XOAP) spricht über die Realität von Cloud-Transformationen: Warum der Weg in die Cloud oft aufwendiger und kostenintensiver verläuft als geplant. Im Fokus stehen die organisatorischen und kulturellen Herausforderungen zwischen klassischer IT und DevOps-Ansätzen. Diskutiert werden außerdem Automatisierung, Vendor Lock-in, Multicloud-Strategien sowie der praktische Einsatz von KI und die wirtschaftliche Realität steigender Cloud-Kosten.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69cb62ec92d007a76546c7e1/media.mp3
   - id: doag-voices-34250
     title: "Europas KI-Souveränität: Agentische Systeme, Infrastruktur und der Weg zur T-Cloud"
     edition: FutureAI
