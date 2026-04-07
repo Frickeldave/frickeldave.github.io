@@ -38,8 +38,8 @@ skip this chapter.
 sudo apt install git -y
 # Install curl, when not exist
 sudo apt install curl -y
-# Install nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+# Install nvm (automatically detects latest version)
+LATEST_VERSION=$(curl -s https://api.github.com/repos/nvm-sh/nvm/releases/latest | grep tag_name | cut -d '"' -f 4) && echo "Installing NVM version: $LATEST_VERSION" && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$LATEST_VERSION/install.sh | bash
 # OPTIONAL: In some environments the profile is not executed (eg. code-server).
 # In this case, add nvm to bashrc manual:
 echo "" >> ~/.bashrc
@@ -48,8 +48,6 @@ echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc
 source ~/.bashrc
 # Install node
 nvm install --lts
-
-#It is not needed for development, but it simplify the work to install GitHub (gh) CLI on the system. It is also used in some of the prompt files.
 
 # Get the actual gh client version
 export GH_CLI_VERSION=$(curl -s https://api.github.com/repos/cli/cli/releases/latest | grep "tag_name" | cut -d : -f 2,3 | tr -d \"\ v,)
