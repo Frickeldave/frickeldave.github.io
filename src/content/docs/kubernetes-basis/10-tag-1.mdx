@@ -205,12 +205,16 @@ kubectl config set-context --current --namespace=k8s-training
 
 Ab jetzt arbeiten alle Befehle automatisch im Namespace `k8s-training`.
 
+> ⚠️ **HINWEIS** – In einem Cluster das dir von deiner Firma zur Verfügung gestellt wird, ist es ggf. nicht möglich
+einen namespance zu erstellen. In diesem Fall arbeiten wir in dem Workspace weiter, der Dir zugewiesen wurde.
+
 ### Übung 1
 
 1. Zeige alle Nodes des Clusters an. Welche Rollen haben sie?
    > **Erwartete Ausgabe:** Nodes mit Rolle `control-plane` für den Master-Node und `<none>` (= Worker Node) für die Worker-Nodes.
-2. Erstelle den Namespace `k8s-training`.
-3. Setze `k8s-training` als Standard-Namespace.
+2. Erstelle den Namespace `k8s-training` (wenn möglich).
+3. Setze `k8s-training` als Standard-Namespace (wenn möglich).
+4. Setze den Standardnamespace mit `kubectl config set-context --current --namespace=<DEIN NAMESPACE>`
 4. Prüfe mit `kubectl get pods`, dass der Namespace leer ist.
 5. Zeige alle System-Pods im Namespace `kube-system` an: `kubectl get pods -n kube-system`
 

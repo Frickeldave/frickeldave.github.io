@@ -1,0 +1,535 @@
+---
+visible: true
+title: 91 kubectl Referenz
+description: Die wichtigsten kubectl-Befehle für den Kubernetes-Alltag -- nach typischer Nutzungsreihenfolge sortiert.
+draft: false
+image: "@assets/docs/kubernetes-basis/knba-91-001.png"
+imageAlt: "Kubernetes Basis - 91 kubectl Referenz"
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+Diese Referenz listet die wichtigsten `kubectl`-Befehle in der Reihenfolge, wie Du sie als
+Kubernetes-Admin typischerweise im Alltag verwendest: von der Cluster-Orientierung über das
+Deployen und Debuggen bis hin zu fortgeschrittenen Wartungsaufgaben.
+
+---
+
+## Cluster-Orientierung & Konfiguration
+
+### 1. kubectl version
+
+Zeigt die Version des `kubectl`-Clients und des Kubernetes-API-Servers an. Damit prüfst Du, ob
+Client und Server kompatibel sind -- ein häufiger Stolperstein bei Versionskonflikten.
+
+```bash
+kubectl version
+kubectl version --short   # Kurzform (deprecated ab 1.28, aber noch verbreitet)
+```
+
+### 2. kubectl cluster-info
+
+Gibt Dir einen schnellen Überblick über den Cluster: Wo läuft der API-Server? Ist CoreDNS aktiv?
+Nach dem Login in einen neuen Cluster ist das Dein erster Befehl.
+
+```bash
+kubectl cluster-info
+kubectl cluster-info dump   # Ausführliche Diagnoseinformationen
+```
+
+### 3. kubectl config
+
+Verwaltet Deine `kubeconfig`-Datei (`~/.kube/config`). Hier wählst Du aus, mit welchem Cluster,
+welchem Namespace und welchen Credentials Du arbeitest. Besonders wichtig, wenn Du mehrere Cluster
+verwaltest.
+
+```bash
+kubectl config get-contexts                  # Alle Kontexte anzeigen
+kubectl config current-context               # Aktuellen Kontext anzeigen
+kubectl config use-context mein-cluster      # Zu anderem Cluster wechseln
+kubectl config set-context --current --namespace=mein-ns   # Standard-Namespace setzen
+```
+
+**Tipp:** Wenn Du häufig zwischen Kontexten wechselst, spar Dir Tipparbeit mit Tools wie
+<a href="https://github.com/ahmetb/kubectx" target="_blank" rel="noopener noreferrer">kubectx/kubens</a>.
+
+---
+
+## Ressourcen anzeigen & erkunden
+
+### 4. kubectl get
+
+Der meistgenutzte Befehl überhaupt. Listet Kubernetes-Ressourcen in tabellarischer Form auf. Du
+kannst nahezu jeden Ressourcentyp abfragen -- Pods, Deployments, Services, Nodes und vieles mehr.
+
+```bash
+kubectl get nodes                          # Alle Nodes im Cluster
+kubectl get pods                           # Pods im aktuellen Namespace
+kubectl get pods -A                        # Pods in ALLEN Namespaces
+kubectl get pods -o wide                   # Mehr Details (Node, IP)
+kubectl get pods -o yaml                   # Vollständige YAML-Ausgabe
+kubectl get deployment,svc,pods            # Mehrere Typen gleichzeitig
+kubectl get pods -l app=chromium           # Nach Label filtern
+kubectl get pods --field-selector status.phase=Running   # Nach Feldwert filtern
+kubectl get pods -w                        # Watch-Modus (live Änderungen)
+```
+
+### 5. kubectl describe
+
+Liefert eine ausführliche, menschenlesbare Beschreibung einer Ressource -- inklusive Events,
+Conditions und Konfigurationsdetails. Wenn `kubectl get` Dir nicht genug sagt, ist `describe` Dein
+nächster Schritt.
+
+```bash
+kubectl describe pod chromium-7d8f9c6b5-x2vnk
+kubectl describe node worker-01
+kubectl describe deployment chromium
+kubectl describe svc chromium-service
+```
+
+**Besonders nützlich:** Die **Events**-Sektion ganz unten zeigt Dir chronologisch, was mit einer
+Ressource passiert ist -- zum Beispiel warum ein Pod nicht starten konnte.
+
+### 6. kubectl api-resources
+
+Zeigt alle verfügbaren Ressourcentypen im Cluster an -- inklusive Kurzformen, API-Gruppen und ob
+sie Namespace-gebunden sind. Unverzichtbar, wenn Du nicht weißt, wie ein Ressourcentyp genau heißt.
+
+```bash
+kubectl api-resources                       # Alle Ressourcentypen
+kubectl api-resources --namespaced=true     # Nur Namespace-gebundene
+kubectl api-resources | grep -i deploy      # Nach Namen suchen
+```
+
+---
+
+## Namespaces verwalten
+
+### 7. kubectl create namespace
+
+Erstellt einen neuen [Namespace](/docs/kubernetes-basis/90-glossar#namespace). Namespaces dienen zur
+logischen Trennung von Ressourcen -- zum Beispiel pro Team, Umgebung oder Anwendung.
+
+```bash
+kubectl create namespace schulung
+kubectl get namespaces                      # Alle Namespaces anzeigen
+```
+
+Ab jetzt kannst Du mit `-n schulung` gezielt in diesem Namespace arbeiten oder ihn per
+`kubectl config set-context` als Standard setzen.
+
+---
+
+## Anwendungen deployen
+
+### 8. kubectl create
+
+Erstellt Ressourcen imperativ, also direkt per Befehl. Gut für schnelle Tests und Experimente;
+für den produktiven Einsatz ist der deklarative Ansatz mit YAML-Dateien vorzuziehen.
+
+```bash
+kubectl create deployment chromium --image=chromium:latest
+kubectl create service clusterip chromium --tcp=80:80
+kubectl create configmap app-config --from-literal=ENV=production
+kubectl create secret generic db-pass --from-literal=password=geheim
+```
+
+### 9. kubectl apply
+
+Der wichtigste Befehl für den deklarativen Workflow. Wendet eine YAML-Datei auf den Cluster an --
+erstellt neue Ressourcen oder aktualisiert bestehende. Im Gegensatz zu `create` ist `apply`
+idempotent: Du kannst es beliebig oft ausführen.
+
+```bash
+kubectl apply -f deployment.yaml            # Einzelne Datei anwenden
+kubectl apply -f ./k8s/                     # Alle YAMLs in einem Verzeichnis
+kubectl apply -f https://example.com/manifest.yaml   # Direkt von URL
+kubectl apply -k ./overlays/production/     # Mit Kustomize
+```
+
+**Best Practice:** Speichere all Deine Manifeste in einem Git-Repository. So hast Du versionierte,
+nachvollziehbare Infrastructure as Code.
+
+### 10. kubectl run
+
+Erstellt einen einzelnen Pod -- nützlich für schnelle Ad-hoc-Tests oder Debug-Container. Erzeugt
+**kein** Deployment, das heißt: kein Self-Healing, kein Scaling.
+
+```bash
+kubectl run test-pod --image=busybox --rm -it -- sh          # Temporärer Debug-Pod
+kubectl run nginx-test --image=nginx --port=80               # Einfacher Pod
+kubectl run curl-test --image=curlimages/curl -it --rm -- curl http://mein-service
+```
+
+---
+
+## Skalieren & Aktualisieren
+
+### 11. kubectl scale
+
+Ändert die Anzahl der Replikas eines Deployments, ReplicaSets oder StatefulSets. Damit skalierst
+Du Deine Anwendung manuell hoch oder runter.
+
+```bash
+kubectl scale deployment chromium --replicas=3    # Auf 3 Pods hochskalieren
+kubectl scale deployment chromium --replicas=1    # Wieder auf 1 reduzieren
+```
+
+### 12. kubectl set
+
+Ändert Eigenschaften bestehender Ressourcen -- am häufigsten das Container-Image bei einem
+Deployment-Update.
+
+```bash
+kubectl set image deployment/chromium chromium=chromium:v2   # Image aktualisieren
+kubectl set env deployment/chromium LOG_LEVEL=debug          # Umgebungsvariable setzen
+kubectl set resources deployment/chromium -c chromium --limits=cpu=200m,memory=256Mi
+```
+
+### 13. kubectl rollout
+
+Verwaltet [Rolling Updates](/docs/kubernetes-basis/90-glossar#rolling-updates). Damit beobachtest
+Du laufende Rollouts, rollst bei Fehlern zurück oder pausierst ein Update.
+
+```bash
+kubectl rollout status deployment/chromium       # Status eines Rollouts beobachten
+kubectl rollout history deployment/chromium      # Rollout-Verlauf anzeigen
+kubectl rollout undo deployment/chromium         # Auf vorherige Version zurückrollen
+kubectl rollout undo deployment/chromium --to-revision=2   # Zu bestimmter Revision
+kubectl rollout pause deployment/chromium        # Rollout pausieren
+kubectl rollout resume deployment/chromium       # Rollout fortsetzen
+```
+
+---
+
+## Debugging & Troubleshooting
+
+### 14. kubectl logs
+
+Zeigt die Logs eines Pods an -- Dein wichtigstes Werkzeug zur Fehlersuche. Bei Pods mit mehreren
+Containern musst Du den Container-Namen mit `-c` angeben.
+
+```bash
+kubectl logs chromium-7d8f9c6b5-x2vnk           # Aktuelle Logs
+kubectl logs chromium-7d8f9c6b5-x2vnk -f        # Live-Stream (follow)
+kubectl logs chromium-7d8f9c6b5-x2vnk --tail=50 # Letzte 50 Zeilen
+kubectl logs chromium-7d8f9c6b5-x2vnk -c sidecar   # Bestimmter Container
+kubectl logs chromium-7d8f9c6b5-x2vnk --previous    # Logs des vorherigen Containers
+kubectl logs -l app=chromium --all-containers    # Alle Pods mit Label
+```
+
+### 15. kubectl exec
+
+Führt einen Befehl in einem laufenden Container aus -- vergleichbar mit `docker exec`. Damit
+kannst Du interaktiv debuggen, Dateien prüfen oder Netzwerkverbindungen testen.
+
+```bash
+kubectl exec -it chromium-7d8f9c6b5-x2vnk -- /bin/sh       # Shell öffnen
+kubectl exec chromium-7d8f9c6b5-x2vnk -- cat /etc/hostname  # Einzelnen Befehl ausführen
+kubectl exec chromium-7d8f9c6b5-x2vnk -c sidecar -- env     # In bestimmtem Container
+```
+
+**Sicherheitshinweis:** In Produktionsclustern sollte der Zugriff per `exec` über RBAC
+eingeschränkt sein -- nicht jeder sollte in jeden Container hineinschauen können.
+
+### 16. kubectl port-forward
+
+Leitet einen lokalen Port an einen Pod oder Service weiter -- ideal zum Testen, ohne eine
+öffentliche Route einrichten zu müssen.
+
+```bash
+kubectl port-forward pod/chromium-7d8f9c6b5-x2vnk 8080:80    # Pod-Port weiterleiten
+kubectl port-forward svc/chromium-service 8080:80              # Service-Port weiterleiten
+kubectl port-forward deployment/chromium 8080:80               # Deployment-Port weiterleiten
+```
+
+Danach erreichst Du die Anwendung unter `http://localhost:8080`.
+
+### 17. kubectl top
+
+Zeigt die aktuelle CPU- und Speicherauslastung von Nodes oder Pods an. Setzt den
+<a href="https://github.com/kubernetes-sigs/metrics-server" target="_blank" rel="noopener noreferrer">Metrics Server</a> im Cluster voraus.
+
+```bash
+kubectl top nodes                            # Ressourcenverbrauch aller Nodes
+kubectl top pods                             # Ressourcenverbrauch aller Pods
+kubectl top pods -A --sort-by=memory         # Sortiert nach Speicherverbrauch
+kubectl top pods -l app=chromium             # Nur bestimmte Pods
+```
+
+---
+
+## Dateien & Konfiguration
+
+### 18. kubectl cp
+
+Kopiert Dateien zwischen Deinem lokalen Rechner und einem Container. Nützlich für schnelle
+Dateitransfers -- für regelmäßigen Datenaustausch sind Volumes die bessere Wahl.
+
+```bash
+kubectl cp ./lokale-datei.txt chromium-7d8f9c6b5-x2vnk:/tmp/datei.txt   # Hochladen
+kubectl cp chromium-7d8f9c6b5-x2vnk:/var/log/app.log ./app.log          # Herunterladen
+```
+
+### 19. kubectl edit
+
+Öffnet eine Ressource direkt im Editor (standardmäßig `vi`) zur Bearbeitung. Die Änderung wird
+beim Speichern sofort angewendet. Praktisch für schnelle Korrekturen, aber nicht empfehlenswert
+für reproduzierbare Änderungen -- dafür besser YAML-Dateien mit `kubectl apply` nutzen.
+
+```bash
+kubectl edit deployment chromium
+kubectl edit svc chromium-service
+KUBE_EDITOR="nano" kubectl edit deployment chromium   # Anderen Editor verwenden
+```
+
+### 20. kubectl patch
+
+Ändert einzelne Felder einer Ressource, ohne die gesamte Definition neu zu schreiben. Unterstützt
+Strategic Merge Patch, JSON Merge Patch und JSON Patch.
+
+```bash
+# Replicas per Patch ändern
+kubectl patch deployment chromium -p '{"spec":{"replicas":3}}'
+
+# Label hinzufügen
+kubectl patch pod chromium-7d8f9c6b5-x2vnk -p '{"metadata":{"labels":{"env":"staging"}}}'
+
+# JSON Patch (gezieltes Ändern eines Array-Elements)
+kubectl patch deployment chromium --type='json' \
+  -p='[{"op":"replace","path":"/spec/replicas","value":5}]'
+```
+
+---
+
+## Ressourcen löschen & aufräumen
+
+### 21. kubectl delete
+
+Löscht Ressourcen aus dem Cluster. Kann einzelne Objekte, ganze YAML-Dateien oder nach Labels
+filtern. **Vorsicht:** Gelöschte Ressourcen können nicht wiederhergestellt werden -- es sei denn, Du
+hast die YAML-Dateien gesichert.
+
+```bash
+kubectl delete pod chromium-7d8f9c6b5-x2vnk           # Einzelnen Pod löschen
+kubectl delete deployment chromium                      # Deployment löschen (samt Pods)
+kubectl delete -f deployment.yaml                       # Alles aus YAML-Datei löschen
+kubectl delete pods -l app=chromium                     # Nach Label löschen
+kubectl delete namespace schulung                       # Ganzen Namespace löschen
+kubectl delete pods --field-selector status.phase=Failed # Fehlgeschlagene Pods aufräumen
+```
+
+**Tipp:** Wenn ein Pod beim Löschen hängt, kannst Du mit `--force --grace-period=0` den
+sofortigen Abbruch erzwingen -- aber nur als letzte Maßnahme.
+
+---
+
+## Labels & Annotationen
+
+### 22. kubectl label
+
+Fügt Labels zu Ressourcen hinzu, ändert sie oder entfernt sie. Labels sind Schlüssel-Wert-Paare,
+die zur Selektion und Organisation dienen.
+
+```bash
+kubectl label pod chromium-7d8f9c6b5-x2vnk env=production          # Label setzen
+kubectl label pod chromium-7d8f9c6b5-x2vnk env=staging --overwrite # Label überschreiben
+kubectl label pod chromium-7d8f9c6b5-x2vnk env-                    # Label entfernen
+kubectl label nodes worker-01 disktype=ssd                          # Node labeln
+```
+
+### 23. kubectl annotate
+
+Ähnlich wie Labels, aber für nicht-identifizierende Metadaten gedacht -- zum Beispiel
+Beschreibungen, Ticket-Nummern oder Kontaktinformationen.
+
+Wichtig: Annotationen dienen nicht zur Selektion von Ressourcen, sondern als Zusatzinformationen
+für Menschen und Tools. Wenn Du Ressourcen gezielt finden oder steuern willst, nutze Labels.
+
+```bash
+kubectl annotate deployment chromium description="Chromium Browser"
+kubectl annotate deployment chromium description-                    # Annotation entfernen
+```
+
+**Merksatz:**
+
+- **Labels** = zum Filtern, Selektieren und Steuern von Ressourcen
+- **Annotationen** = für Doku, Kontext und Betriebsinformationen ohne Selektionsfunktion
+
+---
+
+## Zugriffskontrolle & Sicherheit
+
+### 24. kubectl auth
+
+Prüft Berechtigungen im Cluster: Darf ein bestimmter Account eine Aktion ausführen? Essenziell
+für RBAC-Debugging.
+
+```bash
+kubectl auth can-i create deployments                       # Kann ICH Deployments erstellen?
+kubectl auth can-i delete pods --as=system:serviceaccount:default:my-sa  # Für anderen Account prüfen
+kubectl auth can-i '*' '*'                                  # Bin ich Cluster-Admin?
+kubectl auth can-i list secrets --namespace=kube-system      # In bestimmtem Namespace
+```
+
+### 25. kubectl create role / clusterrole / rolebinding / clusterrolebinding
+
+Erstellt RBAC-Regeln zur Zugriffskontrolle. Damit legst Du fest, wer welche Aktionen in welchen
+Namespaces ausführen darf.
+
+```bash
+# Rolle erstellen: darf Pods lesen
+kubectl create role pod-reader --verb=get,list,watch --resource=pods
+
+# Rolle an einen ServiceAccount binden
+kubectl create rolebinding pod-reader-binding --role=pod-reader --serviceaccount=default:my-sa
+
+# Cluster-weite Rolle und Binding
+kubectl create clusterrole node-reader --verb=get,list --resource=nodes
+kubectl create clusterrolebinding read-nodes --clusterrole=node-reader --user=admin@example.com
+```
+
+**Wichtig:**
+- `role` und `rolebinding` gelten **nur im aktuellen Namespace**
+- `clusterrole` und `clusterrolebinding` gelten **clusterweit**
+
+Beispiel: Die oben erstellte `pod-reader` Role erlaubt nur im aktuellen Namespace das Lesen von Pods.
+Für clusterweiten Zugriff müsstest Du stattdessen eine `clusterrole` erstellen.
+
+---
+
+## Cluster-Wartung
+
+### 26. kubectl drain
+
+Evakuiert einen Node: Alle Pods werden auf andere Nodes verschoben. Typischer Einsatz vor
+Wartungsarbeiten oder OS-Updates.
+
+```bash
+kubectl drain worker-01 --ignore-daemonsets --delete-emptydir-data
+```
+
+- `--ignore-daemonsets` -- DaemonSet-Pods können nicht verschoben werden, sonst schlägt `drain` fehl
+- `--delete-emptydir-data` -- Pods mit emptyDir-Volumes werden trotzdem entfernt
+
+### 27. kubectl cordon / uncordon
+
+Markiert einen Node als nicht-schedulebar (`cordon`) bzw. wieder als schedulebar (`uncordon`).
+Bestehende Pods laufen weiter -- es werden nur keine neuen mehr zugewiesen.
+
+```bash
+kubectl cordon worker-01      # Keine neuen Pods auf diesem Node
+kubectl uncordon worker-01    # Node wieder freigeben
+```
+
+### 28. kubectl taint
+
+Setzt Taints auf Nodes -- damit verhinderst Du, dass Pods dort gescheduled werden, es sei denn,
+sie haben eine passende Toleration.
+
+```bash
+kubectl taint nodes worker-01 key=value:NoSchedule       # Taint setzen
+kubectl taint nodes worker-01 key=value:NoSchedule-      # Taint entfernen
+```
+
+**Hinweis:** Damit Pods auf einem getainteten Node gescheduled werden können, müssen sie eine passende Toleration im Pod-Spec definieren:
+
+```yaml
+tolerations:
+- key: "key"
+  operator: "Equal"
+  value: "value"
+  effect: "NoSchedule"
+```
+
+---
+
+## Fortgeschrittene Abfragen
+
+### 29. kubectl get mit JSONPath / Custom Columns
+
+Für gezielte Datenextraktion aus Kubernetes-Objekten. Besonders nützlich in Skripten und
+Automatisierungen.
+
+```bash
+# Alle Pod-Namen auflisten
+kubectl get pods -o jsonpath='{.items[*].metadata.name}'
+
+# IPs aller Pods
+kubectl get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.podIP}{"\n"}{end}'
+
+# Custom Columns für übersichtliche Tabellen
+kubectl get pods -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName
+```
+
+**Nützliche JSONPath-Beispiele:**
+```bash
+# Container-Images aller Pods
+kubectl get pods -o jsonpath='{.items[*].spec.containers[*].image}'
+
+# Node-Namen und ihre CPU-Capacity
+kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.capacity.cpu}{"\n"}{end}'
+
+# Alle Secrets-Namen
+kubectl get secrets -o jsonpath='{.items[*].metadata.name}'
+
+# Namespace und Status aller Deployments
+kubectl get deployments -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.status.readyReplicas}{" / "}{.spec.replicas}{"\n"}{end}'
+```
+
+**Hilfreiche Ressourcen:**
+- `kubectl explain` -- Eingebaute API-Dokumentation im Terminal
+- [Kubernetes API Reference](https://kubernetes.io/docs/reference/kubernetes-api/)
+- [JSONPath Syntax Guide](https://kubernetes.io/docs/reference/kubectl/jsonpath/)
+
+### 30. kubectl diff
+
+Zeigt Dir die Unterschiede zwischen der aktuellen Cluster-Konfiguration und einer lokalen
+YAML-Datei an -- bevor Du etwas anwendest. Damit prüfst Du vorab, welche Änderungen `apply`
+vornehmen würde.
+
+```bash
+kubectl diff -f deployment.yaml
+```
+
+### 31. kubectl wait
+
+Wartet, bis eine Ressource eine bestimmte Condition erreicht. Nützlich in CI/CD-Pipelines und
+Skripten.
+
+```bash
+kubectl wait --for=condition=Ready pod -l app=chromium --timeout=120s
+kubectl wait --for=condition=Available deployment/chromium --timeout=60s
+kubectl wait --for=delete pod/chromium-7d8f9c6b5-x2vnk --timeout=30s
+```
+
+### 32. kubectl explain
+
+Zeigt die API-Dokumentation eines Feldes direkt im Terminal an -- Dein eingebautes Nachschlagewerk,
+wenn Du beim Schreiben von YAML-Manifesten nicht sicher bist, welche Felder verfügbar sind.
+
+```bash
+kubectl explain pod                          # Übersicht Pod-Felder
+kubectl explain pod.spec.containers          # Container-Spezifikation
+kubectl explain deployment.spec.strategy     # Update-Strategie
+kubectl explain pod --recursive              # Alle Felder rekursiv anzeigen
+```
+
+---
+
+## Zusammenfassung
+
+| Kategorie               | Befehle                                             |
+| ------------------------ | --------------------------------------------------- |
+| Orientierung             | `version`, `cluster-info`, `config`                 |
+| Anzeigen                 | `get`, `describe`, `api-resources`                  |
+| Namespaces               | `create namespace`                                  |
+| Deployen                 | `create`, `apply`, `run`                            |
+| Skalieren & Aktualisieren | `scale`, `set`, `rollout`                          |
+| Debugging                | `logs`, `exec`, `port-forward`, `top`               |
+| Dateien & Konfiguration  | `cp`, `edit`, `patch`                               |
+| Löschen                  | `delete`                                            |
+| Labels & Annotationen    | `label`, `annotate`                                 |
+| Sicherheit               | `auth`, `create role/rolebinding`                   |
+| Cluster-Wartung          | `drain`, `cordon/uncordon`, `taint`                 |
+| Fortgeschritten          | `jsonpath`, `diff`, `wait`, `explain`               |
