@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-51521
+    title: Zwischen Vibe Coding und echter Architektur
+    edition: DevLand
+    guests: Dave König, Gregor Biswanger und Florian Lenz
+    date: 7. April 2026
+    description: >-
+      KI schreibt Code, baut Anwendungen und übernimmt immer mehr Aufgaben – doch was bleibt eigentlich noch beim Entwickler? Dave König spricht mit den Microsoft MVPs Gregor Biswanger und Florian Lenz über die Realität moderner Softwareentwicklung zwischen KI-Hype und Architekturverantwortung. Im Gespräch wird deutlich, wie stark sich die Anforderungen verändert haben: Vom Spezialisten zum Full-Stack-Generalisten mit DevOps-, Cloud- und KI-Kompetenzen. Ein zentrales Spannungsfeld entsteht dabei zwischen Geschwindigkeit und Qualität – während KI schnelle Ergebnisse liefert, bleiben Architektur, Struktur und saubere Entwicklungsprozesse essenziell.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69d4f611b959b8571de0b7bd/media.mp3
   - id: doag-voices-15602
     title: "Cloud-Transformation im Reality-Check: Automatisierung, Kosten und Kulturwandel"
     edition: CloudTalk
