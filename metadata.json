@@ -1,0 +1,13 @@
+{
+  "title": "Low-Code im Enterprise: Governance, KI und die Zukunft der Softwareentwicklung",
+  "edition": "DevLand",
+  "guests": "Dave König, Markus Bernhart und Vanessa Schmitz",
+  "date": "10. Februar 2026",
+  "description": "Markus Bernhart und Vanessa Schmitz von der Low-Code-Association diskutieren, warum Low-Code keine Abkürzung, sondern eine moderne Form von Softwareengineering ist. Plattformen wie Mendix, OutSystems, Camunda oder Oracle APEX sind heute produktionsreif – auch im Enterprise- und Behördenumfeld – doch Governance, Security und klare Rollenmodelle bleiben unverzichtbar. Ein zentrales Spannungsfeld entsteht beim Zusammenspiel von Low-Code und KI: Vibe-Coding und agentische Systeme eröffnen neue Möglichkeiten, entfalten ihren Mehrwert aber erst in Kombination mit strukturierten Low-Code-Ansätzen.",
+  "links": {
+    "spotify": "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB",
+    "apple": "https://podcasts.apple.com/de/podcast/doag-voices/id1847181531",
+    "amazon": "https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices"
+  },
+  "audioUrl": "https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/698ad77af6349d3c6e6557f1/media.mp3"
+}
