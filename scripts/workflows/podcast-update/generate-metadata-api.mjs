@@ -1,23 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * Generate episode metadata using GitHub Copilot
+ * Generate episode metadata using GitHub Copilot API
  * Takes missing episode JSON and generates structured metadata
- * With fallback to API or manual input if CLI fails
  */
 
 import { readFileSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { execSync } from "child_process";
-import { createInterface } from "readline";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const WORKSPACE_ROOT = join(__dirname, "..", "..", "..");
 
 /**
- * Build prompt for GitHub Copilot CLI
+ * Build prompt for GitHub Copilot
  */
 function buildCopilotPrompt(episode) {
   return `Analysiere die folgende Podcast-Episode und erstelle daraus strukturierte Metadaten im JSON-Format.
@@ -66,47 +63,64 @@ Gib jetzt NUR das JSON-Objekt aus:`;
 }
 
 /**
- * Call GitHub Copilot CLI and extract JSON
+ * Call GitHub Copilot API and extract JSON
  */
-async function callCopilotCLI(prompt) {
-  console.log("🤖 Calling GitHub Copilot CLI...");
+async function callCopilotAPI(prompt) {
+  console.log("🤖 Calling GitHub Copilot API...");
 
   try {
-    // Write prompt to temporary file to avoid shell escaping issues
-    const tempPromptFile = join(WORKSPACE_ROOT, ".copilot-prompt.txt");
-    writeFileSync(tempPromptFile, prompt, "utf-8");
-
-    // Call gh copilot with the prompt from file using input redirection
-    const command = `gh copilot < "${tempPromptFile}"`;
+    const token = process.env.COPILOT_GITHUB_TOKEN;
+    if (!token) {
+      throw new Error("COPILOT_GITHUB_TOKEN environment variable not set");
+    }
 
     console.log("📤 Sending prompt to Copilot...");
 
-    // Prepare environment with Copilot auth token
-    const env = Object.assign({}, process.env);
-    if (process.env.COPILOT_GITHUB_TOKEN) {
-      env.GITHUB_TOKEN = process.env.COPILOT_GITHUB_TOKEN;
+    // Use fetch for API call (available in Node.js 18+)
+    const response = await fetch(
+      "https://api.github.com/copilot/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Du bist ein hilfreicher Assistent, der ausschließlich JSON-Antworten liefert. Antworte NUR mit einem validen JSON-Objekt, ohne Markdown-Formatierung oder zusätzlichen Text.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: 0.3,
+          max_tokens: 1000,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `API request failed with status ${response.status}: ${errorText}`
+      );
     }
 
-    const output = execSync(command, {
-      encoding: "utf-8",
-      maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-      stdio: ["pipe", "pipe", "pipe"],
-      shell: "/bin/bash",
-      env: env,
-    });
-
+    const data = await response.json();
     console.log("📥 Received response from Copilot");
 
-    // Clean up temp file
-    try {
-      const { unlinkSync } = await import("fs");
-      unlinkSync(tempPromptFile);
-    } catch (e) {
-      // Ignore cleanup errors
-    }
+    let jsonText = data.choices?.[0]?.message?.content?.trim();
 
-    // Extract JSON from output (might be wrapped in code blocks or have extra text)
-    let jsonText = output.trim();
+    if (!jsonText) {
+      throw new Error("No content in Copilot response");
+    }
 
     // Remove markdown code blocks if present
     jsonText = jsonText.replace(/^```json?\n?/gm, "").replace(/\n?```$/gm, "");
@@ -114,18 +128,13 @@ async function callCopilotCLI(prompt) {
     // Try to find JSON object in the output
     const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error("Could not find JSON object in Copilot response");
+      throw new Error(
+        "Could not find JSON object in Copilot response. Raw output: " +
+          jsonText.substring(0, 200)
+      );
     }
 
     jsonText = jsonMatch[0];
-
-    // Clean up common JSON issues (trailing commas, etc.)
-    try {
-      // Remove trailing commas before closing braces/brackets
-      jsonText = jsonText.replace(/,\s*([}\]])/g, "$1");
-    } catch (cleanupError) {
-      // Ignore cleanup errors, continue with original text
-    }
 
     // Parse JSON
     const metadata = JSON.parse(jsonText);
@@ -133,10 +142,9 @@ async function callCopilotCLI(prompt) {
     console.log("✅ Successfully parsed metadata from Copilot");
     return metadata;
   } catch (error) {
-    console.error("❌ Error calling GitHub Copilot CLI:");
+    console.error("❌ Error calling GitHub Copilot API:");
     console.error(error.message);
-    if (error.stdout) console.error("STDOUT:", error.stdout);
-    if (error.stderr) console.error("STDERR:", error.stderr);
+    if (error.stack) console.error(error.stack);
     throw error;
   }
 }
@@ -198,8 +206,8 @@ async function main() {
     // Build prompt
     const prompt = buildCopilotPrompt(episodeData);
 
-    // Call Copilot CLI
-    const metadata = await callCopilotCLI(prompt);
+    // Call Copilot API
+    const metadata = await callCopilotAPI(prompt);
 
     // Validate metadata
     validateMetadata(metadata);

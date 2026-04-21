@@ -64,13 +64,14 @@ jobs:
           echo "✅ No new episodes found. All episodes are up to date."
           exit 0
 
-      - name: Generate episode metadata using Copilot
+      - name: Generate episode metadata using Copilot API
         if: steps.check_episodes.outputs.missing_episode != ''
         id: generate_metadata
         run: |
-          echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
-          export GITHUB_TOKEN="${{ secrets.COPILOT_GITHUB_TOKEN }}"
-          node scripts/workflows/podcast-update/generate-metadata.mjs
+          echo "🤖 Generating episode metadata using GitHub Copilot API..."
+          node scripts/workflows/podcast-update/generate-metadata-api.mjs
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Update dev branch
         if: steps.check_episodes.outputs.missing_episode != ''

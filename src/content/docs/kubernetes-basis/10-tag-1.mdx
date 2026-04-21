@@ -47,26 +47,16 @@ Cloud Native Computing Foundation (CNCF) gepflegt.
 
 ### Wozu K8s?
 
-- **Container-Orchestrierung** -- Verwaltung hunderter Container über mehrere Server
+- **[Container-Orchestrierung](/docs/kubernetes-basis/90-glossar#container-orchestrierung)** -- Verwaltung hunderter Container über mehrere Server
 - **[Self-Healing](/docs/kubernetes-basis/90-glossar#self-healing)** -- Automatischer Neustart ausgefallener Container
-- **Skalierung** -- Hoch- und Runterskalieren per Befehl oder automatisch
-- **Rolling Updates** -- Anwendungen ohne Ausfallzeit aktualisieren
-- **Service Discovery** -- Automatische Namensauflösung zwischen Anwendungen
-
-### Endprodukt
-
-Am Ende der zwei Tage sieht unser Cluster so aus -- vier Anwendungen hinter einem Ingress:
-
-```mermaid
-graph TD
-    IC["Ingress Controller"]
-    IC --> CR["Chromium<br/>Browser"]
-    IC --> CS["Code-Server<br/>IDE"]
-    IC --> HA["Home<br/>Assistant"]
-    IC --> NC["Nextcloud"]
-```
+- **[Skalierung](/docs/kubernetes-basis/90-glossar#skalierung)** -- Hoch- und Runterskalieren per Befehl oder automatisch
+- **[Rolling Updates](/docs/kubernetes-basis/90-glossar#rolling-updates)** -- Anwendungen ohne Ausfallzeit aktualisieren
+- **[Service Discovery](/docs/kubernetes-basis/90-glossar#service-discovery)** -- Automatische Namensauflösung zwischen Anwendungen
 
 ### DevOps-Workflow
+
+In der Praxis durchläuft jede Anwendung einen klar definierten Weg von der Entwicklung bis zur
+Produktion -- Kubernetes übernimmt dabei die Rolle des zentralen Auslieferungssystems:
 
 ```mermaid
 graph LR
@@ -76,9 +66,6 @@ graph LR
     D --> E["Produktion"]
 ```
 
-Kubernetes ist die Standard-Plattform für Cloud-native Anwendungen und bildet die Brücke zwischen
-Entwicklung (Dev) und Betrieb (Ops).
-
 ---
 
 ## Grundkonzepte
@@ -86,10 +73,13 @@ Entwicklung (Dev) und Betrieb (Ops).
 ### Analogie
 
 Um Kubernetes-Konzepte leichter zu verstehen, nutzen wir eine **Analogie zu einem Logistikzentrum**.
-Kubernetes verwaltet Container genauso, wie ein Logistikzentrum Pakete verwaltet: Es entscheidet,
-wo Pakete lagern, wie sie transportiert werden, und sorgt automatisch dafür, dass alles am richtigen
-Ort ist. Diese Analogie hilft dir, die oft abstrakten Konzepte in alltägliche Szenarien zu übersetzen
-und so schneller ein mentales Modell von Kubernetes aufzubauen.
+Genau wie ein Logistikzentrum Pakete verwaltet -- es entscheidet, wo sie lagern, wie sie
+transportiert werden, und sorgt automatisch dafür, dass alles am richtigen Ort ankommt -- übernimmt
+Kubernetes diese Aufgaben für Container-Anwendungen.
+
+Bezogen auf den DevOps-Workflow oben: Der Entwickler baut das Paket (`docker build`), legt es ins
+Lager (Registry), und das Logistikzentrum (Kubernetes) übernimmt von dort die Auslieferung an den
+Empfänger (Produktion) -- zuverlässig, automatisch und mit Self-Healing bei Problemen.
 
 | Kubernetes-Konzept | Analogie                 | Beschreibung                                                              |
 | ------------------ | ------------------------ | ------------------------------------------------------------------------- |
@@ -215,11 +205,16 @@ kubectl config set-context --current --namespace=k8s-training
 
 Ab jetzt arbeiten alle Befehle automatisch im Namespace `k8s-training`.
 
+> ⚠️ **HINWEIS** – In einem Cluster das dir von deiner Firma zur Verfügung gestellt wird, ist es ggf. nicht möglich
+einen namespance zu erstellen. In diesem Fall arbeiten wir in dem Workspace weiter, der Dir zugewiesen wurde.
+
 ### Übung 1
 
 1. Zeige alle Nodes des Clusters an. Welche Rollen haben sie?
-2. Erstelle den Namespace `k8s-training`.
-3. Setze `k8s-training` als Standard-Namespace.
+   > **Erwartete Ausgabe:** Nodes mit Rolle `control-plane` für den Master-Node und `<none>` (= Worker Node) für die Worker-Nodes.
+2. Erstelle den Namespace `k8s-training` (wenn möglich).
+3. Setze `k8s-training` als Standard-Namespace (wenn möglich).
+4. Setze den Standardnamespace mit `kubectl config set-context --current --namespace=<DEIN NAMESPACE>`
 4. Prüfe mit `kubectl get pods`, dass der Namespace leer ist.
 5. Zeige alle System-Pods im Namespace `kube-system` an: `kubectl get pods -n kube-system`
 
@@ -280,12 +275,36 @@ kubectl delete pod <pod-name>
 # Beobachten: Kubernetes erstellt automatisch einen neuen Pod!
 ```
 
+### Wenn etwas nicht klappt
+
+```bash
+# Pod-Status prüfen
+kubectl get pods
+
+# Details und Events anzeigen (zeigt Fehlerursache)
+kubectl describe pod <pod-name>
+
+# Logs lesen
+kubectl logs <pod-name>
+```
+
+| Status             | Ursache                     | Lösung                                         |
+| ------------------ | --------------------------- | ---------------------------------------------- |
+| `Pending`          | Kein Node verfügbar         | `kubectl describe pod` → Events prüfen         |
+| `ImagePullBackOff` | Image nicht erreichbar      | Image-Name und Registry-Zugang prüfen          |
+| `CrashLoopBackOff` | Container startet, stürzt ab | `kubectl logs <pod-name>` lesen               |
+
 ### Übung 2
 
 1. Prüfe den Status des Chromium-Deployments mit `kubectl get deployment chromium`.
 2. Lies die Logs des Chromium-Pods: `kubectl logs <pod-name>`.
 3. Lösche den Pod und beobachte, wie Kubernetes ihn automatisch neu erstellt.
 4. Auf welchem Node läuft der neue Pod? (`kubectl get pods -o wide`)
+
+> Wir haben Chromium erfolgreich imperativ deployed. Das funktioniert gut für schnelle Experimente --
+> aber in der Praxis wird fast ausschließlich deklarativ mit YAML-Dateien gearbeitet. Im nächsten
+> Block siehst du, warum: YAML-Manifeste lassen sich versionieren, wiederverwenden und im Team
+> reviewen.
 
 ---
 
@@ -477,6 +496,11 @@ spec:
           emptyDir: {}
 ```
 
+> ⚠️ **Nur für die Schulung:** Passwörter gehören in der Praxis niemals als Klartext in
+> YAML-Manifeste. Kubernetes bietet dafür
+> [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/). Für diese Schulung
+> vereinfachen wir bewusst.
+
 ### Anwenden
 
 ```bash
@@ -578,6 +602,13 @@ kubectl get endpoints
 ```
 
 ### Browser-Test
+
+Ermittle zuerst die IP-Adresse eines Worker-Nodes:
+
+```bash
+kubectl get nodes -o wide
+# Spalte INTERNAL-IP enthält die gesuchte IP-Adresse
+```
 
 Öffnet folgende Adressen im Browser:
 

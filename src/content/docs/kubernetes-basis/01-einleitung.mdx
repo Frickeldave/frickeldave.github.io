@@ -7,6 +7,9 @@ image: "@assets/docs/kubernetes-basis/knba-01-001.png"
 imageAlt: "Kubernetes Basis - 01 Einleitung"
 ---
 
+import { Image } from "astro:assets";
+import knba01002 from "@assets/docs/kubernetes-basis/knba-01-002.png";
+
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Worum geht es?
@@ -31,23 +34,16 @@ Kubernetes-Cluster -- alle hinter einem gemeinsamen Ingress-Controller erreichba
 | Home Assistant   | `lscr.io/linuxserver/homeassistant`    | ha.k8s-training.frickeldave.de     |
 | Nextcloud        | `lscr.io/linuxserver/nextcloud`        | drive.k8s-training.frickeldave.de  |
 
-```mermaid
-graph TD
-    IC["Ingress Controller"]
-    IC --> CR["Chromium Browser<br/>chrome.*"]
-    IC --> CS["Code-Server IDE<br/>code.*"]
-    IC --> HA["Home Assistant<br/>ha.*"]
-    IC --> NC["Nextcloud<br/>drive.*"]
-```
+<Image src={knba01002} alt="4 Container hinter einem ingress controller" />
 
 Alle Anwendungen stammen von [linuxserver.io](https://www.linuxserver.io/) -- einer Community, die
-standardisierte, gut dokumentierte Docker-Images pflegt. Sie liefern sofort visuelle Web-UIs und
-machen Fortschritte im Cluster direkt sichtbar.
+standardisierte, gut dokumentierte Docker-Images pflegt. Du erhältst sofort visuelle Web-UIs und
+machst Fortschritte im Cluster direkt sichtbar.
 
 ## Für wen ist diese Schulung?
 
 Die Schulung richtet sich an IT-Professionals, die Kubernetes im Berufsalltag einsetzen wollen:
-Entwickler, DevOps-Engineers und Systemadministratoren mit Linux-Grundkenntnissen und einem
+EntwicklerInnen, DevOps-Engineers und Systemadministratoren mit Linux-Grundkenntnissen und einem
 Grundverständnis von Containern (Docker-Basics).
 
 Kubernetes-Vorkenntnisse sind nicht erforderlich -- die Schulung beginnt bei null und baut alle
@@ -57,7 +53,7 @@ Konzepte schrittweise auf.
 
 | Tag   | Schwerpunkt                   | Ergebnis am Tagesende                              |
 | ----- | ----------------------------- | -------------------------------------------------- |
-| Tag 1 | Grundlagen & erste Schritte   | Chromium und Code-Server laufen im Cluster         |
-| Tag 2 | Produktionsreife & Vernetzung | Alle vier Anwendungen laufen hinter Ingress        |
+| [Tag 1](http://localhost:4321/docs/kubernetes-basis/10-tag-1) | Grundlagen & erste Schritte   | Chromium und Code-Server laufen im Cluster         |
+| [Tag 2](http://localhost:4321/docs/kubernetes-basis/20-tag-2) | Produktionsreife & Vernetzung | Alle vier Anwendungen laufen hinter Ingress        |
 
-Lernziele und didaktisches Konzept: [02 Ziele / Methoden](/docs/kubernetes-basis/02-ziele-methoden).
+Weiter: [Lernziele und didaktisches Konzept](02-ziele-methoden)
