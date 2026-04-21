@@ -76,8 +76,8 @@ async function callCopilotCLI(prompt) {
     const tempPromptFile = join(WORKSPACE_ROOT, ".copilot-prompt.txt");
     writeFileSync(tempPromptFile, prompt, "utf-8");
 
-    // Call gh copilot with the prompt from file using input redirection
-    const command = `gh copilot < "${tempPromptFile}"`;
+    // Call gh copilot with the prompt from file using pipe and xargs
+    const command = `cat "${tempPromptFile}" | xargs -0 gh copilot -p`;
 
     console.log("📤 Sending prompt to Copilot...");
 
@@ -105,6 +105,8 @@ async function callCopilotCLI(prompt) {
       // Ignore cleanup errors
     }
 
+    console.log("📥 Received response from Copilot");
+    
     // Extract JSON from output (might be wrapped in code blocks or have extra text)
     let jsonText = output.trim();
 
