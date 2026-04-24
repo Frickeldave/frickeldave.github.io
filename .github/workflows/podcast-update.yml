@@ -71,7 +71,7 @@ jobs:
           echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
           node scripts/workflows/podcast-update/generate-metadata.mjs
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Update dev branch
         if: steps.check_episodes.outputs.missing_episode != ''
