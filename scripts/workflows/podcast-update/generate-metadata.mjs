@@ -20,7 +20,7 @@ const WORKSPACE_ROOT = join(__dirname, "..", "..", "..");
  * Build prompt for GitHub Copilot CLI
  */
 function buildCopilotPrompt(episode) {
-  return `Analysiere die folgende Podcast-Episode und erstelle daraus strukturierte Metadaten im JSON-Format.
+  return `Analysiere die folgende Podcast-Episode und erstelle daraus strukturierte Metadaten als valides JSON.
 
 EPISODE DETAILS:
 - Titel: ${episode.title}
@@ -39,30 +39,28 @@ Der Podcast erscheint in verschiedenen Editionen:
 - DevLand: Moderne Softwareentwicklung zwischen Wandel und multiplen Perspektiven
 
 AUFGABE:
-Erstelle ein JSON-Objekt mit folgenden Feldern (WICHTIG: Antworte NUR mit dem JSON, ohne zusätzlichen Text):
+Erstelle ein valides JSON-Objekt mit folgenden Feldern.
 
-{
-  "title": "Prägnanter Titel der Episode im Stil der existierenden Episoden",
-  "edition": "Eine der Editionen: People, FutureAI, DataWorld, CloudTalk oder DevLand",
-  "guests": "Namen aller Teilnehmer, z.B. 'Dave König und Dr. Max Mustermann'",
-  "date": "Datum im Format '${episode.pubDateFormatted}'",
-  "description": "Zusammenfassung der Episode (2-4 Sätze, ähnlich wie existierende Episoden)",
-  "links": {
-    "spotify": "Spotify Episode Link oder Show-Link: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB",
-    "apple": "Apple Podcasts Episode Link oder Show-Link: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531",
-    "amazon": "Amazon Music Episode Link oder Show-Link: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices"
-  }
-}
+KRITISCHE JSON-REGELN (Verstöße führen zu einem Parse-Fehler):
+1. Antworte AUSSCHLIESSLICH mit dem rohen JSON-Objekt — kein Text davor oder danach, keine Markdown-Code-Blöcke (kein \`\`\`json)
+2. Alle String-Werte MÜSSEN in doppelten Anführungszeichen stehen
+3. Doppelte Anführungszeichen INNERHALB eines String-Werts MÜSSEN als \" escaped werden (Beispiel: "Mit \\"Ed\\" eine Plattform" statt "Mit "Ed" eine Plattform")
+4. Verwende innerhalb von String-Werten bevorzugt einfache Anführungszeichen statt doppelter, wenn Zitate notwendig sind (Beispiel: "Mit 'Ed' eine Plattform")
+5. Kein Komma nach dem letzten Feld eines Objekts (kein trailing comma)
+6. Keine Kommentare im JSON
 
-REGELN:
-1. Der Titel sollte prägnant sein und den Inhalt gut zusammenfassen
-2. Die Edition muss eine der genannten sein (People, FutureAI, DataWorld, CloudTalk, DevLand)
-3. Die Beschreibung sollte informativ sein und den Stil existierender Episoden treffen
-4. Wenn spezifische Links zu Spotify/Apple/Amazon nicht identifizierbar sind, verwende die Show-Links
-5. Das Datum MUSS exakt "${episode.pubDateFormatted}" sein
-6. Antworte NUR mit dem JSON-Objekt, ohne Markdown-Code-Blöcke oder erklärenden Text
+ERWARTETES FORMAT (exakt so ausgeben, mit echten Werten):
+{"title":"Prägnanter Titel ohne Anführungszeichen in Werten","edition":"People","guests":"Vorname Nachname und Vorname Nachname","date":"${episode.pubDateFormatted}","description":"Zusammenfassung der Episode in 2-4 Sätzen ohne Anführungszeichen.","links":{"spotify":"https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB","apple":"https://podcasts.apple.com/de/podcast/doag-voices/id1847181531","amazon":"https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices"}}
 
-Gib jetzt NUR das JSON-Objekt aus:`;
+INHALTLICHE REGELN:
+- title: Prägnanter Titel, der den Inhalt gut zusammenfasst; vermeide doppelte Anführungszeichen im Titel
+- edition: MUSS exakt eine dieser Optionen sein: People, FutureAI, DataWorld, CloudTalk, DevLand
+- guests: Vollständige Namen aller Gäste, kommagetrennt oder mit "und" verbunden
+- date: MUSS exakt "${episode.pubDateFormatted}" sein — nicht verändern
+- description: 2-4 informatve Sätze im Stil existierender Episoden; keine Anführungszeichen in der Beschreibung
+- links: Wenn spezifische Episode-Links nicht bekannt sind, verwende die Show-Links aus dem Beispiel-Format
+
+Gib JETZT ausschließlich das JSON-Objekt aus, beginnend mit { und endend mit }:`;
 }
 
 /**
@@ -106,7 +104,7 @@ async function callCopilotCLI(prompt) {
     }
 
     console.log("📥 Received response from Copilot");
-    
+
     // Extract JSON from output (might be wrapped in code blocks or have extra text)
     let jsonText = output.trim();
 
