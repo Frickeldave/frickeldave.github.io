@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-32597
+    title: "KI im Mittelstand: Wie Vossloh mit 'Ed' eine eigene AI-Plattform aufgebaut hat"
+    edition: FutureAI
+    guests: Sarah Stemmler und Alexandra Feix
+    date: 21. April 2026
+    description: >-
+      Wie gelingt es, Künstliche Intelligenz nicht nur technisch, sondern auch kulturell erfolgreich in einem Unternehmen zu verankern? Sarah Stemmler von synsugar und Alexandra Feix von Vossloh sprechen über den internen KI-Assistenten 'Ed', benannt nach Firmengründer Eduard Vossloh. Die Episode beleuchtet den Weg von ersten Überlegungen bis zur eigenen Plattform und zeigt, warum erfolgreiche KI-Einführung weit mehr ist als die Auswahl eines Sprachmodells – es geht um Datenqualität, Governance und vor allem um Menschen.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69e7207b1e5fb1ae463f120f/media.mp3
   - id: doag-voices-64200
     title: "KI-Realität vs. Entwickler-Mythen: Architektur, Prozesse und die Zukunft der Softwareentwicklung (Teil 2)"
     edition: DevLand
