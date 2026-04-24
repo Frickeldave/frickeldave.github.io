@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-64200
+    title: "KI-Realität vs. Entwickler-Mythen: Architektur, Prozesse und die Zukunft der Softwareentwicklung (Teil 2)"
+    edition: DevLand
+    guests: Dave König, Gregor Biswanger und Florian Lenz
+    date: 14. April 2026
+    description: >-
+      Im zweiten Teil des Gesprächs diskutieren Dave König, Gregor Biswanger und Florian Lenz zentrale Zukunftsfragen der Softwareentwicklung im KI-Zeitalter. Vom Tech or Myth-Quiz über Architekturentscheidungen zwischen Microservices und modularen Monolithen bis hin zu agilen Prozessen und der Ausbildung neuer Entwickler werden grundlegende Fragen aufgeworfen. Es geht um die Balance zwischen Geschwindigkeit durch KI und notwendigen Strukturen sowie um die Frage, wie viel Grundlagenwissen in Zeiten von AI-Unterstützung noch essentiell ist.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69dddef194cbb214c33f27b3/media.mp3
   - id: doag-voices-51521
     title: Zwischen Vibe Coding und echter Architektur
     edition: DevLand
