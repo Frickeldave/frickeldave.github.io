@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-99932
+    title: Jonas Janz über die Zukunft der DOAG als Plattform für neue Tech-Communities
+    edition: People
+    guests: Jonas Janz
+    date: 28. April 2026
+    description: >-
+      Jonas Janz, neuer Vorstandsvorsitzender der DOAG, spricht über seinen Weg von Game Design über Java-Entwicklung bis zu Red Hat und die Herausforderungen eines traditionsreichen IT-Vereins im technologischen Wandel. Im Mittelpunkt steht seine Vision, die DOAG als offene Plattform und Infrastruktur für neue Fach-Communities von Cloud Native über KI bis zu neuen Entwickler-Ökosystemen zu etablieren. Die Episode beleuchtet moderne Community-Arbeit, den Wandel zwischen Oracle-Expertise und neuen Technologien sowie konkrete KI-Anwendungen im beruflichen und privaten Alltag.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69f096bc5531bfee783296b4/media.mp3
   - id: doag-voices-32597
     title: "KI im Mittelstand: Wie Vossloh mit 'Ed' eine eigene AI-Plattform aufgebaut hat"
     edition: FutureAI
