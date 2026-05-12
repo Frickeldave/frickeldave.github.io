@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-34564
+    title: "AI-First statt Code-First: Wie KI die Softwareentwicklung verändert"
+    edition: FutureAI
+    guests: Matthias Herbert
+    date: 5. Mai 2026
+    description: >-
+      Matthias Herbert, AI-Coach und Trainer, spricht über sein AI-Developer-Bootcamp und den grundlegenden Wandel in der Softwareentwicklung. Im Mittelpunkt steht nicht nur Effizienz, sondern ein Mindset-Wechsel: Entwickler werden zu Steuernden von KI-Systemen, während klassisches Coding in den Hintergrund tritt. Die Episode beleuchtet, warum Anforderungen und Spezifikationen wichtiger werden, wie sich Teams und Rollen verändern und welche Ängste und Chancen mit agentischer Softwareentwicklung einhergehen.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69f9c6c02a1dd3f1a80f8093/media.mp3
   - id: doag-voices-99932
     title: Jonas Janz über die Zukunft der DOAG als Plattform für neue Tech-Communities
     edition: People
