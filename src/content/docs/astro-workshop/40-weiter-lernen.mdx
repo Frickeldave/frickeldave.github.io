@@ -1,0 +1,74 @@
+---
+visible: true
+title: 40 Weiter lernen
+description: Empfehlungen, weiterführende Ressourcen und nächste Schritte nach dem Workshop.
+draft: false
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Was jetzt?
+
+Der Workshop hat die Basis gelegt: Astro, Starlight, Linting, Deployment. Aber das ist erst
+der Anfang — Astro kann deutlich mehr, und das Ökosystem wächst schnell.
+
+Hier kommen die Empfehlungen, die sich in der Praxis bewährt haben.
+
+## Mehr als nur Doku: Astrogon Theme
+
+Starlight ist ideal, wenn eine reine Dokumentationsseite gefragt ist. Sobald aber neben der Doku
+auch ein **Blog**, **Rezepte**, ein **Portfolio** oder andere Content-Typen auf derselben Seite
+erscheinen sollen, stößt Starlight an seine Grenzen.
+
+Hier kommt **Astrogon** ins Spiel — ein Astro-Theme, das genau für diesen Fall gebaut wurde:
+
+| Feature | Starlight | Astrogon |
+|---|---|---|
+| Dokumentation | ✅ | ✅ |
+| Blog | ❌ | ✅ |
+| Rezepte | ❌ | ✅ |
+| Portfolio / Handmade | ❌ | ✅ |
+| Mehrere Content Collections | ❌ | ✅ |
+| Glass Morphism Design | ❌ | ✅ |
+
+Astrogon ist Open Source und auf GitHub verfügbar:
+[https://github.com/astrogon/astrogon](https://github.com/astrogon/astrogon)
+
+> **Wann Starlight, wann Astrogon?**
+> Starlight ist die bessere Wahl, wenn es wirklich nur um Dokumentation geht — es bringt
+> Navigation, Suche und Versionierung out-of-the-box. Astrogon lohnt sich, wenn eine
+> vollwertige Multi-Content-Plattform entstehen soll.
+
+### Community & Inspiration
+
+- [Astro Discord](https://astro.build/chat) — aktive Community, schnelle Antworten
+- [Astro Themes](https://astro.build/themes/) — fertige Themes als Ausgangspunkt oder Inspiration
+- [Awesome Astro](https://github.com/one-aalam/awesome-astro) — kuratierte Liste von Tools, Plugins und Ressourcen
+
+## Nächste Schritte
+
+Je nachdem, was als nächstes gebaut werden soll:
+
+1. **Suche einbauen** — Starlight unterstützt [Pagefind](https://pagefind.app/) out-of-the-box:
+   `pagefind --site dist` nach dem Build ausführen.
+
+2. **i18n / Mehrsprachigkeit** — Starlight hat eingebaute Unterstützung für mehrere Sprachen:
+   [Starlight i18n Guide](https://starlight.astro.build/guides/i18n/).
+
+3. **Eigenes Zod-Schema** — Wenn die eigene Content Collection eigene Felder braucht, lässt sich
+   `docsSchema` erweitern:
+
+   ```typescript
+   import { docsSchema } from "@astrojs/starlight/schema";
+   import { z } from "astro:content";
+
+   schema: docsSchema({
+     extend: z.object({
+       author: z.string().optional(),
+       readingTime: z.number().optional(),
+     }),
+   })
+   ```
+
+4. **KI-Integration** — Automatische Übersetzung oder Content-Generierung mit GitHub Copilot und
+   GitHub Actions — das Thema haben wir in [KI-Integration](32-ki-integration) angerissen.

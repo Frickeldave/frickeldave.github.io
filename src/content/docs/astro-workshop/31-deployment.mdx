@@ -1,0 +1,259 @@
+---
+visible: true
+title: 31 Deployment
+description: Astro-Website auf GitHub Pages deployen und optional lokal mit Docker betreiben.
+draft: false
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Deployment-Strategie im Überblick
+
+| Variante           | Einsatzzweck                          | Kosten  |
+| ------------------ | ------------------------------------- | ------- |
+| **GitHub Pages**   | Produktives Deployment (primär)       | Kostenlos |
+| **Lokales Docker** | Lokale Vorschau, Entwicklung (optional) | Kostenlos |
+
+## GitHub Pages — Primäres Deployment
+
+GitHub Pages ist das primäre Deployment-Ziel. Die Website wird bei jedem Push auf `main`
+vollautomatisch gebaut und veröffentlicht.
+
+### Vollständiger GitHub Actions Workflow
+
+Die Datei `.github/workflows/deploy.yml` aus [Phase 1](10-astro-setup) wird um die
+Linting-Checks erweitert:
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: npm run lint:check
+
+      - name: Format check (Prettier)
+        run: npm run format:check
+
+      - name: Install Vale
+        run: npm run install-vale
+
+      - name: Prose check (Vale)
+        run: npm run prose
+
+  build:
+    name: Build
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+### Workflow-Ablauf
+
+```
+Push auf main
+    │
+    ▼
+Quality Checks
+├── ESLint (lint:check)
+├── Prettier (format:check)
+└── Vale (prose)
+    │
+    ▼ (nur wenn alle Checks grün)
+Build
+└── astro build → ./dist
+    │
+    ▼
+Deploy
+└── GitHub Pages live
+```
+
+### Branch-Strategie
+
+Für eine saubere Trennung zwischen Entwicklung und Produktion empfiehlt sich:
+
+| Branch  | Zweck                                    | Deployment       |
+| ------- | ---------------------------------------- | ---------------- |
+| `dev`   | Aktive Entwicklung, Feature-Branches     | Keins (lokal)    |
+| `main`  | Stabiler, freigegebener Stand            | GitHub Pages     |
+
+```bash
+# Feature entwickeln
+git checkout -b feature/neue-seite
+# ... Änderungen machen ...
+git push origin feature/neue-seite
+
+# Nach Review: in dev mergen
+git checkout dev
+git merge feature/neue-seite
+
+# Release: dev → main mergen (triggert Deployment)
+git checkout main
+git merge dev --no-ff
+git push origin main
+```
+
+### Deployment-Status prüfen
+
+Im GitHub Repository unter **Actions** ist der aktuelle Status aller Workflows sichtbar.
+Nach erfolgreichem Deployment ist die Website unter `https://DEIN-USERNAME.github.io` erreichbar.
+
+## Lokales Docker — Optionale Entwicklungsoption
+
+Docker ermöglicht eine produktionsnahe lokale Vorschau der gebauten Website — ohne Dev-Server,
+direkt mit dem statischen Build-Output.
+
+### Dockerfile anlegen
+
+```dockerfile
+# Dockerfile
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Produktions-Image: Nginx für statische Dateien
+FROM nginx:alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Nginx-Konfiguration für Single-Page-Routing (optional)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### Nginx-Konfiguration
+
+```nginx
+# nginx.conf
+server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Astro-Build: alle Routen auf index.html fallback
+    location / {
+        try_files $uri $uri/ $uri.html /index.html;
+    }
+
+    # Caching für statische Assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+### Docker-Befehle
+
+```bash
+# Image bauen
+docker build -t meine-astro-website .
+
+# Container starten
+docker run -p 8080:80 meine-astro-website
+
+# Website aufrufen
+open http://localhost:8080
+```
+
+### Docker Compose (optional)
+
+Für eine komfortablere Entwicklung mit `docker compose`:
+
+```yaml
+# docker-compose.yml
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      # Hot-Reload: dist-Verzeichnis einbinden (nach npm run build)
+      - ./dist:/usr/share/nginx/html:ro
+```
+
+```bash
+# Starten
+docker compose up -d
+
+# Stoppen
+docker compose down
+```
+
+### Wann Docker statt Dev-Server?
+
+| Situation                              | Empfehlung          |
+| -------------------------------------- | ------------------- |
+| Aktive Entwicklung, schnelles Feedback | `npm run dev`       |
+| Produktionsnahe Vorschau testen        | Docker              |
+| Nginx-Konfiguration prüfen            | Docker              |
+| Performance-Test des Builds            | Docker              |
+
+Weiter: [KI-Integration](32-ki-integration)

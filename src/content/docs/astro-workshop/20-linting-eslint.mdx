@@ -1,0 +1,288 @@
+---
+visible: true
+title: 20 ESLint — Code-Qualität
+description: ESLint für Starlight/Astro-Projekte installieren, konfigurieren und mit Finetuning auf Hochglanz bringen.
+draft: false
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Was ist ESLint?
+
+**ESLint** bildet das Fundament des Linting-Stacks. Es analysiert TypeScript-, JavaScript- und
+Astro-Dateien auf potenzielle Fehler, Style-Inkonsistenzen und Best-Practice-Verletzungen — bevor
+der Code überhaupt ausgeführt wird.
+
+> **Starlight-Hinweis:** Auch wenn Starlight-Projekte weniger eigene `.astro`-Komponenten
+> enthalten als ein Custom-Theme, lohnt sich ESLint trotzdem: TypeScript-Fehler in
+> `astro.config.mjs`, eigenen Komponenten und Hilfsskripten werden zuverlässig gefunden.
+
+Die drei Linting-Dimensionen im Vergleich:
+
+| Tool        | Dimension        | Beispiel                                          |
+| ----------- | ---------------- | ------------------------------------------------- |
+| **ESLint**  | Code-Qualität    | Unbenutzte Variablen, fehlende Return-Types       |
+| Prettier    | Formatierung     | Einrückung, Zeilenlänge, Anführungszeichen        |
+| Vale        | Prosa-Qualität   | Passive Konstruktionen, Wiederholungen            |
+
+## Installation
+
+Alle notwendigen ESLint-Pakete installieren:
+
+```bash
+npm install -D eslint \
+  @eslint/js \
+  typescript-eslint \
+  @typescript-eslint/eslint-plugin \
+  @typescript-eslint/parser \
+  astro-eslint-parser \
+  eslint-plugin-astro \
+  eslint-plugin-unused-imports \
+  "@stylistic/eslint-plugin"
+```
+
+Das sind eine Menge Pakete — hier die Kurzversion, was jedes macht:
+
+- `eslint` — das Basis-Linting-Tool
+- `@eslint/js` — ESLints eigene empfohlene Regeln
+- `typescript-eslint` — TypeScript-Unterstützung (Sammlung aus Parser + Plugin)
+- `astro-eslint-parser` — Parser für `.astro`-Dateien
+- `eslint-plugin-astro` — ESLint-Regeln speziell für Astro
+- `eslint-plugin-unused-imports` — erkennt und entfernt automatisch unbenutzte Imports
+- `@stylistic/eslint-plugin` — Formatierungsregeln (Semikolons, Einrückung, etc.)
+
+## Konfiguration: `eslint.config.mjs`
+
+Astro-Projekte verwenden das neue **Flat Config**-Format (ESLint v9+). Das ist einfach eine
+modernere, übersichtlichere Art, ESLint zu konfigurieren — statt mehrerer versteckter Dateien
+gibt es jetzt eine zentrale Konfigurationsdatei.
+
+Die Konfigurationsdatei `eslint.config.mjs` landet im Root-Verzeichnis (neben `package.json`).
+Sie ist eine normale JavaScript-Datei, die ESLint mitteilt:
+
+- Welche Dateitypen sollen geprüft werden? (`.ts`, `.tsx`, `.astro`, etc.)
+- Welcher Parser soll verwendet werden? (TypeScript-Parser für `.ts`-Dateien, Astro-Parser für `.astro`-Dateien)
+- Welche Regeln sollen aktiv sein? (z.B. „keine ungenutzten Variablen", „keine `any`-Types ohne Grund")
+- Welche Verzeichnisse sollen ignoriert werden? (`dist/`, `node_modules/`, etc.)
+
+Hier die vollständige Konfiguration:
+
+```javascript
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
+import astroPlugin from "eslint-plugin-astro";
+import astroParser from "astro-eslint-parser";
+import tsParser from "@typescript-eslint/parser";
+import unusedImports from "eslint-plugin-unused-imports";
+import stylistic from "@stylistic/eslint-plugin";
+
+export default [
+  // Basis: empfohlene Regeln
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  // TypeScript-Dateien
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    plugins: { "unused-imports": unusedImports, "@stylistic": stylistic },
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "error",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
+      "@stylistic/semi": ["error", "always"],
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
+
+  // Astro-Dateien
+  {
+    files: ["**/*.astro"],
+    plugins: { astro: astroPlugin },
+    languageOptions: {
+      parser: astroParser,
+      parserOptions: {
+        parser: tsParser,
+        extraFileExtensions: [".astro"],
+      },
+    },
+    rules: {
+      ...astroPlugin.configs.recommended.rules,
+    },
+  },
+
+  // Ignorierte Verzeichnisse
+  {
+    ignores: ["dist/", "node_modules/", ".astro/"],
+  },
+];
+```
+
+## npm-Scripts einrichten
+
+In `package.json` folgende Scripts ergänzen:
+
+```json
+{
+  "scripts": {
+    "lint": "eslint ./src --fix",
+    "lint:check": "eslint ./src"
+  }
+}
+```
+
+| Script          | Verhalten                                                      |
+| --------------- | -------------------------------------------------------------- |
+| `npm run lint`  | Behebt automatisch behebbare Probleme und zeigt den Rest an   |
+| `npm run lint:check` | Prüft nur, nimmt keine Änderungen vor — ideal für CI    |
+
+## ESLint in Aktion
+
+### Fehler provozieren
+
+Folgende Datei enthält absichtlich ESLint-Fehler:
+
+```typescript
+// src/lib/beispiel.ts
+const unusedVar = "ich werde nie benutzt"
+import { someFunction } from './unused.ts'
+
+function ohneReturnType(name) {
+  return "Hallo " + name
+}
+
+export const result: any = ohneReturnType("Welt")
+```
+
+```bash
+npm run lint:check
+```
+
+ESLint meldet:
+
+```
+src/lib/beispiel.ts
+  1:7   error    'unusedVar' is assigned a value but never used          unused-imports/no-unused-vars
+  2:1   error    'someFunction' imported but unused                       unused-imports/no-unused-imports
+  2:43  error    Missing semicolon                                        @stylistic/semi
+  4:27  error    Parameter 'name' implicitly has an 'any' type           @typescript-eslint/no-explicit-any
+  6:25  error    Missing semicolon                                        @stylistic/semi
+  9:47  error    Missing semicolon                                        @stylistic/semi
+  9:47  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+```
+
+### Fehler beheben
+
+```bash
+npm run lint   # versucht, automatisch behebbare Fehler zu fixen
+```
+
+Nach `npm run lint` sieht die Datei so aus:
+
+```typescript
+// src/lib/beispiel.ts — nach npm run lint
+function ohneReturnType(name) {
+  return "Hallo " + name;
+}
+
+export const result: any = ohneReturnType("Welt");
+```
+
+**Was ESLint automatisch gefixt hat:**
+- ✅ Unbenutzte Variable `unusedVar` entfernt
+- ✅ Ungenutzten Import `someFunction` entfernt
+- ✅ Fehlende Semikolons hinzugefügt
+
+**Was Du manuell korrigieren musst:**
+- ❌ Fehlende Type-Annotationen (`name: string`, Return-Type)
+- ❌ `any`-Types durch konkrete Types ersetzen
+
+ESLint kann Formatierungsfehler (Semikolons, Imports, unbenutzte Variablen) automatisch beheben.
+Type-Probleme und logische Fehler musst Du selbst lösen.
+
+## Finetuning
+
+### Ausnahmen für einzelne Zeilen
+
+```typescript
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const dynamicData: any = JSON.parse(rawInput);
+```
+
+### Ausnahmen für ganze Blöcke
+
+```typescript
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function legacyHelper(data: any): any {
+  // Alter Code, der noch nicht typisiert ist
+  return data;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+```
+
+### Dateien komplett ignorieren
+
+In `eslint.config.mjs` unter `ignores`:
+
+```javascript
+{
+  ignores: ["dist/", "node_modules/", ".astro/", "src/lib/_legacy/**"],
+}
+```
+
+## Husky Pre-Commit Hook einrichten
+
+Mit **Husky** läuft ESLint automatisch vor jedem Commit:
+
+```bash
+npm install -D husky lint-staged
+
+# Husky initialisieren
+npx husky init
+```
+
+`.husky/pre-commit` anpassen:
+
+```bash
+npx lint-staged
+```
+
+`package.json` ergänzen:
+
+```json
+{
+  "lint-staged": {
+    "*.{ts,tsx,astro}": ["eslint --fix", "eslint"]
+  }
+}
+```
+
+Ab sofort blockiert ESLint jeden Commit, der Fehler enthält — kein fehlerhafter Code gelangt mehr
+ins Repository.
+
+## Integration in GitHub Actions
+
+In `.github/workflows/deploy.yml` einen Lint-Check-Schritt vor dem Build ergänzen:
+
+```yaml
+- name: Lint
+  run: npm run lint:check
+```
+
+Schlägt der Lint-Check fehl, bricht der gesamte Workflow ab — das Deployment findet nicht statt.
+
+Weiter: [Prettier — Formatierung](21-linting-prettier)

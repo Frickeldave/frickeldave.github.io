@@ -1,0 +1,384 @@
+---
+visible: true
+title: 10 Astro & Starlight Setup
+description: Starlight-Projektstruktur verstehen, GitHub Pages konfigurieren und CI/CD mit GitHub Actions einrichten.
+draft: false
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Was ist Astro?
+
+**Astro** ist ein moderner Static Site Generator (SSG), der HTML zur Build-Zeit generiert —
+kein JavaScript im Browser, es sei denn, es wird explizit benötigt. Das Ergebnis: blitzschnelle
+Websites mit perfekten Lighthouse-Scores.
+
+Die Kernkonzepte im Überblick:
+
+| Konzept                  | Bedeutung                                                                 |
+| ------------------------ | ------------------------------------------------------------------------- |
+| **Static Site Generation** | HTML wird beim Build erzeugt, nicht zur Laufzeit                        |
+| **Content Collections**  | Typsichere Verwaltung von Markdown/MDX-Inhalten mit Zod-Schema-Validierung |
+| **Islands Architecture** | Interaktive Komponenten (React, Vue, etc.) nur dort, wo sie gebraucht werden |
+| **Zero JS by default**   | Kein JavaScript im Browser ohne explizite Angabe (`client:load`, etc.)   |
+
+## Starlight-Projektstruktur verstehen
+
+### `astro.config.mjs` — Das Herzstück
+
+Starlight wird als Astro-Integration eingebunden. Die Konfiguration nach der Projekterstellung:
+
+```javascript
+import { defineConfig } from "astro/config";
+import starlight from "@astrojs/starlight";
+
+export default defineConfig({
+  site: "https://DEIN-USERNAME.github.io",
+  // base nur in Production setzen — lokal ist kein Prefix nötig
+  base: process.env.CI ? "/astrows/" : "/",
+  output: "static",           // Immer static für GitHub Pages!
+  integrations: [
+    starlight({
+      title: "Meine Dokumentation",
+      social: [
+        { icon: "github", label: "GitHub", href: "https://github.com/DEIN-USERNAME/astrows" },
+      ],
+      sidebar: [
+        {
+          label: "Guides",
+          items: [{ autogenerate: { directory: "guides" } }],
+        },
+      ],
+    }),
+  ],
+});
+```
+
+> **Wichtig:** `output: "static"` ist zwingend erforderlich für GitHub Pages.
+> Kein `prerender: false`, keine dynamischen API-Routen.
+>
+> **Was bedeutet das?**
+> `prerender: false` schaltet eine einzelne Seite auf **Server-Side Rendering (SSR)** um — HTML
+> wird dann erst zur Laufzeit erzeugt, nicht beim Build. GitHub Pages betreibt aber keinen
+> Node.js-Server, sondern liefert nur fertige statische Dateien aus. Dasselbe gilt für
+> **dynamische API-Routen** (z.B. `src/pages/api/contact.ts`): Sie laufen ebenfalls auf dem
+> Server und funktionieren deshalb auf GitHub Pages nicht.
+> Alles, was einen laufenden Server voraussetzt, muss durch externe Services ersetzt werden.
+
+### Neue Dokumentationsseite anlegen
+
+Eine neue Seite entsteht einfach durch eine neue Datei in `src/content/docs/`:
+
+```bash
+# Ordner und Einstiegsseite anlegen
+mkdir -p src/content/docs/cloudland
+touch src/content/docs/cloudland/index.md
+```
+
+```markdown
+---
+title: CloudLand
+description: A summary of the CloudLand Conference
+---
+
+CloudLand is the annual Cloud Native Festival of the German-speaking Cloud Native Community (DCNC).
+It takes place in an amusement park and offers interactive sessions, workshops, and keynotes
+on topics such as DevOps, AI/ML, Security, and Platform Engineering.
+```
+
+Um etwas Inhalt zu erhalten, erstellen wir eine zweite Seite
+
+```bash
+touch src/content/docs/cloudland/sessions.md
+```
+
+```markdown
+---
+title: sessions
+description: Alle sessions der cloudland
+---
+
+## Monday
+session 1
+session 2
+
+## Tuesday
+session 3
+session 4
+
+## Wednesday
+session 5
+session 6
+
+```
+
+
+Starlight generiert daraus automatisch:
+- Eine Route unter `/astrows/cloudland/`
+- Breadcrumb-Navigation
+- "Edit on GitHub"-Link (wenn `editLink` konfiguriert)
+
+**Seite taucht nicht in der Sidebar auf?** Starlight zeigt Seiten nur dann in der Navigation
+an, wenn sie in `astro.config.mjs` unter `sidebar` erfasst sind. Es gibt zwei Varianten:
+
+**Variante 1 — manuell** (jede Seite einzeln eintragen):
+
+```javascript
+sidebar: [
+  {
+    label: "Cloudland",
+    items: [
+      { label: "Übersicht", slug: "cloudland" },           // index.md → kein /index im Slug!
+      { label: "Sessions",  slug: "cloudland/sessions" },  // sessions.md → cloudland/sessions
+    ],
+  },
+],
+```
+
+> **Wichtig:** Slugs enthalten **keine Dateiendung** und `index.md` wird immer als Root des
+> Ordners behandelt — der Slug lautet dann einfach `cloudland`, nicht `cloudland/index`.
+
+**Variante 2 — automatisch** mit `autogenerate` (empfohlen, seit Starlight v0.39.0):
+
+```javascript
+sidebar: [
+  {
+    label: "Cloudland",
+    items: [{ autogenerate: { directory: "cloudland" } }],
+  },
+],
+```
+
+Mit `autogenerate` erscheinen alle Dateien im Ordner `src/content/docs/cloudland/` automatisch
+in der Sidebar — ohne manuellen Eintrag pro Seite. **Wichtig:** Immer nur eine der beiden
+Varianten verwenden, nicht mischen.
+
+### `src/content.config.ts` — Docs-Collection
+
+Nachdem die Ordnerstruktur und Sidebar-Konfiguration stehen, fehlt noch ein zentraler Baustein:
+die typsichere Definition der Content Collections.
+
+In Astro passiert das in `src/content.config.ts`. Bei Starlight musst Du für Dokumentationsseiten
+kein eigenes Zod-Schema von Null aufbauen, weil Starlight bereits einen passenden Loader und ein
+vordefiniertes `docs`-Schema mitbringt.
+
+Kurz erklärt:
+
+- **Frontmatter** ist der Metadaten-Block am Anfang einer Markdown/MDX-Datei zwischen `---` und
+  `---` (z.B. `title`, `description`, `draft`). Diese Daten steuern, wie eine Seite in der Doku
+  dargestellt, sortiert oder ausgeblendet wird.
+- **Zod** ist eine TypeScript-first Bibliothek zur Datenvalidierung. Ein Zod-Schema legt fest,
+  welche Felder erlaubt sind und welchen Typ sie haben müssen (z.B. `sidebar.order` als `number`).
+  Stimmen die Daten nicht, meldet Astro beim Build einen Fehler.
+
+Das hat zwei Vorteile:
+
+- Frontmatter wird schon beim Build validiert (Fehler fallen früh auf).
+- Starlight-spezifische Felder wie Sidebar-Optionen funktionieren ohne Zusatzaufwand.
+
+Die Minimal-Konfiguration sieht so aus:
+
+```typescript
+import { defineCollection } from "astro:content";
+import { docsLoader } from "@astrojs/starlight/loaders";
+import { docsSchema } from "@astrojs/starlight/schema";
+
+export const collections = {
+  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
+};
+```
+
+Was passiert hier genau?
+
+- `docsLoader()` liest Deine Inhalte aus `src/content/docs/` ein.
+- `docsSchema()` prüft Frontmatter-Felder auf korrekte Typen und bekannte Eigenschaften.
+- `defineCollection(...)` verbindet Loader und Schema zur Collection `docs`.
+
+Das Schema unterstützt out-of-the-box unter anderem folgende Felder:
+
+| Frontmatter-Feld | Typ | Bedeutung |
+|---|---|---|
+| `title` | `string` | Seitentitel (Pflicht) |
+| `description` | `string` | Meta-Beschreibung |
+| `draft` | `boolean` | Seite im Build ausblenden |
+| `sidebar.order` | `number` | Reihenfolge in der Sidebar |
+| `sidebar.label` | `string` | Alternativer Sidebar-Text |
+| `tableOfContents` | `boolean` | Inhaltsverzeichnis ein/aus |
+| `prev` / `next` | `string` | Manuelle Vor/Zurück-Links |
+
+**Vollständige Referenz:**
+
+- Starlight Frontmatter (für `docsSchema`):
+  [https://starlight.astro.build/reference/frontmatter/](https://starlight.astro.build/reference/frontmatter/)
+- Astro Frontmatter (allgemein für Markdown/MDX):
+  [https://docs.astro.build/en/guides/markdown-content/#frontmatter](https://docs.astro.build/en/guides/markdown-content/#frontmatter)
+
+Ein kurzes Frontmatter-Beispiel:
+
+```markdown
+---
+title: Astro Setup
+description: Projekt einrichten und lokal starten
+draft: false
+sidebar:
+  order: 10
+  label: Setup
+tableOfContents: true
+prev: 09-vorbereitung
+next: 11-routing
+---
+```
+
+Ein gutes Beispiel ist, mal `tableOfContents: false` im Frontmatter deiner index.md oder session.md einzubauen. 
+Das Inhaltsverzeichnis auf der rechten Seite wird dann verschwinden. 
+
+Wenn ein Feld einen falschen Typ hat (z.B. `sidebar.order: "zehn"` statt `10`), meldet Astro
+das beim Build direkt als Fehler. Genau das macht Content Collections im Alltag so wertvoll:
+Du erkennst Probleme früh, bevor sie als fehlerhafte Seite live gehen.
+
+## GitHub Repository einrichten
+
+### Schritt 1: Repository auf GitHub anlegen
+
+GitHub Pages unterscheidet zwei Typen — der Repository-Name entscheidet:
+
+| Typ | Repository-Name | URL | Wann nutzen? |
+|---|---|---|---|
+| **User/Org Page** | Muss exakt `USERNAME.github.io` heißen | `https://USERNAME.github.io` | Nur einmal pro Account möglich |
+| **Project Page** | Beliebig, z.B. `astrows` | `https://USERNAME.github.io/astrows` | Empfohlen für diesen Workshop |
+
+Für den Workshop: Repository mit dem Namen `astrows` anlegen (wurde in [Vorbereitung](03-vorbereitung)
+bereits eingerichtet). 
+```
+
+## GitHub Pages konfigurieren
+
+### Schritt 1: Pages in den Repository-Einstellungen aktivieren
+
+1. Im Repository auf **Settings** → **Pages** navigieren
+2. Unter **Source** die Option **GitHub Actions** auswählen
+
+### Schritt 2: `astro.config.mjs` anpassen
+
+Bei einer **Project Page** muss `base` auf den Repository-Namen gesetzt werden — Astro fügt
+diesen Pfad automatisch allen internen Links und Assets voranstellt:
+
+```javascript
+export default defineConfig({
+  site: "https://DEIN-USERNAME.github.io",
+  // CI=true wird von GitHub Actions automatisch gesetzt → base nur in Production aktiv
+  base: process.env.CI ? "/astrows/" : "/",
+  output: "static",
+});
+```
+
+- **User Page** (`USERNAME.github.io`): `base` weglassen oder auf `"/"` setzen.
+- **Project Page** (`USERNAME.github.io/astrows`): `base: process.env.CI ? "/astrows/" : "/"` setzen.
+- Lokal (`npm run dev`) ist `CI` nicht gesetzt → Server läuft normal unter `http://localhost:4321`.
+
+## GitHub Actions Workflow einrichten
+
+Die Workflow-Datei `.github/workflows/deploy.yml` baut die Website bei jedem Push auf `main` und
+deployt sie automatisch auf GitHub Pages.
+
+Erstelle die Datei `.github/workflows/deploy.yml` im Projekt-Root mit folgendem Inhalt:
+
+```yaml
+name: Deploy to GitHub Pages
+
+# Trigger: Bei Push auf main oder manuell auslösbar
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Berechtigungen für GitHub Actions
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nur ein Deploy gleichzeitig erlaubt
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Schritt 1: Website bauen
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  # Schritt 2: Zu GitHub Pages deployen
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+### Workflow testen
+
+```bash
+git add .github/workflows/deploy.yml
+git commit -m "ci: add GitHub Pages deployment workflow"
+git push
+```
+
+Anschließend unter **Actions** im Repository den Workflow-Status verfolgen. Nach erfolgreichem
+Durchlauf ist die Website unter `https://DEIN-USERNAME.github.io/astrows` erreichbar. Wenn du 
+schon eine github page unter einem Domainname am laufen hast, wird die Seite unter 
+`https://DEINEDOMAIN/astrows` verfügbar gemacht.
+
+## `package.json` — npm-Scripts im Überblick
+
+Die `package.json` ist die zentrale Steuerdatei eines Node.js-Projekts. Sie erfüllt zwei Aufgaben:
+
+1. **Abhängigkeiten verwalten** — sie listet alle installierten Pakete (`dependencies`,
+   `devDependencies`). Mit `npm install` werden diese automatisch heruntergeladen.
+
+2. **Scripts definieren** — unter `scripts` lassen sich beliebige Shell-Befehle als Kurzkommandos
+   hinterlegen. Statt `node_modules/.bin/astro dev` reicht dann `npm run dev`.
+
+Im Laufe des Workshops werden folgende Scripts ergänzt:
+
+```json
+{
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "eslint ./src --fix",
+    "lint:check": "eslint ./src",
+    "format": "prettier --write ./src",
+    "format:check": "prettier --check ./src",
+    "prose": "vale src/content"
+  }
+}
+```
+
+Weiter: [ESLint — Code-Qualität](20-linting-eslint)

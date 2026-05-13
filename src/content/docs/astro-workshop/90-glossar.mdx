@@ -1,0 +1,281 @@
+---
+visible: true
+title: 90 Glossar
+description: Alle Fachbegriffe des Astro Workshops auf einen Blick — von Astro bis Vale.
+draft: false
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## A
+
+### Astro
+
+Moderner Static Site Generator (SSG), der HTML zur Build-Zeit generiert. Kein JavaScript im
+Browser, es sei denn, es wird explizit mit einer Client-Direktive (`client:load`, `client:idle`,
+`client:only`) angefordert. Besonders geeignet für content-lastige Websites wie Dokumentationen,
+Blogs und Portfolios.
+
+→ [astro.build](https://astro.build)
+
+### Astrogon
+
+Ein vielseitiges Astro-Theme mit Blog, Docs, Portfolio und Rezepten. Basiert auf Astro JS,
+Tailwind CSS und React. War ursprünglich als Basis für diesen Workshop geplant — im Workshop
+wird stattdessen Starlight eingesetzt, das besser für professionelle Dokumentationen geeignet ist.
+
+→ [github.com/astrogon/astrogon](https://github.com/astrogon/astrogon)
+
+### Starlight
+
+**Starlight** ist das offizielle Dokumentations-Framework von Astro und die Basis dieses
+Workshops. Es baut auf Astro auf und liefert out-of-the-box alles, was eine professionelle
+Doku braucht:
+
+- Automatische Sidebar-Navigation aus der Ordnerstruktur
+- Eingebaute Volltextsuche (Pagefind)
+- Mehrsprachigkeit (i18n)
+- Dark Mode, Barrierefreiheit (WCAG), Mobile-First
+- Versionierung und "Edit on GitHub"-Links
+- Vordefiniertes Frontmatter-Schema für die `docs`-Collection
+
+Ein neues Starlight-Projekt wird mit `npm create astro@latest -- --template starlight` angelegt.
+
+→ [starlight.astro.build](https://starlight.astro.build)
+
+## C
+
+### CI/CD
+
+**Continuous Integration / Continuous Deployment** — automatisierter Prozess, bei dem Code nach
+jedem Push automatisch gebaut, getestet und deployt wird. Im Workshop wird GitHub Actions für
+CI/CD eingesetzt.
+
+### Content Collection
+
+Astro-Konzept zur typsicheren Verwaltung von Markdown/MDX-Inhalten. Jede Collection wird in
+`src/content.config.ts` mit einem Zod-Schema definiert. Inhalte werden dann typsicher per
+`getCollection()` abgefragt.
+
+```typescript
+const posts = await getCollection("blog", ({ data }) => !data.draft);
+```
+
+## D
+
+### Docker
+
+Containerisierungsplattform, die Anwendungen in isolierten Containern ausführt. Im Workshop wird
+Docker für die lokale produktionsnahe Vorschau der gebauten Astro-Website genutzt (Nginx-Container).
+
+### Dockerfile
+
+Textdatei mit Anweisungen zum Bauen eines Docker-Images. Im Workshop wird ein Multi-Stage-Build
+verwendet: Node.js für den Astro-Build, Nginx für das Ausliefern der statischen Dateien.
+
+## E
+
+### EditorConfig
+
+Konfigurationsdatei (`.editorconfig`), die Editor-Einstellungen wie Einrückung, Zeichenkodierung
+und Zeilenenden projektübergreifend und editorunabhängig festlegt. Wird von VS Code, JetBrains IDEs
+und vielen anderen Editoren direkt unterstützt.
+
+### ESLint
+
+JavaScript/TypeScript-Linter für Code-Qualität. Analysiert Dateien auf potenzielle Fehler,
+Style-Inkonsistenzen und Best-Practice-Verletzungen. Unterstützt über Plugins auch `.astro`-Dateien.
+
+→ [eslint.org](https://eslint.org)
+
+### eslint.config.mjs
+
+Konfigurationsdatei für ESLint im neuen **Flat Config**-Format (ESLint v9+). Ersetzt die frühere
+`.eslintrc.js`-Datei. Definiert Regeln, Parser und Plugins für verschiedene Dateitypen.
+
+## F
+
+### Flat Config
+
+Neues Konfigurationsformat von ESLint (ab Version 9), das eine einzelne `eslint.config.mjs`-Datei
+statt der früheren `.eslintrc`-Dateien verwendet. Ermöglicht präzisere Kontrolle über
+dateitypspezifische Regeln.
+
+### Frontmatter
+
+YAML-Block am Anfang einer Markdown/MDX-Datei, eingeschlossen in `---`. Enthält Metadaten wie
+Titel, Beschreibung, Datum und weitere Felder, die im Astro-Schema definiert sind.
+
+```yaml
+---
+title: Mein Beitrag
+description: Eine kurze Beschreibung
+draft: false
+---
+```
+
+→ [Starlight Frontmatter-Referenz](https://starlight.astro.build/reference/frontmatter/)
+→ [Astro Markdown Frontmatter](https://docs.astro.build/en/guides/markdown-content/#frontmatter)
+
+## G
+
+### GitHub Actions
+
+CI/CD-Plattform von GitHub. Workflows werden in YAML-Dateien unter `.github/workflows/` definiert
+und bei bestimmten Ereignissen (Push, Pull Request, manuell) ausgelöst. Im Workshop wird GitHub
+Actions für automatisches Bauen und Deployen auf GitHub Pages verwendet.
+
+→ [GitHub Actions Dokumentation](https://docs.github.com/en/actions)
+
+### GitHub Pages
+
+Kostenloser statischer Hosting-Service von GitHub. Websites werden direkt aus einem
+GitHub-Repository ausgeliefert. Unterstützt benutzerdefinierte Domains (CNAME). Im Workshop das
+primäre Deployment-Ziel.
+
+→ [GitHub Pages Dokumentation](https://docs.github.com/en/pages)
+
+## H
+
+### Husky
+
+npm-Paket für Git Hooks. Ermöglicht das automatische Ausführen von Skripten vor einem Commit
+(`pre-commit`) oder Push (`pre-push`). Im Workshop wird Husky zusammen mit `lint-staged` verwendet,
+um ESLint und Prettier vor jedem Commit auszuführen.
+
+## I
+
+### Islands Architecture
+
+Architekturmuster von Astro: Interaktive Komponenten (React, Vue, Svelte, etc.) werden als
+isolierte "Inseln" in ansonsten statisches HTML eingebettet. Nur diese Inseln laden JavaScript
+im Browser — der Rest der Seite bleibt reines HTML.
+
+## L
+
+### lint-staged
+
+npm-Paket, das Linter nur auf die per `git add` gestagten Dateien anwendet — nicht auf das
+gesamte Projekt. Beschleunigt Pre-Commit Hooks erheblich.
+
+### Linting
+
+Automatisierter Prozess zur Analyse von Code oder Text auf Fehler, Style-Inkonsistenzen und
+Verstöße gegen definierte Regeln. Der Workshop unterscheidet drei Dimensionen:
+Code-Qualität (ESLint), Formatierung (Prettier) und Prosa-Qualität (Vale).
+
+## M
+
+### MDX
+
+Markdown-Erweiterung, die JSX (React-Komponenten) direkt in Markdown-Dateien erlaubt. Astro
+unterstützt MDX nativ. Im Workshop werden MDX-Dateien für Content Collections verwendet.
+
+### Multi-Stage Build
+
+Docker-Build-Strategie mit mehreren `FROM`-Anweisungen. Ermöglicht das Bauen in einem großen
+Build-Image (Node.js) und das Ausliefern nur der fertigen Artefakte in einem kleinen
+Produktions-Image (Nginx).
+
+## N
+
+### Nginx
+
+Hochperformanter Webserver und Reverse Proxy. Im Workshop wird Nginx als Docker-Container
+verwendet, um die statisch gebaute Astro-Website lokal auszuliefern.
+
+### npm
+
+Node Package Manager — Paketverwaltung für Node.js-Projekte. Verwaltet Abhängigkeiten in
+`package.json` und führt Skripte aus (`npm run dev`, `npm run build`, etc.).
+
+## O
+
+### OpenAI-kompatibler Endpunkt
+
+API-Schnittstelle, die das OpenAI-Chat-Completions-Format implementiert. Ermöglicht den Einsatz
+verschiedener KI-Anbieter (OpenAI, Azure OpenAI, Ollama, adesso AI Hub) mit demselben Client-Code.
+
+## P
+
+### Pre-Commit Hook
+
+Git-Hook, der automatisch vor jedem `git commit` ausgeführt wird. Im Workshop wird Husky
+verwendet, um ESLint und Prettier als Pre-Commit Hooks einzurichten — fehlerhafter oder
+unformatierter Code blockiert den Commit.
+
+### Prettier
+
+Code-Formatter, der einheitliche Formatierung für JavaScript, TypeScript, CSS, Markdown, JSON
+und viele weitere Dateitypen erzwingt. Unterstützt über Plugins auch `.astro`-Dateien.
+
+→ [prettier.io](https://prettier.io)
+
+### Prosa-Linting
+
+Automatisierte Qualitätsprüfung von Fließtext (Prosa) auf stilistische Fehler, Wiederholungen,
+schwache Wörter und Verstöße gegen Stilrichtlinien. Im Workshop wird Vale für das Prosa-Linting
+eingesetzt.
+
+## S
+
+### SSG
+
+**Static Site Generation** — Webseiten werden zur Build-Zeit als statische HTML-Dateien generiert,
+nicht zur Laufzeit. Vorteile: maximale Performance, keine Server-Kosten, einfaches Hosting
+(z.B. GitHub Pages).
+
+### Styleguide (Vale)
+
+Regelsammlung für Vale, die definiert, welche Prosa-Regeln geprüft werden. Im Workshop werden
+die Styleguides **Microsoft** (technische Dokumentationsstandards) und **write-good** (allgemeine
+Schreibklarheit) eingesetzt.
+
+## T
+
+### Tailwind CSS
+
+Utility-First CSS-Framework. Statt eigener CSS-Klassen werden direkt im HTML/Astro-Template
+vordefinierte Utility-Klassen verwendet (`flex`, `p-4`, `text-lg`, etc.).
+
+### TypeScript
+
+Typisierte Erweiterung von JavaScript. Astro-Projekte verwenden TypeScript für Typsicherheit in
+`.ts`- und `.tsx`-Dateien sowie in den `---`-Skript-Blöcken von `.astro`-Dateien.
+
+## V
+
+### Vale
+
+Open-Source-Tool für Prosa-Linting. Funktioniert wie ein Code-Linter, verarbeitet aber Fließtext.
+Unterstützt Markdown, MDX, HTML und weitere Formate. Konfigurierbar über `.vale.ini` und
+YAML-basierte Styleguides.
+
+→ [vale.sh](https://vale.sh)
+
+### `.vale.ini`
+
+Konfigurationsdatei für Vale. Definiert den Pfad zu Styleguides (`StylesPath`), den minimalen
+Alert-Level (`MinAlertLevel`), Dateiformat-Zuordnungen (`[formats]`) und welche Styleguides für
+welche Dateipfade gelten.
+
+## W
+
+### Workflow (GitHub Actions)
+
+YAML-Datei unter `.github/workflows/`, die einen automatisierten Prozess in GitHub Actions
+beschreibt. Besteht aus Triggern (`on:`), Jobs (`jobs:`) und Schritten (`steps:`).
+
+### write-good
+
+Vale-Styleguide für allgemeine Schreibklarheit auf Englisch. Erkennt Weasel Words (`very`,
+`quite`), Passive Voice, zu wortreiche Ausdrücke und Klischees.
+
+→ [github.com/errata-ai/write-good](https://github.com/errata-ai/write-good)
+
+## Z
+
+### Zod
+
+TypeScript-first Schema-Validierungsbibliothek. Wird in Astro für die Definition und Validierung
+von Content Collection Schemas verwendet (`z.object({ title: z.string(), ... })`).

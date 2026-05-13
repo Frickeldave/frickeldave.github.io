@@ -1,0 +1,304 @@
+---
+visible: true
+title: 22 Vale — Prosa-Linting
+description: Vale für Astro-Projekte installieren, Styleguides konfigurieren und Prosa-Qualität automatisiert sicherstellen.
+draft: false
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Was ist Vale?
+
+**Vale** ist ein Open-Source-Tool für das Prosa-Linting — es funktioniert wie ein Code-Linter,
+verarbeitet aber Fließtext. Vale prüft Texte auf stilistische Fehler, wiederkehrende Muster und
+Verstöße gegen vordefinierte oder eigene Stilrichtlinien.
+
+Typische Regeln erkennen:
+
+- Unnötige Passiv-Konstruktionen (`"wurde entwickelt"` statt `"entwickelte"`)
+- Zu viele Wiederholungen
+- Schwache Wörter (`"sehr"`, `"manchmal"`, `"irgendwie"`)
+- Fehlende Oxford-Kommas
+- Inkonsistente Schreibweise von Begriffen
+
+Vale funktioniert mit Markdown, MDX, HTML, AsciiDoc und analysiert diese Formate anhand
+konfigurierter Regeln. Die Ergebnisse erscheinen direkt im Editor, in der Kommandozeile oder
+als Teil automatisierter CI-Prozesse.
+
+## Installation
+
+Vale ist ein eigenständiges Binary und erfordert ein plattformspezifisches Install-Skript.
+
+### Install-Skript anlegen
+
+**`.vale/install-vale.sh`** (Linux/macOS):
+
+```bash
+#!/bin/bash
+set -e
+
+VALE_VERSION="3.7.1"
+VALE_DIR=".vale"
+STYLES_DIR="$VALE_DIR/styles"
+
+echo "Installing Vale $VALE_VERSION..."
+
+# Vale Binary herunterladen
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  VALE_URL="https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_macOS_arm64.tar.gz"
+else
+  VALE_URL="https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+fi
+
+curl -sL "$VALE_URL" | tar -xz -C "$VALE_DIR" vale
+chmod +x "$VALE_DIR/vale"
+
+# Styleguides herunterladen (manuell, da vale sync unzuverlässig)
+mkdir -p "$STYLES_DIR"
+
+echo "Downloading Microsoft style guide..."
+git clone --depth 1 https://github.com/errata-ai/Microsoft.git /tmp/vale-microsoft
+cp -r /tmp/vale-microsoft/Microsoft "$STYLES_DIR/"
+rm -rf /tmp/vale-microsoft/.git
+
+echo "Downloading write-good style guide..."
+git clone --depth 1 https://github.com/errata-ai/write-good.git /tmp/vale-writegood
+cp -r /tmp/vale-writegood/write-good "$STYLES_DIR/"
+rm -rf /tmp/vale-writegood/.git
+
+echo "Vale installation complete!"
+"$VALE_DIR/vale" --version
+```
+
+**`.vale/install-vale.ps1`** (Windows):
+
+```powershell
+$ValeVersion = "3.7.1"
+$ValeDir = ".vale"
+$StylesDir = "$ValeDir\styles"
+
+Write-Host "Installing Vale $ValeVersion..."
+
+$ValeUrl = "https://github.com/errata-ai/vale/releases/download/v$ValeVersion/vale_${ValeVersion}_Windows_64-bit.zip"
+Invoke-WebRequest -Uri $ValeUrl -OutFile "$ValeDir\vale.zip"
+Expand-Archive -Path "$ValeDir\vale.zip" -DestinationPath $ValeDir -Force
+Remove-Item "$ValeDir\vale.zip"
+
+New-Item -ItemType Directory -Force -Path $StylesDir | Out-Null
+
+Write-Host "Downloading style guides..."
+git clone --depth 1 https://github.com/errata-ai/Microsoft.git "$env:TEMP\vale-microsoft"
+Copy-Item -Recurse "$env:TEMP\vale-microsoft\Microsoft" $StylesDir
+Remove-Item -Recurse "$env:TEMP\vale-microsoft"
+
+git clone --depth 1 https://github.com/errata-ai/write-good.git "$env:TEMP\vale-writegood"
+Copy-Item -Recurse "$env:TEMP\vale-writegood\write-good" $StylesDir
+Remove-Item -Recurse "$env:TEMP\vale-writegood"
+
+Write-Host "Vale installation complete!"
+& "$ValeDir\vale.exe" --version
+```
+
+### Install-Skript ausführen
+
+```bash
+# Linux/macOS
+chmod +x .vale/install-vale.sh
+./.vale/install-vale.sh
+
+# Windows
+powershell -ExecutionPolicy Bypass -File .vale/install-vale.ps1
+```
+
+### `.gitignore` ergänzen
+
+Die dynamisch generierten Inhalte nicht ins Repository committen:
+
+```
+# Vale binary und Styleguides
+.vale/vale
+.vale/vale.exe
+.vale/styles/Microsoft/
+.vale/styles/write-good/
+.vale/dictionaries/
+```
+
+## Konfiguration: `.vale.ini`
+
+Die Vale-Konfigurationsdatei im Root-Verzeichnis:
+
+```ini
+# Vale configuration file
+# Docs: https://vale.sh/docs/topics/config/
+
+StylesPath = .vale/styles
+MinAlertLevel = warning
+
+# MDX-Dateien als Markdown behandeln
+[formats]
+mdx = md
+
+# Englische Content-Dateien prüfen
+[src/content/**/*.{md,mdx}]
+BasedOnStyles = Vale, write-good, Microsoft
+
+# Vale-Kernregeln
+Vale.Spelling = YES
+Vale.Repetition = YES
+Vale.Wordiness = YES
+
+# write-good Regeln (Englisch)
+write-good.Weasel = YES
+write-good.TooWordy = YES
+write-good.Passive = YES
+write-good.Adverbs = YES
+write-good.So = YES
+write-good.ThereIs = YES
+write-good.Cliches = YES
+
+# Microsoft Style Guide Regeln
+Microsoft.Gender = YES
+Microsoft.PassiveVoice = YES
+Microsoft.Cliches = YES
+Microsoft.Jargon = YES
+Microsoft.Complexity = YES
+Microsoft.Redundancy = YES
+Microsoft.Spelling = YES
+```
+
+## npm-Scripts einrichten
+
+In `package.json`:
+
+```json
+{
+  "scripts": {
+    "install-vale": "node -e \"const cmd = process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File .vale/install-vale.ps1' : 'bash .vale/install-vale.sh'; require('child_process').exec(cmd, (err, stdout, stderr) => { if (err) { console.error(stderr); process.exit(1); } console.log(stdout); })\"",
+    "prose": "node -e \"const vale = process.platform === 'win32' ? './.vale/vale.exe' : './.vale/vale'; const { exec } = require('child_process'); exec(vale + ' --config=.vale.ini src/content', (err, stdout, stderr) => { console.log(stdout); if (stderr) console.error(stderr); if (err) process.exit(1); });\""
+  }
+}
+```
+
+```bash
+# Vale installieren
+npm run install-vale
+
+# Prosa prüfen
+npm run prose
+```
+
+## Vale in Aktion
+
+### Fehlerhafte Prosa
+
+```markdown
+<!-- src/content/docs/beispiel.md -->
+
+# Feature Y Vorteile
+
+You will be able to use this feature very effectively. It was developed by our team.
+
+Step 1: Initializing the data source
+Step 2 Call the performOperation() function
+Step 3: Confirm the output's accuracy
+```
+
+```bash
+npm run prose
+```
+
+Vale meldet:
+
+```
+src/content/docs/beispiel.md
+ 3:52  warning  'very' is a weasel word         write-good.Weasel
+ 3:52  warning  'very effectively' is wordy     write-good.TooWordy
+ 3:68  warning  'was developed' is passive      write-good.Passive
+ 5:1   error    'Step 2' is missing punctuation Vale.Punctuation
+```
+
+### Korrigierte Prosa
+
+```markdown
+# Feature Y Vorteile
+
+You can use this feature effectively. Our team developed it.
+
+- Step 1: Initialize the data source
+- Step 2: Call the performOperation() function
+- Step 3: Confirm the output's accuracy
+```
+
+## Finetuning
+
+### Ausnahmen für einzelne Passagen
+
+Manchmal ist eine Regel bewusst zu ignorieren — z.B. bei Sätzen, die mit `So` beginnen müssen:
+
+```mdx
+{/* <!-- vale write-good.So = NO --> */}
+
+So the experiment failed because the measurements were taken incorrectly.
+
+{/* <!-- vale write-good.So = YES --> */}
+```
+
+Oder für einen ganzen Block:
+
+```mdx
+{/* <!-- vale off --> */}
+
+Dieser gesamte Abschnitt wird von Vale ignoriert.
+Hier dürfen Passive, Weasel Words und Co. stehen.
+
+{/* <!-- vale on --> */}
+```
+
+> **Hinweis:** Die Kommentar-Tags und die betroffene Zeile müssen durch einen Zeilenumbruch
+> getrennt sein. In MDX-Dateien müssen HTML-Kommentare in JSX-Kommentarblöcke eingeschlossen
+> werden, damit der Astro-Server nicht meckert.
+
+### Eigene Regeln erstellen
+
+Eigene Regeln werden als YAML-Dateien in `.vale/styles/Base/` abgelegt:
+
+```yaml
+# .vale/styles/Base/Terminology.yml
+extends: substitution
+message: "Verwende '%s' statt '%s'."
+level: warning
+ignorecase: true
+swap:
+  "click here": "see"
+  "obviously": ""
+  "simply": ""
+  "just": ""
+```
+
+In `.vale.ini` aktivieren:
+
+```ini
+[src/content/**/*.{md,mdx}]
+BasedOnStyles = Vale, write-good, Microsoft, Base
+Base.Terminology = YES
+```
+
+### Deutsche Inhalte
+
+Vale-Styleguides sind primär für englischen Text optimiert. Für deutsche Inhalte empfiehlt sich:
+
+1. Einen eigenen Styleguide mit deutschen Regeln aufbauen (z.B. `.vale/styles/Deutsch/`)
+2. KI-Tools wie [valegen](https://github.com/theletterf/valegen) zur Regelgenerierung nutzen
+3. Für rein deutsche Inhalte Vale nur mit `Vale.Spelling` und eigenen Regeln einsetzen
+
+## Integration in GitHub Actions
+
+```yaml
+- name: Install Vale
+  run: npm run install-vale
+
+- name: Prose check
+  run: npm run prose
+```
+
+Weiter: [Deployment](31-deployment)
