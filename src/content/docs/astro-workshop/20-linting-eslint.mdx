@@ -194,7 +194,9 @@ npm run lint   # versucht, automatisch behebbare Fehler zu fixen
 Nach `npm run lint` sieht die Datei so aus:
 
 ```typescript
-// src/lib/beispiel.ts — nach npm run lint
+// src/lib/beispiel.ts
+const unusedVar = "ich werde nie benutzt";
+
 function ohneReturnType(name) {
   return "Hallo " + name;
 }
@@ -203,15 +205,15 @@ export const result: any = ohneReturnType("Welt");
 ```
 
 **Was ESLint automatisch gefixt hat:**
-- ✅ Unbenutzte Variable `unusedVar` entfernt
 - ✅ Ungenutzten Import `someFunction` entfernt
 - ✅ Fehlende Semikolons hinzugefügt
 
 **Was Du manuell korrigieren musst:**
+- ❌ Unbenutzte Variable `unusedVar` entfernen
 - ❌ Fehlende Type-Annotationen (`name: string`, Return-Type)
 - ❌ `any`-Types durch konkrete Types ersetzen
 
-ESLint kann Formatierungsfehler (Semikolons, Imports, unbenutzte Variablen) automatisch beheben.
+ESLint kann Formatierungsfehler (Semikolons, Imports, und vieles mehr -> Je nach plugins) automatisch beheben.
 Type-Probleme und logische Fehler musst Du selbst lösen.
 
 ## Finetuning
@@ -240,7 +242,7 @@ In `eslint.config.mjs` unter `ignores`:
 
 ```javascript
 {
-  ignores: ["dist/", "node_modules/", ".astro/", "src/lib/_legacy/**"],
+  ignores: ["dist/", "node_modules/", ".astro/", "src/lib/_legacy/**, "src/lib/beispiel.ts"],
 }
 ```
 
