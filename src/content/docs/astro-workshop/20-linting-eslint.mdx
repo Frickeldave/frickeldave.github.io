@@ -248,7 +248,21 @@ In `eslint.config.mjs` unter `ignores`:
 
 ## Husky Pre-Commit Hook einrichten
 
-Mit **Husky** läuft ESLint automatisch vor jedem Commit:
+### Was ist Husky und warum kein reiner Git Hook?
+
+Git bietet von Haus aus **Hooks** — Skripte, die automatisch bei bestimmten Git-Ereignissen
+ausgeführt werden. Ein `pre-commit`-Hook liegt unter `.git/hooks/pre-commit` und wird vor jedem
+Commit aufgerufen. Klingt praktisch — hat aber einen entscheidenden Haken: Das `.git/`-Verzeichnis
+wird **nicht** ins Repository eingecheckt. Das bedeutet, jede Person im Team muss den Hook manuell
+anlegen und pflegen. Sobald jemand das Repository neu klont, sind alle Hooks weg.
+
+**Husky** löst genau dieses Problem. Es verwaltet Git Hooks als Teil des Projekts, indem es die
+Hook-Skripte im Repository speichert (unter `.husky/`) und sie über `npm install` automatisch
+aktiviert. Dadurch gelten dieselben Hooks für alle — ohne manuelle Einrichtung nach jedem Clone.
+
+Zusätzlich kommt **lint-staged** ins Spiel: Statt den gesamten `src/`-Ordner bei jedem Commit zu
+linten, prüft lint-staged nur die Dateien, die tatsächlich im Staging-Bereich liegen (`git add`).
+Das macht den Commit-Prozess deutlich schneller.
 
 ```bash
 npm install -D husky lint-staged
@@ -257,16 +271,27 @@ npm install -D husky lint-staged
 npx husky init
 ```
 
-`.husky/pre-commit` anpassen:
+`.husky/pre-commit` anpassen (evt. vorhandenes `npm test` löschen):
 
 ```bash
 npx lint-staged
 ```
 
-`package.json` ergänzen:
+`package.json` ergänzen — zwei Stellen:
+
+**1. `prepare`-Script in `scripts`:** npm führt `prepare` automatisch nach jedem `npm install` aus.
+Dadurch aktiviert sich Husky bei jedem neuen Clone automatisch — kein manueller Schritt nötig.
+
+**2. `lint-staged` als eigenes Top-Level-Feld**, auf gleicher Ebene wie `scripts` und `dependencies`:
 
 ```json
 {
+  "scripts": {
+    "prepare": "husky",
+    ...
+  },
+  "dependencies": { ... },
+  "devDependencies": { ... },
   "lint-staged": {
     "*.{ts,tsx,astro}": ["eslint --fix", "eslint"]
   }
@@ -278,11 +303,19 @@ ins Repository.
 
 ## Integration in GitHub Actions
 
-In `.github/workflows/deploy.yml` einen Lint-Check-Schritt vor dem Build ergänzen:
+In `.github/workflows/deploy.yml` einen Lint-Check-Schritt im `build`-Job ergänzen — nach
+`Install dependencies`, aber vor `Build`. So schlägt die Pipeline sofort an, bevor Zeit für den
+Build verschwendet wird:
 
 ```yaml
-- name: Lint
-  run: npm run lint:check
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint:check
+
+      - name: Build
+        run: npm run build
 ```
 
 Schlägt der Lint-Check fehl, bricht der gesamte Workflow ab — das Deployment findet nicht statt.
