@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-25071
+    title: Staatsfrauen, KI und moderne Verwaltung mit Lisa Froschhammer
+    edition: People
+    guests: Dave König und Lisa Froschhammer
+    date: 12. Mai 2026
+    description: >-
+      Lisa Froschhammer leitet bei der Stadt Landshut das KI-Team und engagiert sich mit ihrer Initiative Staatsfrauen für mehr Sichtbarkeit von Frauen in Verwaltung und GovTech. Im Gespräch mit Dave geht es um digitale Souveränität, den Einsatz von KI-Chatbots wie Kilian in Behörden und warum echte Digitalisierung weit mehr bedeutet als Onlineformulare. Lisa erzählt von ihrem Weg in die IT, Open-Source-Lösungen in der Verwaltung und der Bedeutung von Netzwerken für Frauen in technischen Rollen.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a02c1f06304701dd880662a/media.mp3
   - id: doag-voices-34564
     title: "AI-First statt Code-First: Wie KI die Softwareentwicklung verändert"
     edition: FutureAI
