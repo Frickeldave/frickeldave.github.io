@@ -1,0 +1,355 @@
+---
+visible: true
+title: 22 Vale — Prosa-Linting
+description: Vale für Astro-Projekte installieren, Styleguides konfigurieren und Prosa-Qualität automatisiert sicherstellen.
+draft: false
+image: "@assets/docs/astro-workshop/asws-22-001.png"
+imageAlt: "Vale"
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Was ist Vale?
+
+**Vale** ist ein Open-Source-Tool für das Prosa-Linting — es funktioniert wie ein Code-Linter,
+verarbeitet aber Fließtext. Vale prüft Texte auf stilistische Fehler, wiederkehrende Muster und
+Verstöße gegen vordefinierte oder eigene Stilrichtlinien.
+
+Typische Regeln erkennen:
+
+- Unnötige Passiv-Konstruktionen (`"wurde entwickelt"` statt `"entwickelte"`)
+- Zu viele Wiederholungen
+- Schwache Wörter (`"sehr"`, `"manchmal"`, `"irgendwie"`)
+- Fehlende Oxford-Kommas
+- Inkonsistente Schreibweise von Begriffen
+
+Vale funktioniert mit Markdown, MDX, HTML, AsciiDoc und analysiert diese Formate anhand
+konfigurierter Regeln. Die Ergebnisse erscheinen direkt im Editor, in der Kommandozeile oder
+als Teil automatisierter CI-Prozesse.
+
+## Installation
+
+Vale ist ein eigenständiges Binary. Die Installation wird durch ein **plattformunabhängiges Node.js-Skript** automatisiert — ein Skript, alle Plattformen.
+
+### Install-Script
+
+Das Skript [`scripts/prose-install.mjs`](../../../../scripts/prose-install.mjs) erkennt automatisch Betriebssystem und Architektur, lädt das passende Vale-Binary herunter und installiert die Styleguides Microsoft und write-good.
+
+```bash
+# Vale installieren
+node scripts/prose-install.mjs
+```
+
+**Optionen:**
+
+```bash
+node scripts/prose-install.mjs --quiet   # Still installieren (keine Ausgabe)
+node scripts/prose-install.mjs --force   # Neu installieren, auch wenn Vale bereits existiert
+```
+
+**Das Skript macht folgendes:**
+
+1. Erkennt Plattform (`Windows` / `macOS` / `Linux`) und Architektur (`x86_64` / `arm64`)
+2. Lädt die passende Vale-Binary von GitHub Releases
+3. Entpackt das Archiv (`.zip` auf Windows, `.tar.gz` auf Unix)
+4. Klont die Styleguide-Repositories (Microsoft, write-good) per Git
+5. Kopiert die Style-Dateien in `.vale/styles/`
+6. Entfernt problematische Dateien (`.yamllint.yml`, `.github/`, etc.)
+7. Prüft die Installation mit `vale --version`
+
+**Voraussetzungen:**
+
+- Node.js ≥ 18 (ES-Modules unterstützt)
+- `git` für das Herunterladen der Styleguides
+- `unzip` / `tar` / `cp` (auf allen Plattformen vorinstalliert)
+
+### .gitignore
+
+Die dynamisch generierten Inhalte nicht ins Repository committen:
+
+```
+# Vale binary und Styleguides
+.vale/vale
+.vale/vale.exe
+.vale/styles/Microsoft/
+.vale/styles/write-good/
+.vale/dictionaries/
+```
+
+### Eigene Regeln erstellen
+
+Eigene Regeln werden als YAML-Dateien in `.vale/styles/Base/` abgelegt:
+
+```yaml
+# .vale/styles/Base/Terminology.yml
+extends: substitution
+message: "Verwende '%s' statt '%s'."
+level: warning
+ignorecase: true
+swap:
+  "Adesso": "adesso"
+  "adeso": "adesso"
+  "addesso": "adesso"
+  "ADESSO": "adesso"
+```
+ 
+In `.vale.ini` aktivieren:
+
+```ini
+[src/content/**/*.{md,mdx}]
+BasedOnStyles = Vale, write-good, Microsoft, Base
+Base.Terminology = YES
+```
+
+### .vale.ini
+
+Die Vale-Konfigurationsdatei im Root-Verzeichnis:
+
+```ini
+# Vale configuration file
+# Docs: https://vale.sh/docs/topics/config/
+
+StylesPath = .vale/styles
+MinAlertLevel = warning
+
+# Vale Vocabulary (Custom Vocab)
+Vocab = custom
+
+# MDX-Dateien als Markdown behandeln
+[formats]
+mdx = md
+
+# Englische Content-Dateien prüfen
+[src/content/**/*.{md,mdx}]
+BasedOnStyles = Vale, write-good, Microsoft, Base
+
+# Vale-Kernregeln
+Vale.Spelling = YES
+Vale.Repetition = YES
+Vale.Wordiness = YES
+
+# write-good Regeln (Englisch)
+write-good.Weasel = YES
+write-good.TooWordy = YES
+write-good.Passive = YES
+write-good.Adverbs = YES
+write-good.So = YES
+write-good.ThereIs = YES
+write-good.Cliches = YES
+
+# Microsoft Style Guide Regeln
+Microsoft.Gender = YES
+Microsoft.PassiveVoice = YES
+Microsoft.Cliches = YES
+Microsoft.Jargon = YES
+Microsoft.Complexity = YES
+Microsoft.Redundancy = YES
+Microsoft.Spelling = YES
+```
+
+### Custom Vocabularies
+
+Mit Vale Vocabularies lassen sich firmenspezifische Begriffe, Produktnamen und Abkürzungen
+definieren, die Vale **nicht** als Rechtschreibfehler meldet. Das vermeidet False Positives bei
+eigenen Bezeichnungen, die in keinen öffentlichen Styleguide passen.
+
+Mit dem Eintrag `Vocab = custom` in der vale.ini wird diese Regel aktiviert. In der Datei 
+
+`.vale/styles/config/vocabularies/custom/accept.txt`
+
+werden dann anschliessend alle Ausnahmen eingetragen (Für den Workshop bitte adesso und config). Jede Zeile stellt einen akzeptierten Begriff dar. 
+Vale ignoriert diese Wörter bei der Rechtschreibprüfung — unabhängig von Groß- oder Kleinschreibung.
+
+**Praktische Tipps:**
+
+- Begriffe sind **case-insensitive** — `adesso` passt auf `Adesso`, `ADESSO`, `AdEsSo` etc.
+- Für **case-sensitive** Begriffe (z.B. `GitHub` vs. `github`) nutzt man eine `exclude`-Regel
+- Pro Großprojekt lohnt sich eine zentrale `accept.txt` — im Team gemeinsam gepflegt
+- Der Ordner `accept/` wird durch das Installationsskript automatisch angelegt und sollte
+  **nicht** in `.gitignore` landen
+
+Beide Vale-Operationen — Installation und Prosa-Check — werden über saubere Node.js-Scripts
+in `scripts/` abgebildet, die über npm-Scripts in `package.json` aufgerufen werden:
+
+```json
+{
+  "scripts": {
+    "install-vale": "node scripts/prose-install.mjs",
+    "prose": "node scripts/prose-check.mjs"
+  }
+}
+```
+
+| Script | Beschreibung |
+|--------|-------------|
+| [`scripts/prose-install.mjs`](../../../../scripts/prose-install.mjs) | Lädt Vale-Binary + Styleguides herunter |
+| [`scripts/prose-check.mjs`](../../../../scripts/prose-check.mjs) | Prüft `src/content` mit Vale |
+
+Beide Scripts sind **plattformunabhängig** — sie erkennen automatisch, ob sie auf Windows, macOS oder Linux laufen und verwenden das passende Vale-Binary.
+
+```bash
+# Vale installieren
+npm run install-vale
+
+# Prosa prüfen
+npm run prose
+```
+
+### Vale-Styleguides
+Das Installationsskript lädt nicht nur Vale herunter, sondern auch die benötigten Styleguides. Auf der Vale-Website sind, neben einigen weiteren spezifischen, vier wesentliche Style-Guides referenziert:
+
+**Google**
+
+Starker Fokus auf technische Konsistenz und Präzision für Entwickler.
+Große Ausnahmeliste für Akronyme und Begriffe aus APIs.
+Substitutionslisten mit Google-typischer Terminologie.
+Stil: direkt, technisch, an Entwickler gerichtet, prägnant, präzise.
+Quelle Git, Quelle Style-Guide
+
+**Microsoft**
+
+Sehr starke Gewichtung auf Inklusivität und Barrierefreiheit.
+Klare Satzlängen- und Limits für Wörter.
+Hunderte produkt- und communityspezifische Begriffe.
+Stil: freundlich, inklusiv, leserorientiert, markengerecht, barrierefrei.
+Quelle Git, Quelle Style-Guide
+
+**Red Hat**
+
+Strikte Regeln zu „Open Source“-neutraler Sprache und Kollaboration.
+Erlaubt keinen Produkt-Bias, eigene Accessibility- und Bias-Listen.
+Regeln für CLI-Beispiele, Dateipfade und produktneutrale Formulierungen.
+Bevorzugt kollaborativen Duktus und Community-Perspektive.
+Stil: offen, kollaborativ, communitygetrieben, produktneutral, inklusiv.
+Quelle Git, Quelle Style-Guide
+
+**Write-good**
+
+Fokussiert sich rein auf sprachliche Klarheit und verbessert Lesbarkeit und Stil, ohne produkt- oder technikspezifische Prüfkriterien.
+In modernen Dokumentations-Workflows eignen sich Write-Good-Regeln ergänzend, um die sprachliche Qualität unabhängig von der Plattform zu verbessern.
+Write-Good Vale Style-Guide
+Im Folgenden kommt der „Microsoft Style Guide“ zum Einsatz – erweitert um die Style-Guides „write-good“, „MDX“ und „Vale Core“. Diese sind wie folgt charakterisiert:
+
+- Microsoft Style Guide: Unternehmensstandards für technische Dokumentation
+- write-good: allgemeine Regeln für klares Schreiben
+- Vale Core: grundlegende Prosa-Regeln
+- MDX: Prüfung der Sprache innerhalb von JSX Tags
+
+# Testen
+
+Beim Einsatz unterschiedlicher Style-Guides in Kombination lässt sich in manchen Situationen schwer identifizieren, 
+warum welche Regel benötigt wird. Ein Beispiel macht dies klarer. Gegeben ist folgende MDX-Datei, die in 
+src/content/docs/testvale.mdx abgelegt wird.
+
+```markdown
+
+---
+title: "Using Feature Y"
+author: "Adesso"
+---
+
+# Feature Y Benefits
+
+You will be able to use this feature very effectively. It was developed by adeso and their team.
+
+Step 1: Initializing the data source
+Step 2 Call the performOperation() function
+Step 3: Confirm the output's accuracy
+
+> Note: The process can be slow. It is important that you wait patiently.
+
+For details, check our doc [documentation](htp://example.com/feature-y).
+
+```
+
+Die Ergebnisse des Lintings fasst die folgende Tabelle zusammen:
+
+| Fehler | Regelsatz | Erklärung & Korrektur |
+|--------|-----------|----------------------|
+| Autor "Adesso" und "adeso" inkonsistent geschrieben | Custom Regel | Korrigiert in "adesso" |
+| Markdown-Liste ohne korrekte Aufzählungszeichen | MDX-Regelsatz | Fehlt das `-` oder die Nummerierung bei Liste (z.B. `Step 2` ist kein Listenelement) |
+| Unsichere URL im Link (htp statt http) | Microsoft Regelsatz | Erkennt ungültige URLs, fordert Korrektur auf gültiges Schema (`http://`) |
+| Übermäßiger Gebrauch von Floskeln (z.B. "very effectively", "It is important that") | Write-Good | Empfiehlt prägnantere Ausdrucksweise ("effectively", "Wait patiently.") |
+| Use of first-person pronouns ("You will be able...", "you wait patiently") in nicht passender Art | Microsoft Regelsatz | Warnt bei unpassender Verwendung von Personalpronomen, schlägt Sparse-Usage vor |
+| Passiver Sprachgebrauch ("was developed") | Write-Good & Microsoft | Empfiehlt aktive Formulierung, z.B. "adesso developed this feature." |
+
+Eine korrekte Daten sollte wie folgt aussehen: 
+
+```markdown
+
+---
+title: "Using Feature Y"
+author: "adesso"
+---
+
+# Feature Y Benefits
+
+You can use this feature, adesso and their team developed it.
+
+- Step 1: Initialize the data source
+- Step 2: Call the performOperation() function
+- Step 3: Confirm the output's accuracy
+
+> Note: The process can be slow. Please wait.
+
+For details, check the [documentation](http://example.com/feature-y).
+
+{/* <!-- vale write-good.So = NO --> */}
+
+So the experiment failed because the team recorded the measurements incorrectly.
+
+{/* <!-- vale write-good.So = YES --> */}
+
+
+```
+
+## Finetuning
+
+### Ausnahmen für einzelne Passagen
+
+Manchmal ist eine Regel bewusst zu ignorieren — z.B. bei Sätzen, die mit `So` beginnen müssen:
+
+```mdx
+{/* <!-- vale write-good.So = NO --> */}
+
+So the experiment failed because the measurements were taken incorrectly.
+
+{/* <!-- vale write-good.So = YES --> */}
+```
+
+Oder für einen ganzen Block:
+
+```mdx
+{/* <!-- vale off --> */}
+
+Dieser gesamte Abschnitt wird von Vale ignoriert.
+Hier dürfen Passive, Weasel Words und Co. stehen.
+
+{/* <!-- vale on --> */}
+```
+
+> **Hinweis:** Die Kommentar-Tags und die betroffene Zeile müssen durch einen Zeilenumbruch
+> getrennt sein. In MDX-Dateien müssen HTML-Kommentare in JSX-Kommentarblöcke eingeschlossen
+> werden, damit der Astro-Server nicht meckert.
+
+### Deutsche Inhalte
+
+Vale-Styleguides sind primär für englischen Text optimiert. Für deutsche Inhalte empfiehlt sich:
+
+1. Einen eigenen Styleguide mit deutschen Regeln aufbauen (z.B. `.vale/styles/Deutsch/`)
+2. KI-Tools wie [valegen](https://github.com/theletterf/valegen) zur Regelgenerierung nutzen
+3. Für rein deutsche Inhalte Vale nur mit `Vale.Spelling` und eigenen Regeln einsetzen
+
+## Integration in GitHub Actions
+
+Für die Integration von vale in die CI Pipeline ist folgender EIntrag in der deploy.yaml notwendig
+
+```yaml
+- name: Install Vale
+  run: npm run prose-install
+
+- name: Prose check
+  run: npm run prose
+```
+
+Weiter: [Deployment](31-deployment)

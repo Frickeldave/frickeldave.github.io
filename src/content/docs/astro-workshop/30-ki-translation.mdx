@@ -1,0 +1,385 @@
+---
+visible: true
+title: 30 KI-Translation
+description: Automatische Übersetzung von Dokumentationsinhalten und als Spaß-Zugabe ins Klingonische.
+draft: false
+image: "@assets/docs/astro-workshop/asws-30-001.png"
+imageAlt: "KI Integration"
+---
+
+# Sprachumschaltung
+
+Astro Starlight bietet **einen eingebauten Multi-Language Support**, ohne dass externe Pakete nötig sind. Die Sprachumschaltung funktioniert über Locale-Verzeichnisse und eine zentrale Konfiguration.
+
+---
+
+## Verzeichnisstruktur
+
+Sprachversionen werden in **untergeordneten Verzeichnissen** innerhalb von `src/content/docs/` organisiert:
+
+```
+src/content/docs/
+├── index.md                    # Standard-Sprache (root locale)
+├── intro.md
+├── setup.md
+└── de/                         # Übersetzte Inhalte
+    ├── index.md
+    ├── intro.md
+    └── setup.md
+```
+
+- **Root** (`src/content/docs/`) → Standard-Sprache (meist Englisch)
+- **`de/`** → Deutsche Übersetzung
+- Jede übersetzte Datei **muss** ein Pendant im Root-Verzeichnis haben (Starlight lädt die Root-Version als Fallback)
+
+---
+
+## Konfiguration
+
+Die folgende Konfiguration  in `astro.config.mjs` stellt einen Umschalter zwischen englisch, deutsch und klingonisch auf der Seite zur Verfügung. Nach der 
+Umsetzung sollte oben rechts ein Umschalter zur Verfügung stehen und bei Umschaltung auf deutsch sollte Starlight 
+sagen, dass noch keine deutsche Übersetzung vorhanden ist und als Fallback auf die englische Version der Seite 
+zurückfallen. 
+
+```javascript
+import { defineConfig } from "astro/config";
+import starlight from "@astrojs/starlight";
+
+export default defineConfig({
+  site: "https://frickeldave.github.io",
+  base: process.env.CI ? "/astrows/" : "/",
+  output: "static",
+  integrations: [
+    starlight({
+      // Einfacher Titel → mehrsprachiges Objekt
+      title: {
+        en: "Conference docs",
+        de: "Konferenz-Dokumentation",
+        kl: "Qapla' Documentation",
+      },
+      // Standard-Sprache (Fallback)
+      defaultLocale: "root",
+      // Locale-Konfiguration
+      locales: {
+        // Root locale → keine URL-Prefix (z.B. /astrows/)
+        root: {
+          label: "English",
+          lang: "en",
+        },
+        // Deutsche Variante → URL-Prefix /astrows/de/
+        de: {
+          label: "Deutsch",
+          lang: "de",
+        },
+        // Klingonisch → URL-Prefix /astrows/kl/ (Spaß-Zugabe!)
+        kl: {
+          label: "tlhIngan Hol",
+          lang: "kl",
+        },
+      },
+      social: [
+        { icon: "github", label: "GitHub", href: "https://github.com/frickeldave/astrows" },
+      ],
+      sidebar: [
+        {
+          label: "Cloudland",
+          items: [{ autogenerate: { directory: "cloudland" } }],
+        },
+      ],
+    }),
+  ],
+});
+```
+
+### Wichtige Optionen
+
+| Option | Beschreibung | Beispiel |
+|--------|-------------|----------|
+| `defaultLocale` | Fallback-Sprache | `'root'` oder `'en'` |
+| `locales.root` | Root-locale (kein URL-Prefix) | `{ label: 'English', lang: 'en' }` |
+| `locales.<key>` | Unterverzeichnis = Locale-Name | `de:` → `src/content/docs/de/` |
+| `locales.<key>.label` | Anzeigetext im Sprachumschalter | `'Deutsch'` |
+| `locales.<key>.lang` | HTML `lang`-Attribut | `'de'` |
+| `title` (Objekt) | Mehrsprachiger Seitentitel | `{ en: 'Docs', de: 'Docs', kl: 'Qapla'' }` |
+
+---
+
+## UI-Übersetzungen
+
+Starlight bietet **vorgefertigte Übersetzungen** für die Benutzeroberfläche. Für benutzerdefinierte Übersetzungen wird eine `i18n`-Sammlung benötigt.
+
+### config Datei
+
+Zur Aktivierung der schon integrierte n18i Sprachumschaltung muss die config unter `src/content.config.ts` erweitert werden.
+
+```typescript
+import { defineCollection } from 'astro:content';
+import { docsLoader, i18nLoader } from '@astrojs/starlight/loaders';
+import { docsSchema, i18nSchema } from '@astrojs/starlight/schema';
+
+export const collections = {
+  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
+  i18n: defineCollection({ loader: i18nLoader(), schema: i18nSchema() }),
+};
+```
+
+### Übersetzungsdatei
+
+Erstelle `src/content/i18n/de.json`. Änderungen in dieser Datei erfordern oft manchmal einen Neustart des Servers, 
+damit sie sichtbar werden.
+
+```json
+{
+  "skipLink.label": "Zum Inhalt springen",
+  "search.label": "Suchen",
+  "search.ctrlKey": "Strg",
+  "search.cancelLabel": "Abbrechen",
+  "themeSelect.dark": "Dunkel",
+  "themeSelect.light": "Hell",
+  "themeSelect.auto": "Automatisch",
+  "languageSelect.accessibleLabel": "Sprache auswählen",
+  "page.editLink": "Seite bearbeiten auf GitHub",
+  "page.lastUpdated": "Zuletzt aktualisiert:",
+  "prev.label": "Zurück",
+  "next.label": "Weiter",
+  "sidebarNav.accessibleLabel": "Hauptnavigation",
+  "404.text": "Seite nicht gefunden.\nBitte überprüfe die URL oder nutze die Suchleiste.",
+  "notFound.text": "Seite nicht gefunden",
+  "notFound.link": "Zur Startseite"
+}
+```
+
+### Klingonisch UI-Übersetzungen
+
+Für Klingonisch erstelle `src/content/i18n/kl.json`. Da Klingonisch eine konstruierte Sprache ist, gibt es keine 
+vorgefertigten Übersetzungen — hier kannst du kreativ werden!
+
+```json
+{
+  "skipLink.label": "Duj legh",
+  "search.label": "Qapla'",
+  "search.ctrlKey": "Strg",
+  "search.cancelLabel": "Soj",
+  "themeSelect.dark": "QaQ",
+  "themeSelect.light": "Hoch",
+  "themeSelect.auto": "Soj",
+  "languageSelect.accessibleLabel": "puS jol",
+  "page.editLink": "GitHub Dajatlh",
+  "page.lastUpdated": "Heghlu'meH: ",
+  "prev.label": "Qo'",
+  "next.label": "Qap",
+  "sidebarNav.accessibleLabel": "Duj Dajatlh",
+  "404.text": "Duj ghobe'.\nURL Dajatlh je SIm Duj lo'.",
+  "notFound.text": "Duj ghobe'",
+  "notFound.link": "Soj Duj"
+}
+```
+
+**Hinweis:** Klingonisch-Übersetzungen sind oft humorvoll und nicht offiziell. Du kannst eigene kreative 
+Übersetzungen verwenden oder auf englische Fallbacks zurückgreifen.
+
+---
+
+### Inhalts-Dateien
+
+Wir übersetzen nun die `index.md` Datei ins Deutsche und legen diese Übersetzung unter `src/content/docs/de/cloudland/index.md` ab:
+
+```markdown
+---
+title: Cloudland
+description: Eine Zusammenfassung der CloudLand Conference
+---
+
+CloudLand ist das jährliche Cloud Native Festival der deutschsprachigen Cloud Native Community (DCNC).
+Es findet in einem Freizeitpark statt und bietet interaktive Sessions, Workshops und Keynotes zu
+Themen wie DevOps, AI/ML, Security und Platform Engineering.
+```
+
+---
+
+## Übersetzung mit KI
+
+Für die automatische Übersetzung von Dokumentationsinhalten steht das Script [`translate.mjs`](/scripts/translate.mjs) zur Verfügung. Dieses Script nutzt einen OpenAI-kompatiblen LLM-Server (z.B. Ollama, vLLM oder andere) zur Übersetzung von Markdown-Dateien.
+
+### Script-Beschreibung
+
+Das [`translate.mjs`](/scripts/translate.mjs) Script:
+
+- **Liest** eine Markdown-Datei mit Frontmatter
+- **Trennt** Frontmatter vom Inhalt
+- **Übersetzt** den Markdown-Inhalt über einen LLM-API-Call
+- **Behält** Markdown-Formatierung, Code-Blöcke, Links und Struktur-Elemente bei
+- **Schreibt** die übersetzte Datei ins Locale-Verzeichnis (z.B. `src/content/docs/de/`)
+
+### Verwendung
+
+Lösche zuerst die unter `src/content/docs/de/cloudland/index.md` erzeugte deutsche Übersetzung, da wir diese automatisiert neu erstellen wollen. 
+
+```bash
+# Copy script to target location first!
+cp scripts/translate.mjs scripts/
+
+# Deutsche Übersetzung (Standard)
+node scripts/translate.mjs src/content/docs/cloudland/index.md
+
+# Mit benutzerdefiniertem Output-Verzeichnis
+node scripts/translate.mjs src/content/docs/cloudland/index.md src/content/docs/de/cloudland
+
+# Klingonische Übersetzung (Spaß-Zugabe!)
+node scripts/translate.mjs src/content/docs/cloudland/index.md --lang=kl
+```
+
+### Sprachauswahl
+
+Das Script unterstützt zwei Sprachen:
+
+| Code | Sprache | Output-Verzeichnis |
+|------|---------|-------------------|
+| `de` | Deutsch | `src/content/docs/de/` |
+| `kl` | Klingonisch (tlhIngan Hol) | `src/content/docs/kl/` |
+
+Die Sprache kann auf zwei Arten gewählt werden:
+
+1. **Über `.env` Datei:**
+   ```env
+   TARGET_LANG=de  # oder kl
+   ```
+
+2. **Über CLI-Parameter:**
+   ```bash
+   node scripts/translate.mjs <datei> --lang=kl
+   ```
+
+Der CLI-Parameter überschreibt die `.env` Einstellung.
+
+### Konfiguration
+
+Das Script benötigt eine `.env` Datei im Projekt-Root mit folgenden Variablen:
+
+```env
+LLM_API_URL=http://localhost:11434/v1
+LLM_API_KEY=your-api-key
+LLM_MODEL=mistral
+# TARGET_LANG=de  # Optional! Standard ist 'de', kann per --lang= Parameter überschrieben werden
+```
+
+**Wichtig:** `TARGET_LANG` ist **optional**! Wenn nicht gesetzt, wird standardmäßig `de` verwendet.  
+Die Sprache kann jederzeit per CLI-Parameter `--lang=` überschrieben werden:
+
+```bash
+# Verwendet TARGET_LANG aus .env (oder Standard 'de')
+node scripts/translate.mjs src/content/docs/cloudland/index.md
+
+# Überschreibt .env mit Klingonisch
+node scripts/translate.mjs src/content/docs/cloudland/index.md --lang=kl
+```
+
+### CLI-Hilfe
+
+```bash
+node scripts/translate.mjs
+```
+
+Zeigt alle Optionen und Umgebungsvariablen an.
+
+---
+
+## tlhIngan Hol
+
+Als Spaß-Zugabe unterstützt das Script auch die Übersetzung ins **Klingonische** (tlhIngan Hol) - die Sprache der Klingonen aus dem Star Trek Universum.
+ 
+### Verwendung
+
+```bash
+# Klingonisch übersetzen
+node scripts/translate.mjs src/content/docs/cloudland/index.md --lang=kl
+```
+
+Die übersetzte Datei wird in `src/content/docs/kl/cloudland/index.md` gespeichert.
+
+### Konfiguration für Klingonisch
+
+**Keine Änderung in der `.env` nötig!** Einfach den CLI-Parameter verwenden:
+
+```bash
+node scripts/translate.mjs src/content/docs/cloudland/index.md --lang=kl
+```
+
+Optional kannst du `TARGET_LANG=kl` in der `.env` setzen, wenn du **immer** Klingonisch übersetzen möchtest:
+
+```env
+TARGET_LANG=kl
+```
+
+Aber der CLI-Parameter `--lang=kl` überschreibt diese Einstellung jederzeit.
+
+### Wichtige Hinweise
+
+- Das LLM-Modell muss Klingonisch unterstützen (die meisten modernen LLMs tun dies)
+- Die Übersetzung ist oft humorvoll und kann unkonventionell sein
+- Perfekt für Easter Eggs oder interne Dokumentation
+- Nicht für production-ready Inhalte empfohlen! 😄
+
+---
+
+## Bild-Pfade
+
+Für sprachspezifische Bilder:
+
+```
+src/content/docs/
+├── features.md
+├── de/
+│   ├── features.md
+│   └── images/
+│       └── diagramm-de.png    # Deutsches Diagramm
+└── images/
+    └── diagramm-en.png         # Englisch (root)
+```
+
+Im Markdown referenzierst du Bilder mit relativen Pfaden:
+
+```markdown
+![Diagramm](../images/diagramm-de.png)
+```
+
+---
+
+## URL-Struktur
+
+Mit der obigen Konfiguration ergeben sich folgende URLs:
+
+| Sprache | URL |
+|---------|-----|
+| Englisch (root) | `https://frickeldave.github.io/` |
+| Deutsch | `https://frickeldave.github.io/de/` |
+| Klingonisch | `https://frickeldave.github.io/kl/` |
+
+---
+
+## Sprachumschalter in Starlight
+
+Nach der Konfiguration erscheint **oben rechts** ein Sprachumschalter mit allen drei Sprachen:
+
+- **English** (Standard, wenn keine Übersetzung vorhanden)
+- **Deutsch** 
+- **tlhIngan Hol** (Klingonisch)
+
+Wenn du eine Seite in einer Sprache noch nicht übersetzt hast, fällt Starlight automatisch auf die 
+`defaultLocale` (root/English) zurück und zeigt einen Hinweis an.
+
+### Beispiel: Sprachumschalter-Verhalten
+
+```
+Benutzer klickt auf "tlhIngan Hol"
+  ↓
+Starlight sucht: src/content/docs/kl/cloudland/index.md
+  ↓
+Existiert die Datei?
+  ├─ JA → Zeige klingonische Version
+  └─ NEIN → Fallback auf English + Hinweis "No translation available"
+```
+
+---
+
+Weiter: [Glossar](90-glossar)

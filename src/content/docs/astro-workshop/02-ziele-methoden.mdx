@@ -1,0 +1,107 @@
+---
+visible: true
+title: 02 Ziele & Methoden
+description: Lernziele, didaktisches Konzept und Methoden des Astro Workshops.
+draft: false
+image: "@assets/docs/astro-workshop/asws-02-001.png"
+imageAlt: "Ziele und Methoden"
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Groblernziele
+
+Nach Abschluss des Workshops sind die Teilnehmenden in der Lage:
+
+1. **Astro und Starlight verstehen und einsetzen** — Ein Starlight-Projekt anlegen, die
+   Projektstruktur erklären, Dokumentationsseiten in Markdown/MDX erstellen und die Website
+   mit GitHub Pages veröffentlichen.
+
+2. **Einen professionellen Linting-Stack aufbauen** — ESLint, Prettier und Vale installieren,
+   konfigurieren und in npm-Scripts sowie Git Pre-Commit Hooks integrieren.
+
+3. **Automatisiertes Deployment einrichten** — Eine GitHub Actions Pipeline aufbauen, die bei jedem
+   Push automatisch baut und auf GitHub Pages deployt.
+
+4. **KI sinnvoll in den Workflow integrieren** — Ein Node.js-Skript schreiben, das über eine
+   OpenAI-kompatible API Dokumentationsinhalte vollautomatisch übersetzt.
+
+---
+
+## Feinlernziele
+
+### Phase 0 — Grundlagen & Vorbereitung
+
+Nach Phase 0 können die Teilnehmenden:
+
+- Node.js, Git und VS Code für die Astro-Entwicklung einrichten
+- Ein neues Starlight-Projekt mit `npm create astro@latest` anlegen
+- `npm install` ausführen und den Starlight-Dev-Server starten
+- Die grundlegende Ordnerstruktur eines Starlight-Projekts benennen und erklären
+
+### Phase 1 — Astro Setup
+
+Nach Phase 1 können die Teilnehmenden:
+
+- Die Kernkonzepte von Astro erklären: Static Site Generation (SSG), Content Collections, Islands Architecture
+- Die Starlight-spezifischen Konzepte erklären: automatische Sidebar, Frontmatter-Schema, Docs-Collection
+- Neue Dokumentationsseiten in Markdown/MDX anlegen und in der Sidebar erscheinen lassen
+- Ein GitHub Repository für GitHub Pages konfigurieren
+- Eine GitHub Actions Workflow-Datei für den automatischen Build und Deploy schreiben
+- Die fertige Website unter `https://USERNAME.github.io/astrows` aufrufen
+
+### Phase 2 — Linting-Stack
+
+Nach Phase 2 können die Teilnehmenden:
+
+- ESLint installieren, `eslint.config.mjs` für TypeScript und Astro-Dateien konfigurieren und mit
+  `npm run lint` / `npm run lint:check` ausführen
+- Prettier installieren, `.prettierrc` mit Astro- und MDX-Overrides konfigurieren und mit
+  `npm run format` / `npm run format:check` ausführen
+- Vale installieren, `.vale.ini` mit Styleguides (Microsoft, write-good) konfigurieren und mit
+  `npm run prose` ausführen
+- Husky Pre-Commit Hooks einrichten, die alle drei Linter automatisch vor jedem Commit ausführen
+- Vale-Ausnahmen mit `<!-- vale off -->` und `<!-- vale on -->` gezielt setzen
+- Die drei Linting-Dimensionen unterscheiden: Code-Qualität (ESLint), Formatierung (Prettier),
+  Prosa-Qualität (Vale)
+
+### Phase 3 — Deployment & KI-Integration
+
+Nach Phase 3 können die Teilnehmenden:
+
+- Den GitHub Actions Deployment-Workflow erklären und bei Bedarf anpassen
+- Einen lokalen Nginx-Docker-Container für die Astro-Website bauen und starten
+- Ein Node.js-Skript schreiben, das Markdown-Dateien über eine OpenAI-kompatible API übersetzt
+- Den adesso AI Hub als API-Endpunkt konfigurieren und einen API Key sicher via Umgebungsvariable
+  übergeben
+- Einen Prompt so formulieren, dass die KI konsistente, qualitativ hochwertige Übersetzungen liefert
+
+---
+
+## Didaktisches Konzept
+
+### Hands-on first
+
+Jede Phase endet mit einem konkreten, sichtbaren Ergebnis. Theorie wird nur so weit vermittelt,
+wie sie für das unmittelbare Tun notwendig ist. Wer mehr Hintergrund möchte, findet im
+[Glossar](90-glossar) weiterführende Erklärungen.
+
+### Schritt für Schritt
+
+Die Phasen bauen aufeinander auf. Jeder Schritt innerhalb einer Phase ist klar abgegrenzt und
+mit einem Befehl oder einer Datei verbunden, die direkt ausgeführt oder erstellt werden kann.
+
+### Fehler sind erwünscht
+
+Linting-Tools zeigen Fehler — das ist ihr Job. Im Workshop werden bewusst fehlerhafte Code- und
+Prosa-Beispiele eingesetzt, um den Mehrwert der Tools direkt erlebbar zu machen.
+
+### Referenz-Repository
+
+Alle Konfigurationsdateien und Skripte aus dem Workshop basieren auf dem Repository
+[frickeldave/frickeldave.github.io](https://github.com/Frickeldave/frickeldave.github.io), das
+auch die Grundlage für den
+[Heise-Artikel über den Linting-Stack](https://www.heise.de/hintergrund/Linting-Stack-fuer-Node-Projekte-Code-Qualitaet-Formatierung-und-Prosa-Linting-11110378.html)
+bildet. Die Starlight-Dokumentation findet sich unter [starlight.astro.build](https://starlight.astro.build).
+
+Weiter: [Vorbereitung](03-vorbereitung)

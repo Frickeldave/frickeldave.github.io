@@ -1,0 +1,241 @@
+---
+visible: true
+title: 21 Prettier — Formatierung
+description: Prettier für Astro-Projekte installieren, konfigurieren und konsistente Formatierung sicherstellen.
+draft: false
+image: "@assets/docs/astro-workshop/asws-21-001.png"
+imageAlt: "Prettier"
+---
+
+> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+
+## Was ist Prettier?
+
+**Prettier** sorgt für einheitliche Code-Formatierung und beendet Diskussionen über Code-Style ein
+für alle Mal. Einrückung, Zeilenlänge, Anführungszeichen, Kommas — Prettier entscheidet, und alle
+halten sich daran.
+
+Besonders in Astro-Projekten mit gemischten Dateitypen (`.astro`, `.tsx`, `.ts`, `.md`, `.mdx`,
+`.css`) ist eine konsistente Formatierung essenziell: Prettier versteht sie alle.
+
+## Installation
+
+```bash
+npm install -D prettier prettier-plugin-astro prettier-plugin-tailwindcss
+```
+
+| Paket                        | Zweck                                              |
+| ---------------------------- | -------------------------------------------------- |
+| `prettier`                   | Kern-Formatter                                     |
+| `prettier-plugin-astro`      | Unterstützung für `.astro`-Dateien                 |
+| `prettier-plugin-tailwindcss`| Sortiert Tailwind-Klassen automatisch              |
+
+## Konfiguration: `.prettierrc`
+
+Die Konfigurationsdatei `.prettierrc` im Root-Verzeichnis des Repositories:
+
+```json
+{
+  "plugins": ["prettier-plugin-astro", "prettier-plugin-tailwindcss"],
+  "semi": true,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "printWidth": 80,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": ["*.astro"],
+      "options": {
+        "parser": "astro"
+      }
+    },
+    {
+      "files": ["*.md", "*.mdx"],
+      "options": {
+        "printWidth": 100,
+        "proseWrap": "always"
+      }
+    }
+  ]
+}
+```
+
+### Die wichtigsten Optionen erklärt
+
+| Option           | Wert       | Bedeutung                                              |
+| ---------------- | ---------- | ------------------------------------------------------ |
+| `semi`           | `true`     | Semikolons am Zeilenende                               |
+| `singleQuote`    | `false`    | Doppelte Anführungszeichen (Standard in TypeScript)    |
+| `tabWidth`       | `2`        | 2 Leerzeichen Einrückung                               |
+| `trailingComma`  | `"es5"`    | Trailing Comma wo in ES5 erlaubt (Arrays, Objekte)     |
+| `printWidth`     | `80`       | Maximale Zeilenlänge                                   |
+| `endOfLine`      | `"lf"`     | Unix-Zeilenenden (wichtig für Cross-Platform-Teams)    |
+| `proseWrap`      | `"always"` | Markdown-Text bei `printWidth` umbrechen               |
+
+## npm-Scripts einrichten
+
+In `package.json`:
+
+```json
+{
+  "scripts": {
+    "format": "prettier --write ./src --log-level silent",
+    "format:check": "prettier --check ./src --log-level silent"
+  }
+}
+```
+
+| Script                | Verhalten                                                   |
+| --------------------- | ----------------------------------------------------------- |
+| `npm run format`      | Formatiert alle Dateien in `./src` automatisch              |
+| `npm run format:check`| Prüft nur — ideal für CI, nimmt keine Änderungen vor        |
+
+## Prettier in Aktion
+
+### Unformatierter Code
+
+```typescript
+// src/lib/beispiel.ts — vor Prettier
+const greet = (name:string,greeting:string)=>{
+return greeting+' '+name
+}
+
+export const message=greet('Welt','Hallo')
+```
+
+```bash
+npm run format
+```
+
+### Formatierter Code
+
+```typescript
+// src/lib/beispiel.ts — nach Prettier
+const greet = (name: string, greeting: string) => {
+  return greeting + " " + name;
+};
+
+export const message = greet("Welt", "Hallo");
+```
+
+Prettier hat automatisch: Leerzeichen nach `:` ergänzt, Einrückung normalisiert, Anführungszeichen
+vereinheitlicht und Semikolons gesetzt.
+
+## Finetuning
+
+### `.prettierignore` — Dateien ausschließen
+
+```
+dist/
+node_modules/
+.astro/
+public/
+*.min.js
+```
+
+### EditorConfig-Integration
+
+Eine `.editorconfig` im Root sorgt dafür, dass VS Code und andere Editoren bereits beim Tippen
+konsistente Einrückungen verwenden — Prettier formatiert dann beim Speichern:
+
+```ini
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.md]
+trim_trailing_whitespace = false
+```
+
+### VS Code: Format on Save
+
+Öffne nun die Einstellungen in VSCode (über die Befehlspalette: `Ctrl+Shift+P` und dann
+`Preferences: Open User Settings (JSON)` wählen).
+
+**Wichtig:** Stelle sicher, dass beide Erweiterungen installiert sind:
+
+1. **Prettier - Code formatter** (`esbenp.prettier-vscode`)
+2. **Astro** (`astro-build.astro-vscode`)
+
+Installieren über `Ctrl+Shift+X` (Extensions) und nach den Namen suchen.
+
+In `.vscode/settings.json`:
+
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[astro]": {
+    "editor.defaultFormatter": "astro-build.astro-vscode"
+  }
+}
+```
+
+> **Hinweis:** Der globale `editor.defaultFormatter` setzt Prettier als Standard für alle
+> Dateitypen. Für `.astro`-Dateien überschreibt die sprachspezifische Einstellung dies mit der
+> Astro-Erweiterung, die Prettier intern nutzt, aber Astro-spezifische Syntax korrekt behandelt.
+
+## Husky Pre-Commit Hook erweitern
+
+Nun erweitern wir den bestehenden `lint-staged`-Eintrag in `package.json`, den wir schon für ESLint vorbereitet haben um Prettier.
+
+```json
+{
+  "lint-staged": {
+    "*.{ts,tsx,astro}": ["eslint --fix", "eslint", "prettier --write"],
+    "*.{md,mdx,json,css,scss}": ["prettier --write"]
+  }
+}
+```
+
+**Was passiert nun im Hintergrund:**
+
+| Dateityp | Commands |
+|----------|----------|
+| `.ts`, `.tsx`, `.astro` | `eslint --fix` → `eslint` → `prettier --write` |
+| `.md`, `.mdx`, `.json`, `.css`, `.scss` | `prettier --write` |
+
+1. **`eslint --fix`** — Repariert automatisch behebbare Probleme
+2. **`eslint`** — Meldet verbleibende Warnungen/Errors (manuelle Reparatur nötig)
+3. **`prettier --write`** — Formatiert den Code gemäß `.prettierrc`
+
+> **Hinweis:** Der Commit wird abgebrochen, wenn Linting oder Formatierung fehlschlagen. So
+> bleibt der Code immer konsistent.
+
+**Integration mit Husky:** In `.husky/pre-commit` wird `npx lint-staged` ausgeführt, um den
+Hook zu aktivieren.
+
+## Integration in GitHub Actions
+
+In `.github/workflows/deploy.yml` einen Format-Check-Schritt ergänzen:
+
+```yaml
+- name: Format check
+  run: npm run format:check
+```
+
+Die Reihenfolge der Checks im Workflow empfiehlt sich wie folgt:
+
+```yaml
+- name: Lint
+  run: npm run lint:check
+
+- name: Format check
+  run: npm run format:check
+
+- name: Build
+  run: npm run build
+```
+
+Weiter: [Vale — Prosa-Linting](22-linting-vale)
