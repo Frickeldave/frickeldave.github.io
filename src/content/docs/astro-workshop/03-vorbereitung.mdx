@@ -3,6 +3,8 @@ visible: true
 title: 03 Vorbereitung
 description: Entwicklungsumgebung einrichten und ein neues Starlight-Projekt anlegen.
 draft: false
+image: "@assets/docs/astro-workshop/asws-03-001.png"
+imageAlt: "Vorbereitung"
 ---
 
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
@@ -14,6 +16,11 @@ draft: false
 - Vertrautheit mit der Kommandozeile (bash, zsh oder PowerShell)
 
 ## Software installieren
+
+Grundsätzlich empfehle ich Dir die Installation der gesamten Umgebung unter Linux Debian. Getestet sind die folgend gezeigten 
+Scripte mit Debian 13.4. 
+Arbeitest du auf einem Windows System, empfehle ich die Installation einer WSL mit debian. Unter MAC sollten die folgend gezeigten
+Linux Scripte adaptierbar sein, sind aber nicht getestet. 
 
 ### Node.js
 
@@ -160,5 +167,57 @@ Starlight ist bewusst schlank gehalten — keine `components/`, keine `pages/`, 
 | CPU         | 2 Kerne    | 4 Kerne    |
 | Festplatte  | 5 GB frei  | 10 GB frei |
 | Netzwerk    | Internetzugang | Internetzugang |
+
+
+## Bestehendes Projekt einrichten
+
+Falls du ein bereits bestehendes Astro-Projekt (z. B. dieses Workshop-Repository) in einer neuen
+Umgebung einrichten möchtest, sind nur wenige Schritte nötig.
+
+**Schritt 1: Alle Voraussetzungen installieren**
+
+Installiere alle Voraussetzungen wie oben beschrieben
+
+**Schritt 2: Repository klonen**
+
+```bash
+git clone https://github.com/DEIN-USERNAME/astrows.git
+cd astrows
+```
+
+**Schritt 3: Dependencies installieren**
+
+```bash
+npm install
+```
+
+Dieser Befehl liest die Datei [`package.json`](package.json) und installiert alle dort
+aufgeführten Abhängigkeiten in den Ordner `node_modules/`. Das kann je nach Internetverbindung
+einige Minuten dauern.
+
+> **Tipp:** Bei langsamer Verbindung hilft `npm install --verbose`, um den Fortschritt zu
+> verfolgen. Falls Probleme auftreten, kann ein `npm cache clean --force` vorab helfen.
+
+Um eventuelle Sicherheitslücken in Abhängigkeiten zu schliessen, lass direkt danach 
+(unter Umständen auch mehrmals) ein Update laufen: 
+
+```bash
+npm audit fix
+```
+
+**Schritt 4: Dev-Server starten**
+
+```bash
+npm run dev
+```
+
+Der Dev-Server startet und die Website ist unter [http://localhost:4321](http://localhost:4321)
+erreichbar.
+
+Sollten Fehler auftreten, prüfe:
+
+- Ist Node.js korrekt installiert? (`node --version`)
+- Ist die Node-Version kompatibel? (LTS v20+ empfohlen)
+- Gibt es Schreibrechte im Verzeichnis?
 
 Weiter: [Astro Setup](10-astro-setup)

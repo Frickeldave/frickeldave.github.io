@@ -3,6 +3,8 @@ visible: true
 title: 20 ESLint — Code-Qualität
 description: ESLint für Starlight/Astro-Projekte installieren, konfigurieren und mit Finetuning auf Hochglanz bringen.
 draft: false
+image: "@assets/docs/astro-workshop/asws-20-001.png"
+imageAlt: "ESLint"
 ---
 
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
@@ -264,6 +266,16 @@ Zusätzlich kommt **lint-staged** ins Spiel: Statt den gesamten `src/`-Ordner be
 linten, prüft lint-staged nur die Dateien, die tatsächlich im Staging-Bereich liegen (`git add`).
 Das macht den Commit-Prozess deutlich schneller.
 
+**Beispiel:**
+
+```bash
+# Dateien ändern und staggen
+git add src/lib/utils.ts src/content/docs/guide.md
+
+# Commit starten → lint-staged läuft automatisch
+git commit -m "feat: add utils"
+```
+
 ```bash
 npm install -D husky lint-staged
 
@@ -293,10 +305,29 @@ Dadurch aktiviert sich Husky bei jedem neuen Clone automatisch — kein manuelle
   "dependencies": { ... },
   "devDependencies": { ... },
   "lint-staged": {
-    "*.{ts,tsx,astro}": ["eslint --fix", "eslint"]
+    "*.{ts,tsx,astro}": [
+      "eslint --fix --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{md,mdx,css,scss}": [
+      "prettier --write"
+    ],
+    "!package.json": []
   }
 }
 ```
+
+**Wichtige Optionen:**
+
+- **`--no-warn-ignored`** — Verhindert, dass ESLint Warnungen ausgibt für Dateien, die in
+  `.eslintignore` stehen. Ohne diese Option würde lint-staged bei jeder Datei in ignorierten
+  Ordnern (z.B. `dist/`) eine Warnung ausgeben, obwohl sie bewusst ausgeschlossen wurden.
+
+- **`!package.json": []`** — Schließt `package.json` explizit von der Prüfung aus. Grund:
+  `package.json` enthält keine TypeScript/JavaScript/ Astro-Code und würde von ESLint nicht
+  erkannt werden. Ohne diesen Ausschluss würde lint-staged versuchen, ESLint auf
+  `package.json` anzuwenden, was zu Fehlern führt. Die leere Array `[]` bedeutet "keine
+  Commands ausführen".
 
 Ab sofort blockiert ESLint jeden Commit, der Fehler enthält — kein fehlerhafter Code gelangt mehr
 ins Repository.
@@ -314,8 +345,6 @@ Build verschwendet wird:
       - name: Lint
         run: npm run lint:check
 
-      - name: Build
-        run: npm run build
 ```
 
 Schlägt der Lint-Check fehl, bricht der gesamte Workflow ab — das Deployment findet nicht statt.

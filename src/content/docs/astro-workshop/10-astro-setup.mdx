@@ -3,6 +3,8 @@ visible: true
 title: 10 Astro & Starlight Setup
 description: Starlight-Projektstruktur verstehen, GitHub Pages konfigurieren und CI/CD mit GitHub Actions einrichten.
 draft: false
+image: "@assets/docs/astro-workshop/asws-10-001.png"
+imageAlt: "Installation"
 ---
 
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
@@ -304,8 +306,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Schritt 1: Website bauen
+  # Schritt 1: Code-Qualität prüfen
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+  # Schritt 2: Website bauen
   build:
+    needs: quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -328,7 +344,7 @@ jobs:
         with:
           path: ./dist
 
-  # Schritt 2: Zu GitHub Pages deployen
+  # Schritt 3: Zu GitHub Pages deployen
   deploy:
     needs: build
     runs-on: ubuntu-latest

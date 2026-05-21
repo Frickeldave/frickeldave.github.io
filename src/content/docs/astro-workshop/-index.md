@@ -3,9 +3,11 @@ visible: true
 title: Astro Workshop
 description: Vollständiger Workshop zum Aufbau einer professionellen Dokumentationsplattform mit Astro Starlight, Linting-Stack, GitHub Pages Deployment und KI-Integration.
 draft: false
+image: "@assets/docs/astro-workshop/asws-00-001.png"
+imageAlt: "Astro Workshop"
 ---
 
-Willkommen zum Astro Workshop!
+Willkommen zum Astro/Starlight Workshop!
 
 In diesem Workshop baust du Schritt für Schritt eine vollständige, produktionsreife
 Dokumentationsplattform auf — von der ersten Zeile Code bis zur live geschalteten GitHub Page,

@@ -3,6 +3,8 @@ visible: true
 title: 21 Prettier — Formatierung
 description: Prettier für Astro-Projekte installieren, konfigurieren und konsistente Formatierung sicherstellen.
 draft: false
+image: "@assets/docs/astro-workshop/asws-21-001.png"
+imageAlt: "Prettier"
 ---
 
 > ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
@@ -158,6 +160,16 @@ trim_trailing_whitespace = false
 
 ### VS Code: Format on Save
 
+Öffne nun die Einstellungen in VSCode (über die Befehlspalette: `Ctrl+Shift+P` und dann
+`Preferences: Open User Settings (JSON)` wählen).
+
+**Wichtig:** Stelle sicher, dass beide Erweiterungen installiert sind:
+
+1. **Prettier - Code formatter** (`esbenp.prettier-vscode`)
+2. **Astro** (`astro-build.astro-vscode`)
+
+Installieren über `Ctrl+Shift+X` (Extensions) und nach den Namen suchen.
+
 In `.vscode/settings.json`:
 
 ```json
@@ -170,9 +182,13 @@ In `.vscode/settings.json`:
 }
 ```
 
+> **Hinweis:** Der globale `editor.defaultFormatter` setzt Prettier als Standard für alle
+> Dateitypen. Für `.astro`-Dateien überschreibt die sprachspezifische Einstellung dies mit der
+> Astro-Erweiterung, die Prettier intern nutzt, aber Astro-spezifische Syntax korrekt behandelt.
+
 ## Husky Pre-Commit Hook erweitern
 
-Den bestehenden `lint-staged`-Eintrag in `package.json` um Prettier erweitern:
+Nun erweitern wir den bestehenden `lint-staged`-Eintrag in `package.json`, den wir schon für ESLint vorbereitet haben um Prettier.
 
 ```json
 {
@@ -182,6 +198,23 @@ Den bestehenden `lint-staged`-Eintrag in `package.json` um Prettier erweitern:
   }
 }
 ```
+
+**Was passiert nun im Hintergrund:**
+
+| Dateityp | Commands |
+|----------|----------|
+| `.ts`, `.tsx`, `.astro` | `eslint --fix` → `eslint` → `prettier --write` |
+| `.md`, `.mdx`, `.json`, `.css`, `.scss` | `prettier --write` |
+
+1. **`eslint --fix`** — Repariert automatisch behebbare Probleme
+2. **`eslint`** — Meldet verbleibende Warnungen/Errors (manuelle Reparatur nötig)
+3. **`prettier --write`** — Formatiert den Code gemäß `.prettierrc`
+
+> **Hinweis:** Der Commit wird abgebrochen, wenn Linting oder Formatierung fehlschlagen. So
+> bleibt der Code immer konsistent.
+
+**Integration mit Husky:** In `.husky/pre-commit` wird `npx lint-staged` ausgeführt, um den
+Hook zu aktivieren.
 
 ## Integration in GitHub Actions
 
