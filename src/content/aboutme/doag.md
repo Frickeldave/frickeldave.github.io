@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-61692
+    title: KI löst keine Kommunikationsprobleme - mit David Kaselow
+    edition: FutureAI
+    guests: Dave König und David Kaselow
+    date: 26. Mai 2026
+    description: >-
+      In dieser FutureAI-Episode sprechen Dave König und David Kaselow über die zentrale Erkenntnis, dass KI allein Kommunikationsprobleme nicht löst. Der IT-Berater Kaselow erklärt, warum viele Digitalisierungs- und KI-Projekte an mangelnder Abstimmung zwischen Menschen scheitern. Die Episode behandelt KI-Hype, Legacy-Systeme, Datenschutz und die Zukunft von Entwicklerteams sowie Kaselows Engagement für Women in Tech und modernes Lernen.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a15611c6ee822cbfbdeef81/media.mp3
   - id: doag-voices-53405
     title: Menschenzentrierte KI, Agentic Engineering und mentaler Overload
     edition: FutureAI
