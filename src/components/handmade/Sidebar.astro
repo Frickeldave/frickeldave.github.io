@@ -4,11 +4,12 @@ import { FaFilter, FaSort, FaHashtag } from "react-icons/fa";
 
 interface Props {
   categories: string[];
+  categoryLabels: string[];
   allTags: string[];
   totalProducts: number;
 }
 
-const { categories, allTags, totalProducts } = Astro.props;
+const { categories, categoryLabels, allTags, totalProducts } = Astro.props;
 ---
 
 <ScrollArea className="h-full w-full" client:only="react">
@@ -52,13 +53,13 @@ const { categories, allTags, totalProducts } = Astro.props;
       <hr class="-mt-1 mb-2 border-cyan-500/30" />
       <ul class="space-y-2" id="category-filters">
         {
-          categories.map((category) => (
+          categories.map((category, index) => (
             <li>
               <button
                 class="category-filter glass-t w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all hover:bg-white/20"
                 data-category={category}
               >
-                {category}
+                {categoryLabels[index] ?? category}
               </button>
             </li>
           ))

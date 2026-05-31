@@ -1,5 +1,6 @@
 ---
 import type { HandmadeItem } from "@/types";
+import { getHandmadeCategoryLabel } from "@/lib/handmadeCategoryLabels";
 import { Image } from "astro:assets";
 
 interface Props {
@@ -49,7 +50,7 @@ const shortDescription = truncateDescription(item.description);
       </div>
       <div class="absolute right-2 top-2">
         <span class="glass rounded-full px-3 py-1 text-xs font-semibold">
-          {item.category}
+          {getHandmadeCategoryLabel(item.category)}
         </span>
       </div>
     </div>
