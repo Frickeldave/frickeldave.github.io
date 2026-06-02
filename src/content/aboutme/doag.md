@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-76406
+    title: Influencer-Marketing zwischen Daten und Glaubwürdigkeit
+    edition: People
+    guests: Dave König und Eva-Maria Hänel
+    date: 2. Juni 2026
+    description: >-
+      Dave König spricht mit Eva-Maria Hänel, Geschäftsführerin der Influencer-Marketing-Agentur Reachbird, über die Transformation der modernen Influencer-Marketing-Branche. Die Episode beleuchtet datengetriebene Kampagnenplanung, den Einfluss von KI auf Auswahlprozesse und warum Authentizität trotz Automatisierung entscheidend bleibt. Gemeinsam werfen sie einen Blick auf die Chancen für Unternehmen, Pharma und B2B-Verbände, erfolgreich Creator Communities zu nutzen.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a1ead31b11ee18ce5549c5c/media.mp3
   - id: doag-voices-61692
     title: KI löst keine Kommunikationsprobleme - mit David Kaselow
     edition: FutureAI
