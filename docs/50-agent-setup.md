@@ -51,6 +51,7 @@ Bei der Arbeit mit KI-Assistenten (GitHub Copilot, Cursor, etc.) besteht das Ris
 │  (.github/hooks/validate-code-change.mjs)       │
 │  · Prüft .github/hooks/approvals/current        │
 │  · Erlaubt/blockiert File-Edit-Operationen      │
+│  · Erlaubt/blockiert Browser-Investigations     │
 └──────────────┬──────────────────────────────────┘
                │
                ▼
@@ -85,13 +86,23 @@ Der PreToolUse-Hook ist die technische Sicherheitsebene. Er wird VOR jeder File-
 - `.github/hooks/validate-code-change.json` — Hook-Konfiguration
 - `.github/hooks/approvals/current` — Approval-File (wird vom RE-Agent erstellt)
 
+**Geblockte Tool-Kategorien:**
+
+| Kategorie | Tools |
+|-----------|-------|
+| File-Edit-Operationen | `replace_string_in_file`, `multi_replace_string_in_file`, `create_file`, `edit_notebook_file`, `delete_file` |
+| Browser-Investigations | `navigate_page`, `open_browser_page`, `screenshot_page`, `read_page` |
+
+Durch das Blockieren der Browser-Investigationstools wird verhindert, dass das LLM ohne Approval überhaupt mit der Analyse eines Problems beginnt — nicht erst wenn es Dateien ändern will.
+
 **Verhalten:**
 
 | Situation | Entscheidung |
 |-----------|-------------|
-| Kein Approval-File | `ask` — Mit blockierender Nachricht |
-| Approval ohne Issue-Referenz | `ask` — Mit Warnung |
-| Approval mit gültigem Issue (GH-XXX) | `allow` — File-Edits sind erlaubt |
+| Kein Approval-File | `deny` — Mit blockierender Nachricht |
+| Approval ohne Issue-Referenz | `deny` — Mit Warnung |
+| Approval abgelaufen | `deny` — Mit Hinweis auf Erneuerung |
+| Approval mit gültigem Issue (GH-XXX) | `allow` — Alle Operationen erlaubt |
 
 ### 3. copilot-instructions.md
 
@@ -199,7 +210,7 @@ Der User arbeitet oft über mehrere Prompts hinweg an einem Dokument. In diesem 
 A: Die Prompt-Instructions sind die erste Verteidigungslinie. Ohne Hook kann der LLM ungeprüft editieren — aber das RE-Agent-System sagt ihm explizit, dass er es NICHT tun darf.
 
 **Q: Kann der Hook umgangen werden?**
-A: Nur durch manuelles Editieren von Dateien außerhalb von Copilot. Der Hook blockiert alle File-Edit-Operationen innerhalb von Copilot.
+A: Nur durch manuelles Editieren von Dateien außerhalb von Copilot. Der Hook blockiert alle File-Edit-Operationen und Browser-Investigationstools innerhalb von Copilot. Ein LLM kann also ohne Approval weder Dateien ändern noch eine Seite im Browser öffnen oder untersuchen.
 
 **Q: Was, wenn ich eine sofortige Änderung brauche?**
 A: Der Workflow kann beschleunigt werden — der RE-Agent erstellt schnell ein Issue und gibt es frei. Das Approval-File wird erstellt, und die Implementierung kann sofort starten.

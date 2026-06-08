@@ -22,15 +22,21 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-const APPROVAL_FILE = resolve(ROOT, ".github/hooks/approvals/current");
+const APPROVAL_FILE = resolve(__dirname, "approvals/current");
 
-// Blocked tools — alle File-Edit-Operationen
+// Blocked tools — File-Edit-Operationen UND Browser-Investigationstools
 const BLOCKED_TOOLS = new Set([
+  // File-Edit-Operationen
   "replace_string_in_file",
   "multi_replace_string_in_file",
   "create_file",
   "edit_notebook_file",
   "delete_file",
+  // Browser-Investigationstools — verhindern Analyse ohne Approval
+  "navigate_page",
+  "open_browser_page",
+  "screenshot_page",
+  "read_page",
 ]);
 
 const ALLOW_DECISION = {
@@ -84,7 +90,7 @@ process.stdin.on("end", () => {
   if (!existsSync(APPROVAL_FILE)) {
     output(
       BLOCK_DECISION(
-        "🛑 CODE-ÄNDERUNG GEBLOCKT: Vor jeder File-Edit-Operation muss ein validiertes GitHub Issue + Requirement Engineer Approval vorliegen. " +
+        "🛑 GEBLOCKT: Vor jeder File-Edit- oder Browser-Investigations-Operation muss ein validiertes GitHub Issue + Requirement Engineer Approval vorliegen. " +
           "Keine Approval-Datei gefunden (.github/hooks/approvals/current). " +
           "Der Requirement Engineer Agent muss das Ticket zuerst reviewen und freigeben."
       )
