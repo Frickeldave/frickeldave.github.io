@@ -9,7 +9,7 @@ applyTo: ["src/**/*.astro", "src/**/*.tsx", "src/**/*.css", "src/styles/**"]
 # Tailwind & Design-System
 
 Die vollständige Palette und die pro Bereich geltenden Regeln leben in
-[`docs/20-design-system.md`](../../docs/20-design-system.md). **Konsultiere sie immer, bevor Du eine
+[`docs/20-arch-design-system.md`](../../docs/20-arch-design-system.md). **Konsultiere sie immer, bevor Du eine
 neue Farbe einführst.** Diese Datei ist die Kurzfassung für die tägliche Arbeit.
 
 ## Farbsysteme pro Bereich (harte Regel)
@@ -26,7 +26,7 @@ Jeder Top-Level-Bereich hat **eine** Farbfamilie. Niemals mischen.
 
 Wende die Familie konsistent an auf: CTA-Buttons, Hover-States, Badges, Borders, Bullet-Points,
 Timeline-Indikatoren und Sidebar-Icons. Die genauen Utility-Klassen findest Du in den Tabellen in
-[`docs/20-design-system.md`](../../docs/20-design-system.md).
+[`docs/20-arch-design-system.md`](../../docs/20-arch-design-system.md).
 
 ## Gemeinsame Invarianten (alle Bereiche)
 
@@ -52,4 +52,4 @@ Prettier-Plugin (falls konfiguriert) erledigt das automatisch — kämpfe nicht 
 - ❌ Bereichsfremde Farben (z. B. `purple-*` auf der Downloads-Seite).
 - ❌ Inline-`style="..."`-Attribute für alles, was Tailwind ausdrücken kann.
 - ❌ Eine neue Farbfamilie hinzufügen, ohne
-  [`docs/20-design-system.md`](../../docs/20-design-system.md) zu aktualisieren.
+  [`docs/20-arch-design-system.md`](../../docs/20-arch-design-system.md) zu aktualisieren.

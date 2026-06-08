@@ -7,7 +7,7 @@ description:
 
 # Bild-Handling
 
-Vollständige Referenz: [`docs/16-image-handling.md`](../../docs/16-image-handling.md). Kurzfassung
+Vollständige Referenz: [`docs/16-write-image-handling.md`](../../docs/16-write-image-handling.md). Kurzfassung
 für die tägliche Arbeit:
 
 ## Wohin mit der Datei

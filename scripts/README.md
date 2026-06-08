@@ -17,5 +17,3 @@ Dieses Verzeichnis enthält Build- und Utility-Scripts für das Projekt.
 - Local: `v0.0.0-dev-{branch}-{commit}`
 - Dev: `v{major}.{minor}.0-dev-{commit}`
 - Production: `v{major}.{minor}.{patch}`
-
-Siehe `docs/versioning.md` für Details zum Versioning-System.

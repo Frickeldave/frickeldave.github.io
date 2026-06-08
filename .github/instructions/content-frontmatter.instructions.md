@@ -66,7 +66,7 @@ Konventionen.
   B. `3d-druck`, `holz`, `agile`).
 - Verwende vorhandene Begriffe wieder — prüfe `src/lib/taxonomyParser.ts` und bestehende Posts,
   bevor Du einen neuen erfindest.
-- Siehe [`docs/14-categories-and-tags.md`](../../docs/14-categories-and-tags.md) (in Arbeit).
+- Siehe [`docs/14-write-categories-and-tags.md`](../../docs/14-write-categories-and-tags.md) (in Arbeit).
 
 ## Dateinamen
 

@@ -24,7 +24,7 @@ Format passen, werden beim Commit abgelehnt.
 `feat: Add stuff.` — großgeschrieben, Punkt am Ende
 
 Vollständige Regeln und die komplette Type-Tabelle:
-[`docs/12-commit-messages.md`](../../docs/12-commit-messages.md).
+[`docs/12-dev-messages.md`](../../docs/12-dev-messages.md).
 
 ## Branch-Namen
 
@@ -41,7 +41,7 @@ Vollständige Regeln und die komplette Type-Tabelle:
 `Feature-Branch` — falsche Schreibweise, kein Type ❌ `my-fix` — kein Type-Präfix
 
 Vollständige Strategie:
-[`docs/13-branch-naming-strategy.md`](../../docs/13-branch-naming-strategy.md).
+[`docs/13-dev-branch-naming-strategy.md`](../../docs/13-dev-branch-naming-strategy.md).
 
 ## Wenn Du Commits/Branches generierst
 

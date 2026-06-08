@@ -10,7 +10,7 @@ applyTo: "src/**/*.{astro,ts,tsx,mts,cts}"
 
 Dieses Projekt ist eine **statische Astro-5-Site** mit TypeScript, Tailwind CSS und
 Cloudflare-Deployment. Halte Dich an die Architektur, die in
-[`docs/15-structure.md`](../../docs/15-structure.md) dokumentiert ist.
+[`docs/15-write-structure.md`](../../docs/15-write-structure.md) dokumentiert ist.
 
 ## Schichten-Architektur (strikt)
 
@@ -53,6 +53,6 @@ Rufe **niemals** `getCollection()` aus Komponenten auf — gib die Daten als Pro
 ## Vermeide
 
 - ❌ Lege keine neuen Top-Level-Ordner unter `src/` an, ohne
-  [`docs/15-structure.md`](../../docs/15-structure.md) zu aktualisieren.
+  [`docs/15-write-structure.md`](../../docs/15-write-structure.md) zu aktualisieren.
 - ❌ Frage keine Daten in `components/` ab — Pages besitzen den Datenfluss.
 - ❌ Bearbeite keine generierten Verzeichnisse: `dist/`, `.astro/`, `node_modules/`.
