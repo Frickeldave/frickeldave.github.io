@@ -44,7 +44,13 @@ export default defineConfig({
   },
   vite: {
     optimizeDeps: {
-      include: ["react-dom/client"],
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+      ],
     },
   },
   integrations: [

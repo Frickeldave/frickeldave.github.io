@@ -51,3 +51,20 @@ Vollständige Strategie:
   `redirect`, `handmade`, `ci`, `deps`).
 - Bündle niemals unzusammenhängende Änderungen in einen Commit, nur um den Working Tree zu leeren —
   teile sie auf.
+
+## ⚠️ Requirement Engineer als Gatekeeper
+
+Bevor Du Branches anlegst, Commits machst oder PRs öffnest — und bevor irgendeine Code-Änderung
+getroffen wird:
+
+1. **Konstruiere die Anforderung** — was soll geändert werden und warum?
+2. **Konsultiere den Requirement Engineer** (`requirement-engineer` Agent) — er reviewt den
+   Vorschlag, arbeitet das Ticket mit Dir zusammen und gibt ein explizites **OK**.
+3. **Das Ticket MUSS als GitHub Issue erfasst sein**, bevor Code geschrieben wird.
+4. **KEINE Code-Änderungen über den Chat** — nur das GitHub Issue autorisiert Implementation.
+
+Branch-Namen enthalten idealerweise die Issue-Referenz (z. B. `feat/gh-42-podcast-rss`).
+
+Siehe [`.github/agents/requirement-engineer.agent.md`](../agents/requirement-engineer.agent.md).
+
+> **Kurzregel**: Kein Ticket → Kein Issue → Kein Branch → Kein Code.

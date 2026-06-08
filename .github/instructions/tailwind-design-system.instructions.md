@@ -9,8 +9,8 @@ applyTo: ["src/**/*.astro", "src/**/*.tsx", "src/**/*.css", "src/styles/**"]
 # Tailwind & Design-System
 
 Die vollständige Palette und die pro Bereich geltenden Regeln leben in
-[`docs/20-arch-design-system.md`](../../docs/20-arch-design-system.md). **Konsultiere sie immer, bevor Du eine
-neue Farbe einführst.** Diese Datei ist die Kurzfassung für die tägliche Arbeit.
+[`docs/20-arch-design-system.md`](../../docs/20-arch-design-system.md). **Konsultiere sie immer,
+bevor Du eine neue Farbe einführst.** Diese Datei ist die Kurzfassung für die tägliche Arbeit.
 
 ## Farbsysteme pro Bereich (harte Regel)
 
@@ -53,3 +53,21 @@ Prettier-Plugin (falls konfiguriert) erledigt das automatisch — kämpfe nicht 
 - ❌ Inline-`style="..."`-Attribute für alles, was Tailwind ausdrücken kann.
 - ❌ Eine neue Farbfamilie hinzufügen, ohne
   [`docs/20-arch-design-system.md`](../../docs/20-arch-design-system.md) zu aktualisieren.
+
+## ⚠️ Requirement Engineer als Gatekeeper
+
+Bevor Du **Tailwind-CSS-Klassen schreibst, Farben auswählst, Gradienten definierst, neue Badges oder
+Buttons erstellst** — also bei **jeder visuellen Änderung**:
+
+1. **Konstruiere die Anforderung** — was soll visuell geändert werden und warum?
+2. **Konsultiere den Requirement Engineer** (`requirement-engineer` Agent) — er reviewt den
+   Vorschlag, arbeitet das Ticket mit Dir zusammen und gibt ein explizites **OK**.
+3. **Das Ticket MUSS als GitHub Issue erfasst sein**, bevor CSS-Klassen oder Styles geändert werden.
+4. **KEINE Änderungen über den Chat** — nur das GitHub Issue autorisiert Implementation.
+
+Besonders relevant bei: Einführung neuer Farben/Gradients, Änderung von Component-Styles,
+Layout-Überarbeitungen, Dark-Mode-Anpassungen, Responsive-Regeln.
+
+Siehe [`.github/agents/requirement-engineer.agent.md`](../agents/requirement-engineer.agent.md).
+
+> **Kurzregel**: Kein Ticket → Kein Issue → Kein Styling.

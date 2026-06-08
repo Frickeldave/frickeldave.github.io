@@ -1,0 +1,6 @@
+issue: GH-251
+title: fix(process): PreToolUse-Hook Bugfix — falscher Input-Feldname und Output-Format
+status: approved
+by: requirement-engineer
+expires: 2026-06-09T20:00:00Z
+scope: hook-fix
