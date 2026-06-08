@@ -1,4 +1,4 @@
-import plugin from "tailwindcss/plugin";
+import plugin from "tailwindcss/plugin.js";
 import typography from "@tailwindcss/typography";
 import forms from "@tailwindcss/forms";
 import { createRequire } from "module";

@@ -1,14 +1,9 @@
-import React from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import React, { useRef } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
   FaRegCalendarAlt,
 } from "react-icons/fa";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 type NewsItemWithImage = {
   visible: boolean;
@@ -32,78 +27,70 @@ const formatNewsDate = (dateString: string): string => {
 };
 
 const NewsCarousel: React.FC<Props> = ({ news }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   if (!news || news.length === 0) {
     return null;
   }
 
-  return (
-    <div className="news-carousel relative">
-      <Swiper
-        modules={[Autoplay, Navigation, Pagination]}
-        spaceBetween={24}
-        slidesPerView={1}
-        navigation={{
-          prevEl: ".swiper-button-prev-news",
-          nextEl: ".swiper-button-next-news",
-        }}
-        pagination={{
-          clickable: true,
-          el: ".swiper-pagination-news",
-        }}
-        autoplay={{
-          delay: 5000,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
-        breakpoints={{
-          640: { slidesPerView: 2 },
-          1024: { slidesPerView: 3 },
-          1280: { slidesPerView: 4 },
-        }}
-        className="pb-12"
-      >
-        {news.map((item, index) => (
-          <SwiperSlide key={`news-${item.date}-${index}`}>
-            <article className="glass h-full overflow-hidden rounded-lg transition-transform hover:scale-105">
-              {item.imageUrl && (
-                <div className="aspect-video overflow-hidden">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              )}
-              <div className="p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm opacity-70">
-                  <FaRegCalendarAlt className="inline-block" />
-                  <time dateTime={item.date}>{formatNewsDate(item.date)}</time>
-                </div>
-                <h4 className="mb-2 text-lg font-bold">{item.title}</h4>
-                <p className="line-clamp-3 text-sm opacity-80">{item.text}</p>
-              </div>
-            </article>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+  const scroll = (direction: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const amount = el.offsetWidth;
+    el.scrollLeft = el.scrollLeft + (direction === "left" ? -amount : amount);
+  };
 
-      {/* Custom Navigation */}
+  return (
+    <div className="flex items-center gap-2">
       <button
-        className="swiper-button-prev-news glass absolute left-0 top-1/2 z-10 -ml-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
+        type="button"
+        onClick={() => scroll("left")}
+        className="glass flex-none cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
         aria-label="Vorherige News"
       >
         <FaChevronLeft className="text-lg" />
       </button>
+
+      <div
+        ref={scrollRef}
+        className="flex flex-1 gap-6 overflow-x-auto pb-4"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {news.map((item, index) => (
+          <article
+            key={`news-${item.date}-${index}`}
+            className="glass w-[calc(100%-1rem)] flex-none overflow-hidden rounded-lg transition-transform hover:scale-105 sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] xl:w-[calc(25%-1rem)]"
+          >
+            {item.imageUrl && (
+              <div className="aspect-video overflow-hidden">
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <div className="p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm opacity-70">
+                <FaRegCalendarAlt className="inline-block" />
+                <time dateTime={item.date}>{formatNewsDate(item.date)}</time>
+              </div>
+              <h4 className="mb-2 text-lg font-bold">{item.title}</h4>
+              <p className="line-clamp-3 text-sm opacity-80">{item.text}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
       <button
-        className="swiper-button-next-news glass absolute right-0 top-1/2 z-10 -mr-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
+        type="button"
+        onClick={() => scroll("right")}
+        className="glass flex-none cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
         aria-label="Nächste News"
       >
         <FaChevronRight className="text-lg" />
       </button>
-
-      {/* Custom Pagination */}
-      <div className="swiper-pagination-news mt-4 flex justify-center gap-2" />
     </div>
   );
 };

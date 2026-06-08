@@ -42,6 +42,11 @@ export default defineConfig({
   prefetch: {
     prefetchAll: true,
   },
+  vite: {
+    optimizeDeps: {
+      include: ["react-dom/client"],
+    },
+  },
   integrations: [
     react(),
     sitemap(),
