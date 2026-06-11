@@ -69,40 +69,47 @@ applyTo: ["src/**/*.astro", "src/**/*.tsx", "src/**/*.css", "src/styles/**"]
 
 **Beispiele für `applyTo`-Patterns im Projekt:**
 
-| Instruction-Datei                       | applyTo-Patterns                                                                 | Wird geladen bei...                          |
-| --------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------- |
-| `astro-typescript.instructions.md`      | `src/**/*.{astro,ts,tsx,mts,cts}`                                                | Jede Datei in `src/` mit Code-Endungen      |
-| `content-frontmatter.instructions.md`   | `src/content/**/*.md`, `src/content/**/*.mdx`, `_drafts/**/*.md`                 | Alle Markdown/MDX-Dateien unter `src/content/` |
-| `tailwind-design-system.instructions.md`| `src/**/*.astro`, `src/**/*.tsx`, `src/**/*.css`, `src/styles/**`               | Alle Styling-Dateien                        |
-| `image-handling.instructions.md`        | (kein `applyTo` — immer geladen bei Bild-Operationen)                           | Bei Bild-Referenzierung                     |
-| `commit-and-branch.instructions.md`     | (kein `applyTo` — immer geladen bei Git-Operationen)                            | Bei Git/Commit-Operationen                  |
+| Instruction-Datei                        | applyTo-Patterns                                                  | Wird geladen bei...                            |
+| ---------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
+| `astro-typescript.instructions.md`       | `src/**/*.{astro,ts,tsx,mts,cts}`                                 | Jede Datei in `src/` mit Code-Endungen         |
+| `content-frontmatter.instructions.md`    | `src/content/**/*.md`, `src/content/**/*.mdx`, `_drafts/**/*.md`  | Alle Markdown/MDX-Dateien unter `src/content/` |
+| `tailwind-design-system.instructions.md` | `src/**/*.astro`, `src/**/*.tsx`, `src/**/*.css`, `src/styles/**` | Alle Styling-Dateien                           |
+| `image-handling.instructions.md`         | (kein `applyTo` — immer geladen bei Bild-Operationen)             | Bei Bild-Referenzierung                        |
+| `commit-and-branch.instructions.md`      | (kein `applyTo` — immer geladen bei Git-Operationen)              | Bei Git/Commit-Operationen                     |
 
 ### Was das für die Agenten bedeutet
 
 **Astro Developer Agent:**
+
 - Wird automatisch `astro-typescript.instructions.md` erhalten, wenn er `src/components/` bearbeitet
-- Wird automatisch `tailwind-design-system.instructions.md` erhalten, wenn er Styling-Änderungen macht
+- Wird automatisch `tailwind-design-system.instructions.md` erhalten, wenn er Styling-Änderungen
+  macht
 
 **Content Agent:**
+
 - Wird automatisch `content-frontmatter.instructions.md` erhalten, wenn er Markdown-Dateien erstellt
 - Wird automatisch `image-handling.instructions.md` erhalten, wenn er Bilder referenziert
 
 **Requirement Engineer Agent:**
+
 - Liest Dateien, um Kontext zu verstehen — Instructions werden automatisch geladen
 
 ### Best Practices
 
 ✅ **Richtig:**
+
 - Instruction-Dateien mit klaren `applyTo`-Patterns erstellen
 - Patterns so spezifisch wie möglich halten (nicht `**/*`)
 - Description-Feld mit Trigger-Wörtern füllen (für manuelle Invocation)
 
 ❌ **Falsch:**
+
 - Agenten anweisen, "bitte beachte die tailwind instructions" — sie sind bereits im Kontext
 - `applyTo: "**/*"` verwenden — das lädt die Instruction bei **jeder** Datei und brennt Token
 - Instructions manuell im Prompt referenzieren — unnötig und redundant
 
 **Konflikt-Resolution:**
+
 - Wenn Instructions widersprüchlich sind, gilt die **spezifischste** Regel
 - Beispiel: `tailwind-design-system.instructions.md` (bereichsspezifisch) hat Vorrang vor
   generischen Tailwind-Regeln
@@ -158,7 +165,8 @@ Durch das Blockieren der Browser-Investigationstools wird verhindert, dass das L
 
 Seit neuestem prüft der Hook zusätzlich, ob alle erforderlichen MCP-Server verfügbar sind:
 
-1. **Konfiguration**: Die erforderlichen Server werden in `validate-code-change.json` unter `mcpServers` definiert
+1. **Konfiguration**: Die erforderlichen Server werden in `validate-code-change.json` unter
+   `mcpServers` definiert
 2. **Befehlsausführung**: Die Startbefehle werden aus `.vscode/mcp.json` gezogen
 3. **Verfügbarkeit**: Wenn ein Server nicht verfügbar ist, wird der Benutzer informiert
 4. **Starten**: In zukünftigen Versionen wird der Hook versuchen, nicht laufende Server zu starten
