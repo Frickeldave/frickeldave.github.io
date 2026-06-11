@@ -5,8 +5,10 @@ description:
   gatekeeping the transition from requirement to GitHub Issue. Triggers: review, ticket,
   requirement, change request, feature request, before coding, before implementation, change review,
   Issue erstellen, Ticket erstellen."
-tools: [read, search, execute, todo, github/*]
+tools: [agent, read, search, execute, todo, github/*]
 user-invocable: true
+agents: [astro-developer, content-writer]
+model: qwen3-coder-480b (oaicopilot)
 ---
 
 # Requirement Engineer Agent

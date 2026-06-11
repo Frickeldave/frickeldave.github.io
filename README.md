@@ -28,6 +28,35 @@ This blog is built with modern web technologies:
   code quality
 - **[Astrogon Theme](https://github.com/astrogon/astrogon)** - A clean and minimal theme for
   Starlight documentation
+
+### GitHub MCP Setup
+
+This project uses GitHub MCP (Model Context Protocol) for enhanced AI assistance. To set up the MCP
+server:
+
+1. Copy the `.env.example` file to `.env`:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file and add your GitHub Personal Access Token:
+
+   ```bash
+   GITHUB_MCP_TOKEN=your_actual_github_token_here
+   ```
+
+3. Make sure your token has the required scopes for issue administration:
+   - `repo` (full access to repository data)
+   - `read:org` (read organizational data)
+   - `read:user` (read user profile data)
+   - `user:email` (access user email addresses)
+   - `public_repo` (access public repositories)
+   - `repo:status` (access commit statuses)
+
+The MCP server wrapper script reads the token from the `.env` file, which is excluded from version
+control for security.
+
 - **[MDX](https://mdxjs.com/)** - Markdown with embedded JSX components for rich content
 - **[GitHub Pages](https://pages.github.com/)** - Free hosting and deployment via GitHub Actions
 

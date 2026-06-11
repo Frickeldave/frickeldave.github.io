@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "github": {
+      "command": "node",
+      "args": ["./scripts/mcp/mcp-github-wrapper.mjs"],
+      "env": {}
+    }
+  }
+}

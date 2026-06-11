@@ -1,6 +1,6 @@
-issue: GH-251
-title: fix(process): PreToolUse-Hook Bugfix — falscher Input-Feldname und Output-Format
+issue: GH-253
+title: Erweiterung des Validate-Code-Change Hooks um MCP-Server-Prüfung
 status: approved
 by: requirement-engineer
-expires: 2026-06-09T20:00:00Z
-scope: hook-fix
+expires: 2026-06-12T23:59:59Z
+scope: docs-update

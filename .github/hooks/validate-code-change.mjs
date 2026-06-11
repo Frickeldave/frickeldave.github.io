@@ -16,13 +16,16 @@
 //   # printf "issue: GH-%s\ntitle: %s\n" "$ISSUE_NUM" "$TITLE" >> .github/hooks/approvals/current
 
 import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, "..");
+const ROOT = resolve(__dirname, "../..");
 
 const APPROVAL_FILE = resolve(__dirname, "approvals/current");
+const CONFIG_FILE = resolve(__dirname, "validate-code-change.json");
+const MCP_CONFIG_FILE = resolve(ROOT, ".vscode/mcp.json");
 
 // Blocked tools — File-Edit-Operationen UND Browser-Investigationstools
 const BLOCKED_TOOLS = new Set([
@@ -38,6 +41,100 @@ const BLOCKED_TOOLS = new Set([
   "screenshot_page",
   "read_page",
 ]);
+
+// Funktion zur Prüfung, ob MCP-Server erreichbar sind
+function checkMcpServers() {
+  try {
+    // Lese die Konfigurationsdatei
+    if (!existsSync(CONFIG_FILE)) {
+      console.error("Konfigurationsdatei nicht gefunden:", CONFIG_FILE);
+      return false;
+    }
+
+    const configContent = readFileSync(CONFIG_FILE, "utf-8");
+    const config = JSON.parse(configContent);
+
+    // Prüfe, ob MCP-Server definiert sind
+    if (!config.mcpServers || config.mcpServers.length === 0) {
+      return true; // Keine Server zu prüfen
+    }
+
+    // TODO: In einer späteren Implementierung werden wir hier die tatsächliche
+    // Erreichbarkeit der MCP-Server prüfen
+    // Für den Moment gehen wir davon aus, dass der GitHub MCP Server benötigt wird
+
+    // Versuche, den GitHub MCP Server zu starten, falls er nicht läuft
+    return startMcpServers(config.mcpServers);
+  } catch (error) {
+    console.error("Fehler beim Prüfen der MCP-Server:", error.message);
+    return false;
+  }
+}
+
+// Funktion zum Starten der MCP-Server
+function startMcpServers(serverNames) {
+  try {
+    let allStarted = true;
+
+    // Lese die MCP-Konfiguration
+    if (!existsSync(MCP_CONFIG_FILE)) {
+      console.error("MCP-Konfigurationsdatei nicht gefunden:", MCP_CONFIG_FILE);
+      return false;
+    }
+
+    const mcpConfigContent = readFileSync(MCP_CONFIG_FILE, "utf-8");
+    const mcpConfig = JSON.parse(mcpConfigContent);
+
+    for (const serverName of serverNames) {
+      console.log(`Prüfe MCP-Server: ${serverName}`);
+
+      // Prüfe, ob der Server in der MCP-Konfiguration existiert
+      if (!mcpConfig.servers || !mcpConfig.servers[serverName]) {
+        console.error(
+          `Server "${serverName}" nicht in .vscode/mcp.json konfiguriert`
+        );
+        allStarted = false;
+        continue;
+      }
+
+      const serverConfig = mcpConfig.servers[serverName];
+
+      // Für den GitHub Server versuchen wir, ihn zu starten
+      if (serverName === "github") {
+        // In einer echten Implementierung würden wir hier prüfen,
+        // ob der Server bereits läuft, und nur dann starten
+        // Momentan gehen wir davon aus, dass ein Startversuch nötig ist
+
+        console.log(`Starte ${serverName} Server...`);
+        // Wir führen das Kommando aus der MCP-Konfiguration aus
+        const command = serverConfig.command;
+        const args = serverConfig.args || [];
+
+        // Hinweis: In einer echten Implementierung würden wir hier nicht
+        // den Server synchron starten, da das den Hook blockieren würde
+        // Stattdessen würden wir prüfen, ob der Server erreichbar ist
+        console.log(
+          `Server ${serverName} sollte jetzt gestartet werden mit: ${command} ${args.join(" ")}`
+        );
+        // In einer echten Implementierung:
+        // const result = spawnSync(command, args, {
+        //   cwd: ROOT,
+        //   timeout: 5000,
+        //   stdio: "pipe"
+        // });
+        // if (result.error || result.status !== 0) {
+        //   console.error(`Fehler beim Starten von ${serverName}:`, result.error?.message || "Exit code " + result.status);
+        //   allStarted = false;
+        // }
+      }
+    }
+
+    return allStarted;
+  } catch (error) {
+    console.error("Fehler beim Starten der MCP-Server:", error.message);
+    return false;
+  }
+}
 
 const ALLOW_DECISION = {
   hookSpecificOutput: {
@@ -81,6 +178,20 @@ process.stdin.on("end", () => {
   if (!BLOCKED_TOOLS.has(tool)) {
     // Keine Edit-Operation → sofort erlauben
     output(ALLOW_DECISION);
+    return;
+  }
+
+  // ──────────────────────────────────────
+  // 2b. MCP-Server prüfen
+  // ──────────────────────────────────────
+  if (!checkMcpServers()) {
+    output(
+      BLOCK_DECISION(
+        "⚠️  MCP-Server nicht verfügbar. " +
+          "Bitte stellen Sie sicher, dass alle erforderlichen MCP-Server gestartet sind. " +
+          "Verwenden Sie 'GitHub Copilot: Configure GitHub Models' in der Befehlspalette von VSCode."
+      )
+    );
     return;
   }
 

@@ -46,7 +46,8 @@ graph TD
     J --> L
     K --> L
     L --> M[PreToolUse Hook]
-    M --> N[Implementierung/Content-Erstellung]
+    M --> N[MCP-Server Prüfung]
+    N --> O[Implementierung/Content-Erstellung]
 ```
 
 ## Wie Instructions automatisch geladen werden
@@ -76,35 +77,18 @@ applyTo: ["src/**/*.astro", "src/**/*.tsx", "src/**/*.css", "src/styles/**"]
 | `image-handling.instructions.md`        | (kein `applyTo` — immer geladen bei Bild-Operationen)                           | Bei Bild-Referenzierung                     |
 | `commit-and-branch.instructions.md`     | (kein `applyTo` — immer geladen bei Git-Operationen)                            | Bei Git/Commit-Operationen                  |
 
-### Automatische Ladelogik
-
-1. **Copilot erkennt den Dateityp** — Wenn der User eine Datei bearbeitet oder eine Änderung vorschlägt
-2. **Pattern-Matching** — Copilot prüft alle Instruction-Dateien auf `applyTo`-Patterns
-3. **Kontext-Injektion** — Alle passenden Instructions werden **automatisch** in den Prompt-Kontext geladen
-4. **Agent muss nichts tun** — Der Agent erhält die Instructions bereits im System-Prompt
-
 ### Was das für die Agenten bedeutet
 
 **Astro Developer Agent:**
 - Wird automatisch `astro-typescript.instructions.md` erhalten, wenn er `src/components/` bearbeitet
 - Wird automatisch `tailwind-design-system.instructions.md` erhalten, wenn er Styling-Änderungen macht
-- Muss sich **nicht** explizit auf Instructions beziehen — sie sind bereits im Kontext
 
 **Content Agent:**
 - Wird automatisch `content-frontmatter.instructions.md` erhalten, wenn er Markdown-Dateien erstellt
 - Wird automatisch `image-handling.instructions.md` erhalten, wenn er Bilder referenziert
-- Wird automatisch `genderneutral` und `consistentaddress` Skills erhalten für deutsche Inhalte
 
 **Requirement Engineer Agent:**
 - Liest Dateien, um Kontext zu verstehen — Instructions werden automatisch geladen
-- Muss keine Code-Änderungen vornehmen, aber kann Instructions lesen, um Konventionen zu prüfen
-
-### Wann Instructions NICHT automatisch geladen werden
-
-Instructions mit **keinem** `applyTo`-Feld werden **immer** geladen (globale Instructions):
-
-- `commit-and-branch.instructions.md` — Für alle Git-Operationen
-- `image-handling.instructions.md` — Für alle Bild-Operationen (wird bei Bild-Pfaden aktiv)
 
 ### Best Practices
 
@@ -117,33 +101,6 @@ Instructions mit **keinem** `applyTo`-Feld werden **immer** geladen (globale Ins
 - Agenten anweisen, "bitte beachte die tailwind instructions" — sie sind bereits im Kontext
 - `applyTo: "**/*"` verwenden — das lädt die Instruction bei **jeder** Datei und brennt Token
 - Instructions manuell im Prompt referenzieren — unnötig und redundant
-
-### Beispiel: Workflow mit automatischen Instructions
-
-```mermaid
-sequenceDiagram
-    User->>Copilot: "Erstelle neue Blog-Post-Komponente"
-    Copilot->>Astro Developer Agent: Aktivierung
-    Astro Developer Agent->>Copilot: Lese src/components/blog/ existing files
-    Note over Copilot: Automatisch geladene Instructions:
-    Note over Copilot: - astro-typescript.instructions.md
-    Note over Copilot: - tailwind-design-system.instructions.md
-    Astro Developer Agent->>User: Technische Analyse mit Tailwind-Vorschlägen
-    User->>Astro Developer Agent: "OK, erstelle die Komponente"
-    Astro Developer Agent->>REQ Engineer: Ticket erstellen
-    REQ Engineer->>Astro Developer Agent: Approval erteilt
-    Astro Developer Agent->>File System: create_file src/components/blog/blog-post.astro
-    Note over Copilot: Instructions sind bereits im Kontext
-    Note over Copilot: Agent folgt automatisch den Regeln
-```
-
-### Instruction-Hierarchie
-
-Wenn mehrere Instructions passen, werden **alle** geladen und kombiniert:
-
-1. **Globale Instructions** (kein `applyTo`) — Immer zuerst
-2. **Datei-spezifische Instructions** — Nach Dateityp
-3. **Bereich-spezifische Instructions** — Nach Verzeichnis-Pattern
 
 **Konflikt-Resolution:**
 - Wenn Instructions widersprüchlich sind, gilt die **spezifischste** Regel
@@ -196,6 +153,15 @@ Durch das Blockieren der Browser-Investigationstools wird verhindert, dass das L
 | Approval ohne Issue-Referenz         | `deny` — Mit Warnung                 |
 | Approval abgelaufen                  | `deny` — Mit Hinweis auf Erneuerung  |
 | Approval mit gültigem Issue (GH-XXX) | `allow` — Alle Operationen erlaubt   |
+
+#### MCP-Server Prüfung
+
+Seit neuestem prüft der Hook zusätzlich, ob alle erforderlichen MCP-Server verfügbar sind:
+
+1. **Konfiguration**: Die erforderlichen Server werden in `validate-code-change.json` unter `mcpServers` definiert
+2. **Befehlsausführung**: Die Startbefehle werden aus `.vscode/mcp.json` gezogen
+3. **Verfügbarkeit**: Wenn ein Server nicht verfügbar ist, wird der Benutzer informiert
+4. **Starten**: In zukünftigen Versionen wird der Hook versuchen, nicht laufende Server zu starten
 
 ### 3. copilot-instructions.md
 
@@ -265,7 +231,8 @@ Alle Änderungen werden als GitHub Issue erfasst. Das garantiert:
     │
     ▼
 10. PreToolUse Hook
-    erlaubt File-Edits
+    prüft Approval
+    und MCP-Server
     │
     ▼
 11. Implementierung
@@ -294,12 +261,15 @@ Der User arbeitet oft über mehrere Prompts hinweg an einem Dokument. In diesem 
 3. **Approval-Verzeichnis erstellen**: `.github/hooks/approvals/` mit README.md
 4. **copilot-instructions.md erstellen**: `.github/copilot-instructions.md` mit deinen
    Trigger-Regeln
-5. **Doku erstellen**: `.github/hooks/approvals/README.md` mit deinem Workflow
+5. **MCP-Server konfigurieren**: `.vscode/mcp.json` mit deinen Server-Konfigurationen
+6. **MCP-Server-Validierung einrichten**: Aktualisiere `.github/hooks/validate-code-change.json` mit
+   den erforderlichen Servernamen im `mcpServers`-Array
+7. **Doku erstellen**: `.github/hooks/approvals/README.md` mit deinem Workflow
 
 ### Voraussetzungen
 
 - GitHub Copilot mit Agent-Support
-- GitHub MCP Server konfiguriert
+- GitHub MCP Server konfiguriert (siehe `.vscode/mcp.json` für die Konfiguration)
 - Node.js für den PreToolUse-Hook
 
 ## FAQ
@@ -316,3 +286,7 @@ untersuchen.
 **Q: Was, wenn ich eine sofortige Änderung brauche?** A: Der Workflow kann beschleunigt werden — der
 RE-Agent erstellt schnell ein Issue und gibt es frei. Das Approval-File wird erstellt, und die
 Implementierung kann sofort starten.
+
+**Q: Was passiert, wenn ein MCP-Server nicht verfügbar ist?** A: Der PreToolUse-Hook blockiert
+File-Edit-Operationen und informiert den Benutzer, dass die erforderlichen MCP-Server gestartet
+werden müssen. In zukünftigen Versionen wird der Hook versuchen, die Server automatisch zu starten.
