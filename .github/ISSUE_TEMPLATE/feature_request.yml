@@ -1,0 +1,46 @@
+name: Feature Request
+about: Schlage eine Idee für eine neue Funktion oder Verbesserung vor
+title: '[Feature] '
+labels: ['enhancement', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du dir die Zeit nimmst, ein Feature vorzuschlagen! Bitte fülle die folgenden Felder aus, damit wir deine Idee besser verstehen können.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Ist dein Feature-Wunsch durch ein Problem motiviert?
+      description: Eine klare und präzise Beschreibung des Problems.
+      placeholder: Beschreibe das Problem, das du lösen möchtest...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Beschreibe die gewünschte Lösung
+      description: Eine klare und präzise Beschreibung dessen, was du gerne hättest.
+      placeholder: Beschreibe deine gewünschte Lösung...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Beschreibe Alternativen, die du in Betracht gezogen hast
+      description: Eine klare und präzise Beschreibung aller alternativen Lösungen oder Features, die du in Betracht gezogen hast.
+      placeholder: Beschreibe alternative Lösungen...
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Füge hier jeglichen anderen Kontext oder Screenshots zum Feature-Wunsch hinzu.
+      placeholder: Füge hier jeglichen anderen Kontext zum Feature-Wunsch hinzu...
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Zustimmung zu den Bedingungen
+      options:
+        - label: Ich habe diesen Feature-Wunsch vor dem Einreichen gesucht und ihn nicht gefunden.
+          required: true
+        - label: Ich bin mir sicher, dass dies im Rahmen des Projekts liegt.
+          required: true

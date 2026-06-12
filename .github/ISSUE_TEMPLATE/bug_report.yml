@@ -1,0 +1,75 @@
+name: Bug Report
+about: Erstelle einen Bericht über einen Fehler, um uns bei der Verbesserung zu helfen
+title: '[Bug] '
+labels: ['bug', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du dir die Zeit nimmst, einen Bugreport zu erstellen! Bitte fülle die folgenden Felder aus, damit wir das Problem besser verstehen und beheben können.
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung
+      description: Eine klare und präzise Beschreibung des Fehlers.
+      placeholder: Beschreibe den Fehler hier...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduktionsschritte
+      description: Wie kann man den Fehler reproduzieren?
+      placeholder: |
+        1. Gehe zu '...'
+        2. Klicke auf '....'
+        3. Scrolle runter zu '....'
+        4. Sehe den Fehler
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Erwartetes Verhalten
+      description: Eine klare und präzise Beschreibung dessen, was du erwartet hast.
+      placeholder: Beschreibe, was du erwartet hast...
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Tatsächliches Verhalten
+      description: Eine klare und präzise Beschreibung dessen, was tatsächlich passiert ist.
+      placeholder: Beschreibe, was tatsächlich passiert ist...
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Gerät
+      description: Auf welchem Gerät hast du den Fehler festgestellt?
+      placeholder: z.B. iPhone6, Desktop
+  - type: input
+    id: os
+    attributes:
+      label: Betriebssystem
+      description: Welches Betriebssystem verwendest du?
+      placeholder: z.B. iOS 8.1, Windows 10
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: In welchem Browser hast du den Fehler festgestellt?
+      placeholder: z.B. Chrome, Safari
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Welche Version verwendest du?
+      placeholder: z.B. 22
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Füge hier jeglichen anderen Kontext zum Problem hinzu.
+      placeholder: Füge hier jeglichen anderen Kontext zum Problem hinzu...

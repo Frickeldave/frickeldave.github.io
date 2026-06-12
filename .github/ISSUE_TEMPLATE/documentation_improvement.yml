@@ -1,0 +1,51 @@
+name: Documentation Improvement
+about: Schlage eine Verbesserung oder Ergänzung der Dokumentation vor
+title: '[Docs] '
+labels: ['documentation', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du dir die Zeit nimmst, eine Verbesserung der Dokumentation vorzuschlagen! Bitte fülle die folgenden Felder aus.
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Art der Dokumentation
+      description: Welche Art von Dokumentation soll verbessert werden?
+      options:
+        - Allgemeine Dokumentation
+        - Entwicklerdokumentation
+        - Benutzerdokumentation
+        - API-Dokumentation
+        - Tutorial
+        - Andere
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung
+      description: Eine klare und präzise Beschreibung der gewünschten Verbesserung.
+      placeholder: Beschreibe die gewünschte Verbesserung...
+    validations:
+      required: true
+  - type: textarea
+    id: current-state
+    attributes:
+      label: Aktueller Zustand
+      description: Beschreibe den aktuellen Zustand der Dokumentation.
+      placeholder: Beschreibe den aktuellen Zustand...
+  - type: textarea
+    id: proposed-change
+    attributes:
+      label: Vorgeschlagene Änderung
+      description: Beschreibe detailliert, wie die Dokumentation geändert werden sollte.
+      placeholder: Beschreibe die vorgeschlagene Änderung...
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Füge hier jeglichen anderen Kontext zur Dokumentationsverbesserung hinzu.
+      placeholder: Füge hier jeglichen anderen Kontext hinzu...
