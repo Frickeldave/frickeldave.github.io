@@ -1,9 +1,9 @@
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
-import tailwind from "@astrojs/tailwind";
 import AutoImport from "astro-auto-import";
 import { defineConfig } from "astro/config";
+import tailwindcss from "@tailwindcss/vite";
 import remarkCollapse from "remark-collapse";
 import remarkToc from "remark-toc";
 import rehypeKatex from "rehype-katex";
@@ -43,6 +43,7 @@ export default defineConfig({
     prefetchAll: true,
   },
   vite: {
+    plugins: [tailwindcss()],
     optimizeDeps: {
       include: [
         "react",
@@ -56,11 +57,6 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap(),
-    tailwind({
-      config: {
-        applyBaseStyles: false,
-      },
-    }),
     AutoImport({
       /*
        * IMPORTANT: The Youtube component (@shortcodes/Youtube) has been temporarily removed from auto-imports

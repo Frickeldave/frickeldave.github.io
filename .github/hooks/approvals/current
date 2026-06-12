@@ -1,6 +1,6 @@
-issue: GH-253
-title: Erweiterung des Validate-Code-Change Hooks um MCP-Server-Prüfung
+issue: GH-255
+title: Abhängigkeitskonflikt: Migration von @astrojs/tailwind zu Tailwind 4 mit @tailwindcss/vite
 status: approved
 by: requirement-engineer
 expires: 2026-06-12T23:59:59Z
-scope: docs-update
+scope: tailwind4-migration

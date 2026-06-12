@@ -1,7 +1,7 @@
 name: Content Creation
 about: Schlage die Erstellung neuer Inhalte (Blogposts, Rezepte, Handmade-Projekte, etc.) vor
-title: '[Content] '
-labels: ['content', 'triage']
+title: "[Content] "
+labels: ["content", "triage"]
 body:
   - type: markdown
     attributes:

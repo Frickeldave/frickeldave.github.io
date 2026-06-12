@@ -1,7 +1,7 @@
 name: Documentation Improvement
 about: Schlage eine Verbesserung oder Ergänzung der Dokumentation vor
-title: '[Docs] '
-labels: ['documentation', 'triage']
+title: "[Docs] "
+labels: ["documentation", "triage"]
 body:
   - type: markdown
     attributes:

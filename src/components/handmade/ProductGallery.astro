@@ -121,6 +121,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
 </script>
 
 <style>
+  @reference "../../styles/tailwind.css";
   .product-gallery {
     @apply w-full overflow-hidden;
   }
@@ -168,7 +169,13 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   }
 
   #main-image {
-    @apply h-80 w-full object-contain md:h-[520px];
+    @apply h-80 w-full object-contain;
+  }
+
+  @media (min-width: 768px) {
+    #main-image {
+      height: 32.5rem; /* 520px */
+    }
   }
 
   .thumbnail-btn {

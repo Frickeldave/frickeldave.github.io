@@ -1,7 +1,7 @@
 name: Feature Request
 about: Schlage eine Idee für eine neue Funktion oder Verbesserung vor
-title: '[Feature] '
-labels: ['enhancement', 'triage']
+title: "[Feature] "
+labels: ["enhancement", "triage"]
 body:
   - type: markdown
     attributes:
