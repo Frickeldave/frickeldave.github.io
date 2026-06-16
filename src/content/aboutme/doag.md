@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-66863
+    title: "CloudLand 2026 Barcamp: Zehn Stimmen für die Cloud-Community"
+    edition: CloudTalk
+    guests: Andy Fischer, Jonas Janz, Enrico Batz, Alexandra Kraus, Dr. Georg Zeissner, Thorsten Wussow, Frank Prechtel, Thomas Börger, Martin Zierer und Frank Pientka
+    date: 16. Juni 2026
+    description: >-
+      Dave König begleitet das Barcamp der CloudLand 2026 im Heide Park Soltau und spricht mit zehn Sprechern und Community-Aktiven über ihre Erfahrungen und Themen. Die Episode zeigt, wie Barcamps Wissensaustausch ermöglichen und welche großen Themen die Cloud-Community 2026 bewegen: KI, Datensouveränität, Vendor Lock-in und europäische Cloud-Strategien. Diskutiert werden auch die Bedeutung von Open Source, Fehlerkultur und persönlichen Begegnungen in der IT-Welt. Ein authentisches Bild eines Community-Tages, an dem Gespräche wichtiger sind als Folien.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a30e66be6540bec0f0206cd/media.mp3
   - id: doag-voices-73536
     title: Agentic Coding und Claude Code – Die Zukunft der Softwareentwicklung
     edition: FutureAI
