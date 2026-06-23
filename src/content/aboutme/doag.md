@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-25441
+    title: "Vibe Coding und KI-Agenten: Die Zukunft der Softwareentwicklung"
+    edition: CloudTalk
+    guests: Dave König und Roland Golla
+    date: 23. Juni 2026
+    description: >-
+      Dave König spricht mit Roland Golla, Gründer von Never Code Alone, über Vibe Coding und die transformative Rolle von KI-Agenten in der modernen Softwareentwicklung. Die Episode behandelt, wie KI Produktivität steigert, gleichzeitig aber neue Anforderungen an Testing und Qualitätssicherung schafft. Diskutiert werden auch Multi-Agent-Systeme als nächster Evolutionsschritt, die Chancen für Nicht-Entwickler und wie Unternehmen mit wachsenden Softwaremengen umgehen können.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a3a20ec77b7df8c66288e22/media.mp3
   - id: doag-voices-66863
     title: "CloudLand 2026 Barcamp: Zehn Stimmen für die Cloud-Community"
     edition: CloudTalk
