@@ -61,7 +61,7 @@ export default defineConfig({
       defaultLocale: "root",
       // Locale-Konfiguration
       locales: {
-        // Root locale → keine URL-Prefix (z.B. /astrows/)
+        // Root locale → keine URL-Prefix (z. B. /astrows/)
         root: {
           label: "English",
           lang: "en",
@@ -152,7 +152,7 @@ damit sie sichtbar werden.
 ### Klingonisch UI-Übersetzungen
 
 Für Klingonisch erstelle `src/content/i18n/kl.json`. Da Klingonisch eine konstruierte Sprache ist, gibt es keine 
-vorgefertigten Übersetzungen — hier kannst du kreativ werden!
+vorgefertigten Übersetzungen—hier kannst du kreativ werden!
 
 ```json
 {
@@ -199,7 +199,7 @@ Themen wie DevOps, AI/ML, Security und Platform Engineering.
 
 ## Übersetzung mit KI
 
-Für die automatische Übersetzung von Dokumentationsinhalten steht das Script [`translate.mjs`](/scripts/translate.mjs) zur Verfügung. Dieses Script nutzt einen OpenAI-kompatiblen LLM-Server (z.B. Ollama, vLLM oder andere) zur Übersetzung von Markdown-Dateien.
+Für die automatische Übersetzung von Dokumentationsinhalten steht das Script [`translate.mjs`](/scripts/translate.mjs) zur Verfügung. Dieses Script nutzt einen OpenAI-kompatiblen LLM-Server (z. B. Ollama, vLLM oder andere) zur Übersetzung von Markdown-Dateien.
 
 ### Script-Beschreibung
 
@@ -209,7 +209,7 @@ Das [`translate.mjs`](/scripts/translate.mjs) Script:
 - **Trennt** Frontmatter vom Inhalt
 - **Übersetzt** den Markdown-Inhalt über einen LLM-API-Call
 - **Behält** Markdown-Formatierung, Code-Blöcke, Links und Struktur-Elemente bei
-- **Schreibt** die übersetzte Datei ins Locale-Verzeichnis (z.B. `src/content/docs/de/`)
+- **Schreibt** die übersetzte Datei ins Locale-Verzeichnis (z. B. `src/content/docs/de/`)
 
 ### Verwendung
 

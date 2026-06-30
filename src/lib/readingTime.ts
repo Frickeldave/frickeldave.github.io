@@ -29,11 +29,7 @@ const readingTime = (content: string, complexity: number): string => {
     images -= 1;
   }
 
-  let ttr = 0; // time to read (in minutes)
-  ttr = words / WPS;
-  ttr = ttr + imageSecs;
-  ttr = ttr * complexity;
-  ttr = Math.ceil(ttr / 60);
+  const ttr = Math.ceil(((words / WPS + imageSecs) * complexity) / 60);
 
   if (ttr < 2) {
     return ttr + ` min`;

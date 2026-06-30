@@ -1,32 +1,183 @@
 // Markdown Content
 .content {
   // Base
-  @apply prose max-w-none intersect:animate-fadeUp;
-  @apply prose-headings:mb-[.3em] prose-headings:mt-[.6em];
-  @apply prose-h1:text-h1-sm md:prose-h1:text-h1;
-  @apply prose-h2:text-h2-sm md:prose-h2:text-h2;
-  @apply prose-h3:text-h3-sm md:prose-h3:text-h3;
-  @apply prose-p:text-base prose-p:text-txt-s prose-p:dark:text-darkmode-txt-s;
+  max-width: none;
+  animation: fadeInUp 1000ms both;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 0.6em;
+    margin-bottom: 0.3em;
+    color: #111827;
+    line-height: 1.3333333;
+  }
+
+  html.dark & h1,
+  html.dark & h2,
+  html.dark & h3,
+  html.dark & h4,
+  html.dark & h5,
+  html.dark & h6 {
+    color: #fff;
+  }
+
+  h1 {
+    font-size: 2.44140625rem;
+  }
+
+  h2 {
+    font-size: 1.953125rem;
+  }
+
+  h3 {
+    font-size: 1.5625rem;
+  }
+
+  @media (min-width: 768px) {
+    h1 {
+      font-size: 3.0517578125rem;
+    }
+
+    h2 {
+      font-size: 2.44140625rem;
+    }
+
+    h3 {
+      font-size: 1.953125rem;
+    }
+  }
+
+  p {
+    font-size: 16px;
+    color: #222;
+    line-height: 2rem;
+  }
+
+  html.dark & p {
+    color: #ddd;
+  }
+
+  strong,
+  b {
+    color: #000;
+    font-weight: 600;
+  }
+
+  html.dark & strong,
+  html.dark & b {
+    color: #fff;
+  }
+
+  em,
+  i {
+    font-style: italic;
+  }
+
   @apply prose-a:text-txt-s prose-a:underline hover:prose-a:text-txt-p prose-a:dark:text-darkmode-txt-s hover:prose-a:dark:text-darkmode-txt-p;
   @apply prose-img:max-w-full prose-img:rounded;
   @apply prose-hr:my-4 prose-hr:border-border prose-hr:dark:border-darkmode-border;
-  @apply prose-strong:text-txt-p prose-strong:dark:text-darkmode-txt-p;
   @apply prose-pre:rounded-lg prose-pre:bg-bg-t prose-pre:dark:bg-darkmode-bg-t;
   // Code
   @apply prose-code:px-1 prose-code:text-txt-p prose-code:dark:text-darkmode-txt-p;
   // Blockquote
-  @apply prose-blockquote:rounded-lg prose-blockquote:border prose-blockquote:border-l-8 prose-blockquote:px-4 prose-blockquote:py-0 prose-blockquote:font-secondary prose-blockquote:text-2xl prose-blockquote:not-italic;
-  @apply prose-blockquote:glass-t-borderless prose-blockquote:border-border prose-blockquote:text-txt-s prose-blockquote:dark:border-darkmode-border prose-blockquote:dark:text-darkmode-txt-s;
-  @apply prose-blockquote:prose-p:m-0;
+  blockquote {
+    border-left: 8px solid #ddd;
+    border-radius: 12px;
+    margin: 1rem 0;
+    padding: 0.25rem 1rem;
+    font-family: "open sans", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 2rem;
+    font-style: normal;
+    color: #222;
+    background-color: rgba(221, 221, 221, 0.2);
+    backdrop-filter: blur(8px) contrast(1) saturate(1);
+  }
+
+  blockquote p {
+    margin: 0;
+  }
+
+  html.dark & blockquote {
+    border-left-color: #444;
+    color: #ddd;
+    background-color: rgba(68, 68, 68, 0.2);
+  }
+
   // Table
-  @apply prose-table:relative prose-table:overflow-hidden prose-table:rounded-lg prose-table:before:absolute prose-table:before:left-0 prose-table:before:top-0 prose-table:before:h-full prose-table:before:w-full prose-table:before:rounded-lg prose-table:before:border prose-table:before:content-[""] prose-table:before:dark:border-darkmode-border;
-  @apply backdrop-blur-lg prose-thead:border-border prose-thead:bg-bg-t prose-thead:bg-opacity-40 prose-thead:dark:border-darkmode-border prose-thead:dark:bg-darkmode-bg-t prose-thead:dark:bg-opacity-40;
-  @apply prose-th:relative prose-th:z-10 prose-th:px-4 prose-th:py-2 prose-th:text-txt-p prose-th:dark:text-darkmode-txt-p;
-  @apply prose-tr:border-border prose-tr:dark:border-darkmode-border;
-  @apply prose-td:relative prose-td:z-10 prose-td:px-3 prose-td:py-2 prose-td:text-txt-s prose-td:dark:text-darkmode-txt-s;
+  table {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    border: 0;
+    margin: 1rem 0;
+    color: #374151;
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  html.dark & table {
+    color: #ddd;
+  }
+
+  thead {
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid #ddd;
+    background-color: rgba(221, 221, 221, 0.4);
+  }
+
+  html.dark & thead {
+    border-bottom-color: #444;
+    background-color: rgba(68, 68, 68, 0.4);
+  }
+
+  th {
+    position: relative;
+    z-index: 10;
+    padding: 0.5rem 1rem;
+    color: #111827;
+    text-align: left;
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  html.dark & th {
+    color: #fff;
+  }
+
+  tr {
+    border-bottom: 1px solid #ddd;
+  }
+
+  html.dark & tr {
+    border-bottom-color: #444;
+  }
+
+  td {
+    position: relative;
+    z-index: 10;
+    padding: 0.5rem 0.75rem;
+    color: #222;
+  }
+
+  html.dark & td {
+    color: #ddd;
+  }
   // Mermaid diagrams — reset prose-pre styles, let SVG scale to container
   pre.mermaid {
-    @apply overflow-visible rounded-none bg-transparent p-0 shadow-none dark:bg-transparent;
+    overflow: visible;
+    border-radius: 0;
+    background-color: transparent;
+    padding: 0;
+    box-shadow: none;
     text-align: center;
     svg {
       width: 100% !important;
@@ -41,7 +192,7 @@
   }
   li {
     p {
-      @apply m-0; // in .mdx files, li elements can contain <p> tags
+      margin: 0; // in .mdx files, li elements can contain <p> tags
     }
   }
 }

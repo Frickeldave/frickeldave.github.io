@@ -107,14 +107,14 @@ const HandmadeCarousel: React.FC<Props> = ({ products }) => {
       {/* Custom Navigation */}
       <button
         onClick={() => swiperRef.current?.slidePrev()}
-        className="glass absolute left-0 top-1/2 z-10 -ml-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
+        className="glass absolute top-1/2 left-0 z-10 -ml-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
         aria-label="Vorheriges Produkt"
       >
         <FaChevronLeft className="text-lg" />
       </button>
       <button
         onClick={() => swiperRef.current?.slideNext()}
-        className="glass absolute right-0 top-1/2 z-10 -mr-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
+        className="glass absolute top-1/2 right-0 z-10 -mr-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
         aria-label="Nächstes Produkt"
       >
         <FaChevronRight className="text-lg" />

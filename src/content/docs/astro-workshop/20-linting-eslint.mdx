@@ -1,18 +1,18 @@
 ---
 visible: true
-title: 20 ESLint — Code-Qualität
+title: 20 ESLint—Code-Qualität
 description: ESLint für Starlight/Astro-Projekte installieren, konfigurieren und mit Finetuning auf Hochglanz bringen.
 draft: false
 image: "@assets/docs/astro-workshop/asws-20-001.png"
 imageAlt: "ESLint"
 ---
 
-> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Was ist ESLint?
 
 **ESLint** bildet das Fundament des Linting-Stacks. Es analysiert TypeScript-, JavaScript- und
-Astro-Dateien auf potenzielle Fehler, Style-Inkonsistenzen und Best-Practice-Verletzungen — bevor
+Astro-Dateien auf potenzielle Fehler, Style-Inkonsistenzen und Best-Practice-Verletzungen—bevor
 der Code überhaupt ausgeführt wird.
 
 > **Starlight-Hinweis:** Auch wenn Starlight-Projekte weniger eigene `.astro`-Komponenten
@@ -43,20 +43,20 @@ npm install -D eslint \
   "@stylistic/eslint-plugin"
 ```
 
-Das sind eine Menge Pakete — hier die Kurzversion, was jedes macht:
+Das sind eine Menge Pakete—hier die Kurzversion, was jedes macht:
 
-- `eslint` — das Basis-Linting-Tool
-- `@eslint/js` — ESLints eigene empfohlene Regeln
-- `typescript-eslint` — TypeScript-Unterstützung (Sammlung aus Parser + Plugin)
-- `astro-eslint-parser` — Parser für `.astro`-Dateien
-- `eslint-plugin-astro` — ESLint-Regeln speziell für Astro
-- `eslint-plugin-unused-imports` — erkennt und entfernt automatisch unbenutzte Imports
-- `@stylistic/eslint-plugin` — Formatierungsregeln (Semikolons, Einrückung, etc.)
+- `eslint`—das Basis-Linting-Tool
+- `@eslint/js`—ESLints eigene empfohlene Regeln
+- `typescript-eslint`—TypeScript-Unterstützung (Sammlung aus Parser + Plugin)
+- `astro-eslint-parser`—Parser für `.astro`-Dateien
+- `eslint-plugin-astro`—ESLint-Regeln speziell für Astro
+- `eslint-plugin-unused-imports`—erkennt und entfernt automatisch unbenutzte Imports
+- `@stylistic/eslint-plugin`—Formatierungsregeln (Semikolons, Einrückung, etc.)
 
 ## Konfiguration: `eslint.config.mjs`
 
 Astro-Projekte verwenden das neue **Flat Config**-Format (ESLint v9+). Das ist einfach eine
-modernere, übersichtlichere Art, ESLint zu konfigurieren — statt mehrerer versteckter Dateien
+modernere, übersichtlichere Art, ESLint zu konfigurieren—statt mehrerer versteckter Dateien
 gibt es jetzt eine zentrale Konfigurationsdatei.
 
 Die Konfigurationsdatei `eslint.config.mjs` landet im Root-Verzeichnis (neben `package.json`).
@@ -64,7 +64,7 @@ Sie ist eine normale JavaScript-Datei, die ESLint mitteilt:
 
 - Welche Dateitypen sollen geprüft werden? (`.ts`, `.tsx`, `.astro`, etc.)
 - Welcher Parser soll verwendet werden? (TypeScript-Parser für `.ts`-Dateien, Astro-Parser für `.astro`-Dateien)
-- Welche Regeln sollen aktiv sein? (z.B. „keine ungenutzten Variablen", „keine `any`-Types ohne Grund")
+- Welche Regeln sollen aktiv sein? (z. B. „keine ungenutzten Variablen", „keine `any`-Types ohne Grund")
 - Welche Verzeichnisse sollen ignoriert werden? (`dist/`, `node_modules/`, etc.)
 
 Hier die vollständige Konfiguration:
@@ -150,7 +150,7 @@ In `package.json` folgende Scripts ergänzen:
 | Script          | Verhalten                                                      |
 | --------------- | -------------------------------------------------------------- |
 | `npm run lint`  | Behebt automatisch behebbare Probleme und zeigt den Rest an   |
-| `npm run lint:check` | Prüft nur, nimmt keine Änderungen vor — ideal für CI    |
+| `npm run lint:check` | Prüft nur, nimmt keine Änderungen vor—ideal für CI    |
 
 ## ESLint in Aktion
 
@@ -252,15 +252,15 @@ In `eslint.config.mjs` unter `ignores`:
 
 ### Was ist Husky und warum kein reiner Git Hook?
 
-Git bietet von Haus aus **Hooks** — Skripte, die automatisch bei bestimmten Git-Ereignissen
+Git bietet von Haus aus **Hooks**—Skripte, die automatisch bei bestimmten Git-Ereignissen
 ausgeführt werden. Ein `pre-commit`-Hook liegt unter `.git/hooks/pre-commit` und wird vor jedem
-Commit aufgerufen. Klingt praktisch — hat aber einen entscheidenden Haken: Das `.git/`-Verzeichnis
+Commit aufgerufen. Klingt praktisch—hat aber einen entscheidenden Haken: Das `.git/`-Verzeichnis
 wird **nicht** ins Repository eingecheckt. Das bedeutet, jede Person im Team muss den Hook manuell
 anlegen und pflegen. Sobald jemand das Repository neu klont, sind alle Hooks weg.
 
 **Husky** löst genau dieses Problem. Es verwaltet Git Hooks als Teil des Projekts, indem es die
 Hook-Skripte im Repository speichert (unter `.husky/`) und sie über `npm install` automatisch
-aktiviert. Dadurch gelten dieselben Hooks für alle — ohne manuelle Einrichtung nach jedem Clone.
+aktiviert. Dadurch gelten dieselben Hooks für alle—ohne manuelle Einrichtung nach jedem Clone.
 
 Zusätzlich kommt **lint-staged** ins Spiel: Statt den gesamten `src/`-Ordner bei jedem Commit zu
 linten, prüft lint-staged nur die Dateien, die tatsächlich im Staging-Bereich liegen (`git add`).
@@ -289,10 +289,10 @@ npx husky init
 npx lint-staged
 ```
 
-`package.json` ergänzen — zwei Stellen:
+`package.json` ergänzen—zwei Stellen:
 
 **1. `prepare`-Script in `scripts`:** npm führt `prepare` automatisch nach jedem `npm install` aus.
-Dadurch aktiviert sich Husky bei jedem neuen Clone automatisch — kein manueller Schritt nötig.
+Dadurch aktiviert sich Husky bei jedem neuen Clone automatisch—kein manueller Schritt nötig.
 
 **2. `lint-staged` als eigenes Top-Level-Feld**, auf gleicher Ebene wie `scripts` und `dependencies`:
 
@@ -319,22 +319,22 @@ Dadurch aktiviert sich Husky bei jedem neuen Clone automatisch — kein manuelle
 
 **Wichtige Optionen:**
 
-- **`--no-warn-ignored`** — Verhindert, dass ESLint Warnungen ausgibt für Dateien, die in
+- **`--no-warn-ignored`**—Verhindert, dass ESLint Warnungen ausgibt für Dateien, die in
   `.eslintignore` stehen. Ohne diese Option würde lint-staged bei jeder Datei in ignorierten
-  Ordnern (z.B. `dist/`) eine Warnung ausgeben, obwohl sie bewusst ausgeschlossen wurden.
+  Ordnern (z. B. `dist/`) eine Warnung ausgeben, obwohl sie bewusst ausgeschlossen wurden.
 
-- **`!package.json": []`** — Schließt `package.json` explizit von der Prüfung aus. Grund:
+- **`!package.json": []`**—Schließt `package.json` explizit von der Prüfung aus. Grund:
   `package.json` enthält keine TypeScript/JavaScript/ Astro-Code und würde von ESLint nicht
   erkannt werden. Ohne diesen Ausschluss würde lint-staged versuchen, ESLint auf
   `package.json` anzuwenden, was zu Fehlern führt. Die leere Array `[]` bedeutet "keine
   Commands ausführen".
 
-Ab sofort blockiert ESLint jeden Commit, der Fehler enthält — kein fehlerhafter Code gelangt mehr
+Ab sofort blockiert ESLint jeden Commit, der Fehler enthält—kein fehlerhafter Code gelangt mehr
 ins Repository.
 
 ## Integration in GitHub Actions
 
-In `.github/workflows/deploy.yml` einen Lint-Check-Schritt im `build`-Job ergänzen — nach
+In `.github/workflows/deploy.yml` einen Lint-Check-Schritt im `build`-Job ergänzen—nach
 `Install dependencies`, aber vor `Build`. So schlägt die Pipeline sofort an, bevor Zeit für den
 Build verschwendet wird:
 
@@ -347,6 +347,6 @@ Build verschwendet wird:
 
 ```
 
-Schlägt der Lint-Check fehl, bricht der gesamte Workflow ab — das Deployment findet nicht statt.
+Schlägt der Lint-Check fehl, bricht der gesamte Workflow ab—das Deployment findet nicht statt.
 
-Weiter: [Prettier — Formatierung](21-linting-prettier)
+Weiter: [Prettier—Formatierung](21-linting-prettier)

@@ -16,7 +16,7 @@ const toc = heirarchy.filter((heading) => heading.depth <= tocDepth);
 
 {
   toc.length > 0 && (
-    <div class="glass relative my-2 w-full rounded-lg p-4 opacity-0 intersect:animate-fadeLeft">
+    <div class="glass intersect:animate-fadeLeft relative my-2 w-full rounded-lg p-4 opacity-0">
       <ScrollArea className="h-full" client:only="react">
         <h2 class="border-none text-2xl">Contents</h2>
         <ul class="m-0 list-none">

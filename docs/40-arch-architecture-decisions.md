@@ -19,10 +19,10 @@
 
 ## Core Technologies
 
-- **Framework**: Astro 5 (Beta/Latest) utilizing the Islands Architecture.
+- **Framework**: Astro 7 utilizing the Islands Architecture.
 - **Templating**: `.astro` components for layout and static structure; React for interactive
   islands.
-- **Styling**: Tailwind CSS v3 with a custom configuration.
+- **Styling**: Tailwind CSS v4 with a custom configuration.
 - **Content**: MDX for content; TypeScript for type safety.
 
 ## Content Collections

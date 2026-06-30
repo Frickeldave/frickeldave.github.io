@@ -15,7 +15,7 @@ const { tags, categories, allCategories }: Props = Astro.props;
 <ScrollArea className="h-full" client:only="react">
   <!-- categories -->
   <div
-    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
+    class="glass intersect:animate-fadeLeft m-2 mb-4 rounded-lg p-4 opacity-0"
   >
     <div>
       <h4 class="mb-2">
@@ -48,7 +48,7 @@ const { tags, categories, allCategories }: Props = Astro.props;
     </div>
   </div>
   <!-- tags -->
-  <div class="glass m-2 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft">
+  <div class="glass intersect:animate-fadeLeft m-2 rounded-lg p-4 opacity-0">
     <div>
       <h4 class="mb-2">
         <a href="/blog/tags">

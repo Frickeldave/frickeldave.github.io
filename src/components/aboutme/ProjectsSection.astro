@@ -35,7 +35,7 @@ const getStatusColor = (status: string | undefined) => {
             <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
               Featured Projects
             </h2>
-            <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
+            <p class="text-txt-p dark:text-darkmode-txt-p text-lg">
               Some of my recent work and contributions
             </p>
           </div>
@@ -46,11 +46,11 @@ const getStatusColor = (status: string | undefined) => {
                 {/* Project Header */}
                 <div class="mb-4 flex items-start justify-between">
                   <div class="flex-1">
-                    <h3 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-xl font-semibold transition-colors group-hover:text-amber-600 dark:group-hover:text-amber-400 lg:text-2xl">
+                    <h3 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-xl font-semibold transition-colors group-hover:text-amber-600 lg:text-2xl dark:group-hover:text-amber-400">
                       {project.title}
                     </h3>
                     {project.description && (
-                      <p class="mb-3 leading-relaxed text-txt-p dark:text-darkmode-txt-p">
+                      <p class="text-txt-p dark:text-darkmode-txt-p mb-3 leading-relaxed">
                         {project.description}
                       </p>
                     )}
@@ -69,7 +69,7 @@ const getStatusColor = (status: string | undefined) => {
                   <div class="mb-4">
                     <div class="flex flex-wrap gap-2">
                       {project.technologies.map((tech) => (
-                        <span class="glass-t rounded px-2 py-1 text-xs text-txt-p dark:text-darkmode-txt-p">
+                        <span class="glass-t text-txt-p dark:text-darkmode-txt-p rounded px-2 py-1 text-xs">
                           {tech}
                         </span>
                       ))}
@@ -83,8 +83,8 @@ const getStatusColor = (status: string | undefined) => {
                     <ul class="space-y-2">
                       {project.content.map((item) => (
                         <li class="flex items-start">
-                          <span class="mr-2 mt-1 text-amber-500">▸</span>
-                          <span class="text-sm text-txt-p dark:text-darkmode-txt-p">
+                          <span class="mt-1 mr-2 text-amber-500">▸</span>
+                          <span class="text-txt-p dark:text-darkmode-txt-p text-sm">
                             {item}
                           </span>
                         </li>

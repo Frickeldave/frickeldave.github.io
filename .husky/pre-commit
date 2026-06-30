@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/_/husky.sh"
-
 # Code quality checks moved to commit-msg hook for better UX
 # This ensures we validate the commit message FIRST (quick)
 # before running expensive linting operations (slow)

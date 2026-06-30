@@ -41,7 +41,7 @@ const toc = publications.map((pub, index) => ({
         📚 Publikationen
       </h1>
       <p
-        class="mb-6 text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
+        class="text-txt-p dark:text-darkmode-txt-p mb-6 text-base leading-relaxed lg:text-lg"
       >
         Neben diesem Blog veröffentliche ich regelmäßig Fachartikel in
         renommierten IT-Magazinen und Online-Publikationen. Meine Themen reichen
@@ -60,7 +60,7 @@ const toc = publications.map((pub, index) => ({
         <div class="grid gap-4 md:grid-cols-3">
           <div>
             <label
-              class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="text-txt-p dark:text-darkmode-txt-p mb-2 block text-sm font-medium"
             >
               Suche
             </label>
@@ -68,19 +68,19 @@ const toc = publications.map((pub, index) => ({
               type="text"
               id="search-input"
               placeholder="Titel oder Beschreibung..."
-              class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-white/10 dark:text-darkmode-txt-p"
+              class="text-txt-p dark:text-darkmode-txt-p w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-white/10"
             />
           </div>
 
           <div>
             <label
-              class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="text-txt-p dark:text-darkmode-txt-p mb-2 block text-sm font-medium"
             >
               Publisher
             </label>
             <select
               id="publisher-filter"
-              class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+              class="text-txt-p w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
             >
               <option value="all">Alle Publisher</option>
               {
@@ -93,13 +93,13 @@ const toc = publications.map((pub, index) => ({
 
           <div>
             <label
-              class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="text-txt-p dark:text-darkmode-txt-p mb-2 block text-sm font-medium"
             >
               Jahr
             </label>
             <select
               id="year-filter"
-              class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+              class="text-txt-p w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
             >
               <option value="all">Alle Jahre</option>
               {years.map((year) => <option value={year}>{year}</option>)}
@@ -151,7 +151,7 @@ const toc = publications.map((pub, index) => ({
                     </span>
                   )}
                   {pub.publisher && (
-                    <span class="rounded-full border border-orange-500/30 bg-orange-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-black">
+                    <span class="rounded-full border border-orange-500/30 bg-orange-500/20 px-3 py-1 text-xs font-bold tracking-wider text-black uppercase">
                       {pub.publisher}
                     </span>
                   )}
@@ -159,7 +159,7 @@ const toc = publications.map((pub, index) => ({
                 <h2 class="text-txt-h dark:text-darkmode-txt-h mb-2 text-2xl font-bold">
                   {pub.title}
                 </h2>
-                <p class="text-lg font-medium text-txt-p opacity-90 dark:text-darkmode-txt-p">
+                <p class="text-txt-p dark:text-darkmode-txt-p text-lg font-medium opacity-90">
                   {pub.description}
                 </p>
               </div>
@@ -169,7 +169,7 @@ const toc = publications.map((pub, index) => ({
             <div class="mt-6 border-t border-white/10 pt-6">
               {pub.text && (
                 <div
-                  class="prose prose-lg mb-6 max-w-none text-txt-p dark:prose-invert dark:text-darkmode-txt-p"
+                  class="prose prose-lg text-txt-p dark:prose-invert dark:text-darkmode-txt-p mb-6 max-w-none"
                   set:html={markdownify(pub.text, true)}
                 />
               )}

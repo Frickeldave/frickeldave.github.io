@@ -88,7 +88,7 @@ const getIcon = (icon: string | undefined) => {
           </h2>
           {
             location && (
-              <span class="glass-t mt-2 inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm text-txt-p dark:text-darkmode-txt-p">
+              <span class="glass-t text-txt-p dark:text-darkmode-txt-p mt-2 inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm">
                 📍 {location}
               </span>
             )
@@ -107,38 +107,38 @@ const getIcon = (icon: string | undefined) => {
           {/* Role Tags */}
           <div class="mb-6 flex flex-wrap gap-2">
             <span
-              class="glass-t rounded-full border border-amber-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="glass-t text-txt-p dark:text-darkmode-txt-p rounded-full border border-amber-500/30 px-4 py-2 text-sm font-medium"
               >💼 Managing IT-Consultant</span
             >
             <span
-              class="glass-t rounded-full border border-orange-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="glass-t text-txt-p dark:text-darkmode-txt-p rounded-full border border-orange-500/30 px-4 py-2 text-sm font-medium"
               >🚀 DevOps Evangelist</span
             >
             <span
-              class="glass-t rounded-full border border-red-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="glass-t text-txt-p dark:text-darkmode-txt-p rounded-full border border-red-500/30 px-4 py-2 text-sm font-medium"
               >🤖 KI Enthusiast</span
             >
             <span
-              class="glass-t rounded-full border border-amber-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="glass-t text-txt-p dark:text-darkmode-txt-p rounded-full border border-amber-500/30 px-4 py-2 text-sm font-medium"
               >🛠️ DIY Maker</span
             >
             <span
-              class="glass-t rounded-full border border-orange-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="glass-t text-txt-p dark:text-darkmode-txt-p rounded-full border border-orange-500/30 px-4 py-2 text-sm font-medium"
               >🖨️ 3D Printing Fanatic</span
             >
             <span
-              class="glass-t rounded-full border border-red-500/30 px-4 py-2 text-sm font-medium text-txt-p dark:text-darkmode-txt-p"
+              class="glass-t text-txt-p dark:text-darkmode-txt-p rounded-full border border-red-500/30 px-4 py-2 text-sm font-medium"
               >🪵 Woodworking Hobbyist</span
             >
           </div>
 
           {/* Intro Text (integrated here instead of separate box) */}
-          <div class="prose prose-lg max-w-none dark:prose-invert">
+          <div class="prose prose-lg dark:prose-invert max-w-none">
             {
               typeof entry.data.intro === "object" &&
                 entry.data.intro &&
                 "content" in entry.data.intro && (
-                  <p class="text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg">
+                  <p class="text-txt-p dark:text-darkmode-txt-p text-base leading-relaxed lg:text-lg">
                     {entry.data.intro.content}
                   </p>
                 )

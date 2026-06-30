@@ -23,7 +23,7 @@ const formatPrice = (price: number): string => {
     class="product-header glass rounded-lg border border-blue-200 p-6 dark:border-blue-800"
   >
     <h1
-      class="mb-2 text-3xl font-bold text-gray-900 dark:text-white md:text-4xl"
+      class="mb-2 text-3xl font-bold text-gray-900 md:text-4xl dark:text-white"
     >
       {product.name}
     </h1>
@@ -34,7 +34,7 @@ const formatPrice = (price: number): string => {
     </p>
     <div class="price-section">
       <span
-        class="text-2xl font-bold text-blue-600 dark:text-blue-400 md:text-3xl"
+        class="text-2xl font-bold text-blue-600 md:text-3xl dark:text-blue-400"
       >
         {formatPrice(product.price)}
       </span>
@@ -84,7 +84,7 @@ const formatPrice = (price: number): string => {
       {
         product.tags && product.tags.length > 0 && (
           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-            <dt class="mb-2 font-medium text-gray-900 dark:text-white sm:mb-0">
+            <dt class="mb-2 font-medium text-gray-900 sm:mb-0 dark:text-white">
               Tags:
             </dt>
             <dd class="flex flex-wrap gap-1">

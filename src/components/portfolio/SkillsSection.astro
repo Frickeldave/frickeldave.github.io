@@ -18,7 +18,7 @@ const { skills } = entry.data;
             <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
               Technical Skills
             </h2>
-            <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
+            <p class="text-txt-p dark:text-darkmode-txt-p text-lg">
               Technologies and tools I work with
             </p>
           </div>
@@ -31,7 +31,7 @@ const { skills } = entry.data;
                 </h3>
                 <div class="flex flex-wrap justify-center gap-2">
                   {skillCategory.technologies.map((tech) => (
-                    <span class="glass-t cursor-default rounded-full px-3 py-1 text-sm text-txt-p dark:text-darkmode-txt-p">
+                    <span class="glass-t text-txt-p dark:text-darkmode-txt-p cursor-default rounded-full px-3 py-1 text-sm">
                       {tech}
                     </span>
                   ))}

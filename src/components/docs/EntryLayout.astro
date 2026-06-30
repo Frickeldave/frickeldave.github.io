@@ -25,9 +25,9 @@ const actuallyHideToc =
   globalHideToc ||
   headings.filter((heading) => heading.depth <= tocDepth).length === 0;
 
-let articleClass = "";
-let navClass = "";
-let tocClass = "";
+let articleClass;
+let navClass;
+let tocClass;
 
 if (actuallyHideNav && actuallyHideToc) {
   // Both nav and toc are hidden

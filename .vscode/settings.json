@@ -32,5 +32,11 @@
   ],
   "files.associations": {
     "*.astro": "astro"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "/^cd /home/appuser/frickeldave\\.github\\.io && git config user\\.name$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
   }
 }

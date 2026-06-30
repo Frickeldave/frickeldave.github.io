@@ -9,8 +9,9 @@ imageAlt: "Kubernetes Basis - 10 Tag 1"
 
 import { Image } from "astro:assets";
 import knba101 from "@assets/docs/kubernetes-basis/knba-10-002.png";
+import Notice from "@shortcodes/Notice";
 
-> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Grundlagen & Einstieg
 
@@ -22,18 +23,18 @@ Browser (Chromium) und eine Entwicklungsumgebung (Code-Server) -- direkt im Clus
 
 | Zeit          | Dauer  | Block                | Inhalt                                                  |
 | ------------- | ------ | -------------------- | ------------------------------------------------------- |
-| 09:00 – 09:30 | 30 min | Begrüßung            | Vorstellungsrunde, Ziele, Vorschau Endprodukt           |
-| 09:30 – 10:30 | 60 min | Theorie              | Kubernetes Architektur & Komponenten                    |
-| 10:30 – 10:45 | 15 min | **Pause**            |                                                         |
-| 10:45 – 11:30 | 45 min | Theorie              | Kubernetes-Objekte: Pod, Deployment, Service, Namespace |
-| 11:30 – 12:30 | 60 min | Erste Schritte       | Cluster erkunden, kubectl Basics, Namespace anlegen     |
-| 12:30 – 13:30 | 60 min | **Mittagspause**     |                                                         |
-| 13:30 – 14:30 | 60 min | Chromium deployen    | Erstes Deployment (imperativ), Pods beobachten          |
-| 14:30 – 15:15 | 45 min | Theorie              | YAML-Grundlagen, Imperativ vs. Deklarativ               |
-| 15:15 – 15:30 | 15 min | **Pause**            |                                                         |
-| 15:30 – 16:30 | 60 min | Code-Server deployen | Deployment per YAML (deklarativ)                        |
-| 16:30 – 17:15 | 45 min | Services             | NodePort für beide Anwendungen                          |
-| 17:15 – 17:30 | 15 min | Abschluss            | Zusammenfassung, Ausblick Tag 2                         |
+| 09:00–09:30 | 30 min | Begrüßung            | Vorstellungsrunde, Ziele, Vorschau Endprodukt           |
+| 09:30–10:30 | 60 min | Theorie              | Kubernetes Architektur & Komponenten                    |
+| 10:30–10:45 | 15 min | **Pause**            |                                                         |
+| 10:45–11:30 | 45 min | Theorie              | Kubernetes-Objekte: Pod, Deployment, Service, Namespace |
+| 11:30–12:30 | 60 min | Erste Schritte       | Cluster erkunden, kubectl Basics, Namespace anlegen     |
+| 12:30–13:30 | 60 min | **Mittagspause**     |                                                         |
+| 13:30–14:30 | 60 min | Chromium deployen    | Erstes Deployment (imperativ), Pods beobachten          |
+| 14:30–15:15 | 45 min | Theorie              | YAML-Grundlagen, Imperativ vs. Deklarativ               |
+| 15:15–15:30 | 15 min | **Pause**            |                                                         |
+| 15:30–16:30 | 60 min | Code-Server deployen | Deployment per YAML (deklarativ)                        |
+| 16:30–17:15 | 45 min | Services             | NodePort für beide Anwendungen                          |
+| 17:15–17:30 | 15 min | Abschluss            | Zusammenfassung, Ausblick Tag 2                         |
 
 ---
 
@@ -120,7 +121,7 @@ drei Kernkomponenten, die eng mit der Control Plane zusammenarbeiten.
 | --------------------- | ----------------------------------------------------------------- |
 | [**kubelet**](/docs/kubernetes-basis/90-glossar#kubelet)           | Agent auf jedem Node. Sorgt dafür, dass Container in Pods laufen. |
 | [**kube-proxy**](/docs/kubernetes-basis/90-glossar#kube-proxy)        | Netzwerk-Proxy. Verwaltet Netzwerkregeln für Services.            |
-| [**Container Runtime**](/docs/kubernetes-basis/90-glossar#container-runtime) | Führt Container aus (z.B. containerd, CRI-O).                     |
+| [**Container Runtime**](/docs/kubernetes-basis/90-glossar#container-runtime) | Führt Container aus (z. B. containerd, CRI-O).                     |
 
 ---
 
@@ -160,7 +161,7 @@ kubectl config current-context
 ### Namespaces
 
 Namespaces sind logische Trennungen innerhalb eines Clusters. Sie ermöglichen es, Ressourcen
-verschiedener Teams, Projekte oder Umgebungen (z.B. `dev`, `staging`, `prod`) voneinander zu
+verschiedener Teams, Projekte oder Umgebungen (z. B. `dev`, `staging`, `prod`) voneinander zu
 isolieren, ohne separate Cluster betreiben zu müssen. Berechtigungen und Ressourcenlimits lassen
 sich pro Namespace vergeben.
 
@@ -175,24 +176,24 @@ Standard-Namespaces:
 | ----------------- | ------------------------------------------------------- |
 | `default`         | Standard-Namespace für Objekte ohne explizite Zuordnung |
 | `kube-system`     | Kubernetes-Systemkomponenten                            |
-| `kube-public`     | Öffentlich lesbare Daten (z.B. Cluster-Info)            |
+| `kube-public`     | Öffentlich lesbare Daten (z. B. Cluster-Info)            |
 | `kube-node-lease` | Node-Heartbeat-Daten                                    |
 
 ### Imperativ vs. Deklarativ
 
 Kubernetes bietet zwei Wege, Ressourcen zu erstellen:
 
-- **Imperativ** – Du gibst konkrete Befehle, die sofort ausgeführt werden.
+- **Imperativ**–Du gibst konkrete Befehle, die sofort ausgeführt werden.
   Beispiel: `kubectl create namespace k8s-training`
   Ideal für schnelle Tests und Experimente.
 
-- **Deklarativ** – Du definierst den gewünschten Zustand in einer YAML-Datei
+- **Deklarativ**–Du definierst den gewünschten Zustand in einer YAML-Datei
   und lässt Kubernetes diesen Zustand herstellen.
   Beispiel: `kubectl apply -f namespace.yaml`
   Der Standard in der Praxis, da Manifeste versioniert, geteilt und reviewed
   werden können.
 
-In diesem Tag siehst du beide Ansätze im Vergleich – beginnend mit dem
+In diesem Tag siehst du beide Ansätze im Vergleich–beginnend mit dem
 imperativen Weg für einen schnellen Einstieg.
 
 **Eigenen Namespace erstellen (imperativ):**
@@ -243,7 +244,7 @@ kubectl config set-context --current --namespace=k8s-training
 
 Ab jetzt arbeiten alle Befehle automatisch im Namespace `k8s-training`.
 
-> ⚠️ **HINWEIS** – In einem Cluster das dir von deiner Firma zur Verfügung gestellt wird, ist es ggf. nicht möglich
+> ⚠️ **HINWEIS**–In einem Cluster das dir von deiner Firma zur Verfügung gestellt wird, ist es ggf. nicht möglich
 einen namespance zu erstellen. In diesem Fall arbeiten wir in dem Workspace weiter, der Dir zugewiesen wurde.
 
 ### Übung 1
@@ -356,7 +357,7 @@ graph LR
 
 **Was ist die ClusterIP?**
 
-Die **ClusterIP** ist eine **interne, stabile IP-Adresse** des Service (z.B. `10.43.x.x`). Sie ist der
+Die **ClusterIP** ist eine **interne, stabile IP-Adresse** des Service (z. B. `10.43.x.x`). Sie ist der
 zentrale Endpunkt, der immer gleich bleibt -- egal wie oft Pods neu erstellt werden oder sich ihre
 IP-Adressen ändern.
 
@@ -395,15 +396,15 @@ kubectl get service chromium
 Stell dir den NodePort-Service wie einen **Anruf im Logistikzentrum** vor:
 
 1. **Externer Kunde** ruft das Logistikzentrum an (dein Browser ruft `Node-IP:3xxxx` auf)
-2. **Außennummer (NodePort)** – Der Kunde wählt die öffentliche Durchwahl 3xxxx (der automatisch zugewiesene NodePort)
-3. **Empfang am Node** – Ein Worker-Node nimmt den Anruf entgegen (kube-proxy auf diesem Node)
-4. **Interne Leitstelle (Service/ClusterIP:4000)** – Der Empfang leitet den Anruf an die zentrale Service-Leitstelle weiter
-5. **Mitarbeiter-Zuweisung (Pod)** – Die Leitstelle sucht sich einen freien Mitarbeiter (einen Pod) aus
-6. **Arbeitsplatz (targetPort=3000)** – Der Mitarbeiter wird an seinem Arbeitsplatz (Container-Port 3000) erreicht
-7. **Rückantwort** – Die Antwort des Mitarbeiters geht über die Leitstelle und den Empfang zurück zum Kunden
+2. **Außennummer (NodePort)**–Der Kunde wählt die öffentliche Durchwahl 3xxxx (der automatisch zugewiesene NodePort)
+3. **Empfang am Node**–Ein Worker-Node nimmt den Anruf entgegen (kube-proxy auf diesem Node)
+4. **Interne Leitstelle (Service/ClusterIP:4000)**–Der Empfang leitet den Anruf an die zentrale Service-Leitstelle weiter
+5. **Mitarbeiter-Zuweisung (Pod)**–Die Leitstelle sucht sich einen freien Mitarbeiter (einen Pod) aus
+6. **Arbeitsplatz (targetPort=3000)**–Der Mitarbeiter wird an seinem Arbeitsplatz (Container-Port 3000) erreicht
+7. **Rückantwort**–Die Antwort des Mitarbeiters geht über die Leitstelle und den Empfang zurück zum Kunden
 
 > 💡 **Merke:** Genau wie im Logistikzentrum gibt es eine **stabile Durchwahl** (Service), die immer
-> erreichbar ist – egal welcher Mitarbeiter (Pod) gerade die Anfrage bearbeitet!
+> erreichbar ist–egal welcher Mitarbeiter (Pod) gerade die Anfrage bearbeitet!
 
 Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port:
 
@@ -561,8 +562,8 @@ Jedes Kubernetes-Manifest besteht aus vier Hauptteilen:
 
 | Feld         | Bedeutung                                               |
 | ------------ | ------------------------------------------------------- |
-| `apiVersion` | API-Version der Ressource (z.B. `v1`, `apps/v1`)        |
-| `kind`       | Art der Ressource (z.B. `Pod`, `Deployment`, `Service`) |
+| `apiVersion` | API-Version der Ressource (z. B. `v1`, `apps/v1`)        |
+| `kind`       | Art der Ressource (z. B. `Pod`, `Deployment`, `Service`) |
 | `metadata`   | Metadaten: Name, Namespace, Labels                      |
 | `spec`       | Spezifikation: der gewünschte Zustand                   |
 
@@ -715,7 +716,7 @@ kubectl get pods
 1. Prüfe, dass beide Deployments laufen: `kubectl get deployments`
 2. Vergleiche die beiden YAML-Dateien: Welche Unterschiede gibt es bei Ports, Umgebungsvariablen und
    Volumes?
-3. Ändere das Passwort des Code-Servers in der YAML-Datei (z.B. auf `meinPasswort`) und wende die
+3. Ändere das Passwort des Code-Servers in der YAML-Datei (z. B. auf `meinPasswort`) und wende die
    Änderung an: `kubectl apply -f code-server-deployment.yaml`
 4. Nutze `kubectl explain pod.spec.volumes` um herauszufinden, welche Volume-Typen es gibt.
 

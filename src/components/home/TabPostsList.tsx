@@ -40,11 +40,11 @@ const TabPostsList: React.FC<Props> = ({ tabs, title }) => {
       {/* Tab Navigation */}
       <div className="glass mb-6 overflow-hidden rounded-lg">
         {title && (
-          <h2 className="border-b border-border px-6 py-4 text-center text-3xl font-bold dark:border-darkmode-border">
+          <h2 className="border-border dark:border-darkmode-border border-b px-6 py-4 text-center text-3xl font-bold">
             {title}
           </h2>
         )}
-        <div className="flex flex-wrap border-b border-border dark:border-darkmode-border">
+        <div className="border-border dark:border-darkmode-border flex flex-wrap border-b">
           {tabs.map((tab, index) => (
             <button
               key={tab.id}
@@ -53,7 +53,7 @@ const TabPostsList: React.FC<Props> = ({ tabs, title }) => {
               tabIndex={activeTab === index ? 0 : -1}
               className={`cursor-pointer px-6 py-3 text-lg font-medium transition-colors ${
                 activeTab === index
-                  ? "border-b-2 border-txt-p text-txt-p dark:border-darkmode-txt-p dark:text-darkmode-txt-p"
+                  ? "border-txt-p text-txt-p dark:border-darkmode-txt-p dark:text-darkmode-txt-p border-b-2"
                   : "text-txt-s hover:text-txt-p dark:text-darkmode-txt-s dark:hover:text-darkmode-txt-p"
               }`}
               onClick={() => setActiveTab(index)}
@@ -81,7 +81,7 @@ const TabPostsList: React.FC<Props> = ({ tabs, title }) => {
                   className="group block h-full no-underline"
                 >
                   <div className="glass h-full rounded-lg p-4 transition-transform group-hover:scale-105">
-                    <h4 className="mb-2 group-hover:text-txt-p dark:group-hover:text-darkmode-txt-p">
+                    <h4 className="group-hover:text-txt-p dark:group-hover:text-darkmode-txt-p mb-2">
                       {post.title}
                     </h4>
                     <ul className="mb-2 list-none p-0 text-sm">

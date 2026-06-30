@@ -7,7 +7,9 @@ image: "@assets/docs/kubernetes-basis/knba-20-001.png"
 imageAlt: "Kubernetes Basis - 20 Tag 2"
 ---
 
-> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+import Notice from "@shortcodes/Notice";
+
+> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Workloads & Networking
 
@@ -429,12 +431,10 @@ bestehenden YAML-Manifeste um `startupProbe`, `livenessProbe` und `readinessProb
 
 ### Chromium Probes
 
-<Notice type="warning">
-  **HTTP vs. HTTPS in Probes:** Chromium läuft auf HTTP (Port 3000) -- kein `scheme: HTTPS`
-  erforderlich. Code-Server hingegen läuft auf HTTPS (Port 8443) und benötigt `scheme: HTTPS`
-  explizit. Fehlt das Schema, schlägt die Probe **still fehl** -- kein Fehlermeldung, nur ein
-  Pod, der nie `Ready` wird. Typische Fehlerquelle beim ersten Aufsetzen!
-</Notice>
+> **Hinweis zu HTTP vs. HTTPS in Probes:** Chromium läuft auf HTTP (Port 3000) -- kein
+> `scheme: HTTPS` erforderlich. Code-Server hingegen läuft auf HTTPS (Port 8443) und benötigt
+> `scheme: HTTPS` explizit. Fehlt das Schema, schlägt die Probe **still fehl** -- keine
+> Fehlermeldung, nur ein Pod, der nie `Ready` wird. Typische Fehlerquelle beim ersten Aufsetzen!
 
 Datei `chromium-deployment.yaml` erweitern (Resources + Probes):
 
@@ -815,7 +815,7 @@ kubectl apply -f app-configmap.yaml
 Ein [Secret](/docs/kubernetes-basis/90-glossar#secret) speichert sensible Daten (Passwörter, Tokens, Zertifikate). Werte werden Base64-kodiert
 gespeichert. **Wichtig:** Base64 ist keine Verschlüsselung, sondern nur eine Kodierung -- die Daten
 sind im Cluster im Klartext lesbar. Für echte Produktions-Sicherheit braucht ihr Encryption at Rest
-oder ein externes Secret-Management (z.B. HashiCorp Vault).
+oder ein externes Secret-Management (z. B. HashiCorp Vault).
 
 ```bash
 # Das sieht aus wie Verschlüsselung:
@@ -1013,7 +1013,7 @@ kubectl apply -f code-server-deployment.yaml
 | `valueFrom.secretKeyRef`    | Einzelnen Secret-Key als Env-Variable              |
 | Volume-Mount                | ConfigMap/Secret als Dateien mounten               |
 
-ConfigMap als Volume (z.B. für Konfigurationsdateien):
+ConfigMap als Volume (z. B. für Konfigurationsdateien):
 
 ```yaml
 volumes:
@@ -1144,7 +1144,7 @@ kubectl delete pod secure-nginx -n k8s-training
 
 - **Principle of Least Privilege** -- nur die nötigsten Rechte vergeben
 - **Secrets statt Env-Variablen** -- sensible Daten nie im Klartext in YAMLs
-- **Image-Tags pinnen** -- `:latest` vermeiden, konkrete Versionen verwenden (z.B. `:4.96.4`)
+- **Image-Tags pinnen** -- `:latest` vermeiden, konkrete Versionen verwenden (z. B. `:4.96.4`)
 - **Nicht als root laufen** -- wenn das Image es unterstützt
 - **Capabilities droppen** -- `drop: [ALL]` und nur benötigte explizit hinzufügen
 - **Network Policies** -- Traffic zwischen Pods einschränken (weiterführend)

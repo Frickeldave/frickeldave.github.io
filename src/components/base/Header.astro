@@ -59,7 +59,7 @@ const menu = [
     <input id="nav-toggle" type="checkbox" class="hidden" />
     <label
       for="nav-toggle"
-      class="order-0 flex cursor-pointer items-center text-txt-p lg:order-1 dark:text-darkmode-txt-p md:hidden"
+      class="text-txt-p dark:text-darkmode-txt-p order-0 flex cursor-pointer items-center md:hidden lg:order-1"
     >
       <svg id="show-button" class="block h-6 fill-current" viewBox="0 0 20 20">
         <title>Menu Open</title>
@@ -82,7 +82,7 @@ const menu = [
           <li class="">
             <a
               href={item.url}
-              class={`block p-2 font-secondary font-semibold text-txt-p transition dark:text-darkmode-txt-p lg:px-2 lg:py-3 ${
+              class={`font-secondary text-txt-p dark:text-darkmode-txt-p block p-2 font-semibold transition lg:px-2 lg:py-3 ${
                 (pathname === `${item.url}/` || pathname === item.url) &&
                 "active"
               }`}
@@ -95,7 +95,7 @@ const menu = [
     </ul>
     <div class="order-1 ml-auto flex items-center md:order-2 lg:ml-0">
       <a
-        class="mr-4 inline-block border-border text-xl text-txt-p dark:border-darkmode-border dark:text-darkmode-txt-p"
+        class="border-border text-txt-p dark:border-darkmode-border dark:text-darkmode-txt-p mr-4 inline-block text-xl"
         href="/search"
         aria-label="search"
       >

@@ -21,10 +21,10 @@ profileImage: "@assets/profile/dave02.png"
 intro:
   title: "Ich bin Frickeldave"
   content:
-    "Ich bin Frickeldave – dein Experte für DIY-Projekte, handgemachte Kreationen und IT-Lösungen.
+    "Ich bin Frickeldave–dein Experte für DIY-Projekte, handgemachte Kreationen und IT-Lösungen.
     Mit einer Leidenschaft für das Tüfteln und Verbessern bringe ich kreative Ideen und technische
     Expertise zusammen, um einzigartige Projekte zu realisieren. Ob Holzarbeiten, 3D-Druck oder
-    komplexe DevOps-, KI und Cloud-Technologien – ich teile mein Wissen und meine Erfahrungen, um
+    komplexe DevOps-, KI und Cloud-Technologien–ich teile mein Wissen und meine Erfahrungen, um
     dich zu inspirieren und zu unterstützen. Diese Erfahrung im handwerklichen Bereich überträgt
     sich auch auf meine IT-Projekte, bei denen Präzision, Kreativität und Problemlösungsfähigkeiten
     gefragt sind. Auf dieser Seite findest du eine Auswahl meiner Arbeiten sowie Einblicke in meine
@@ -201,7 +201,7 @@ currentProject:
 experience:
   - company: "adesso SE"
     position: "Managing IT-Consultant"
-    period: "Juni 2024 – heute"
+    period: "Juni 2024–heute"
     location: "München"
     responsibilities:
       - "Senior IT-Beratung für Enterprise-Kunden"
@@ -214,7 +214,7 @@ experience:
 
   - company: "Freelance (Timeout)"
     position: "Selbstständige Tätigkeit"
-    period: "April 2024 – Juni 2024"
+    period: "April 2024–Juni 2024"
     location: "Deutschland"
     responsibilities:
       - "Fokus auf persönliche Projekte und Weiterbildung"
@@ -222,7 +222,7 @@ experience:
 
   - company: "shiftavenue"
     position: "Chief Learning Officer"
-    period: "Januar 2024 – April 2024"
+    period: "Januar 2024–April 2024"
     location: "Grünwald, Bayern, Deutschland"
     responsibilities:
       - "Einführung agiler Methoden als Unternehmensarbeitsweise"
@@ -233,7 +233,7 @@ experience:
 
   - company: "MediaMarktSaturn"
     position: "IT-Teamleiter"
-    period: "Januar 2022 – Dezember 2023"
+    period: "Januar 2022–Dezember 2023"
     location: "Deutschland"
     responsibilities:
       - "Leitung Backend Infrastruktur Team mit Verantwortung über Cloud/OnPrem und Provider
@@ -251,7 +251,7 @@ experience:
 
   - company: "msg"
     position: "Lead IT-Consultant DevOps"
-    period: "Januar 2018 – Januar 2022"
+    period: "Januar 2018–Januar 2022"
     location: "Ismaning"
     responsibilities:
       - "Leitung DevOps und CI/CD"
@@ -266,7 +266,7 @@ experience:
 
   - company: "Matrix42 AG"
     position: "Product Manager"
-    period: "April 2015 – Dezember 2017"
+    period: "April 2015–Dezember 2017"
     location: "Frankfurt am Main"
     responsibilities:
       - "Product-Management, Product-Owner, Pre-Sales, Reporting"
@@ -278,7 +278,7 @@ experience:
 
   - company: "NWC Services GmbH"
     position: "Senior IT Consultant"
-    period: "Oktober 2009 – März 2015"
+    period: "Oktober 2009–März 2015"
     location: "Pforzheim"
     responsibilities:
       - "IT- und Management Beratung"
@@ -293,7 +293,7 @@ experience:
 
   - company: "Ivanti (formerly Heat/FrontRange/enteo/NetSupport)"
     position: "Senior IT Consultant"
-    period: "August 2004 – September 2009"
+    period: "August 2004–September 2009"
     location: "Stuttgart"
     responsibilities:
       - "Projektleitung Einführung NetSupport/DSM Clientmanagement Systeme"
@@ -304,7 +304,7 @@ experience:
 
   - company: "ptecs"
     position: "IT Consultant"
-    period: "Juli 1999 – Juli 2004"
+    period: "Juli 1999–Juli 2004"
     location: "Deutschland"
     responsibilities:
       - "Einführung NetSupport Produktfamilie bei Kunden"

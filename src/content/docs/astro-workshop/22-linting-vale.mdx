@@ -1,17 +1,17 @@
 ---
 visible: true
-title: 22 Vale — Prosa-Linting
+title: 22 Vale—Prosa-Linting
 description: Vale für Astro-Projekte installieren, Styleguides konfigurieren und Prosa-Qualität automatisiert sicherstellen.
 draft: false
 image: "@assets/docs/astro-workshop/asws-22-001.png"
 imageAlt: "Vale"
 ---
 
-> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Was ist Vale?
 
-**Vale** ist ein Open-Source-Tool für das Prosa-Linting — es funktioniert wie ein Code-Linter,
+**Vale** ist ein Open-Source-Tool für das Prosa-Linting—es funktioniert wie ein Code-Linter,
 verarbeitet aber Fließtext. Vale prüft Texte auf stilistische Fehler, wiederkehrende Muster und
 Verstöße gegen vordefinierte oder eigene Stilrichtlinien.
 
@@ -29,7 +29,7 @@ als Teil automatisierter CI-Prozesse.
 
 ## Installation
 
-Vale ist ein eigenständiges Binary. Die Installation wird durch ein **plattformunabhängiges Node.js-Skript** automatisiert — ein Skript, alle Plattformen.
+Vale ist ein eigenständiges Binary. Die Installation wird durch ein **plattformunabhängiges Node.js-Skript** automatisiert—ein Skript, alle Plattformen.
 
 ### Install-Script
 
@@ -158,17 +158,17 @@ Mit dem Eintrag `Vocab = custom` in der vale.ini wird diese Regel aktiviert. In 
 `.vale/styles/config/vocabularies/custom/accept.txt`
 
 werden dann anschliessend alle Ausnahmen eingetragen (Für den Workshop bitte adesso und config). Jede Zeile stellt einen akzeptierten Begriff dar. 
-Vale ignoriert diese Wörter bei der Rechtschreibprüfung — unabhängig von Groß- oder Kleinschreibung.
+Vale ignoriert diese Wörter bei der Rechtschreibprüfung—unabhängig von Groß- oder Kleinschreibung.
 
 **Praktische Tipps:**
 
-- Begriffe sind **case-insensitive** — `adesso` passt auf `Adesso`, `ADESSO`, `AdEsSo` etc.
-- Für **case-sensitive** Begriffe (z.B. `GitHub` vs. `github`) nutzt man eine `exclude`-Regel
-- Pro Großprojekt lohnt sich eine zentrale `accept.txt` — im Team gemeinsam gepflegt
+- Begriffe sind **case-insensitive**—`adesso` passt auf `Adesso`, `ADESSO`, `AdEsSo` etc.
+- Für **case-sensitive** Begriffe (z. B. `GitHub` vs. `github`) nutzt man eine `exclude`-Regel
+- Pro Großprojekt lohnt sich eine zentrale `accept.txt`—im Team gemeinsam gepflegt
 - Der Ordner `accept/` wird durch das Installationsskript automatisch angelegt und sollte
   **nicht** in `.gitignore` landen
 
-Beide Vale-Operationen — Installation und Prosa-Check — werden über saubere Node.js-Scripts
+Beide Vale-Operationen—Installation und Prosa-Check—werden über saubere Node.js-Scripts
 in `scripts/` abgebildet, die über npm-Scripts in `package.json` aufgerufen werden:
 
 ```json
@@ -185,7 +185,7 @@ in `scripts/` abgebildet, die über npm-Scripts in `package.json` aufgerufen wer
 | [`scripts/prose-install.mjs`](../../../../scripts/prose-install.mjs) | Lädt Vale-Binary + Styleguides herunter |
 | [`scripts/prose-check.mjs`](../../../../scripts/prose-check.mjs) | Prüft `src/content` mit Vale |
 
-Beide Scripts sind **plattformunabhängig** — sie erkennen automatisch, ob sie auf Windows, macOS oder Linux laufen und verwenden das passende Vale-Binary.
+Beide Scripts sind **plattformunabhängig**—sie erkennen automatisch, ob sie auf Windows, macOS oder Linux laufen und verwenden das passende Vale-Binary.
 
 ```bash
 # Vale installieren
@@ -228,7 +228,7 @@ Quelle Git, Quelle Style-Guide
 Fokussiert sich rein auf sprachliche Klarheit und verbessert Lesbarkeit und Stil, ohne produkt- oder technikspezifische Prüfkriterien.
 In modernen Dokumentations-Workflows eignen sich Write-Good-Regeln ergänzend, um die sprachliche Qualität unabhängig von der Plattform zu verbessern.
 Write-Good Vale Style-Guide
-Im Folgenden kommt der „Microsoft Style Guide“ zum Einsatz – erweitert um die Style-Guides „write-good“, „MDX“ und „Vale Core“. Diese sind wie folgt charakterisiert:
+Im Folgenden kommt der „Microsoft Style Guide“ zum Einsatz–erweitert um die Style-Guides „write-good“, „MDX“ und „Vale Core“. Diese sind wie folgt charakterisiert:
 
 - Microsoft Style Guide: Unternehmensstandards für technische Dokumentation
 - write-good: allgemeine Regeln für klares Schreiben
@@ -267,11 +267,11 @@ Die Ergebnisse des Lintings fasst die folgende Tabelle zusammen:
 | Fehler | Regelsatz | Erklärung & Korrektur |
 |--------|-----------|----------------------|
 | Autor "Adesso" und "adeso" inkonsistent geschrieben | Custom Regel | Korrigiert in "adesso" |
-| Markdown-Liste ohne korrekte Aufzählungszeichen | MDX-Regelsatz | Fehlt das `-` oder die Nummerierung bei Liste (z.B. `Step 2` ist kein Listenelement) |
+| Markdown-Liste ohne korrekte Aufzählungszeichen | MDX-Regelsatz | Fehlt das `-` oder die Nummerierung bei Liste (z. B. `Step 2` ist kein Listenelement) |
 | Unsichere URL im Link (htp statt http) | Microsoft Regelsatz | Erkennt ungültige URLs, fordert Korrektur auf gültiges Schema (`http://`) |
-| Übermäßiger Gebrauch von Floskeln (z.B. "very effectively", "It is important that") | Write-Good | Empfiehlt prägnantere Ausdrucksweise ("effectively", "Wait patiently.") |
+| Übermäßiger Gebrauch von Floskeln (z. B. "very effectively", "It is important that") | Write-Good | Empfiehlt prägnantere Ausdrucksweise ("effectively", "Wait patiently.") |
 | Use of first-person pronouns ("You will be able...", "you wait patiently") in nicht passender Art | Microsoft Regelsatz | Warnt bei unpassender Verwendung von Personalpronomen, schlägt Sparse-Usage vor |
-| Passiver Sprachgebrauch ("was developed") | Write-Good & Microsoft | Empfiehlt aktive Formulierung, z.B. "adesso developed this feature." |
+| Passiver Sprachgebrauch ("was developed") | Write-Good & Microsoft | Empfiehlt aktive Formulierung, z. B. "adesso developed this feature." |
 
 Eine korrekte Daten sollte wie folgt aussehen: 
 
@@ -307,7 +307,7 @@ So the experiment failed because the team recorded the measurements incorrectly.
 
 ### Ausnahmen für einzelne Passagen
 
-Manchmal ist eine Regel bewusst zu ignorieren — z.B. bei Sätzen, die mit `So` beginnen müssen:
+Manchmal ist eine Regel bewusst zu ignorieren—z. B. bei Sätzen, die mit `So` beginnen müssen:
 
 ```mdx
 {/* <!-- vale write-good.So = NO --> */}
@@ -336,7 +336,7 @@ Hier dürfen Passive, Weasel Words und Co. stehen.
 
 Vale-Styleguides sind primär für englischen Text optimiert. Für deutsche Inhalte empfiehlt sich:
 
-1. Einen eigenen Styleguide mit deutschen Regeln aufbauen (z.B. `.vale/styles/Deutsch/`)
+1. Einen eigenen Styleguide mit deutschen Regeln aufbauen (z. B. `.vale/styles/Deutsch/`)
 2. KI-Tools wie [valegen](https://github.com/theletterf/valegen) zur Regelgenerierung nutzen
 3. Für rein deutsche Inhalte Vale nur mit `Vale.Spelling` und eigenen Regeln einsetzen
 

@@ -78,7 +78,7 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
 <div class="mt-2">
   {
     image && showImage && (
-      <div class="glass intersect-no-queue mb-8 rounded-lg opacity-0 intersect:animate-fadeDown">
+      <div class="glass intersect-no-queue intersect:animate-fadeDown mb-8 rounded-lg opacity-0">
         <Image
           class="w-full rounded-lg"
           src={image}
@@ -92,7 +92,7 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
   }
   {
     showInfo && (
-      <div class="glass intersect-no-queue mb-8 rounded-lg p-4 opacity-0 intersect:animate-fade">
+      <div class="glass intersect-no-queue intersect:animate-fade mb-8 rounded-lg p-4 opacity-0">
         <h1 set:html={markdownify(title)} class="mb-4" />
         <ul>
           {author && showAuthor && (

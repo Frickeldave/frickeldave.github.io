@@ -43,7 +43,7 @@ const {
           {
             image && (
               <div class="col min-w-72 basis-2/3 p-2">
-                <div class="glass rounded-lg opacity-0 intersect:animate-fadeDown">
+                <div class="glass intersect:animate-fadeDown rounded-lg opacity-0">
                   <Image
                     class="w-full rounded-lg"
                     src={image}
@@ -59,7 +59,7 @@ const {
           <!-- About -->
           <section class="col min-w-72 basis-1/3 p-2">
             <div
-              class="glass h-full rounded-lg p-2 opacity-0 intersect:animate-fadeUp"
+              class="glass intersect:animate-fadeUp h-full rounded-lg p-2 opacity-0"
             >
               <!-- Author -->
               {
@@ -118,7 +118,7 @@ const {
           {
             ingredients && (
               <section class="col min-w-72 basis-1/3 p-2">
-                <div class="glass rounded-lg p-4 opacity-0 intersect:animate-fadeUp">
+                <div class="glass intersect:animate-fadeUp rounded-lg p-4 opacity-0">
                   <h2 set:html="Ingredients" class="mb-2" />
                   <div class="row justify-center">
                     {ingredients.list.map((it: string, index: number) => (
@@ -140,7 +140,7 @@ const {
           {
             instructions && (
               <section class="col min-w-72 basis-full p-2">
-                <div class="glass rounded-lg p-4 opacity-0 intersect:animate-fadeUp">
+                <div class="glass intersect:animate-fadeUp rounded-lg p-4 opacity-0">
                   <h2 set:html="Instructions" class="mb-2" />
                   <div class="row justify-center">
                     {instructions.map((it: string, index: number) => (
@@ -160,7 +160,7 @@ const {
           {
             notes && (
               <section class="col min-w-72 basis-full p-2">
-                <div class="glass rounded-lg p-4 opacity-0 intersect:animate-fadeUp">
+                <div class="glass intersect:animate-fadeUp rounded-lg p-4 opacity-0">
                   <h2 set:html="Notes" class="mb-2" />
                   <div class="row justify-center">
                     {notes.map((it: string, _index: number) => (
