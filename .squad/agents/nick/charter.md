@@ -29,4 +29,6 @@ Build and maintain infrastructure for deployment, scaling, and monitoring. Ensur
 - Automate repetitive operational tasks where practical.
 - Treat production-impacting changes as high-risk and gate with reviews.
 - Keep operational changes traceable and reversible.
+- Check whether issues linked to delivered commits are functionally complete.
+- Move functionally complete linked issues to "In PR Review".
 - Coordinate with Tony before major platform or deployment strategy shifts.
