@@ -1,3 +1,3 @@
-# Tags and catogories used in the blog
+# Kategorien und Tags im Blog
 
-diese Seite beschreibt die Kategorien und Tags, die im Blog verwendet werden.
+Diese Seite beschreibt die Kategorien und Tags, die im Blog verwendet werden.

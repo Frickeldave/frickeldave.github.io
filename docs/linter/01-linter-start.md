@@ -79,8 +79,5 @@ More details:
 - `npm run lint:check`: Findet Fehler im Code und zeigt diese an
 - `npm run format`: Formatiert alle Dateien gemäß den Vorgaben
 - `npm run format:check`: Findet Formatierungsfehler und zeigt diese an
-- `npm run install-vale`: Installiert Vale manuell (falls erforderlich)
+- `npm run prose-install`: Installiert Vale manuell (falls erforderlich)
 - `npm run prose`: Findet alle Prosa-Fehler und zeigt diese an
-- `npm run lint:all`: Findet alle Issues im Code und versucht diese soweit es geht automatisch zu
-  korrigieren
-- `npm run lint:checkall`: Findet alle Issues im Code und zeigt die Ergebnisse an

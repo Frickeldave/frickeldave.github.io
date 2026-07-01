@@ -1,300 +1,251 @@
 ---
-title: "Agent-Setup: Requirement Engineer Gatekeeping"
-description:
-  "Dokumentation des RE-Gatekeeping-Systems: Hooks, Instructions, Approval-Workflow und
-  PreToolUse-Hook. Nützlich für die Einrichtung in eigenen Projekten."
-pubDate: 2026-06-08
-tags: [setup, agent, automation, process, github]
+title: "Squad-Agent-Setup"
+description: "Überblick über das aktive Squad-basierte Agentenmodell in diesem Repository, inklusive Rollen, Routing, Issue-Gate und Maintainer-Kontaktpunkten."
+pubDate: 2026-07-01
+tags: [setup, squad, agents, workflow, github]
 categories: [architecture]
 ---
 
-# Requirement Engineer Gatekeeping — Setup & Dokumentation
+# Squad-Agent-Setup
 
-Dieses Dokument beschreibt das Requirement Engineer (RE) Gatekeeping-System des
-`frickeldave.github.io`-Projekts. Es ist so aufgebaut, dass es in anderen Projekten nachgebaut
-werden kann.
+Dieses Repository nutzt Squad als repo-lokales Betriebsmodell für KI-gestützte Arbeit. Squad ist
+keine generische Chat-Schicht. Gemeint ist die Kombination aus Teamdefinitionen, Routing-Regeln,
+Issue-Gates und Automatisierung, die Änderungen an eine echte Aufgabe bindet, sie der richtigen
+Fachrolle zuordnet und vor dem Abschluss nachvollziehbar validiert.
 
-## Warum existiert der RE-Agent?
+Praktisch existiert Squad hier, weil dieses Repo Produktcode, Inhalte, Dokumentation, Skripte,
+Workflows und Deployment-Logik kombiniert. Ein leichtgewichtiges Rollenmodell macht das sicherer
+und wartbarer: Dieselbe Anfrage kann unterschiedlich geroutet werden, je nachdem ob sie Astro-UI,
+CI, Dokumentation, Tests oder Governance betrifft.
 
-Bei der Arbeit mit KI-Assistenten (GitHub Copilot, Cursor, etc.) besteht das Risiko, dass Code- oder
-Datei-Änderungen ungeprüft vorgenommen werden. Das RE-Gatekeeping-System schafft eine
-Sicherheitsstufe:
+## Was Squad Hier Bedeutet
 
-1. **Jede** geplante Änderung wird zuerst vom Requirement Engineer Agent geprüft
-2. Änderungen werden als GitHub Issue erfasst und mit dem User überarbeitet
-3. **Keine** Code-Änderung ohne explizite Freigabe des RE-Agenten
-4. Der PreToolUse-Hook verhindert technische Umgehung
+In diesem Repository wird Squad durch eine kleine Menge repo-lokaler Artefakte definiert:
 
-## System-Architektur
+- `.squad/team.md` für das aktive Team und die Rollenbeschreibungen
+- `.squad/routing.md` für Issue-Gate, Routing-Regeln und Eskalation
+- `.squad/agents/` für die rollenspezifischen Charter
+- `.github/agents/squad.agent.md` für das Verhalten des Koordinators
+- `.github/workflows/` für GitHub-seitiges Routing und Label-Automatisierung
 
-```mermaid
-graph TD
-    A[User Anfrage] --> B{Dateityp/Task?}
-    B -->|src/*.astro, src/*.ts| C[Astro Developer Agent]
-    B -->|src/content/*.md| D[Content Agent]
-    B -->|Technisch + Inhaltlich| E[Beide Agents]
-    C --> F[Instructions automatisch laden]
-    D --> G[Instructions automatisch laden]
-    E --> F
-    E --> G
-    F --> H{applyTo-Patterns?}
-    G --> H
-    H -->|src/**/*.astro| I[astro-typescript.instructions.md]
-    H -->|src/**/*.mdx| J[content-frontmatter.instructions.md]
-    H -->|src/**/*.css| K[tailwind-design-system.instructions.md]
-    I --> L[REQ-Approval prüfen]
-    J --> L
-    K --> L
-    L --> M[PreToolUse Hook]
-    M --> N[MCP-Server Prüfung]
-    N --> O[Implementierung/Content-Erstellung]
-```
+Dieses Modell soll vier Dinge konsistent leisten:
 
-## Wie Instructions automatisch geladen werden
+1. Implementierung an ein GitHub-Issue binden statt an einen nicht nachverfolgbaren Prompt
+2. Arbeit an eine benannte Zuständigkeit mit klarem Fachbereich routen
+3. Dateiedits verhindern, bevor das Issue in einem erlaubten Zustand ist und explizit freigegeben wurde
+4. belastbare Spuren in repo-lokalen Dokumenten hinterlassen statt sich auf Chat-Historie zu verlassen
 
-Die Instruction-Dateien in `.github/instructions/` werden **automatisch** vom Copilot-Agent-System
-geladen, wenn ihre `applyTo`-Patterns mit den bearbeiteten Dateien übereinstimmen. Es ist **nicht
-notwendig**, die Agenten manuell auf die richtigen Instructions hinzuweisen.
+## Aktuelles Rollenmodell
 
-### Funktionsweise von `applyTo`-Patterns
+Die aktive Besetzung steht in `.squad/team.md`. Die unten genannten Rollen sind das aktuelle
+Arbeitsmodell und keine Beispiele.
 
-Jede Instruction-Datei hat im YAML-Frontmatter ein `applyTo`-Feld, das Glob-Patterns enthält:
+### Squad-Koordinator
 
-```yaml
----
-description: "Verwenden beim Schreiben von Tailwind-CSS-Klassen..."
-applyTo: ["src/**/*.astro", "src/**/*.tsx", "src/**/*.css", "src/styles/**"]
----
-```
+`Squad` ist der Koordinator. Diese Rolle besitzt keinen eigenen technischen Fachbereich. Ihre Aufgabe
+ist die Orchestrierung: Anfrage lesen, Zuständigkeit festlegen, die Routing-Regeln durchsetzen und
+sicherstellen, dass das erforderliche Gate erfüllt ist, bevor die Umsetzung beginnt.
 
-**Beispiele für `applyTo`-Patterns im Projekt:**
+### Tony
 
-| Instruction-Datei                        | applyTo-Patterns                                                  | Wird geladen bei...                            |
-| ---------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
-| `astro-typescript.instructions.md`       | `src/**/*.{astro,ts,tsx,mts,cts}`                                 | Jede Datei in `src/` mit Code-Endungen         |
-| `content-frontmatter.instructions.md`    | `src/content/**/*.md`, `src/content/**/*.mdx`, `_drafts/**/*.md`  | Alle Markdown/MDX-Dateien unter `src/content/` |
-| `tailwind-design-system.instructions.md` | `src/**/*.astro`, `src/**/*.tsx`, `src/**/*.css`, `src/styles/**` | Alle Styling-Dateien                           |
-| `image-handling.instructions.md`         | (kein `applyTo` — immer geladen bei Bild-Operationen)             | Bei Bild-Referenzierung                        |
-| `commit-and-branch.instructions.md`      | (kein `applyTo` — immer geladen bei Git-Operationen)              | Bei Git/Commit-Operationen                     |
+Tony verantwortet Triage, Scope-Entscheidungen und die finale Freigabe für Arbeit, die zur Umsetzung
+bereit ist. Tony ist der Eskalationspunkt, wenn Routing unklar ist, eine Aufgabe mehrere Domänen
+schneidet oder der Issue-Status die Implementierung nicht sauber trägt.
 
-### Was das für die Agenten bedeutet
+### Bruce
 
-**Astro Developer Agent:**
+Bruce verantwortet backend-nahe Arbeit in diesem Repo: Services, Skripte, Integrationen und
+Implementierung in unterstützender Logik wie `src/lib/**` und `scripts/**`.
 
-- Wird automatisch `astro-typescript.instructions.md` erhalten, wenn er `src/components/` bearbeitet
-- Wird automatisch `tailwind-design-system.instructions.md` erhalten, wenn er Styling-Änderungen
-  macht
+### Natasha
 
-**Content Agent:**
+Natasha verantwortet Frontend- und UI-Arbeit: Astro-Seiten und -Komponenten, Tailwind-getriebene
+Präsentation sowie Änderungen am Designsystem, die beeinflussen, wie sich die Site im Browser zeigt
+oder verhält.
 
-- Wird automatisch `content-frontmatter.instructions.md` erhalten, wenn er Markdown-Dateien erstellt
-- Wird automatisch `image-handling.instructions.md` erhalten, wenn er Bilder referenziert
+### Clint
 
-**Requirement Engineer Agent:**
+Clint verantwortet Testing und QA. Dazu gehören gezielte Validierung, Regressionsabdeckung und
+Release-Readiness-Prüfungen für Änderungen, die stärkere Verifikation brauchen, bevor sie als sicher
+gelten können.
 
-- Liest Dateien, um Kontext zu verstehen — Instructions werden automatisch geladen
+### Maria
 
-### Best Practices
+Maria verantwortet technische Dokumentation und maintainer-orientierte schriftliche Leitlinien.
+Änderungen in `docs/**` routen normalerweise hierher, sofern sie nicht eng an die Domäne einer
+anderen Fachrolle gekoppelt sind.
 
-✅ **Richtig:**
+### Nick
 
-- Instruction-Dateien mit klaren `applyTo`-Patterns erstellen
-- Patterns so spezifisch wie möglich halten (nicht `**/*`)
-- Description-Feld mit Trigger-Wörtern füllen (für manuelle Invocation)
+Nick verantwortet DevOps- und Infrastrukturthemen: GitHub-Workflows, Deployment-Pfade,
+Automatisierung, umgebungssensitive Änderungen und operatives Hardening.
 
-❌ **Falsch:**
+### Jennifer
 
-- Agenten anweisen, "bitte beachte die tailwind instructions" — sie sind bereits im Kontext
-- `applyTo: "**/*"` verwenden — das lädt die Instruction bei **jeder** Datei und brennt Token
-- Instructions manuell im Prompt referenzieren — unnötig und redundant
+Jennifer verantwortet Legal Compliance und redaktionelle Governance. Dazu gehören policy-sensitive
+Inhalte, redaktionelle Struktur und Prüfungen, bei denen Rechts- oder Governance-Bewertung wichtiger
+ist als Implementierungsdetail.
 
-**Konflikt-Resolution:**
+### Scribe
 
-- Wenn Instructions widersprüchlich sind, gilt die **spezifischste** Regel
-- Beispiel: `tailwind-design-system.instructions.md` (bereichsspezifisch) hat Vorrang vor
-  generischen Tailwind-Regeln
+Scribe ist der Sitzungslogger. Diese Rolle erfasst belastbare Ergebnisse wie Entscheidungen,
+relevanten Kontext und sessionübergreifende Breadcrumbs, damit der Prozess nicht von einem
+flüchtigen Chat abhängt.
 
-## Komponenten im Detail
+### Ralph
 
-### 1. Requirement Engineer Agent
+Ralph ist der Arbeitsmonitor. Ralph verfolgt Kontinuität, markiert stockende Arbeit und hilft dem
+Team, aktive Aufgaben über Sessions hinweg sichtbar zu halten.
 
-Der RE-Agent ist unter `.github/agents/requirement-engineer.agent.md` definiert. Er ist der
-Gatekeeper für jede Änderung und darf selbst KEINE Dateien bearbeiten.
+### Rai
 
-**Rolle:**
-
-- Anforderungen verstehen und dokumentieren
-- GitHub Issues erstellen und überarbeiten
-- Auf Freigabe warten, bevor Implementierung erlaubt wird
-- Qualität sichern (vollständig, konsistent, konventionskonform)
-
-**Wichtig:** Der RE-Agent darf NIEMALS `create_file`, `replace_string_in_file` oder ähnliche
-Operationen direkt ausführen.
-
-### 2. PreToolUse Hook
-
-Der PreToolUse-Hook ist die technische Sicherheitsebene. Er wird VOR jeder File-Edit-Operation
-ausgeführt und prüft, ob ein gültiges Approval existiert.
-
-**Dateien:**
-
-- `.github/hooks/validate-code-change.mjs` — Node.js-Skript (plattformübergreifend)
-- `.github/hooks/validate-code-change.json` — Hook-Konfiguration
-- `.github/hooks/approvals/current` — Approval-File (wird vom RE-Agent erstellt)
-
-**Geblockte Tool-Kategorien:**
-
-| Kategorie              | Tools                                                                                                        |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
-| File-Edit-Operationen  | `replace_string_in_file`, `multi_replace_string_in_file`, `create_file`, `edit_notebook_file`, `delete_file` |
-| Browser-Investigations | `navigate_page`, `open_browser_page`, `screenshot_page`, `read_page`                                         |
-
-Durch das Blockieren der Browser-Investigationstools wird verhindert, dass das LLM ohne Approval
-überhaupt mit der Analyse eines Problems beginnt — nicht erst wenn es Dateien ändern will.
-
-**Verhalten:**
-
-| Situation                            | Entscheidung                         |
-| ------------------------------------ | ------------------------------------ |
-| Kein Approval-File                   | `deny` — Mit blockierender Nachricht |
-| Approval ohne Issue-Referenz         | `deny` — Mit Warnung                 |
-| Approval abgelaufen                  | `deny` — Mit Hinweis auf Erneuerung  |
-| Approval mit gültigem Issue (GH-XXX) | `allow` — Alle Operationen erlaubt   |
-
-#### MCP-Server Prüfung
-
-Seit neuestem prüft der Hook zusätzlich, ob alle erforderlichen MCP-Server verfügbar sind:
-
-1. **Konfiguration**: Die erforderlichen Server werden in `validate-code-change.json` unter
-   `mcpServers` definiert
-2. **Befehlsausführung**: Die Startbefehle werden aus `.vscode/mcp.json` gezogen
-3. **Verfügbarkeit**: Wenn ein Server nicht verfügbar ist, wird der Benutzer informiert
-4. **Starten**: In zukünftigen Versionen wird der Hook versuchen, nicht laufende Server zu starten
-
-### 3. copilot-instructions.md
-
-Die Datei `.github/copilot-instructions.md` definiert die Trigger-Liste, die bestimmt, wann ein
-REQ-Approval erforderlich ist.
-
-**Trigger-Kategorien:**
-
-- Refactoring
-- Testing
-- Config
-- Dependencies
-- Deployment
-- Process (einschließlich RE-Gatekeeping-System selbst)
-- Content-Changes (mit Ausnahme für Multi-Prompt Markdown-Verarbeitung)
-
-### 4. GitHub Issue als Ticket
-
-Alle Änderungen werden als GitHub Issue erfasst. Das garantiert:
-
-- Nachvollziehbarkeit jeder Änderung
-- Diskussion und Iteration vor der Implementierung
-- Verknüpfung mit Pull Requests
-- Automatisches Tracking via GitHub API
-
-## Workflow im Detail
-
-```
-1. User schlägt Änderung vor
-         │
-         ▼
-2. Prompt-Instructions prüfen Trigger-Liste
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
- Trigger?   Nein
-    │         │
-    ▼         ▼
-3. RE-Agent  4. Direkt
-   prüft     implementieren
-   Vorschlag
-    │
-    ▼
-5. Offene Fragen
-   klären
-    │
-    ▼
-6. GitHub Issue
-   erstellen
-   (#251)
-    │
-    ▼
-7. RE-Agent
-   freigegeben?
-    │     │
-    │     ▼
-    │   ❌ Blockiert
-    │     mit Begründung
-    │
-    ▼
-8. ✅ Freigegeben
-    │
-    ▼
-9. RE-Agent erstellt
-   Approval-File
-    │
-    ▼
-10. PreToolUse Hook
-    prüft Approval
-    und MCP-Server
-    │
-    ▼
-11. Implementierung
-```
-
-## Multi-Prompt Markdown-Verarbeitung
-
-Für längere Dokumentationen oder Blog-Posts gilt eine Besonderheit:
-
-Der User arbeitet oft über mehrere Prompts hinweg an einem Dokument. In diesem Fall:
-
-1. Der User sagt explizit, dass er an einem Dokument arbeitet
-2. Copilot DARF File-Edit-Operationen für Markdown/MDX-Dateien OHNE REQ-Approval durchführen
-3. Diese Ausnahme gilt NICHT für:
-   - Neue, völlig neue Seiten/Sections
-   - Änderungen an existing Templates/Komponenten
-   - Änderungen an bestehenden Docs ohne expliziten Fortsetzungskontext
-
-## Nachbau in eigenen Projekten
-
-### Schritt-für-Schritt
-
-1. **RE-Agent erstellen**: Kopiere `.github/agents/requirement-engineer.agent.md` in dein Projekt
-2. **PreToolUse-Hook einrichten**: Kopiere `.github/hooks/validate-code-change.mjs` und
-   `.github/hooks/validate-code-change.json`
-3. **Approval-Verzeichnis erstellen**: `.github/hooks/approvals/` mit README.md
-4. **copilot-instructions.md erstellen**: `.github/copilot-instructions.md` mit deinen
-   Trigger-Regeln
-5. **MCP-Server konfigurieren**: `.vscode/mcp.json` mit deinen Server-Konfigurationen
-6. **MCP-Server-Validierung einrichten**: Aktualisiere `.github/hooks/validate-code-change.json` mit
-   den erforderlichen Servernamen im `mcpServers`-Array
-7. **Doku erstellen**: `.github/hooks/approvals/README.md` mit deinem Workflow
-
-### Voraussetzungen
-
-- GitHub Copilot mit Agent-Support
-- GitHub MCP Server konfiguriert (siehe `.vscode/mcp.json` für die Konfiguration)
-- Node.js für den PreToolUse-Hook
-
-## FAQ
-
-**Q: Was passiert, wenn der Hook fehlt?** A: Die Prompt-Instructions sind die erste
-Verteidigungslinie. Ohne Hook kann der LLM ungeprüft editieren — aber das RE-Agent-System sagt ihm
-explizit, dass er es NICHT tun darf.
-
-**Q: Kann der Hook umgangen werden?** A: Nur durch manuelles Editieren von Dateien außerhalb von
-Copilot. Der Hook blockiert alle File-Edit-Operationen und Browser-Investigationstools innerhalb von
-Copilot. Ein LLM kann also ohne Approval weder Dateien ändern noch eine Seite im Browser öffnen oder
-untersuchen.
-
-**Q: Was, wenn ich eine sofortige Änderung brauche?** A: Der Workflow kann beschleunigt werden — der
-RE-Agent erstellt schnell ein Issue und gibt es frei. Das Approval-File wird erstellt, und die
-Implementierung kann sofort starten.
-
-**Q: Was passiert, wenn ein MCP-Server nicht verfügbar ist?** A: Der PreToolUse-Hook blockiert
-File-Edit-Operationen und informiert den Benutzer, dass die erforderlichen MCP-Server gestartet
-werden müssen. In zukünftigen Versionen wird der Hook versuchen, die Server automatisch zu starten.
+Rai ist der Responsible-AI-Reviewer. Rai ist der explizite Kontrollpunkt für sicherheitssensible
+Änderungen oder Review-Themen, die vor Release oder Übernahme eine dedizierte RAI-Perspektive
+benötigen.
+
+## Issue- und Routing-Gate
+
+Das Gate ist in `.squad/routing.md` definiert. Grundsätzlich startet hier keine Inhalts- oder
+Code-Arbeit nur deshalb, weil jemand danach gefragt hat. Die Anfrage muss an ein gültiges GitHub-Issue
+gebunden sein und die lokalen Aktivierungsprüfungen bestehen.
+
+Vor der ersten Dateiveränderung erwartet Squad alle folgenden Punkte:
+
+1. Es existiert ein offenes GitHub-Issue.
+2. Das Issue trägt das Label `squad`.
+3. Der Issue-Status ist exakt `Ready to implement` oder `In progress`.
+4. Tony hat genau dieses Issue explizit freigegeben.
+5. Der Nutzer hat bestätigt, dass genau an diesem Issue gearbeitet wird.
+6. Der lokale Marker `.frickeldave-active-issue` wurde für diese Aufgabe angelegt oder aktualisiert.
+
+Fehlt eine dieser Bedingungen, stoppt die Implementierung. Die einzige Ausnahme ist reine
+Issue-Metadatenpflege, die ohne Freischaltung von Dateiedits stattfinden kann.
+
+Das Routing präzisiert die Zuständigkeit anschließend mit `squad:<member>`-Labels. Das Basislabel
+`squad` bedeutet, dass das Issue im Squad-Scope liegt. Das Member-Label bedeutet, dass das Issue an
+eine wahrscheinliche Zuständigkeit geroutet wurde, etwa `squad:natasha`, `squad:maria` oder
+`squad:nick`.
+
+Die Datei `.frickeldave-active-issue` ist der lokale Aktivierungsmarker. Sie ist der Nachweis auf
+Session-Ebene, dass das freigegebene Issue aktuell Änderungen auslösen darf. Die erforderliche
+YAML-Struktur ist in `.squad/routing.md` dokumentiert.
+
+## Verbindliche Referenzen
+
+Diese Dateien sind die operative Referenz für das aktuelle Modell.
+
+- `.squad/team.md`: kanonische Teamliste, Rollennamen und aktueller Projektkontext
+- `.squad/routing.md`: Gate-Regeln, Routing-Tabelle, Labels, Lifecycle und Eskalationspfad
+- `.github/agents/squad.agent.md`: Koordinator-Anweisungen für das Verhalten von Squad in einer Session
+- `.squad/agents/<name>/charter.md`: detaillierte Rollenbeschreibung pro Rolle
+- `.squad/decisions.md`: belastbares Protokoll wichtiger Entscheidungen
+- `.squad/ceremonies.md`: wiederkehrende Koordinationsmuster, wenn das Team explizite Review-Schleifen braucht
+- `.github/workflows/squad-triage.yml`: reagiert auf das Label `squad` und ergänzt initiales Routing
+- `.github/workflows/squad-issue-assign.yml`: reagiert auf `squad:*`-Labels und veröffentlicht Zuweisungshinweise
+- `.github/workflows/squad-heartbeat.yml`: Workflow für operative Kontinuität des Squad-Systems
+- `.github/workflows/sync-squad-labels.yml`: hält Repository-Labels mit dem Team-Setup synchron
+- `.github/ISSUE_TEMPLATE/`: Eingabevorlagen für Bug-, Feature-, Content- und Dokumentationsarbeit
+- `docs/40-arch-architecture-decisions.md`: breiterer Architekturkontext, wenn eine Aufgabe von Systementscheidungen abhängt
+
+Wenn du nur zwei Dateien liest, um den Prozess zu verstehen, dann zuerst `.squad/team.md` und
+`.squad/routing.md`.
+
+## Typischer Aufgabenfluss
+
+Eine normale Squad-Aufgabe bewegt sich in diesem Repository so durch den Prozess.
+
+### 1. Eingang
+
+Eine Nutzeranfrage wird einem bestehenden GitHub-Issue zugeordnet oder über das passende Template in
+`.github/ISSUE_TEMPLATE/` in eines überführt. Squad-Arbeit sollte von einem Issue ausgehen, nicht nur
+von einer freien Anfrage.
+
+### 2. Triage und Routing
+
+Das Issue erhält das Label `squad`. GitHub-seitige Automatisierung und die Routing-Regeln grenzen
+anschließend die wahrscheinliche Zuständigkeit ein. Eine Doku-Anfrage landet typischerweise bei
+Maria, eine UI-Anfrage bei Natasha, ein Workflow- oder Deployment-Thema bei Nick und testlastige
+Nacharbeit bei Clint.
+
+### 3. Gate-Check
+
+Vor jedem Edit prüft die Session die erlaubten Statuswerte, das Label `squad`, Tonys Freigabe, die
+Bestätigung des Nutzers und den Marker `.frickeldave-active-issue`. Das ist der harte Stopp zwischen
+Triage und Implementierung.
+
+### 4. Implementierung
+
+Die zuständige Fachrolle setzt den kleinsten in Scope liegenden Änderungssatz um, der für das aktive
+Issue nötig ist. Wenn sich die Arbeit über mehrere Domänen ausweitet, zieht Squad die zusätzliche
+Fachrolle hinzu und eskaliert an Tony, sobald Scope oder Ownership unklar werden.
+
+### 5. Validierung
+
+Die Validierung sollte so schmal und relevant wie möglich ausfallen: Tests für Verhalten, Linting
+für Codequalität, Prosa-Checks für Dokumentation oder Workflow-Review für Automatisierung. Routing
+ersetzt keine Verifikation.
+
+### 6. Protokollierung und Abschluss
+
+Das Ergebnis wird bei Bedarf in die operativen Unterlagen des Repos zurückgeschrieben: als
+Issue-Update, in `.squad/decisions.md` und über Session-Logging durch Scribe, wenn die Arbeit eine
+belastbare Entscheidung oder nützlichen Kontext für die nächste Session erzeugt hat.
+
+## Hinweise für Maintainer
+
+Wenn sich der Workflow ändert, aktualisiere die Prozessdokumentation als zusammengehörenden Satz und
+nicht Datei für Datei isoliert.
+
+Wenn sich die Teambesetzung ändert, aktualisiere `.squad/team.md`, das passende Charter unter
+`.squad/agents/` und alle betroffenen Routing-Regeln in `.squad/routing.md`.
+
+Wenn sich das Issue-Gate ändert, aktualisiere zuerst `.squad/routing.md` und prüfe danach, ob das
+Verhalten in `.github/agents/squad.agent.md` und `.github/workflows/` noch zu den dokumentierten
+Regeln passt.
+
+Wenn sich das Label-Verhalten ändert, prüfe `.github/workflows/squad-triage.yml`,
+`.github/workflows/squad-issue-assign.yml` und `.github/workflows/sync-squad-labels.yml` gemeinsam.
+Diese Dateien setzen die praktische Seite des Routing-Modells um.
+
+Wenn du änderst, wie Maintainer Squad verwenden sollen, aktualisiere dieses Dokument zuletzt, damit
+es eine präzise Übersicht des Live-Prozesses bleibt und keine spekulative Design-Notiz wird.
+
+Eine kurze historische Notiz: Ältere Entwürfe können strengere oder anders benannte Zuständigkeits-Ebenen
+beschreiben. Die aktuelle verbindliche Referenz dieses Repositories ist jedoch die oben aufgeführte aktive
+Konfiguration unter `.squad/` und `.github/`.
+
+### Wenn sich Routing oder Gate ändern
+
+Aktualisieren:
+
+- zuerst `.squad/routing.md`, weil dort der primäre Verhaltensvertrag definiert ist
+- `.github/workflows/squad-triage.yml`, wenn sich Label- oder Routing-Logik geändert hat
+- `.github/workflows/squad-issue-assign.yml`, wenn sich das Zuweisungsverhalten geändert hat
+- die Issue-Templates in `.github/ISSUE_TEMPLATE/`, wenn sich die Erwartungen an den Eingang geändert haben
+
+Halte die Anforderungen an das aktive Issue und die dokumentierte Status-Whitelist mit dem realen
+Verhalten synchron.
+
+### Wenn sich Prüfung oder Governance ändern
+
+Aktualisieren:
+
+- die relevante Agenten-Rollenbeschreibung
+- `.squad/ceremonies.md`, wenn sich ein Koordinations-Checkpoint geändert hat
+- `.squad/decisions.md`, wenn die Änderung eine belastbare Projektentscheidung ist
+- Dokumente in `docs/`, die den Prozess für Beitragende und Maintainer erklären
+
+### Regel für die Dokumentationspflege
+
+Behandle diese Seite als Übersicht, nicht als einzige verbindliche Referenz. Die operative Referenz
+liegt in den Squad-Dateien und Workflows. Wenn sich Prozessverhalten ändert, aktualisiere zuerst
+diese Dateien und frische dann dieses Dokument auf, damit es ein präziser Leitfaden für neue
+Mitwirkende bleibt.
+
+## Zusammenfassung
+
+Squad ist in diesem Repository ein repo-lokales Workflow-System für KI-gestützte Arbeit. Es verbindet
+benannte Rollen, GitHub-Issue-Routing, ein striktes Tony-Freigabe-Gate und einen einfachen
+Aktiv-Issue-Marker, damit Änderungen kontrolliert und prüfbar bleiben. Für Maintainer ist
+entscheidend, Team-, Routing-, Workflow- und Dokumentationsdateien gemeinsam zu aktualisieren, damit
+die beschriebene Dokumentation weiterhin dem Live-Prozess entspricht.

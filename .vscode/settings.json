@@ -18,7 +18,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one"
   },
   "[scss]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -35,6 +35,10 @@
   },
   "chat.tools.terminal.autoApprove": {
     "/^cd /home/appuser/frickeldave\\.github\\.io && git config user\\.name$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^git remote -v$/": {
       "approve": true,
       "matchCommandLine": true
     }

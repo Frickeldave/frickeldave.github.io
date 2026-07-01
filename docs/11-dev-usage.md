@@ -1,52 +1,66 @@
-# Usage
+# Nutzung
 
-This document describes how to use and interact with the frickeldave.de project once it's set up.
+Dieses Dokument beschreibt, wie das Projekt `frickeldave.de` nach der Einrichtung lokal genutzt
+und betrieben wird.
 
-- [Usage](#usage)
-  - [🧞 Commands (by Astro)](#-commands-by-astro)
-  - [🚀 Automated Deployment](#-automated-deployment)
-  - [🧾 See Also](#-see-also)
+## 🧞 Befehle (Astro)
 
-## 🧞 Commands (by Astro)
+Alle Befehle werden im Terminal aus dem Projektwurzelverzeichnis ausgefuehrt:
 
-All commands are run from the root of the project, from a terminal:
+| Befehl                  | Aktion                                                            |
+| :---------------------- | :---------------------------------------------------------------- |
+| `npm install`           | Installiert Abhaengigkeiten und fuehrt den `postinstall`-Hook aus |
+| `npm run dev`           | Startet den lokalen Entwicklungsserver unter `localhost:4321`     |
+| `npm run build`         | Baut die Produktionsversion der Website nach `./dist/`            |
+| `npm run format`        | Formatiert Dateien in `src/` mit Prettier                         |
+| `npm run format:check`  | Prueft die Formatierung in `src/`, ohne Dateien zu aendern        |
+| `npm run lint`          | Fuehrt ESLint auf `src/` mit Auto-Fix aus                         |
+| `npm run lint:check`    | Fuehrt ESLint auf `src/` ohne Auto-Fix aus                        |
+| `npm run prose-install` | Installiert die lokale Vale-Binaerdatei nach `.vale/`             |
+| `npm run prose`         | Fuehrt Vale gegen `src/content` aus                               |
+| `npx astro -- --help`   | Zeigt die Hilfe der Astro-CLI an                                  |
+| `npx astro add <pkg>`   | Fuegt eine Astro-Integration hinzu                                |
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run deploy:dev`      | Deploy changes to the development environment    |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-For more details on how the automated deployment works, see
+Weitere Details zum automatisierten Deployment stehen in
 [FR006: Automated Dev Deployment](./features/fr006-autodeploy.md).
 
-## 🚀 Automated Deployment
+## 🚀 Automatisches Deployment
 
-The `npm run deploy:dev` command initiates an automated workflow to deploy your changes to the `dev`
-branch.
+Dieses Repository verwendet nicht mehr `npm run deploy:dev` oder `npm run deploy:prd`.
 
-> **Important:** When passing arguments to the command, you MUST use a double dash `--` before the
-> arguments so that `npm` passes them correctly to the script.
+Der aktuelle Deployment-Ablauf ist branch-basiert:
 
-**Example with all parameters:**
+- Pushes auf `dev` starten [.github/workflows/deploy-dev.yml](../.github/workflows/deploy-dev.yml).
+- Pushes auf `main` starten [.github/workflows/deploy-prd.yml](../.github/workflows/deploy-prd.yml).
+- Die VS-Code-Task [Deploy to Main](../.vscode/tasks.json) merged `dev` lokal nach `main` und
+  pusht das Ergebnis.
+- Fuer einen interaktiven, GitHub-basierten Merge-Ablauf steht
+  [scripts/merge-branches.mjs](../scripts/merge-branches.mjs) zur Verfuegung.
+
+Typischer lokaler Ablauf:
 
 ```bash
-npm run deploy:dev -- --issue-id <id> --auto-cleanup --skip-devserver
+git checkout dev
+git push origin dev
+
+# nach der Verifikation
+git checkout main
+git pull origin main
+git merge dev --no-ff -m "Deploy dev to main"
+git push origin main
+git checkout dev
 ```
 
-For more details, consult the [feature documentation](./features/fr006-autodeploy.md).
+Weitere Details finden sich in der [Feature-Dokumentation](./features/fr006-autodeploy.md).
 
-## 🧾 See Also
+## 🧾 Siehe auch
 
-[Astro Documentation](https://docs.astro.build) - The official documentation for Astro. If there's
-an Astro topic you're confused about, you can probably find a consise and clear explanation here.
+[Astro Documentation](https://docs.astro.build) - Die offizielle Dokumentation zu Astro. Wenn bei
+einem Astro-Thema Unklarheiten bestehen, findet sich dort in der Regel eine praezise Erklaerung.
 
-The
-[customization guideline from astrogon](https://github.com/astrogon/astrogon/blob/main/docs/customization.md)
-describes how to customize the theme.
+Die
+[Customizing-Anleitung von astrogon](https://github.com/astrogon/astrogon/blob/main/docs/customization.md)
+beschreibt, wie das Theme angepasst werden kann.
 
-See [Teckstack](https://github.com/astrogon/astrogon/blob/main/docs/tech-stack.md) for more details.
+Weitere Details zum zugrunde liegenden Stack bietet
+[Tech Stack](https://github.com/astrogon/astrogon/blob/main/docs/tech-stack.md).

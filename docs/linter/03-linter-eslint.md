@@ -8,15 +8,6 @@ Bugs und stilistische Inkonsistenzen in Ihrem Code identifiziert.
 - **Best Practices**: Warnt vor anti-patterns und schlägt bessere Alternativen vor
 - **Framework-Support**: Spezielle Regeln für React, Astro, Node.js etc.
 
-- [ESLint Installation \& Konfiguration](#eslint-installation--konfiguration)
-  - [ESLint Dependencies installieren](#eslint-dependencies-installieren)
-  - [ESLint-Konfiguration erstellen](#eslint-konfiguration-erstellen)
-  - [Lint-Script in package.json hinzufügen](#lint-script-in-packagejson-hinzufügen)
-  - [ESLint-Ignore-Datei erstellen](#eslint-ignore-datei-erstellen)
-  - [Hook erweitern für ESLint](#hook-erweitern-für-eslint)
-  - [Testen der ESLint Integration](#testen-der-eslint-integration)
-  - [Hinweise für ESLint](#hinweise-für-eslint)
-
 
 ```javascript
 // ❌ ESLint würde warnen:

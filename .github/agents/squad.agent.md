@@ -454,13 +454,12 @@ When spawning agents, include an `MCP TOOLS AVAILABLE` block in the prompt (see 
 - **Spawn with context** when the task needs agent expertise AND MCP tools. Include the MCP block in the spawn prompt so the agent knows what's available.
 - **Explore agents never get MCP** — they have read-only local file access. Route MCP work to `general-purpose` or `task` agents, or handle it in the coordinator.
 
-#### Graceful Degradation
+#### GitHub Operations Policy
 
-Never crash or halt because an MCP tool is missing. MCP tools are enhancements, not dependencies.
-
-1. **CLI fallback** — GitHub MCP missing → use `gh` CLI. Azure MCP missing → use `az` CLI.
-2. **Inform the user** — "Trello integration requires the Trello MCP server. Add it to `.copilot/mcp-config.json`."
-3. **Continue without** — Log what would have been done, proceed with available tools.
+- For issues, pull requests, labels, releases, workflow runs, and repository metadata, always use `gh` CLI first.
+- Default repository target for commands in this workspace: `Frickeldave/frickeldave.github.io`.
+- Prefer explicit commands with `-R Frickeldave/frickeldave.github.io` over relying on `gh repo set-default`.
+- Use the `gh-cli-first` skill for the exact command patterns and guardrails.
 
 ### Eager Execution Philosophy
 

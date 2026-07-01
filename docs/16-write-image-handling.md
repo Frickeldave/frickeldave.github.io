@@ -5,17 +5,6 @@ und mit Quellenangaben versehen werden.
 
 ## Inhaltsverzeichnis
 
-- [Bild-Handling](#bild-handling)
-  - [Wo Bilder liegen](#wo-bilder-liegen)
-  - [`src/assets/` vs. `public/`](#srcassets-vs-public)
-  - [Bilder referenzieren](#bilder-referenzieren)
-    - [Aus Markdown/MDX (`@assets/...`)](#aus-markdownmdx-assets)
-    - [Aus Astro-Komponenten](#aus-astro-komponenten)
-  - [Formate & Größen](#formate--größen)
-  - [Alt-Text (`imageAlt`)](#alt-text-imagealt)
-  - [Bildnachweis](#bildnachweis)
-  - [Konventionen für die Ordnerstruktur](#konventionen-für-die-ordnerstruktur)
-
 ## Wo Bilder liegen
 
 | Pfad                       | Zweck                                                                                  |
@@ -89,7 +78,7 @@ Das deutsche Urheberrechtsgesetz (UrhG) verlangt eine Attribution für Fremdbild
   Impressum-/Rechtsbereich). Mit Quelle, Urheber, Lizenz-Link.
 - KI-generierte Bilder: als solche kennzeichnen ("Bild generiert mit …") in der Bildunterschrift.
 
-Siehe den [Skill `compliancechecker`](../.github/skills/compliancechecker/SKILL.md) für die
+Siehe den [Skill `compliancechecker`](../.github/archive/skills/compliancechecker/SKILL.md) für die
 vollständige Audit-Checkliste.
 
 ## Konventionen für die Ordnerstruktur

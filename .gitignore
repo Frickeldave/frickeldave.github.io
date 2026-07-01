@@ -84,3 +84,5 @@ pagefind-output.txt
 .squad/.cache/
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
+# Active issue marker (local to this machine)
+.frickeldave-active-issue

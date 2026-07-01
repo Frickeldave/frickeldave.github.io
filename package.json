@@ -20,9 +20,7 @@
     "lint": "eslint ./src --fix",
     "lint:check": "eslint ./src",
     "prose-install": "node scripts/prose-install.mjs",
-    "prose": "node scripts/prose-check.mjs",
-    "deploy:dev": "node scripts/workflows/ci/deploy.mjs dev",
-    "deploy:prd": "node scripts/workflows/ci/deploy.mjs prd"
+    "prose": "node scripts/prose-check.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.0",

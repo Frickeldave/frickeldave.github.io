@@ -18,10 +18,10 @@ This gate is mandatory for all content and code work.
 	- Status whitelist match
 	- Explicit Tony approval for the exact issue
 	- Explicit user confirmation of the issue
-	- Activation via `.supplierpulse-active-issue`
+	- Activation via `.frickeldave-active-issue`
 - If issue status or Tony approval is missing, stop immediately with no code changes.
 
-Required `.supplierpulse-active-issue` YAML format:
+Required `.frickeldave-active-issue` YAML format:
 
 ```yaml
 issue: 123
@@ -56,58 +56,58 @@ Scope limitation:
 
 ## Directory Exclusions
 
-| Path | Policy | Enforcement |
-|------|--------|-------------|
-| `no_sync/` | Ignore all changes | Never read for decisions and never modify |
-| `docs/kadi-v2-derived-requirements/` | Read-only | Explicit approval required before using as source of truth |
-| `docs/team/` | Read-only context | Extracted decisions must be written to `.squad/decisions.md` |
+| Path                                 | Policy             | Enforcement                                                  |
+| ------------------------------------ | ------------------ | ------------------------------------------------------------ |
+| `no_sync/`                           | Ignore all changes | Never read for decisions and never modify                    |
+| `docs/kadi-v2-derived-requirements/` | Read-only          | Explicit approval required before using as source of truth   |
+| `docs/team/`                         | Read-only context  | Extracted decisions must be written to `.squad/decisions.md` |
 
 ## Domain Routing Table
 
-| Domain | Primary | Secondary | Reviewer |
-|--------|---------|-----------|----------|
-| Requirements, scope, priorities | Tony | Maria | Tony |
-| Astro UI and Tailwind | Natasha | Bruce | Tony |
-| Services, scripts, integrations | Bruce | Nick | Tony |
-| Testing and QA | Clint | Bruce | Tony |
-| Technical documentation | Maria | Natasha | Tony |
-| DevOps and infrastructure | Nick | Bruce | Tony |
-| Legal compliance and editorial governance | Jennifer | Maria | Tony |
-| RAI and safety review | Rai | Jennifer | Tony |
-| Session logging | Scribe | Tony | Tony |
+| Domain                                    | Primary  | Secondary | Reviewer |
+| ----------------------------------------- | -------- | --------- | -------- |
+| Requirements, scope, priorities           | Tony     | Maria     | Tony     |
+| Astro UI and Tailwind                     | Natasha  | Bruce     | Tony     |
+| Services, scripts, integrations           | Bruce    | Nick      | Tony     |
+| Testing and QA                            | Clint    | Bruce     | Tony     |
+| Technical documentation                   | Maria    | Natasha   | Tony     |
+| DevOps and infrastructure                 | Nick     | Bruce     | Tony     |
+| Legal compliance and editorial governance | Jennifer | Maria     | Tony     |
+| RAI and safety review                     | Rai      | Jennifer  | Tony     |
+| Session logging                           | Scribe   | Tony      | Tony     |
 
 ## Work Type Routing
 
 Explicit Tony approval gate applies to every work type.
 
-| Work Type | Route To | Tony Approval Gate | Examples |
-|-----------|----------|--------------------|----------|
-| Requirements, scope, ticket quality | Tony | Required before file changes | Clarify acceptance criteria, define scope boundaries |
-| Astro components, UI, Tailwind | Natasha | Required before file changes | Update `src/components/**`, adjust `src/pages/**`, align design system |
-| Services, scripts, integrations | Bruce | Required before file changes | Update `src/lib/**`, `scripts/**`, integration flows |
-| Testing and QA | Clint | Required before test or fixture file changes | Regression checks, edge-case tests, release readiness |
-| Technical documentation | Maria | Required before content file changes | Maintain `docs/**`, improve technical guides |
-| DevOps and infrastructure | Nick | Required before workflow/config changes | CI/CD, deployment, monitoring, release hardening |
-| Legal compliance and editorial governance | Jennifer | Required before policy/content changes | Privacy checks, editorial structure, legal risk checks |
-| Code review and final gatekeeping | Tony | Tony is final approver | Review PR quality and scope adherence |
-| RAI review | Rai | Required before safety-sensitive changes | Safety, bias, credential exposure review |
+| Work Type                                 | Route To | Tony Approval Gate                           | Examples                                                               |
+| ----------------------------------------- | -------- | -------------------------------------------- | ---------------------------------------------------------------------- |
+| Requirements, scope, ticket quality       | Tony     | Required before file changes                 | Clarify acceptance criteria, define scope boundaries                   |
+| Astro components, UI, Tailwind            | Natasha  | Required before file changes                 | Update `src/components/**`, adjust `src/pages/**`, align design system |
+| Services, scripts, integrations           | Bruce    | Required before file changes                 | Update `src/lib/**`, `scripts/**`, integration flows                   |
+| Testing and QA                            | Clint    | Required before test or fixture file changes | Regression checks, edge-case tests, release readiness                  |
+| Technical documentation                   | Maria    | Required before content file changes         | Maintain `docs/**`, improve technical guides                           |
+| DevOps and infrastructure                 | Nick     | Required before workflow/config changes      | CI/CD, deployment, monitoring, release hardening                       |
+| Legal compliance and editorial governance | Jennifer | Required before policy/content changes       | Privacy checks, editorial structure, legal risk checks                 |
+| Code review and final gatekeeping         | Tony     | Tony is final approver                       | Review PR quality and scope adherence                                  |
+| RAI review                                | Rai      | Required before safety-sensitive changes     | Safety, bias, credential exposure review                               |
 
 ## Issue Routing and Triage Labels
 
 Hard rule: issues without label `squad` are out of scope for Squad and must not be processed.
 
-| Label | Meaning | Owner |
-|-------|---------|-------|
-| `squad` | Intake queue, needs triage | Tony |
-| `squad:tony` | Routed to Tony | Tony |
-| `squad:natasha` | Routed to Natasha | Natasha |
-| `squad:bruce` | Routed to Bruce | Bruce |
-| `squad:clint` | Routed to Clint | Clint |
-| `squad:maria` | Routed to Maria | Maria |
-| `squad:nick` | Routed to Nick | Nick |
-| `squad:jennifer` | Routed to Jennifer | Jennifer |
-| `squad:rai` | Routed to Rai | Rai |
-| `squad:scribe` | Routed to Scribe | Scribe |
+| Label            | Meaning                    | Owner    |
+| ---------------- | -------------------------- | -------- |
+| `squad`          | Intake queue, needs triage | Tony     |
+| `squad:tony`     | Routed to Tony             | Tony     |
+| `squad:natasha`  | Routed to Natasha          | Natasha  |
+| `squad:bruce`    | Routed to Bruce            | Bruce    |
+| `squad:clint`    | Routed to Clint            | Clint    |
+| `squad:maria`    | Routed to Maria            | Maria    |
+| `squad:nick`     | Routed to Nick             | Nick     |
+| `squad:jennifer` | Routed to Jennifer         | Jennifer |
+| `squad:rai`      | Routed to Rai              | Rai      |
+| `squad:scribe`   | Routed to Scribe           | Scribe   |
 
 ## Issue Lifecycle
 
@@ -115,7 +115,7 @@ Hard rule: issues without label `squad` are out of scope for Squad and must not 
 2. Triage: Tony validates scope, status, and routing label.
 3. Gate: confirm status is `Ready to implement` or `In progress`.
 4. Approval: Tony approves exact issue and timestamp is recorded.
-5. Activation: create/update `.supplierpulse-active-issue`.
+5. Activation: create/update `.frickeldave-active-issue`.
 6. Execution: only approved, in-scope files are changed.
 7. Review: reviewer validates requirements and safety/compliance.
 8. Closeout: update issue, remove or refresh active-issue marker for next task.

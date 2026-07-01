@@ -1,30 +1,31 @@
-# Commit Message Guidelines
+# Richtlinien fuer Commit-Messages
 
-This document describes the convention for commit messages in the Frickeldave repository. Following
-these guidelines ensures a clear history and enables automation.
+Dieses Dokument beschreibt die Konvention fuer Commit-Messages im Repository von Frickeldave. Die
+Einhaltung dieser Regeln sorgt fuer eine klare Historie und unterstuetzt die vorhandene
+Automatisierung.
 
-## Table of Contents
+## Inhaltsverzeichnis
 
-- [Commit Message Guidelines](#commit-message-guidelines)
+- [Richtlinien fuer Commit-Messages](#richtlinien-fuer-commit-messages)
   - [Conventional Commits](#conventional-commits)
-    - [Commit Message Format](#commit-message-format)
-    - [Types](#types)
-    - [Examples](#examples)
-    - [Automatic Validation](#automatic-validation)
-    - [Scope (Optional)](#scope-optional)
-  - [Help and Support](#help-and-support)
+    - [Format von Commit-Messages](#format-von-commit-messages)
+    - [Typen](#typen)
+    - [Beispiele](#beispiele)
+    - [Automatische Validierung](#automatische-validierung)
+    - [Scope (optional)](#scope-optional)
+  - [Hilfe und Support](#hilfe-und-support)
 
 ## Conventional Commits
 
-This project enforces the **Conventional Commits** format for all commit messages using commitlint.
-This standardization ensures:
+Dieses Projekt erzwingt fuer alle Commit-Messages das Format **Conventional Commits** mit
+`commitlint`. Diese Standardisierung sorgt fuer:
 
-- Clear commit history
-- Automatic changelog generation
-- Clear communication of changes
-- Better integration with CI/CD tools
+- eine klare Commit-Historie
+- die Grundlage fuer automatische Changelog-Generierung
+- eindeutige Kommunikation von Aenderungen
+- bessere Integration in CI/CD-Werkzeuge
 
-### Commit Message Format
+### Format von Commit-Messages
 
 ```
 <type>(<optional-scope>): <subject>
@@ -34,23 +35,23 @@ This standardization ensures:
 <optional-footer>
 ```
 
-### Types
+### Typen
 
-| Type         | Purpose                                         | Example                                      |
-| ------------ | ----------------------------------------------- | -------------------------------------------- |
-| **feat**     | A new feature                                   | `feat(sidebar): add dark mode toggle`        |
-| **fix**      | A bug fix                                       | `fix(pagination): correct page calculation`  |
-| **docs**     | Documentation changes                           | `docs: update installation guide`            |
-| **style**    | Code style (formatting, semicolons, whitespace) | `style: format code with Prettier`           |
-| **refactor** | Code restructuring                              | `refactor(utils): simplify helper functions` |
-| **perf**     | Performance improvements                        | `perf: optimize image loading`               |
-| **test**     | Adding/updating tests                           | `test: add unit tests for auth`              |
-| **ci**       | CI/CD configuration changes                     | `ci: update GitHub Actions workflow`         |
-| **chore**    | Maintenance, dependencies                       | `chore: update dependencies`                 |
+| Typ          | Zweck                                          | Beispiel                                     |
+| ------------ | ---------------------------------------------- | -------------------------------------------- |
+| **feat**     | Neues Feature                                  | `feat(sidebar): add dark mode toggle`        |
+| **fix**      | Fehlerbehebung                                 | `fix(pagination): correct page calculation`  |
+| **docs**     | Dokumentationsaenderungen                      | `docs: update installation guide`            |
+| **style**    | Code-Stil (Formatierung, Semikolons, Leerraum) | `style: format code with Prettier`           |
+| **refactor** | Umstrukturierung von Code                      | `refactor(utils): simplify helper functions` |
+| **perf**     | Performance-Verbesserungen                     | `perf: optimize image loading`               |
+| **test**     | Tests hinzufuegen oder aktualisieren           | `test: add unit tests for auth`              |
+| **ci**       | Aenderungen an der CI/CD-Konfiguration         | `ci: update GitHub Actions workflow`         |
+| **chore**    | Wartung, Abhaengigkeiten                       | `chore: update dependencies`                 |
 
-### Examples
+### Beispiele
 
-✅ **Valid Commit Messages**
+✅ **Gueltige Commit-Messages**
 
 ```bash
 feat: add new authentication system
@@ -63,7 +64,7 @@ fix(sidebar): resolve scrolling issue on mobile
 refactor(api): simplify request handling
 ```
 
-❌ **Invalid Commit Messages** (will be rejected)
+❌ **Ungueltige Commit-Messages** (werden abgewiesen)
 
 ```bash
 added new feature              # Missing type
@@ -73,23 +74,23 @@ asdfgh                         # No valid format
 WIP on something               # Not conventional commits
 ```
 
-### Automatic Validation
+### Automatische Validierung
 
-Our Git workflow includes automatic validation through **commitlint**:
+Der Git-Workflow enthaelt eine automatische Validierung mit **commitlint**:
 
-- **Hook**: Runs on every commit as a Git pre-commit hook
-- **Action**: Blocks commits that don't follow the format
-- **Error Message**: Provides clear guidance on the correct format
+- **Hook**: Laeuft beim Commit ueber den `commit-msg`-Hook
+- **Aktion**: Blockiert Commits, die das Format nicht einhalten
+- **Fehlermeldung**: Liefert konkrete Hinweise zum korrekten Format
 
-If a commit is rejected:
+Wenn ein Commit abgewiesen wird:
 
-1. Read the error message
-2. Fix your commit message: `git commit --amend -m "correct: message"`
-3. Try again
+1. Lies die Fehlermeldung.
+2. Korrigiere die Commit-Message: `git commit --amend -m "correct: message"`
+3. Fuehre den Commit erneut aus.
 
-### Scope (Optional)
+### Scope (optional)
 
-The scope indicates what part of the project was modified:
+Der Scope zeigt an, welcher Bereich des Projekts geaendert wurde:
 
 ```bash
 feat(sidebar): add navigation items       # Modify sidebar component
@@ -98,12 +99,12 @@ docs(config): update setup instructions   # Configuration docs
 ci(deploy): improve workflow              # Deployment workflow
 ```
 
-## Help and Support
+## Hilfe und Support
 
-If you have questions or problems regarding commit messages:
+Wenn es Fragen oder Probleme zu Commit-Messages gibt:
 
-1. **Check documentation**: Read the existing guides.
-2. **GitHub Discussions**: Ask questions in the community.
-3. **Create issue**: Report problems directly in the repository.
+1. **Dokumentation pruefen**: Lies die vorhandenen Anleitungen.
+2. **GitHub Discussions**: Stelle Fragen in der Community.
+3. **Issue erstellen**: Melde Probleme direkt im Repository.
 
-Thank you for your contribution to the Frickeldave project!
+Danke fuer deinen Beitrag zum Frickeldave-Projekt.

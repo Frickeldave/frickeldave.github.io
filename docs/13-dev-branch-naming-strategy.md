@@ -1,89 +1,94 @@
-# Branching and Naming Strategy
+# Branching- und Naming-Strategie
 
-This document defines the branching strategy and standardized naming conventions for the Frickeldave
-repository. Following these practices ensures consistency and enables automated CI/CD deployments.
+Dieses Dokument beschreibt die Branching-Strategie und die standardisierten Namenskonventionen fuer
+das Frickeldave-Repository. Die Einhaltung dieser Regeln sorgt fuer Konsistenz und passt zum
+automatisierten CI/CD- und Deployment-Ablauf.
 
-## Table of Contents
+## Inhaltsverzeichnis
 
-- [Branching and Naming Strategy](#branching-and-naming-strategy)
-  - [Introduction](#introduction)
-    - [Core Principles](#core-principles)
-  - [Branch Types](#branch-types)
-    - [Main Branches](#main-branches)
-    - [Supporting Branches](#supporting-branches)
-  - [Naming Convention](#naming-convention)
+- [Branching- und Naming-Strategie](#branching--und-naming-strategie)
+  - [Inhaltsverzeichnis](#inhaltsverzeichnis)
+  - [Einleitung](#einleitung)
+    - [Grundprinzipien](#grundprinzipien)
+  - [Branch-Typen](#branch-typen)
+    - [Haupt-Branches](#haupt-branches)
+    - [Unterstuetzende Branches](#unterstuetzende-branches)
+  - [Namenskonvention](#namenskonvention)
     - [Format](#format)
-    - [Best Practices](#best-practices)
-  - [Contribution Workflow](#contribution-workflow)
-    - [1. Preparation](#1-preparation)
-    - [2. Create Feature Branch](#2-create-feature-branch)
-    - [3. Make Changes and Commit](#3-make-changes-and-commit)
-    - [4. Merge and Deploy](#4-merge-and-deploy)
-  - [Common Use Cases](#common-use-cases)
-  - [Help and Support](#help-and-support)
+    - [Empfehlungen](#empfehlungen)
+  - [Beitrags-Workflow](#beitrags-workflow)
+    - [1. Vorbereitung](#1-vorbereitung)
+    - [2. Feature-Branch anlegen](#2-feature-branch-anlegen)
+    - [3. Aenderungen vornehmen und committen](#3-aenderungen-vornehmen-und-committen)
+    - [4. Mergen und deployen](#4-mergen-und-deployen)
+  - [Typische Anwendungsfaelle](#typische-anwendungsfaelle)
+    - [Neue Inhalte hinzufuegen](#neue-inhalte-hinzufuegen)
+    - [Fehler beheben](#fehler-beheben)
+  - [Hilfe und Support](#hilfe-und-support)
 
-## Introduction
+## Einleitung
 
-The Frickeldave repository uses a structured branching strategy to maintain a clean history and
-ensure that only verified changes reach production.
+Das Frickeldave-Repository verwendet eine strukturierte Branching-Strategie, um eine saubere
+Historie zu bewahren und sicherzustellen, dass nur gepruefte Aenderungen in die Produktion gelangen.
 
-### Core Principles
+### Grundprinzipien
 
-1. **Work in branches** to keep `main` and `dev` clean.
-2. **Local merges** instead of Pull Requests for a faster solo workflow.
-3. **Automated checks** still run on push to ensure quality.
-4. **Descriptive naming** for all supporting branches.
+1. **In Branches arbeiten**, damit `main` und `dev` sauber bleiben.
+2. **Lokale Merges** statt Pull Requests fuer einen schnellen Solo-Workflow.
+3. **Automatisierte Pruefungen** laufen weiterhin bei Pushes, um die Qualitaet zu sichern.
+4. **Beschreibende Namen** fuer alle unterstuetzenden Branches.
 
-## Branch Types
+## Branch-Typen
 
-### Main Branches
+### Haupt-Branches
 
-- **`main`**: Contains the stable and published version of the content.
-- **`dev`**: Serves as an integration branch for new features and changes.
+- **`main`**: Enthaelt die stabile und veroeffentlichte Version.
+- **`dev`**: Dient als Integrations-Branch fuer neue Features und Aenderungen.
 
-### Supporting Branches
+### Unterstuetzende Branches
 
-Supporting branches are used for developing features, fixing bugs, or updating documentation. They
-are merged into `dev` or `main` once completed.
+Unterstuetzende Branches werden fuer Feature-Entwicklung, Fehlerbehebungen oder
+Dokumentationsaenderungen verwendet. Nach Abschluss werden sie in `dev` oder direkt in den lokalen
+Arbeitsablauf zur Auslieferung integriert.
 
-| Type       | Purpose                         | Example                       |
-| ---------- | ------------------------------- | ----------------------------- |
-| `feat`     | New feature or functionality    | `feat/user-authentication`    |
-| `fix`      | Bug fix                         | `fix/sidebar-scrolling-issue` |
-| `docs`     | Documentation updates           | `docs/update-branching-guide` |
-| `style`    | Code style changes (formatting) | `style/format-components`     |
-| `refactor` | Code restructuring              | `refactor/simplify-utils`     |
-| `perf`     | Performance improvements        | `perf/optimize-images`        |
-| `test`     | Test additions/updates          | `test/add-component-tests`    |
-| `ci`       | CI/CD configuration             | `ci/github-actions-security`  |
-| `chore`    | Maintenance, dependencies       | `chore/update-dependencies`   |
+| Typ        | Zweck                            | Beispiel                      |
+| ---------- | -------------------------------- | ----------------------------- |
+| `feat`     | Neues Feature oder neue Funktion | `feat/user-authentication`    |
+| `fix`      | Fehlerbehebung                   | `fix/sidebar-scrolling-issue` |
+| `docs`     | Dokumentationsaenderungen        | `docs/update-branching-guide` |
+| `style`    | Stil-Aenderungen am Code         | `style/format-components`     |
+| `refactor` | Umstrukturierung von Code        | `refactor/simplify-utils`     |
+| `perf`     | Performance-Verbesserungen       | `perf/optimize-images`        |
+| `test`     | Tests ergaenzen oder anpassen    | `test/add-component-tests`    |
+| `ci`       | CI/CD-Konfiguration              | `ci/github-actions-security`  |
+| `chore`    | Wartung, Abhaengigkeiten         | `chore/update-dependencies`   |
 
-## Naming Convention
+## Namenskonvention
 
 ### Format
 
-All supporting branches MUST follow this format:
+Alle unterstuetzenden Branches MUESSEN diesem Format folgen:
 
 ```
 <type>/<optional-ticket-id>-<description>
 ```
 
-**Examples:**
+**Beispiele:**
 
 - `feat/dark-mode-support`
 - `fix/gh-456-button-alignment`
 - `docs/add-contribution-guide`
 
-### Best Practices
+### Empfehlungen
 
-1. **Use lowercase** letters only.
-2. **Use hyphens** to separate words (kebab-case).
-3. **Keep it short** (max 50 characters).
-4. **Be descriptive** about the branch's purpose.
-5. **Match commit type**: The branch type should correspond to the
-   [Conventional Commits](./11-commit-messages.md) type.
+1. **Nur Kleinbuchstaben** verwenden.
+2. **Bindestriche** zur Worttrennung nutzen (kebab-case).
+3. **Kurz halten** (maximal 50 Zeichen).
+4. **Beschreibend formulieren**, damit der Zweck des Branches klar ist.
+5. **Zum Commit-Typ passend benennen**: Der Branch-Typ sollte zu den
+   [Conventional Commits](./12-dev-messages.md) passen.
 
-## Contribution Workflow
+## Beitrags-Workflow
 
 ```mermaid
 graph TD
@@ -104,89 +109,95 @@ graph TD
     style ManualTrigger fill:#ffff99
 ```
 
-### 1. Preparation
+### 1. Vorbereitung
 
-1. **Clone the repository**:
+1. **Repository klonen**:
 
    ```bash
    git clone https://github.com/Frickeldave/frickeldave.github.io.git
    cd frickeldave.github.io
    ```
 
-2. **Add upstream remote**:
+2. **Optional einen `upstream`-Remote hinzufuegen**:
    ```bash
    git remote add upstream https://github.com/Frickeldave/frickeldave.github.io.git
    ```
 
-### 2. Create Feature Branch
+Wenn du direkt im Haupt-Repository arbeitest, ist dieser Schritt in der Regel nicht noetig.
 
-1. **Synchronize with the latest version**:
+### 2. Feature-Branch anlegen
+
+1. **Mit dem aktuellen Stand synchronisieren**:
 
    ```bash
    git checkout dev
-   git pull upstream dev
+   git pull origin dev
    ```
 
-2. **Create a new branch**:
+2. **Neuen Branch anlegen**:
    ```bash
    git checkout -b feat/new-feature
    ```
 
-### 3. Make Changes and Commit
+### 3. Aenderungen vornehmen und committen
 
-1. Make changes and add files:
+1. Aenderungen vornehmen und Dateien vormerken:
 
    ```bash
    git add .
    ```
 
-2. Write commit message (see [Commit Guidelines](./11-commit-messages.md)):
+2. Commit-Message schreiben (siehe [Commit-Richtlinien](./12-dev-messages.md)):
    ```bash
    git commit -m "feat: add new feature"
    ```
 
-### 4. Merge and Deploy
+### 4. Mergen und deployen
 
-1. **Merge into `dev`**:
+1. **In `dev` mergen**:
 
    ```bash
    git checkout dev
-   git merge feat/new-feature
+   git merge feat/new-feature --no-ff
    ```
 
-2. **Push to deploy to Dev**:
+2. **Push ausfuehren, um das Dev-Deployment zu starten**:
 
    ```bash
    git push origin dev
    ```
 
-3. **Verify and merge to `main`**:
+3. **Nach Verifikation nach `main` mergen**:
    ```bash
    git checkout main
+   git pull origin main
    git merge dev
    git push origin main
+   git checkout dev
    ```
 
-## Common Use Cases
+Alternativ kann dafuer die VS-Code-Task [Deploy to Main](../.vscode/tasks.json) verwendet werden.
 
-### Adding New Content
+## Typische Anwendungsfaelle
+
+### Neue Inhalte hinzufuegen
 
 1. `git checkout -b feat/new-content`
-2. Add content and commit.
-3. Merge into `dev`, then `main`.
+2. Inhalte hinzufuegen und committen.
+3. In `dev` mergen, pruefen und anschliessend nach `main` uebernehmen.
 
-### Fixing Bugs
+### Fehler beheben
 
 1. `git checkout -b fix/bug-description`
-2. Fix bug and commit.
-3. Merge and push.
+2. Fehler beheben und committen.
+3. Mergen und pushen.
 
-## Help and Support
+## Hilfe und Support
 
-If you have questions or problems:
+Wenn Fragen oder Probleme auftreten:
 
-1. **Check documentation**: Read the existing guides.
-2. **GitHub Discussions**: Ask questions in the community.
-3. **Create issue**: Report problems directly in the repository.
+1. **Dokumentation pruefen**: Lies die vorhandenen Anleitungen.
+2. **GitHub Discussions**: Stelle Fragen in der Community.
+3. **Issue erstellen**: Melde Probleme direkt im Repository.
 
-Thank you for your contribution to the Frickeldave project!
+Danke fuer deinen Beitrag zum Frickeldave-Projekt.

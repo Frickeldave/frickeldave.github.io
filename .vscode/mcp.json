@@ -1,14 +1,16 @@
 {
   "servers": {
-    "github": {
+    "squad_state": {
       "command": "npx",
       "args": [
         "-y",
-        "@anthropic/github-mcp-server"
+        "@bradygaster/squad-cli@0.10.0",
+        "state-mcp"
       ],
-      "env": {
-        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
-      }
+      "env": {},
+      "tools": [
+        "*"
+      ]
     }
   }
 }
