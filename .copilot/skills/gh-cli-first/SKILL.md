@@ -34,6 +34,8 @@ Use this skill whenever the task touches GitHub issues, pull requests, labels, r
 - Do not print tokens or auth headers.
 - Use `gh auth status` when authentication health matters.
 - If `gh` fails because no repo is set, fix the command with `-R` rather than switching to MCP.
+- For issue state transitions, prefer real status fields/project item status updates.
+- Do not create or use substitute labels such as `status:*` to represent workflow state.
 
 ## When To Mention MCP
 
