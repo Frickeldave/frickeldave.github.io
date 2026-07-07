@@ -1,32 +1,32 @@
-# Squad Team
+# Squad-Team
 
 > frickeldave.github.io
 
-## Coordinator
+## Koordinator
 
-| Name | Role | Notes |
+| Name | Rolle | Hinweise |
 |------|------|-------|
-| Squad | Coordinator | Routes work, enforces handoffs and reviewer gates. |
+| Squad | Koordinator | Routet Arbeit, erzwingt Übergaben und Reviewer-Gates. |
 
-## Members
+## Mitglieder
 
-| Name | Role | Charter | Status |
+| Name | Rolle | Charter | Status |
 |------|------|---------|--------|
-| Tony | Lead & Requirement Gatekeeper | `.squad/agents/tony/charter.md` | ✅ Active |
-| Bruce | Backend / Scripts / Komponents | `.squad/agents/bruce/charter.md` | ✅ Active |
-| Natasha | Frontend Developer / UI Specialist | `.squad/agents/natasha/charter.md` | ✅ Active |
-| Clint | Tester / QA Specialist | `.squad/agents/clint/charter.md` | ✅ Active |
-| Maria | Technical Writer / Documentation Specialist | `.squad/agents/maria/charter.md` | ✅ Active |
-| Nick | DevOps / Infrastructure Specialist | `.squad/agents/nick/charter.md` | ✅ Active |
-| Jennifer | Legal Compliance / Editorial Governance Specialist | `.squad/agents/jennifer/charter.md` | ✅ Active |
-| Scribe | Session Logger | `.squad/agents/scribe/charter.md` | 📋 Silent |
-| Ralph | Work Monitor | `.squad/agents/ralph/charter.md` | 🔄 Monitor |
-| Rai | RAI Reviewer | `.squad/agents/Rai/charter.md` | 🛡️ RAI |
+| Tony | Lead & Requirement Gatekeeper | `.squad/agents/tony/charter.md` | ✅ Aktiv |
+| Bruce | Backend / Scripts / Komponenten | `.squad/agents/bruce/charter.md` | ✅ Aktiv |
+| Natasha | Frontend-Entwickler / UI-Spezialist | `.squad/agents/natasha/charter.md` | ✅ Aktiv |
+| Clint | Tester / QA-Spezialist | `.squad/agents/clint/charter.md` | ✅ Aktiv |
+| Maria | Technische Redakteurin / Dokumentationsspezialistin | `.squad/agents/maria/charter.md` | ✅ Aktiv |
+| Nick | DevOps / Infrastructure-Spezialist | `.squad/agents/nick/charter.md` | ✅ Aktiv |
+| Jennifer | Rechtliche Compliance / Editorial Governance-Spezialistin | `.squad/agents/jennifer/charter.md` | ✅ Aktiv |
+| Scribe | Session-Logger | `.squad/agents/scribe/charter.md` | 📋 Stumm |
+| Ralph | Work-Monitor | `.squad/agents/ralph/charter.md` | 🔄 Monitor |
+| Rai | RAI-Reviewer | `.squad/agents/Rai/charter.md` | 🛡️ RAI |
 
-## Project Context
+## Projektkontext
 
-- **Project:** frickeldave.github.io
+- **Projekt:** frickeldave.github.io
 - **Owner:** David Koenig
 - **Stack:** Astro 7, TypeScript, Tailwind CSS 4, Cloudflare/GitHub Pages
-- **Description:** Personal website with blog, docs, handmade, recipes, and portfolio content.
-- **Created:** 2026-06-30
+- **Beschreibung:** Persönliche Website mit Blog, Docs, handmade, Recipes und Portfolio-Content.
+- **Erstellt:** 2026-06-30

@@ -1,14 +1,14 @@
-# Squad Decisions
+# Squad-Entscheidungen
 
-## Active Decisions
+## Aktive Entscheidungen
 
-- 2026-06-30: Squad roster recast to Marvel Cinematic Universe naming with persistent names (Stark, Peter, Banner, Romanoff, Strange).
-- 2026-06-30: Team roster rebuilt to first-name addressing for active agents (Tony, Bruce, Natasha, Clint, Maria, Nick, Jennifer).
-- 2026-06-30: Archived `.github/archive` agent setup is rewritten into `.squad/agents/*/charter.md` and `.squad/skills/*/SKILL.md` instead of copied verbatim.
-- 2026-06-30: Requirement gatekeeping remains active through Lead (Tony) workflow and dedicated skill guidance.
+- 2026-06-30: Squad-Roster neu zusammengestellt mit Marvel Cinematic Universe-Namensgebung und persistenten Namen (Stark, Peter, Banner, Romanoff, Strange).
+- 2026-06-30: Team-Roster auf Anrede mit Vornamen für aktive Agenten umgestellt (Tony, Bruce, Natasha, Clint, Maria, Nick, Jennifer).
+- 2026-06-30: Altes `.github/archive` Agent-Setup wird in `.squad/agents/*/charter.md` und `.squad/skills/*/SKILL.md` umgeschrieben statt wortwörtlich kopiert.
+- 2026-06-30: Anforderungs-Gatekeeping bleibt aktiv durch Lead (Tony)-Workflow und dedizierte Skill-Führung.
 
 ## Governance
 
-- All meaningful changes require team consensus
-- Document architectural decisions here
-- Keep history focused on work, decisions focused on direction
+- Alle bedeutenden Änderungen erfordern Teamkonsens
+- Architektonische Entscheidungen hier dokumentieren
+- History auf Arbeit fokussieren, Entscheidungen auf Richtung fokussieren

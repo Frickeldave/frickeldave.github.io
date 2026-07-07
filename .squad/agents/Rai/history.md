@@ -1,16 +1,16 @@
-# Project Context
+# Projektkontext
 
-- **Project:** frickeldave.github.io
-- **Created:** 2026-06-30
+- **Projekt:** frickeldave.github.io
+- **Erstellt:** 2026-06-30
 
-## Core Context
+## Kernkontext
 
-Agent Rai initialized and ready for work.
+Agent Rai initialisiert und bereit für Arbeit.
 
-## Recent Updates
+## Aktuelle Updates
 
-📌 Team initialized on 2026-06-30
+📌 Team initialisiert am 2026-06-30
 
-## Learnings
+## Erkenntnisse
 
-Initial setup complete.
+Ersteinrichtung abgeschlossen.

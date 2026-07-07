@@ -1,69 +1,68 @@
-# Ceremonies
+# Zeremonien
 
-> Team meetings that happen before or after work. Each squad configures their own.
+> Teambesprechungen, die vor oder nach der Arbeit stattfinden. Jedes Squad konfiguriert seine eigenen.
 
-## Design Review
+## Design-Review
 
-| Field | Value |
+| Feld | Wert |
 |-------|-------|
-| **Trigger** | auto |
-| **When** | before |
-| **Condition** | multi-agent task involving 2+ agents modifying shared systems |
-| **Facilitator** | lead |
-| **Participants** | all-relevant |
-| **Time budget** | focused |
-| **Enabled** | ✅ yes |
+| **Auslöser** | auto |
+| **Wann** | vorher |
+| **Bedingung** | Multi-Agent-Aufgabe mit 2+ Agenten, die geteilte Systeme ändern |
+| **Moderator** | lead |
+| **Teilnehmer** | alle-betroffenen |
+| **Zeitbudget** | fokussiert |
+| **Aktiviert** | ✅ ja |
 
 **Agenda:**
-1. Review the task and requirements
-2. Agree on interfaces and contracts between components
-3. Identify risks and edge cases
-4. Assign action items
+1. Aufgabe und Anforderungen überprüfen
+2. Schnittstellen und Verträge zwischen Komponenten vereinbaren
+3. Risiken und Randfälle identifizieren
+4. Action Items zuweisen
 
 ---
 
-## Retrospective
+## Retrospektive
 
-| Field | Value |
+| Feld | Wert |
 |-------|-------|
-| **Trigger** | auto |
-| **When** | after |
-| **Condition** | build failure, test failure, or reviewer rejection |
-| **Facilitator** | lead |
-| **Participants** | all-involved |
-| **Time budget** | focused |
-| **Enabled** | ✅ yes |
+| **Auslöser** | auto |
+| **Wann** | nachher |
+| **Bedingung** | Build-Fehler, Test-Fehler oder Reviewer-Ablehnung |
+| **Moderator** | lead |
+| **Teilnehmer** | alle-beteiligten |
+| **Zeitbudget** | fokussiert |
+| **Aktiviert** | ✅ ja |
 
 **Agenda:**
-1. What happened? (facts only)
-2. Root cause analysis
-3. What should change?
-4. Action items for next iteration
-
+1. Was ist passiert? (nur Fakten)
+2. Ursachenanalyse
+3. Was sollte sich ändern?
+4. Action Items für nächste Iteration
 
 ---
 
-## Retrospective with Enforcement
+## Retrospektive mit Durchsetzung
 
-| Field | Value |
+| Feld | Wert |
 |-------|-------|
-| **Trigger** | auto |
-| **When** | weekly |
-| **Condition** | No *retrospective* log in .squad/log/ within the last 7 days |
-| **Facilitator** | lead |
-| **Participants** | all |
-| **Time budget** | focused |
-| **Enabled** | yes |
-| **Enforcement skill** | retro-enforcement |
+| **Auslöser** | auto |
+| **Wann** | wöchentlich |
+| **Bedingung** | Kein *Retrospektive*-Log in `.squad/log/` innerhalb der letzten 7 Tage |
+| **Moderator** | lead |
+| **Teilnehmer** | alle |
+| **Zeitbudget** | fokussiert |
+| **Aktiviert** | ja |
+| **Durchsetzungs-Skill** | retro-enforcement |
 
 **Agenda:**
-1. What shipped this week? (closed issues, merged PRs)
-2. What did not ship? (open issues, blockers)
-3. Root cause on any failures
-4. Action items -- each MUST become a GitHub Issue labeled retro-action
+1. Was diese Woche ausgeliefert? (geschlossene Issues, gemergte PRs)
+2. Was nicht ausgeliefert? (offene Issues, Blocker)
+3. Ursachen bei Fehlern
+4. Action Items — jedes MUSS zu GitHub-Issue mit Label `retro-action` werden
 
-**Coordinator integration:**
-At round start, call Test-RetroOverdue (see skill retro-enforcement). If overdue, run this ceremony before the work queue.
+**Koordinator-Integration:**
+Am Runde-Start `Test-RetroOverdue` aufrufen (siehe Skill retro-enforcement). Wenn überfällig, führe diese Zeremonie vor der Work Queue aus.
 
-**Why GitHub Issues, not markdown:**
-Production data: 0% completion across 6 retros using markdown checklists, 100% after switching to GitHub Issues.
+**Warum GitHub Issues, nicht Markdown:**
+Produktionsdaten: 0% Completion über 6 Retros mit Markdown-Checklisten, 100% nach Wechsel zu GitHub Issues.

@@ -1,103 +1,103 @@
-# RAI Policy
+# RAI-Policy
 
-> Responsible AI policy for this project. Rai enforces these standards.
+> Verantwortungsvolle AI-Policy für dieses Projekt. Rai setzt diese Standards durch.
 
-## Principles
+## Prinzipien
 
-1. **Safety first** — No output should cause harm to individuals or groups.
-2. **Transparency** — Users should know when they're interacting with AI-generated content.
-3. **Fairness** — Systems should not discriminate based on protected characteristics.
-4. **Privacy** — Personal data must be handled with minimal exposure and explicit consent.
-5. **Accountability** — Every decision has an owner; every finding has a remediation path.
+1. **Safety first** — Keine Ausgabe sollte Schaden für Individuen oder Gruppen verursachen.
+2. **Transparenz** — Nutzer sollten wissen, wenn sie mit KI-generiertem Inhalt interagieren.
+3. **Fairness** — Systeme sollten nicht basierend auf geschützten Merkmalen diskriminieren.
+4. **Privatsphäre** — Personenbezogene Daten müssen mit minimaler Exposition und expliziter Zustimmung behandelt werden.
+5. **Verantwortlichkeit** — Jede Entscheidung hat einen Eigentümer; jede Befundung hat einen Remediation-Pfad.
 
-## Critical Violations (🔴 — Always Blocked)
+## Kritische Verstöße (🔴 — Immer Blockiert)
 
-These CANNOT be shipped. No opt-out. No exceptions.
+Diese KÖNNEN nicht ausgeliefert werden. Kein Opt-out. Keine Ausnahmen.
 
 ### Credentials & Secrets
-- Hardcoded API keys, tokens, passwords, connection strings
-- Private keys committed to source control
-- Secrets in environment variable defaults or config templates
+- Hardcoded API-Keys, Tokens, Passwörter, Connection Strings
+- Private Keys im Source Control committet
+- Secrets in Environment-Variable-Defaults oder Config-Templates
 
-### Injection Vulnerabilities
-- SQL injection (unsanitized user input in queries)
-- Command injection (user input in shell commands)
-- Path traversal (user input in file paths without validation)
+### Injection-Schwachstellen
+- SQL Injection (ungesäuberte Benutzereingabe in Queries)
+- Command Injection (Benutzereingabe in Shell-Befehlen)
+- Path Traversal (Benutzereingabe in Dateipfaden ohne Validierung)
 
-### Harmful Content
-- Hate speech, slurs, or derogatory language targeting groups
-- Content promoting violence or self-harm
-- Sexually explicit content without appropriate context/gating
+### Schädlicher Inhalt
+- Hassrede, Schimpfwörter oder herabsetzende Sprache, die Gruppen targetet
+- Inhalt, der Gewalt oder Selbstverletzung fördert
+- Sexuell expliziter Inhalt ohne angemessenen Kontext/Gating
 
-### Deceptive Patterns
-- Ungrounded factual claims presented as authoritative
-- Hallucinated citations, references, or statistics
-- Instructions that bypass AI safety guidelines or content filters
+### Täuschende Muster
+- Ungegründete faktische Behauptungen, die als autoritär präsentiert werden
+- Halluzinierte Zitierungen, Referenzen oder Statistiken
+- Anweisungen, die AI-Safety-Richtlinien oder Content-Filter umgehen
 
-## Advisory Concerns (🟡 — Flagged, Not Blocked)
+## Beratende Bedenken (🟡 — Markiert, Nicht Blockiert)
 
-These are recommendations. Work proceeds with suggestions attached.
+Dies sind Empfehlungen. Arbeit schreitet mit angehängten Vorschlägen fort.
 
-### Privacy & Data
-- PII (names, emails, phone numbers) in logs or responses
-- Overly broad data collection without stated purpose
-- Missing data retention or deletion policies
+### Privatsphäre & Daten
+- PII (Namen, E-Mails, Telefonnummern) in Logs oder Antworten
+- Übermäßig breite Datensammlung ohne angegebenen Zweck
+- Fehlende Daten-Retentions- oder Löschrichtlinien
 
 ### Bias & Fairness
-- Algorithms using demographic features (age, gender, race) without justification
-- Proxy attributes that correlate with protected characteristics
-- Training data with known representation gaps
+- Algorithmen, die demografische Merkmale (Alter, Geschlecht, Ethnie) ohne Begründung verwenden
+- Proxy-Attribute, die mit geschützten Merkmalen korrelieren
+- Trainingsdaten mit bekannten Repräsentationslücken
 
-### Inclusive Language
-- Gendered terms where neutral alternatives exist (e.g., "guys" → "everyone")
-- Ableist language (e.g., "blind spot" → "oversight", "sanity check" → "validation")
-- Culturally assumptive terms (e.g., assuming Western holidays, naming conventions)
+### Inklusive Sprache
+- Geschlechtsspezifische Begriffe, wo neutrale Alternativen existieren (z. B. "Leute" → "alle")
+- Ableistische Sprache (z. B. "Blindspot" → "Aufsichtspunkt", "Sanity Check" → "Validierung")
+- Kulturell annehmende Begriffe (z. B. Annahme westlicher Feiertage, Namenskonventionen)
 
-### Security Posture
-- Missing rate limiting on user-facing endpoints
-- Overly permissive CORS or authentication policies
-- Insufficient input validation on public interfaces
+### Security-Postur
+- Fehlendes Rate Limiting auf benutzerzugewandten Endpoints
+- Übermäßig permissive CORS- oder Authentifizierungsrichtlinien
+- Unzureichende Input-Validierung auf öffentlichen Schnittstellen
 
-### Accessibility
-- Missing alt text on images
-- Insufficient color contrast
-- Missing ARIA labels on interactive elements
+### Barrierefreiheit
+- Fehlender Alt-Text auf Bildern
+- Unzureichender Farbkontrast
+- Fehlende ARIA-Labels auf interaktiven Elementen
 
-## Terminology Standards
+## Terminologiestandards
 
-| Avoid | Prefer | Reason |
-|-------|--------|--------|
-| whitelist/blacklist | allowlist/blocklist | Racial connotation |
-| master/slave | primary/replica | Racial connotation |
-| sanity check | validation, smoke test | Ableist |
-| dummy value | placeholder, sample | Potentially offensive |
-| guys | everyone, team, folks | Gendered |
-| man-hours | person-hours, effort | Gendered |
+| Vermeiden | Bevorzugen | Grund |
+|-----------|------------|-------|
+| whitelist/blacklist | allowlist/blocklist | Rassistische Konnotation |
+| master/slave | primary/replica | Rassistische Konnotation |
+| sanity check | validation, smoke test | Ableistisch |
+| dummy value | placeholder, sample | Potentiell anstößig |
+| guys | alle, Team, Leute | Geschlechtsspezifisch |
+| man-hours | person-hours, Aufwand | Geschlechtsspezifisch |
 
-## Review Scope by Change Type
+## Review-Scope nach Änderungstyp
 
-| Change Type | Review Level | Rationale |
-|-------------|-------------|-----------|
-| Source code (new features) | Full check suite | Highest risk surface |
-| Source code (bug fixes) | Credential + injection checks | Targeted risk |
-| Documentation | Content + terminology only | Lower risk |
-| Test files | Credential checks only | Minimal risk |
-| Dependency updates | Skip (fast-path) | No authored content |
-| Configuration | Credential checks only | Secret exposure risk |
+| Änderungstyp | Review-Level | Begründung |
+|--------------|--------------|------------|
+| Source Code (neue Features) | Vollständiger Check-Suite | Höchste Risikofläche |
+| Source Code (Bugfixes) | Credential + Injection-Checks | Targeted Risk |
+| Dokumentation | Content + Terminologie nur | Niedrigeres Risiko |
+| Test-Dateien | Nur Credential-Checks | Minimalrisiko |
+| Dependency-Updates | Überspringen (Fast-Path) | Kein authored Content |
+| Konfiguration | Nur Credential-Checks | Secret-Exposure-Risiko |
 
-## Escalation Path
+## Eskalationspfad
 
-1. **🟢 Green** — No action needed. Work proceeds.
-2. **🟡 Yellow** — Suggestions attached to work output. Author decides.
-3. **🔴 Red** — Work blocked. Reviewer Rejection Protocol activates:
-   - Original author locked out of revision
-   - Rai recommends fix agent
-   - Rai provides pair-mode guidance during revision
-   - Re-review required before work can ship
+1. **🟢 Grün** — Keine Aktion nötig. Arbeit schreitet fort.
+2. **🟡 Gelb** — Vorschläge an Arbeitsergebnis angehängt. Autor entscheidet.
+3. **🔴 Rot** — Arbeit blockiert. Reviewer-Rejektions-Protokoll aktiviert:
+   - Original-Autor von Revision ausgeschlossen
+   - Rai empfiehlt Fix-Agent
+   - Rai liefert Pair-Mode-Leitfaden während Revision
+   - Neureview erforderlich, bevor Arbeit ausgeliefert werden kann
 
-## Policy Updates
+## Policy-Updates
 
-This policy evolves. Changes require:
+Diese Policy entwickelt sich weiter. Änderungen erfordern:
 - Justification logged to `.squad/rai/audit-trail.md`
 - Team acknowledgment (via decisions inbox)
 - No retroactive enforcement (new rules apply forward only)
