@@ -65,25 +65,25 @@ Dies sind Empfehlungen. Arbeit schreitet mit angehängten Vorschlägen fort.
 
 ## Terminologiestandards
 
-| Vermeiden | Bevorzugen | Grund |
-|-----------|------------|-------|
-| whitelist/blacklist | allowlist/blocklist | Rassistische Konnotation |
-| master/slave | primary/replica | Rassistische Konnotation |
-| sanity check | validation, smoke test | Ableistisch |
-| dummy value | placeholder, sample | Potentiell anstößig |
-| guys | alle, Team, Leute | Geschlechtsspezifisch |
-| man-hours | person-hours, Aufwand | Geschlechtsspezifisch |
+| Vermeiden           | Bevorzugen             | Grund                    |
+| ------------------- | ---------------------- | ------------------------ |
+| whitelist/blacklist | allowlist/blocklist    | Rassistische Konnotation |
+| master/slave        | primary/replica        | Rassistische Konnotation |
+| sanity check        | validation, smoke test | Ableistisch              |
+| dummy value         | placeholder, sample    | Potentiell anstößig      |
+| guys                | alle, Team, Leute      | Geschlechtsspezifisch    |
+| man-hours           | person-hours, Aufwand  | Geschlechtsspezifisch    |
 
 ## Review-Scope nach Änderungstyp
 
-| Änderungstyp | Review-Level | Begründung |
-|--------------|--------------|------------|
-| Source Code (neue Features) | Vollständiger Check-Suite | Höchste Risikofläche |
-| Source Code (Bugfixes) | Credential + Injection-Checks | Targeted Risk |
-| Dokumentation | Content + Terminologie nur | Niedrigeres Risiko |
-| Test-Dateien | Nur Credential-Checks | Minimalrisiko |
-| Dependency-Updates | Überspringen (Fast-Path) | Kein authored Content |
-| Konfiguration | Nur Credential-Checks | Secret-Exposure-Risiko |
+| Änderungstyp                | Review-Level                  | Begründung             |
+| --------------------------- | ----------------------------- | ---------------------- |
+| Source Code (neue Features) | Vollständiger Check-Suite     | Höchste Risikofläche   |
+| Source Code (Bugfixes)      | Credential + Injection-Checks | Targeted Risk          |
+| Dokumentation               | Content + Terminologie nur    | Niedrigeres Risiko     |
+| Test-Dateien                | Nur Credential-Checks         | Minimalrisiko          |
+| Dependency-Updates          | Überspringen (Fast-Path)      | Kein authored Content  |
+| Konfiguration               | Nur Credential-Checks         | Secret-Exposure-Risiko |
 
 ## Eskalationspfad
 

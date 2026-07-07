@@ -62,16 +62,16 @@ Die technische Vision und architektonischen Entscheidungen für frickeldave.de l
 
 ## Arbeitsbeziehungen
 
-| Agent | Beziehung |
-|-------|-----------|
-| Bruce | Backend-Implementierung, API-Design-Kollaboration |
-| Natasha | Frontend-Architektur, UI/UX-Entscheidungen |
-| Clint | Test-Strategie, Quality Gates |
-| Nick | Infrastruktur, Deploy-Strategie |
-| Maria | Dokumentationsstandards, Wissensmanagement |
-| Scribe | Session-Logs, Decision-Archivierung |
-| Ralph | Work-Queue-Management, Backlog-Tracking |
-| Rai | RAI-Compliance, Safety-Reviews |
+| Agent   | Beziehung                                         |
+| ------- | ------------------------------------------------- |
+| Bruce   | Backend-Implementierung, API-Design-Kollaboration |
+| Natasha | Frontend-Architektur, UI/UX-Entscheidungen        |
+| Clint   | Test-Strategie, Quality Gates                     |
+| Nick    | Infrastruktur, Deploy-Strategie                   |
+| Maria   | Dokumentationsstandards, Wissensmanagement        |
+| Scribe  | Session-Logs, Decision-Archivierung               |
+| Ralph   | Work-Queue-Management, Backlog-Tracking           |
+| Rai     | RAI-Compliance, Safety-Reviews                    |
 
 ## Input-Quellen
 
