@@ -7,7 +7,7 @@ image: "@assets/docs/kubernetes-basis/knba-90-001.png"
 imageAlt: "Kubernetes Basis - 90 Glossar"
 ---
 
-> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 Alle wichtigen Begriffe der Kubernetes Basis-Schulung auf einen Blick. In den Schulungsunterlagen
 sind Fachbegriffe bei ihrer ersten Verwendung mit diesem Glossar verlinkt.
@@ -77,7 +77,7 @@ gelöscht oder crashen sie, erstellt ein [Deployment](#deployment) automatisch e
 
 ### Deployment
 
-Beschreibt den **gewünschten Zustand** einer Anwendung (z.B. "1 Instanz von Chromium soll laufen").
+Beschreibt den **gewünschten Zustand** einer Anwendung (z. B. "1 Instanz von Chromium soll laufen").
 Kubernetes sorgt kontinuierlich dafür, dass dieser Soll-Zustand eingehalten wird. Ein Deployment
 verwaltet intern ein [ReplicaSet](#replicaset), das wiederum die einzelnen [Pods](#pod) steuert.
 
@@ -102,7 +102,7 @@ Wichtige Service-Typen:
 ### Namespace
 
 Ein logischer Isolationsbereich innerhalb eines Clusters. Er trennt Ressourcen verschiedener Teams,
-Projekte oder Umgebungen (z.B. `dev`, `staging`, `prod`) voneinander. Berechtigungen und
+Projekte oder Umgebungen (z. B. `dev`, `staging`, `prod`) voneinander. Berechtigungen und
 Ressourcenlimits lassen sich pro Namespace vergeben.
 
 Standard-Namespaces: `default`, `kube-system`, `kube-public`, `kube-node-lease`.
@@ -116,7 +116,7 @@ kubectl config set-context --current \
 
 ### Label und Selector
 
-**Labels** sind Key-Value-Paare, die Kubernetes-Ressourcen angehängt werden (z.B. `app: chromium`).
+**Labels** sind Key-Value-Paare, die Kubernetes-Ressourcen angehängt werden (z. B. `app: chromium`).
 **Selektoren** filtern Ressourcen anhand dieser Labels. Services finden ihre Pods über
 Label-Selektoren; Deployments steuern damit ihre ReplicaSets.
 
@@ -142,13 +142,13 @@ Anzahl an Replicas wieder erreicht ist. Dieses Verhalten wird durch den
 ### Ingress
 
 Eine Ingress-Ressource definiert Routing-Regeln für eingehenden HTTP/HTTPS-Traffic. Sie ermöglicht
-es, mehrere Services über einen einzigen Einstiegspunkt (z.B. eine öffentliche IP) erreichbar zu
+es, mehrere Services über einen einzigen Einstiegspunkt (z. B. eine öffentliche IP) erreichbar zu
 machen, basierend auf dem Hostnamen (`chrome.beispiel.de`) oder dem URL-Pfad (`/api`). Für die
 Wirkung wird ein [Ingress Controller](#ingress-controller) benötigt.
 
 ### Ingress Controller
 
-Ein laufender Proxy im Cluster (z.B. nginx-ingress), der [Ingress](#ingress)-Ressourcen auswertet
+Ein laufender Proxy im Cluster (z. B. nginx-ingress), der [Ingress](#ingress)-Ressourcen auswertet
 und den Traffic entsprechend an die Ziel-Services weiterleitet. Ohne einen Ingress Controller haben
 Ingress-Ressourcen keine Wirkung.
 
@@ -161,7 +161,7 @@ kubectl get ingress -n k8s-training
 
 Der Standard-Service-Typ. Ein ClusterIP-Service ist **nur innerhalb des Clusters** erreichbar und
 erhält eine clusterinterne IP-Adresse. Er eignet sich für die interne Kommunikation zwischen Diensten
-(z.B. von Chromium zu einem Backend-Service).
+(z. B. von Chromium zu einem Backend-Service).
 
 ### NodePort
 
@@ -192,7 +192,7 @@ Docker-Volumes sind Kubernetes-Volumes an den Pod-Lebenszyklus gebunden -- mit A
 ### emptyDir
 
 Wird erstellt, wenn ein Pod startet, und gelöscht, wenn der Pod entfernt wird. Eignet sich für
-temporäre Daten (z.B. Render-Caches) oder den Datenaustausch zwischen Containern im selben Pod. Mit
+temporäre Daten (z. B. Render-Caches) oder den Datenaustausch zwischen Containern im selben Pod. Mit
 `medium: Memory` wird das Volume im RAM angelegt -- schnell, aber flüchtig.
 
 ```yaml
@@ -231,7 +231,7 @@ spec:
 ### StorageClass
 
 Definiert, wie [PersistentVolumes](#persistentvolume) dynamisch erstellt werden. Sie gibt an,
-welcher Provisioner (z.B. für AWS EBS, NFS oder lokalen Speicher) verwendet wird. Bei Verwendung der
+welcher Provisioner (z. B. für AWS EBS, NFS oder lokalen Speicher) verwendet wird. Bei Verwendung der
 Default-StorageClass werden PVCs automatisch erfüllt, ohne dass manuell ein PV angelegt werden muss.
 
 ```bash
@@ -260,7 +260,7 @@ data:
 
 Speichert sensible Daten wie Passwörter, API-Keys oder TLS-Zertifikate. Die Werte werden
 Base64-kodiert gespeichert -- das ist **keine Verschlüsselung**. Für echte Produktionssicherheit
-werden zusätzliche Maßnahmen wie Encryption at Rest oder externe Secret-Manager (z.B. HashiCorp
+werden zusätzliche Maßnahmen wie Encryption at Rest oder externe Secret-Manager (z. B. HashiCorp
 Vault) benötigt.
 
 ```bash
@@ -314,7 +314,7 @@ die nach dem Start noch Initialisierungszeit benötigen.
 ### Startup Probe
 
 Prüft, ob eine Anwendung erfolgreich gestartet ist. Während die Startup Probe läuft, sind Liveness
-und Readiness Probe deaktiviert. Eignet sich für langsam startende Anwendungen (z.B. Chromium), bei
+und Readiness Probe deaktiviert. Eignet sich für langsam startende Anwendungen (z. B. Chromium), bei
 denen die Liveness Probe sonst zu früh auslösen würde.
 
 ### Resource Limits
@@ -407,7 +407,7 @@ spec:
 ### Sidecar-Container
 
 Laufen **dauerhaft** neben dem App-Container im selben Pod und teilen sich Netzwerk und Volumes.
-Typische Anwendungsfälle: Log-Aggregation, Metrics-Exporter, Service-Mesh-Proxies (z.B. Envoy).
+Typische Anwendungsfälle: Log-Aggregation, Metrics-Exporter, Service-Mesh-Proxies (z. B. Envoy).
 
 ## Control Plane Komponenten
 
@@ -432,7 +432,7 @@ Tolerations.
 ### kube-controller-manager
 
 Betreibt eine Reihe von Control-Loops (Controller), die den Cluster-Zustand überwachen und bei
-Abweichungen Maßnahmen ergreifen -- z.B. erstellt der ReplicaSet-Controller fehlende Pods nach
+Abweichungen Maßnahmen ergreifen -- z. B. erstellt der ReplicaSet-Controller fehlende Pods nach
 ([Self-Healing](#self-healing)).
 
 ### kubelet

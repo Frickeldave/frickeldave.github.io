@@ -86,7 +86,7 @@ const HandmadePortfolioCarousel: React.FC<Props> = ({ projects }) => {
                 </h4>
 
                 {/* Description */}
-                <p className="mb-4 line-clamp-3 text-sm text-txt-p opacity-80 dark:text-darkmode-txt-p">
+                <p className="text-txt-p dark:text-darkmode-txt-p mb-4 line-clamp-3 text-sm opacity-80">
                   {project.description}
                 </p>
 
@@ -108,13 +108,13 @@ const HandmadePortfolioCarousel: React.FC<Props> = ({ projects }) => {
 
       {/* Custom Navigation */}
       <button
-        className="swiper-btn-prev-handmade glass absolute left-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-all duration-300 hover:scale-110 hover:bg-white/20"
+        className="swiper-btn-prev-handmade glass absolute top-1/2 left-0 z-10 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-all duration-300 hover:scale-110 hover:bg-white/20"
         aria-label="Vorheriges Projekt"
       >
         <FaChevronLeft className="text-txt-h dark:text-darkmode-txt-h text-lg" />
       </button>
       <button
-        className="swiper-btn-next-handmade glass absolute right-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-all duration-300 hover:scale-110 hover:bg-white/20"
+        className="swiper-btn-next-handmade glass absolute top-1/2 right-0 z-10 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-all duration-300 hover:scale-110 hover:bg-white/20"
         aria-label="Nächstes Projekt"
       >
         <FaChevronRight className="text-txt-h dark:text-darkmode-txt-h text-lg" />

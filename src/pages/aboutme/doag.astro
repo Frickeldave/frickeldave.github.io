@@ -77,7 +77,7 @@ const toc = episodes.map((episode) => ({
         </div>
         <div class="flex-1">
           <div
-            class="text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
+            class="text-txt-p dark:text-darkmode-txt-p text-base leading-relaxed lg:text-lg"
             set:html={typeof doagEntry.data.intro === "string"
               ? markdownify(doagEntry.data.intro, true)
               : doagEntry.data.intro?.content
@@ -95,7 +95,7 @@ const toc = episodes.map((episode) => ({
             Über den Podcast
           </h2>
           <div
-            class="text-base leading-relaxed text-txt-p dark:text-darkmode-txt-p lg:text-lg"
+            class="text-txt-p dark:text-darkmode-txt-p text-base leading-relaxed lg:text-lg"
             set:html={markdownify(doagEntry.data.podcast_intro, true)}
           />
 
@@ -137,24 +137,24 @@ const toc = episodes.map((episode) => ({
 
             <div class="grid gap-4 md:grid-cols-3">
               <div>
-                <label class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p">
+                <label class="text-txt-p dark:text-darkmode-txt-p mb-2 block text-sm font-medium">
                   Suche
                 </label>
                 <input
                   type="text"
                   id="search-input"
                   placeholder="Titel oder Teilnehmer..."
-                  class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-white/10 dark:text-darkmode-txt-p"
+                  class="text-txt-p dark:text-darkmode-txt-p w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-white/10"
                 />
               </div>
 
               <div>
-                <label class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p">
+                <label class="text-txt-p dark:text-darkmode-txt-p mb-2 block text-sm font-medium">
                   Edition
                 </label>
                 <select
                   id="edition-filter"
-                  class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+                  class="text-txt-p w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
                 >
                   <option value="all">Alle Editionen</option>
                   {editions.map((edition) => (
@@ -164,12 +164,12 @@ const toc = episodes.map((episode) => ({
               </div>
 
               <div>
-                <label class="mb-2 block text-sm font-medium text-txt-p dark:text-darkmode-txt-p">
+                <label class="text-txt-p dark:text-darkmode-txt-p mb-2 block text-sm font-medium">
                   Zeitraum
                 </label>
                 <select
                   id="date-filter"
-                  class="w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm text-txt-p transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
+                  class="text-txt-p w-full rounded-lg border border-amber-500/40 bg-white/70 px-3 py-2 text-sm transition-colors focus:border-amber-500/60 focus:outline-none dark:border-amber-500/20 dark:bg-gray-800 dark:text-white dark:[&>option]:bg-gray-800 dark:[&>option]:text-white"
                 >
                   <option value="all">Alle Episoden</option>
                   {years.map((year) => (
@@ -223,7 +223,7 @@ const toc = episodes.map((episode) => ({
                     {episode.title}
                   </h2>
                   <div class="mb-2 flex flex-wrap items-center gap-2">
-                    <p class="text-sm text-txt-p dark:text-darkmode-txt-p">
+                    <p class="text-txt-p dark:text-darkmode-txt-p text-sm">
                       <strong>{episode.edition}</strong> • {episode.date}
                     </p>
                     {Object.entries(episode.links ?? {}).map(
@@ -253,11 +253,11 @@ const toc = episodes.map((episode) => ({
                       }
                     )}
                   </div>
-                  <p class="mb-4 text-txt-p dark:text-darkmode-txt-p">
+                  <p class="text-txt-p dark:text-darkmode-txt-p mb-4">
                     <strong>Mit:</strong> {episode.guests}
                   </p>
                   <div
-                    class="mb-4 leading-relaxed text-txt-p dark:text-darkmode-txt-p"
+                    class="text-txt-p dark:text-darkmode-txt-p mb-4 leading-relaxed"
                     set:html={markdownify(episode.description, true)}
                   />
 

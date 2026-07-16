@@ -90,7 +90,7 @@ const PublicationsCarousel: React.FC<Props> = ({ publications }) => {
                 </h4>
 
                 {/* Description */}
-                <p className="mb-4 line-clamp-3 text-sm text-txt-p opacity-80 dark:text-darkmode-txt-p">
+                <p className="text-txt-p dark:text-darkmode-txt-p mb-4 line-clamp-3 text-sm opacity-80">
                   {pub.description}
                 </p>
 
@@ -114,13 +114,13 @@ const PublicationsCarousel: React.FC<Props> = ({ publications }) => {
 
       {/* Custom Navigation */}
       <button
-        className="swiper-btn-prev-publications glass absolute left-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-all duration-300 hover:scale-110 hover:bg-white/20"
+        className="swiper-btn-prev-publications glass absolute top-1/2 left-0 z-10 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-all duration-300 hover:scale-110 hover:bg-white/20"
         aria-label="Vorherige Veröffentlichung"
       >
         <FaChevronLeft className="text-txt-h dark:text-darkmode-txt-h text-lg" />
       </button>
       <button
-        className="swiper-btn-next-publications glass absolute right-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-all duration-300 hover:scale-110 hover:bg-white/20"
+        className="swiper-btn-next-publications glass absolute top-1/2 right-0 z-10 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-all duration-300 hover:scale-110 hover:bg-white/20"
         aria-label="Nächste Veröffentlichung"
       >
         <FaChevronRight className="text-txt-h dark:text-darkmode-txt-h text-lg" />

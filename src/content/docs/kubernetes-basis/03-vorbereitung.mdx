@@ -7,7 +7,9 @@ image: "@assets/docs/kubernetes-basis/knba-03-001.png"
 imageAlt: "Kubernetes Basis - 03 Vorbereitung"
 ---
 
-> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+import Notice from "@shortcodes/Notice";
+
+> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Voraussetzungen
 
@@ -238,18 +240,18 @@ Wer in der eigenen Firma bereits Zugang zu einem Kubernetes-Cluster hat, kann di
 | Mindestens 2 [Worker Nodes](/docs/kubernetes-basis/90-glossar#worker-node) | Für einige Übungen werden Pod-Scheduling-Entscheidungen auf mehreren Nodes demonstriert |
 | [StorageClass](/docs/kubernetes-basis/90-glossar#storageclass) vorhanden | Für [PersistentVolumeClaims](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) wird eine Default-StorageClass benötigt (`kubectl get storageclass`) |
 | [Ingress Controller](/docs/kubernetes-basis/90-glossar#ingress-controller) | Ein Ingress Controller muss im Cluster laufen (z. B. nginx), damit die Schulungsprojekte per URL erreichbar sind |
-| Internetzugang des Clusters | Die Nodes müssen Images von externen Registries ziehen können (z. B. `lscr.io`, `ghcr.io`) – oder ein lokaler Mirror ist konfiguriert |
+| Internetzugang des Clusters | Die Nodes müssen Images von externen Registries ziehen können (z. B. `lscr.io`, `ghcr.io`)–oder ein lokaler Mirror ist konfiguriert |
 | DNS / Hostnamen | Entweder ein echter DNS-Eintrag für deine Schulungs-URLs oder die Nutzung von `/etc/hosts` auf deinem lokalen Rechner |
 
 **Was du nicht benötigst**
 
-- Cluster-Admin-Rechte – Namespace-Admin-Rechte reichen für alle Schulungsübungen
-- Eine eigene Control Plane – der bestehende Cluster wird genutzt
+- Cluster-Admin-Rechte–Namespace-Admin-Rechte reichen für alle Schulungsübungen
+- Eine eigene Control Plane–der bestehende Cluster wird genutzt
 
 **Einschränkungen und Hinweise**
 
 - Firmen-Cluster haben oft eingeschränkte NetworkPolicies oder Pod Security Standards. Sollten einzelne Übungen daran scheitern, kann lokal auf die WSL-Variante gewechselt werden.
-- Image-Pull-Secrets für private Registries sind in Firmen-Umgebungen häufig notwendig – das Setup wird in diesen Fällen kurz abweichen.
+- Image-Pull-Secrets für private Registries sind in Firmen-Umgebungen häufig notwendig–das Setup wird in diesen Fällen kurz abweichen.
 - Produktions-Namespaces sind tabu. Nutze ausschließlich einen dedizierten Schulungs-Namespace.
 
 **Kubeconfig prüfen**

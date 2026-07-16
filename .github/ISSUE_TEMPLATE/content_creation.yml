@@ -1,0 +1,65 @@
+name: Content Creation
+about: Schlage die Erstellung neuer Inhalte (Blogposts, Rezepte, Handmade-Projekte, etc.) vor
+title: "[Content] "
+labels: ["content", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nutze dieses Template, um neue Inhalte wie Blogposts, Rezepte, Handmade-Projekte, News oder andere Inhalte vorzuschlagen.
+  - type: dropdown
+    id: content-type
+    attributes:
+      label: Art des Inhalts
+      description: Welche Art von Inhalt soll erstellt werden?
+      options:
+        - Blogpost
+        - Rezept
+        - Handmade-Projekt
+        - News-Artikel
+        - Dokumentation
+        - Tutorial
+        - Video-Idee
+        - Andere
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Titel
+      description: Der vorgeschlagene Titel für den Inhalt
+      placeholder: Gib einen vorläufigen Titel ein...
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung
+      description: Eine klare und präzise Beschreibung des vorgeschlagenen Inhalts.
+      placeholder: Beschreibe den vorgeschlagenen Inhalt...
+    validations:
+      required: true
+  - type: textarea
+    id: outline
+    attributes:
+      label: Gliederung/Ideen
+      description: Eine vorläufige Gliederung oder Sammlung von Ideen zum Inhalt.
+      placeholder: Beschreibe die grobe Struktur oder Ideen...
+  - type: dropdown
+    id: category
+    attributes:
+      label: Kategorie (falls relevant)
+      description: Wähle die passende Kategorie für den Inhalt aus.
+      options:
+        - Technik
+        - DIY/Handmade
+        - Kochen/Rezepte
+        - Leben & Lernen
+        - Projekte
+        - Andere
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Füge hier jeglichen anderen Kontext zum Inhalt hinzu.
+      placeholder: Füge hier jeglichen anderen Kontext hinzu...

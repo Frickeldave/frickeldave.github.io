@@ -32,7 +32,7 @@ const totalDownloads = entry.data.downloads?.length || 0;
                       <p class="mb-3 flex-grow text-sm">
                         {download.description}
                       </p>
-                      <div class="mb-3 text-xs text-txt-light dark:text-darkmode-txt-light">
+                      <div class="text-txt-light dark:text-darkmode-txt-light mb-3 text-xs">
                         {download.fileSize && (
                           <span>Size: {download.fileSize}</span>
                         )}
@@ -59,7 +59,7 @@ const totalDownloads = entry.data.downloads?.length || 0;
 
         <!-- Sidebar -->
         <div
-          class="sticky top-[4rem] hidden max-h-static_sidemenu p-0 pl-4 lg:col-4 lg:flex"
+          class="max-h-static_sidemenu sticky top-[4rem] hidden p-0 pl-4 lg:col-4 lg:flex"
         >
           <DownloadsSidebar totalDownloads={totalDownloads} />
         </div>

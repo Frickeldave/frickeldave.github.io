@@ -7,7 +7,7 @@ image: "@assets/docs/astro-workshop/asws-03-001.png"
 imageAlt: "Vorbereitung"
 ---
 
-> ⚠️ **PREVIEW** – Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Voraussetzungen
 
@@ -34,7 +34,7 @@ npm --version
 
 **Installation:**
 
-- **Windows:** [nodejs.org/de/download](https://nodejs.org/de/download/) — Installer herunterladen
+- **Windows:** [nodejs.org/de/download](https://nodejs.org/de/download/)—Installer herunterladen
 - **macOS (Homebrew):** `brew install node`
 - **Linux (apt):** `sudo apt-get update && sudo apt-get install -y nodejs npm`
 
@@ -84,7 +84,7 @@ VS Code ist der empfohlene Editor für diesen Workshop. Die folgenden Extensions
 
 ## Starlight-Projekt anlegen
 
-Als Projektbasis dient **Starlight** — das offizielle Astro-Dokumentations-Framework. Es wird
+Als Projektbasis dient **Starlight**—das offizielle Astro-Dokumentations-Framework. Es wird
 direkt über den Astro-Installer erstellt, kein Fork nötig.
 
 ### Schritt 1: Projekt erstellen
@@ -94,7 +94,7 @@ npm create astro@latest -- --template starlight astrows
 cd astrows
 ```
 
-Der Installer stellt ein paar Fragen — empfohlene Antworten:
+Der Installer stellt ein paar Fragen—empfohlene Antworten:
 
 | Frage | Empfehlung |
 |---|---|
@@ -118,9 +118,9 @@ GitHub Pages unterscheidet zwei Varianten:
 | Typ | Repository-Name | URL |
 |---|---|---|
 | User/Org Page | Muss exakt `USERNAME.github.io` heißen | `https://USERNAME.github.io` |
-| Project Page | Beliebig, z.B. `astrows` | `https://USERNAME.github.io/astrows` |
+| Project Page | Beliebig, z. B. `astrows` | `https://USERNAME.github.io/astrows` |
 
-Im Workshop verwenden wir eine **Project Page** mit dem Namen `astrows` — der
+Im Workshop verwenden wir eine **Project Page** mit dem Namen `astrows`—der
 User-Page-Slot (`USERNAME.github.io`) ist bei vielen bereits belegt. Bei einer Project Page
 muss in `astro.config.mjs` zusätzlich `base: "/astrows/"` gesetzt werden
 (siehe [Astro Setup](10-astro-setup)).
@@ -155,7 +155,7 @@ astrows/
 └── tsconfig.json        # TypeScript-Konfiguration
 ```
 
-Starlight ist bewusst schlank gehalten — keine `components/`, keine `pages/`, keine `styles/`
+Starlight ist bewusst schlank gehalten—keine `components/`, keine `pages/`, keine `styles/`
 überladen mit Custom-Code. Neue Dokumentationsseiten entstehen einfach als `.md`- oder
 `.mdx`-Dateien in `src/content/docs/`.
 

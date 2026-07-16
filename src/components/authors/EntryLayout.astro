@@ -21,10 +21,10 @@ const { Content } = await render(entry);
   <section class="section-sm pb-0">
     <div class="container">
       <div
-        class="row justify-center border-b border-border pb-14 dark:border-darkmode-border"
+        class="row border-border dark:border-darkmode-border justify-center border-b pb-14"
       >
         <div
-          class="glass rounded-lg p-4 text-center opacity-0 lg:col-4 intersect:animate-fadeUp"
+          class="glass intersect:animate-fadeUp rounded-lg p-4 text-center opacity-0 lg:col-4"
         >
           {
             image && (
@@ -45,7 +45,7 @@ const { Content } = await render(entry);
           <Social links={social} />
         </div>
       </div>
-      <div class="row justify-center pb-16 pt-14">
+      <div class="row justify-center pt-14 pb-16">
         {
           recentBlogEntries.map((entry) => (
             <div class="mb-8 md:col-6 lg:col-4">

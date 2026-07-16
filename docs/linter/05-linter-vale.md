@@ -8,14 +8,6 @@ Terminologie-Konsistenz überprüft.
 - **Syntax-Aware**: Versteht Markdown, reStructuredText, AsciiDoc etc.
 - **Anpassbare Regeln**: Unterstützt verschiedene Style Guides (Google, Microsoft, etc.)
 
-- [Vale Installation \& Konfiguration](#vale-installation--konfiguration)
-  - [Installationsvorbereitungen](#installationsvorbereitungen)
-  - [Vale-Konfiguration erstellen](#vale-konfiguration-erstellen)
-  - [Hook erweitern für Vale](#hook-erweitern-für-vale)
-  - [Testen der Vale-Integration](#testen-der-vale-integration)
-  - [Vale Styles und Regeln](#vale-styles-und-regeln)
-  - [Hinweise für Vale](#hinweise-für-vale)
-
 \*\*Beispiele für Vale-Regeln
 
 ```markdown
@@ -34,15 +26,13 @@ Terminologie-Konsistenz überprüft.
 
 ## Installationsvorbereitungen
 
-Da Vale nicht als Node.js-Package verfügbar ist, wird die Installation über Shell-Scripte
-vorgenommen:
+Vale wird in diesem Repository über Node-Skripte installiert und ausgeführt:
 
-- **Linux/macOS**: [`scripts/install-vale.sh`](../scripts/install-vale.sh)
-- **Windows**: [`scripts/install-vale.ps1`](../scripts/install-vale.ps1)
+- **Installer**: [scripts/prose-install.mjs](../../scripts/prose-install.mjs)
+- **Checker**: [scripts/prose-check.mjs](../../scripts/prose-check.mjs)
 
-Diese Scripte laden die jeweils passende Vale-Binary herunter, speichern diese im `tools/`
-Verzeichnis und installieren automatisch die Microsoft und write-good Styles mit automatischer
-Bereinigung problematischer Dateien.
+Das Installationsskript lädt die passende Vale-Binary in das Verzeichnis `.vale/`, installiert die
+Styles `Microsoft` und `write-good` und kann bei Bedarf mit `--force` erneut ausgeführt werden.
 
 **Automatische Installation:** Vale wird automatisch über einen `postinstall` Hook nach jedem
 `npm install` installiert und die Styles (Microsoft, write-good) werden automatisch heruntergeladen
@@ -50,32 +40,20 @@ und bereinigt:
 
 ```json
 "scripts": {
-  "postinstall": "npm run install-vale",
-  "install-vale": "node -e \"const cmd = process.platform === 'win32' ? 'powershell -ExecutionPolicy Bypass -File scripts/install-vale.ps1' : 'bash scripts/install-vale.sh'; require('child_process').exec(cmd, (err, stdout, stderr) => { if (err) { console.error(stderr); process.exit(1); } console.log(stdout); });\"",
-  "prose": "node -e \"const vale = process.platform === 'win32' ? './tools/vale.exe' : './tools/vale'; const { exec } = require('child_process'); exec(vale + ' --config=.vale.ini src/content docs', (err, stdout, stderr) => { console.log(stdout); if (stderr) console.error(stderr); if (err) process.exit(1); });\"",
-  "prose:check": "npm run prose"
+  "postinstall": "npm run prose-install && npm run install-gh-copilot",
+  "prose-install": "node scripts/prose-install.mjs",
+  "prose": "node scripts/prose-check.mjs"
 }
 ```
-
-**Installationsskripte:**
-
-- **Linux/macOS**: [`scripts/install-vale.sh`](../scripts/install-vale.sh)
-- **Windows**: [`scripts/install-vale.ps1`](../scripts/install-vale.ps1)
-
-Diese Skripte laden die Vale-Binary herunter und installieren automatisch die Microsoft und
-write-good Styles mit automatischer Bereinigung problematischer Dateien.
 
 **Warum dieser Ansatz?**
 
 - ✅ Vale wird automatisch nach dem Klonen installiert
 - ✅ Styles (Microsoft, write-good) werden automatisch heruntergeladen und bereinigt
-- ✅ MDX-Format-Support durch mdx2vast wird automatisch installiert
 - ✅ Keine manuellen Installationsschritte erforderlich
 - ✅ Korrekte Ausführungsberechtigungen werden automatisch gesetzt
 - ✅ Plattformübergreifende Kompatibilität (Windows/Linux/macOS)
-- ✅ Vale-Binary wird nicht im Git-Repository gespeichert (siehe `.gitignore`)
-- ✅ Styles werden immer frisch heruntergeladen (nicht im Git-Repository gespeichert)
-- ✅ Problematische Dateien werden automatisch entfernt (.yamllint.yml, .github/, etc.)
+- ✅ Vale-Binary liegt projektspezifisch unter `.vale/`
 
 ## Vale-Konfiguration erstellen
 
@@ -128,7 +106,7 @@ echo ""
 
 echo "📝 Running Vale (Prose Linting)..."
 echo "   ↳ Checking documentation and content for style consistency"
-npm run prose:check
+npm run prose
 
 if [ $? -ne 0 ]; then
   echo ""
@@ -157,17 +135,17 @@ Vale wird automatisch installiert wenn du das Repository klonst und `npm install
 Vale bereits installiert ist, kannst du die Integration direkt testen:
 
 ```bash
-# Dependencies installieren (installiert automatisch Vale über postinstall Hook)
+# Dependencies installieren (installiert automatisch Vale über den postinstall Hook)
 npm install
 
 # Vale-Konfiguration testen
 npm run prose
 
 # Einzelne Datei testen
-./tools/vale --config=.vale.ini src/content/blog/example.md
+./.vale/vale --config=.vale.ini src/content/blog/example.md
 
 # Vale-Version überprüfen
-./tools/vale --version
+./.vale/vale --version
 
 # Mit Commit testen (führt den Hook aus)
 git add .
@@ -183,16 +161,10 @@ Die folgenden Styles werden automatisch über die Installationsskripte herunterg
 - **Microsoft Writing Style Guide**: [GitHub Repository](https://github.com/errata-ai/Microsoft)
 - **write-good**: [GitHub Repository](https://github.com/errata-ai/write-good)
 
-**MDX-Format-Support:**
-
-- **mdx2vast**: [GitHub Repository](https://github.com/jdkato/mdx2vast) - Wird als globales
-  npm-Package installiert
-- Ermöglicht Vale die Analyse von .mdx Dateien (Markdown + JSX)
-
 **Base Vocabulary:**
 
-- **Accept-Liste**: [`.vale/styles/Base/accept.txt`](../.vale/styles/Base/accept.txt)
-- **Reject-Liste**: [`.vale/styles/Base/reject.txt`](../.vale/styles/Base/reject.txt)
+- **Accept-Liste**: [`.vale/styles/Base/accept.txt`](../../.vale/styles/Base/accept.txt)
+- **Reject-Liste**: [`.vale/styles/Base/reject.txt`](../../.vale/styles/Base/reject.txt)
 
 **Custom Rules:** Können bei Bedarf im `.vale/styles/Custom/` Verzeichnis erstellt werden.
 
@@ -204,15 +176,15 @@ Die folgenden Styles werden automatisch über die Installationsskripte herunterg
 - **Performance** - Vale ist schnell, aber bei sehr großen Repositories kann es länger dauern
 - **IDE-Integration** - Es gibt Vale-Extensions für VS Code und andere Editoren
 - **CI/CD-Integration** - Vale kann auch in GitHub Actions oder anderen CI-Systemen laufen
-- **Automatische Installation** - Styles werden über [`install-vale.sh`](../scripts/install-vale.sh)
-  und [`install-vale.ps1`](../scripts/install-vale.ps1) automatisch installiert und bereinigt
+- **Automatische Installation** - Vale wird über
+  [scripts/prose-install.mjs](../../scripts/prose-install.mjs) installiert und aktualisiert
 
 **Vale sync funktioniert nicht zuverlässig** - die manuelle Installation über Git Clone mit
 automatischer Bereinigung wurde hier als soliderer Ansatz gewählt.
 
 **Empfohlene Vale-Einstellungen für technische Dokumentation:**
 
-Siehe aktuelle Konfiguration in [`.vale.ini`](../.vale.ini) - die Einstellungen sind bereits für
+Siehe aktuelle Konfiguration in [`.vale.ini`](../../.vale.ini) - die Einstellungen sind bereits für
 technische Inhalte optimiert:
 
 - `MinAlertLevel = warning` - weniger streng für technische Inhalte

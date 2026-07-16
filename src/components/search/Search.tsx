@@ -67,7 +67,7 @@ const SearchPage = ({ searchList }: Props) => {
           <div className="col-10 px-0 lg:col-8">
             <div className="flex flex-nowrap">
               <input
-                className="glass intersect-no-queue w-full rounded-lg px-6 py-4 text-txt-p opacity-0 placeholder:text-txt-light focus:border-darkmode-border focus:ring-transparent intersect:animate-fadeDown dark:text-darkmode-txt-light dark:placeholder:text-darkmode-txt-light"
+                className="glass intersect-no-queue text-txt-p placeholder:text-txt-light focus:border-darkmode-border intersect:animate-fadeDown dark:text-darkmode-txt-light dark:placeholder:text-darkmode-txt-light w-full rounded-lg px-6 py-4 opacity-0 focus:ring-transparent"
                 placeholder="search posts"
                 type="search"
                 name="search"
@@ -82,7 +82,7 @@ const SearchPage = ({ searchList }: Props) => {
         </div>
         <div className="row">
           {searchResults?.length < 1 ? (
-            <div className="glass col-10 mx-auto rounded-lg p-2 text-center opacity-0 lg:col-8 intersect:animate-fadeUp">
+            <div className="glass intersect:animate-fadeUp col-10 mx-auto rounded-lg p-2 text-center opacity-0 lg:col-8">
               <p>
                 {inputVal.length < 1
                   ? "Looking for something?"
@@ -92,7 +92,7 @@ const SearchPage = ({ searchList }: Props) => {
           ) : (
             searchResults?.map(({ item }, index) => (
               <div className="px-0 py-2" key={`search-${index}`}>
-                <div className="glass col-10 mx-auto h-full rounded-lg p-4 opacity-0 lg:col-8 intersect:animate-fade">
+                <div className="glass intersect:animate-fade col-10 mx-auto h-full rounded-lg p-4 opacity-0 lg:col-8">
                   <h4 className="mb-2">
                     <a href={"/" + getPath(item)}>{item.data.title}</a>
                   </h4>

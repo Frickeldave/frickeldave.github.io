@@ -1,31 +1,46 @@
 .glass {
-  @apply bg-bg-s dark:bg-darkmode-bg-s;
-  @apply backdrop-blur-lg;
-  @apply bg-clip-padding backdrop-contrast-100 backdrop-saturate-100 backdrop-filter;
-  @apply bg-opacity-30 dark:bg-opacity-30;
-  @apply border border-[rgba(255,255,255,0.6)] dark:border-[rgba(255,255,255,0.15)];
+  background-color: rgba(221, 221, 221, 0.3);
+  backdrop-filter: blur(16px) contrast(1) saturate(1);
+  background-clip: padding-box;
+  border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+html.dark .glass {
+  background-color: rgba(68, 68, 68, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .glass-t {
-  @apply bg-bg-t dark:bg-darkmode-bg-t;
-  @apply bg-opacity-20 dark:bg-opacity-20;
-  @apply backdrop-blur;
-  @apply bg-clip-padding backdrop-contrast-100 backdrop-saturate-100 backdrop-filter;
-  @apply border border-[rgba(255,255,255,0.6)] dark:border-[rgba(255,255,255,0.15)];
+  background-color: rgba(221, 221, 221, 0.2);
+  backdrop-filter: blur(8px) contrast(1) saturate(1);
+  background-clip: padding-box;
+  border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.25);
 }
 
+html.dark .glass-t {
+  background-color: rgba(68, 68, 68, 0.2);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
 .glass-t-borderless {
-  @apply bg-bg-t dark:bg-darkmode-bg-t;
-  @apply bg-opacity-20 dark:bg-opacity-20;
-  @apply backdrop-blur;
-  @apply bg-clip-padding backdrop-contrast-100 backdrop-saturate-100 backdrop-filter;
+  background-color: rgba(221, 221, 221, 0.2);
+  backdrop-filter: blur(8px) contrast(1) saturate(1);
+  background-clip: padding-box;
+}
+
+html.dark .glass-t-borderless {
+  background-color: rgba(68, 68, 68, 0.2);
 }
 
 // Gradient
 .gradient {
-  @apply from-transparent via-transparent to-transparent;
+  --tw-gradient-from: transparent var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops:
+    var(--tw-gradient-from), transparent var(--tw-gradient-via-position),
+    var(--tw-gradient-to);
   // @apply from-txt-s via-transparent to-transparent;
   // @apply dark:from-darkmode-txt-s dark:via-transparent dark:to-transparent;
 }

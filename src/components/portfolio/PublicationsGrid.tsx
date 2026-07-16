@@ -68,12 +68,12 @@ const PublicationsGrid: React.FC<Props> = ({ publications }) => {
               {/* Year & Publisher */}
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {pub.year && (
-                  <span className="rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black dark:text-amber-300">
+                  <span className="rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-3 py-1 text-[10px] font-bold tracking-wider text-black uppercase dark:text-amber-300">
                     {pub.year}
                   </span>
                 )}
                 {pub.publisher && (
-                  <span className="rounded-full bg-gray-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                  <span className="rounded-full bg-gray-500/10 px-3 py-1 text-[10px] font-bold tracking-wider text-gray-600 uppercase dark:text-gray-400">
                     {pub.publisher}
                   </span>
                 )}
@@ -85,7 +85,7 @@ const PublicationsGrid: React.FC<Props> = ({ publications }) => {
               </h4>
 
               {/* Description */}
-              <p className="mb-4 line-clamp-2 text-xs text-txt-p opacity-80 dark:text-darkmode-txt-p">
+              <p className="text-txt-p dark:text-darkmode-txt-p mb-4 line-clamp-2 text-xs opacity-80">
                 {pub.description}
               </p>
 
@@ -110,7 +110,7 @@ const PublicationsGrid: React.FC<Props> = ({ publications }) => {
         <button
           onClick={shuffleItems}
           disabled={isAnimating}
-          className="inline-flex items-center gap-2 rounded-xl border border-amber-500/30 bg-white/5 px-6 py-3 font-medium text-txt-p transition-all duration-300 hover:bg-amber-500 hover:text-white hover:shadow-lg disabled:opacity-50 dark:text-darkmode-txt-p"
+          className="text-txt-p dark:text-darkmode-txt-p inline-flex items-center gap-2 rounded-xl border border-amber-500/30 bg-white/5 px-6 py-3 font-medium transition-all duration-300 hover:bg-amber-500 hover:text-white hover:shadow-lg disabled:opacity-50"
         >
           <FaSyncAlt
             className={`text-sm ${isAnimating ? "animate-spin" : ""}`}

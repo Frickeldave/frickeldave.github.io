@@ -107,7 +107,7 @@ const HandmadeGrid: React.FC<Props> = ({ projects }) => {
                   </h4>
 
                   {/* Description */}
-                  <p className="line-clamp-2 text-sm text-txt-p opacity-80 dark:text-darkmode-txt-p">
+                  <p className="text-txt-p dark:text-darkmode-txt-p line-clamp-2 text-sm opacity-80">
                     {project.description}
                   </p>
                 </div>
@@ -121,7 +121,7 @@ const HandmadeGrid: React.FC<Props> = ({ projects }) => {
         <button
           onClick={shuffleProjects}
           disabled={isAnimating}
-          className="inline-flex items-center gap-2 rounded-xl border border-amber-500/30 bg-white/5 px-6 py-3 font-medium text-txt-p transition-all duration-300 hover:bg-amber-500 hover:text-white hover:shadow-lg disabled:opacity-50 dark:text-darkmode-txt-p"
+          className="text-txt-p dark:text-darkmode-txt-p inline-flex items-center gap-2 rounded-xl border border-amber-500/30 bg-white/5 px-6 py-3 font-medium transition-all duration-300 hover:bg-amber-500 hover:text-white hover:shadow-lg disabled:opacity-50"
         >
           <FaSyncAlt
             className={`text-sm ${isAnimating ? "animate-spin" : ""}`}

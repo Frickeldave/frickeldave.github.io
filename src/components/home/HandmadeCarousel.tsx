@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Pagination } from "swiper/modules";
+import type { SwiperClass } from "swiper/react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "swiper/css";
-import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 type ProductWithImage = {
@@ -24,6 +24,8 @@ interface Props {
 }
 
 const HandmadeCarousel: React.FC<Props> = ({ products }) => {
+  const swiperRef = useRef<SwiperClass | null>(null);
+
   if (!products || products.length === 0) {
     return (
       <div className="glass rounded-lg p-8 text-center">
@@ -35,13 +37,12 @@ const HandmadeCarousel: React.FC<Props> = ({ products }) => {
   return (
     <div className="handmade-carousel relative">
       <Swiper
-        modules={[Autoplay, Navigation, Pagination]}
+        modules={[Autoplay, Pagination]}
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+        }}
         spaceBetween={24}
         slidesPerView={1}
-        navigation={{
-          prevEl: ".swiper-button-prev-custom",
-          nextEl: ".swiper-button-next-custom",
-        }}
         pagination={{
           clickable: true,
           el: ".swiper-pagination-custom",
@@ -105,13 +106,15 @@ const HandmadeCarousel: React.FC<Props> = ({ products }) => {
 
       {/* Custom Navigation */}
       <button
-        className="swiper-button-prev-custom glass absolute left-0 top-1/2 z-10 -ml-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
+        onClick={() => swiperRef.current?.slidePrev()}
+        className="glass absolute top-1/2 left-0 z-10 -ml-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
         aria-label="Vorheriges Produkt"
       >
         <FaChevronLeft className="text-lg" />
       </button>
       <button
-        className="swiper-button-next-custom glass absolute right-0 top-1/2 z-10 -mr-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
+        onClick={() => swiperRef.current?.slideNext()}
+        className="glass absolute top-1/2 right-0 z-10 -mr-4 -translate-y-1/2 cursor-pointer rounded-full p-3 transition-transform hover:scale-110"
         aria-label="Nächstes Produkt"
       >
         <FaChevronRight className="text-lg" />

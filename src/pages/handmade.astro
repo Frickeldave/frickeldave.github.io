@@ -5,6 +5,7 @@ import Sidebar from "@components/handmade/Sidebar.astro";
 import PageHeader from "@components/common/PageHeader.astro";
 import type { HandmadeData } from "@/types";
 import type { ImageMetadata } from "astro";
+import { getHandmadeCategoryLabel } from "@/lib/handmadeCategoryLabels";
 
 // Import placeholder image
 import placeholderImage from "@/assets/placeholder-product-notfound.png";
@@ -51,6 +52,7 @@ const getProductImage = (category: string, articleNumber: string) => {
 
 // Get unique categories and tags
 const categories = [...new Set(products.map((p) => p.category))];
+const categoryLabels = categories.map(getHandmadeCategoryLabel);
 const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
 ---
 
@@ -143,7 +145,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
                   class="mobile-category-filter rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-left text-sm transition-all duration-200 hover:bg-white/20"
                   data-category={category}
                 >
-                  {category}
+                  {getHandmadeCategoryLabel(category)}
                 </button>
               ))
             }
@@ -231,10 +233,11 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
 
         <!-- Sidebar -->
         <div
-          class="sticky top-[4rem] hidden max-h-static_sidemenu p-0 pl-4 lg:col-4 lg:flex"
+          class="max-h-static_sidemenu sticky top-[4rem] hidden p-0 pl-4 lg:col-4 lg:flex"
         >
           <Sidebar
             categories={categories}
+            categoryLabels={categoryLabels}
             allTags={allTags}
             totalProducts={products.length}
           />

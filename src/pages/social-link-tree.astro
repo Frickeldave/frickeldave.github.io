@@ -82,7 +82,7 @@ const enrichedLinks = links.map((link) => {
         <div class="lg:col-10">
           <!-- Profile Card -->
           <div
-            class="glass mb-6 rounded-lg p-8 opacity-0 intersect:animate-fadeUp"
+            class="glass intersect:animate-fadeUp mb-6 rounded-lg p-8 opacity-0"
           >
             <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
               {
@@ -121,14 +121,14 @@ const enrichedLinks = links.map((link) => {
                 <div class="mt-4 flex flex-wrap gap-3">
                   {
                     profile.highlights?.map((highlight) => (
-                      <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
+                      <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold tracking-wide text-white/80 uppercase">
                         {highlight}
                       </span>
                     ))
                   }
                   {
                     profile.location && (
-                      <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+                      <span class="rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold tracking-wide text-white/60 uppercase">
                         {profile.location}
                       </span>
                     )
@@ -146,7 +146,7 @@ const enrichedLinks = links.map((link) => {
                   href={link.url}
                   target={link.isExternal ? "_blank" : undefined}
                   rel={link.isExternal ? "noopener noreferrer" : undefined}
-                  class={`glass group flex items-center justify-between gap-4 rounded-lg p-4 opacity-0 transition duration-300 hover:bg-white/20 intersect:animate-fadeUp ${link.palette.card} ${link.palette.ring}`}
+                  class={`glass group intersect:animate-fadeUp flex items-center justify-between gap-4 rounded-lg p-4 opacity-0 transition duration-300 hover:bg-white/20 ${link.palette.card} ${link.palette.ring}`}
                 >
                   <div class="flex items-center gap-4">
                     <div
@@ -159,7 +159,7 @@ const enrichedLinks = links.map((link) => {
                         <p class="text-lg font-semibold">{link.label}</p>
                         {link.badge && (
                           <span
-                            class={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${link.palette.badge}`}
+                            class={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase ${link.palette.badge}`}
                           >
                             {link.badge}
                           </span>
@@ -192,7 +192,7 @@ const enrichedLinks = links.map((link) => {
 
           <!-- Legal Footer -->
           <div
-            class="glass rounded-lg p-4 text-center text-sm text-white/70 opacity-0 intersect:animate-fadeUp"
+            class="glass intersect:animate-fadeUp rounded-lg p-4 text-center text-sm text-white/70 opacity-0"
           >
             <div class="flex flex-wrap items-center justify-center gap-3">
               <span>Pflichtangaben:</span>

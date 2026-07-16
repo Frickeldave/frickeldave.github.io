@@ -13,7 +13,7 @@ export async function getLinkMappings(): Promise<LinkMappings> {
     return JSON.parse(data);
   } catch (error) {
     console.error("Error reading link mappings:", error);
-    throw new Error("Failed to load link mappings");
+    throw new Error("Failed to load link mappings", { cause: error });
   }
 }
 

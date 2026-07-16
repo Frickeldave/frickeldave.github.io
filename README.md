@@ -1,13 +1,13 @@
-<div align="center">
-  <img src="src/assets/logo/Logo_Flat-512.png" style="width:80%;" alt="Astrogon Logo" align="center" />
+<div align="left">
+  <img src="src/assets/logo/Logo_Flat-128.png" alt="Frickeldave Logo" align="left" />
 </div>
 
 ---
 
 [![Built with Astro](https://astro.badg.es/v2/built-with-astro/tiny.svg)](https://astro.build)
 
-[![GitHub License](https://img.shields.io/github/license/frickeldave/frickeldave-main?color=red)](https://github.com/astrogon/astrogon/blob/main/LICENSE)
-[![Repo Size](https://img.shields.io/github/repo-size/frickeldave/frickeldave-main)](https://github.com/astrogon/astrogon)
+[![GitHub License](https://img.shields.io/github/license/Frickeldave/frickeldave.github.io?color=red)](https://github.com/Frickeldave/frickeldave.github.io/blob/main/LICENSE)
+[![Repo Size](https://img.shields.io/github/repo-size/Frickeldave/frickeldave.github.io)](https://github.com/Frickeldave/frickeldave.github.io)
 ![GitHub branch check runs](https://img.shields.io/github/check-runs/frickeldave/frickeldave.github.io/main)
 [![Website](https://img.shields.io/website?up_message=online&up_color=limegreen&down_message=offline&down_color=yellow&url=https%3A%2F%2Ffrickeldave.de%2F)](https://frickeldave.github.io/)
 
@@ -28,31 +28,26 @@ This blog is built with modern web technologies:
   code quality
 - **[Astrogon Theme](https://github.com/astrogon/astrogon)** - A clean and minimal theme for
   Starlight documentation
-- **[MDX](https://mdxjs.com/)** - Markdown with embedded JSX components for rich content
-- **[GitHub Pages](https://pages.github.com/)** - Free hosting and deployment via GitHub Actions
-
-## Features
-
-## Documentation
 
 ### Onboarding & Setup
 
-- [Installation Guide](./docs/10-install.md)
-- [Usage Guide](./docs/11-usage.md)
-- [Commit Message Guidelines](./docs/12-commit-messages.md)
-- [Branching and Naming Strategy](./docs/13-branch-naming-strategy.md)
-- [Categories and Tags](./docs/14-categories-and-tags.md)
-- [Project Structure](./docs/15-structure.md)
-- [Architecture Decisions](./docs/40-architecture-decisions.md)
+- [Installation Guide](./docs/10-dev-install.md)
+- [Usage Guide](./docs/11-dev-usage.md)
+- [Commit Message Guidelines](./docs/12-dev-messages.md)
+- [Branching and Naming Strategy](./docs/13-dev-branch-naming-strategy.md)
+- [Categories and Tags](./docs/14-write-categories-and-tags.md)
+- [Project Structure](./docs/15-write-structure.md)
+- [Architecture Decisions](./docs/40-arch-architecture-decisions.md)
+- [Agent Setup](./docs/50-agent-setup.md)
 
 ### Design
 
-- [Design System](./docs/20-design-system.md)
+- [Design System](./docs/20-arch-design-system.md)
 
 ### Development
 
-- [Migration from WordPress](./docs/30-migration-from-wordpress.md)
-- [Prompt Summary](./docs/31-prompt-summary.md)
+- [Docker Setup](./docs/10-dev-install-docker.md)
+- [Scripts Overview](./scripts/README.md)
 
 ### Custom Features
 
@@ -66,7 +61,7 @@ This blog is built with modern web technologies:
 - [Linter Setup](./docs/linter/01-linter-start.md)
 - [Husky Integration](./docs/linter/02-linter-husky.md)
 - [ESLint Configuration](./docs/linter/03-linter-eslint.md)
-- [Prettier Formatting](./docs/linter/04-prettier.md)
+- [Prettier Formatting](./docs/linter/04-linter-prettier.md)
 - [Vale Linter](./docs/linter/05-linter-vale.md)
 
 ## License

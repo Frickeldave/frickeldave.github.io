@@ -1,11 +1,29 @@
 html {
-  @apply h-screen text-base;
+  height: 100vh;
+  font-size: 16px;
 }
 
 body {
-  @apply font-secondary font-normal leading-relaxed text-txt-s dark:text-darkmode-txt-s;
-  @apply bg-bg-p dark:bg-darkmode-bg-p;
-  @apply flex min-h-screen flex-col lg:mx-8;
+  font-family: "open sans", sans-serif;
+  font-weight: 400;
+  line-height: 1.625;
+  color: #222;
+  background-color: #fff;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+html.dark body {
+  color: #ddd;
+  background-color: #222;
+}
+
+@media (min-width: 1024px) {
+  body {
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
 }
 
 h1,
@@ -14,54 +32,94 @@ h3,
 h4,
 h5,
 h6 {
-  @apply font-primary font-bold leading-tight text-txt-p opacity-0 intersect:animate-fade dark:text-darkmode-txt-p;
+  font-family: serif;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #111;
+  opacity: 0;
+  animation: fadeIn 1000ms both;
   // @apply font-primary font-bold leading-tight bg-gradient-to-r from-orange-500 via-indigo-500 to-green-500 text-transparent bg-clip-text;
+}
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  color: #fff;
 }
 h1,
 .h1 {
-  @apply text-h1-sm md:text-h1;
+  font-size: 2.44140625rem;
+}
+@media (min-width: 768px) {
+  h1,
+  .h1 {
+    font-size: 3.0517578125rem;
+  }
 }
 h2,
 .h2 {
-  @apply text-h2-sm md:text-h2;
+  font-size: 1.953125rem;
+}
+@media (min-width: 768px) {
+  h2,
+  .h2 {
+    font-size: 2.44140625rem;
+  }
 }
 h3,
 .h3 {
-  @apply text-h3-sm md:text-h3;
+  font-size: 1.5625rem;
+}
+@media (min-width: 768px) {
+  h3,
+  .h3 {
+    font-size: 1.953125rem;
+  }
 }
 h4,
 .h4 {
-  @apply text-h4 font-medium;
+  font-size: 1.5625rem;
+  font-weight: 500;
 }
 h5,
 .h5 {
-  @apply text-h5 font-medium;
+  font-size: 1.25rem;
+  font-weight: 500;
 }
 h6,
 .h6 {
-  @apply text-h6 font-medium;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 p {
-  @apply opacity-0 intersect:animate-fade;
+  opacity: 0;
+  animation: fadeIn 1000ms both;
 }
 
 b,
 strong {
-  @apply font-semibold;
+  font-weight: 600;
 }
 
 img {
-  @apply mx-auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 a:hover,
 .a:hover {
-  @apply opacity-60;
+  opacity: 0.6;
 }
 
 hr {
-  @apply border-border dark:border-darkmode-border;
+  border-color: #ddd;
+}
+
+html.dark hr {
+  border-color: #444;
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -77,7 +135,13 @@ input[type="number"] {
 
 .katex {
   .base {
-    @apply text-txt-s dark:text-darkmode-txt-s;
+    color: #222;
+  }
+}
+
+html.dark .katex {
+  .base {
+    color: #ddd;
   }
 }
 

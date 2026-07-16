@@ -33,7 +33,6 @@ jspm_packages
 .yarn-integrity
 
 # Environment variables
-.env
 .env.*
 !.env.example
 
@@ -76,3 +75,14 @@ build-output.txt
 build-test.txt
 deploy-output.txt
 pagefind-output.txt
+# Squad: ignore runtime state (logs, inbox, sessions)
+.squad/orchestration-log/
+.squad/log/
+.squad/decisions/inbox/
+.squad/sessions/
+.squad/.scratch/
+.squad/.cache/
+# Squad: SubSquad activation file (local to this machine)
+.squad-workstream
+# Active issue marker (local to this machine)
+.frickeldave-active-issue

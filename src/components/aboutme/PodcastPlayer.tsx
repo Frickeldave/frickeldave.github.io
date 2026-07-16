@@ -90,7 +90,7 @@ export default function PodcastPlayer({ audioUrl }: PodcastPlayerProps) {
             onChange={handleSeek}
             className="podcast-slider w-full"
           />
-          <div className="mt-1 flex justify-between text-xs text-txt-p/60 dark:text-darkmode-txt-p/60">
+          <div className="text-txt-p/60 dark:text-darkmode-txt-p/60 mt-1 flex justify-between text-xs">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>

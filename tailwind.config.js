@@ -1,4 +1,10 @@
-import plugin from "tailwindcss/plugin";
+import plugin from "tailwindcss/plugin.js";
+import typography from "@tailwindcss/typography";
+import forms from "@tailwindcss/forms";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const bootstrapGrid = require("tailwind-bootstrap-grid");
 
 let font_base = 16;
 let font_scale = 1.25;
@@ -24,7 +30,7 @@ fontSecondary = fontSecondary
   .replace(/:[ital,]*[ital@]*[wght@]*[0-9,;]+/gi, "");
 
 /** @type {import("tailwindcss").Config} */
-module.exports = {
+export default {
   content: ["./src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}"],
   safelist: [],
   darkMode: "class",
@@ -167,9 +173,9 @@ module.exports = {
     },
   },
   plugins: [
-    require("@tailwindcss/typography"),
-    require("@tailwindcss/forms"),
-    require("tailwind-bootstrap-grid")({
+    typography,
+    forms,
+    bootstrapGrid({
       generateContainer: false,
       gridGutterWidth: "2rem",
       gridGutters: {

@@ -11,9 +11,9 @@ const Accordion = ({
   const [show, setShow] = useState(false);
 
   return (
-    <div className="mb-6 overflow-hidden rounded-lg border border-border dark:border-darkmode-border">
+    <div className="border-border dark:border-darkmode-border mb-6 overflow-hidden rounded-lg border">
       <button
-        className="glass-t-borderless flex w-full cursor-pointer items-center justify-between px-4 py-2 text-lg text-txt-p dark:text-darkmode-txt-p"
+        className="glass-t-borderless text-txt-p dark:text-darkmode-txt-p flex w-full cursor-pointer items-center justify-between px-4 py-2 text-lg"
         onClick={() => setShow(!show)}
       >
         {title}

@@ -28,7 +28,7 @@ const { education, achievements } = entry.data;
                   <p class="mb-1 font-medium text-amber-600 dark:text-amber-400">
                     {edu.institution}
                   </p>
-                  <span class="glass-t rounded px-2 py-1 text-xs text-txt-p dark:text-darkmode-txt-p">
+                  <span class="glass-t text-txt-p dark:text-darkmode-txt-p rounded px-2 py-1 text-xs">
                     {edu.year}
                   </span>
                 </div>
@@ -48,7 +48,7 @@ const { education, achievements } = entry.data;
             <div class="space-y-3">
               {achievements.map((achievement, _index) => (
                 <div class="flex items-start">
-                  <span class="mr-3 mt-1 text-yellow-500">🏆</span>
+                  <span class="mt-1 mr-3 text-yellow-500">🏆</span>
                   <span class="text-txt-p dark:text-darkmode-txt-p">
                     {achievement}
                   </span>
@@ -63,6 +63,7 @@ const { education, achievements } = entry.data;
 </div>
 
 <style>
+  @reference "../../styles/tailwind.css";
   .glass-t {
     @apply border border-white/20 bg-white/10 backdrop-blur-sm dark:border-gray-600/30 dark:bg-gray-800/20;
   }

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Fragen und Support
+    url: https://github.com/Frickeldave/frickeldave.github.io/discussions
+    about: Bitte stelle allgemeine Fragen im Diskussionsbereich
+  - name: E-Mail Kontakt
+    url: mailto:david@frickeldave.de
+    about: Für vertrauliche Anfragen oder spezielle Anliegen

@@ -4,17 +4,18 @@ import { FaFilter, FaSort, FaHashtag } from "react-icons/fa";
 
 interface Props {
   categories: string[];
+  categoryLabels: string[];
   allTags: string[];
   totalProducts: number;
 }
 
-const { categories, allTags, totalProducts } = Astro.props;
+const { categories, categoryLabels, allTags, totalProducts } = Astro.props;
 ---
 
 <ScrollArea className="h-full w-full" client:only="react">
   <!-- Results Count -->
   <div
-    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
+    class="glass intersect:animate-fadeLeft m-2 mb-4 rounded-lg p-4 opacity-0"
   >
     <div class="text-sm opacity-80" id="results-count">
       {totalProducts} von {totalProducts} Produkten
@@ -23,7 +24,7 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Search -->
   <div
-    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
+    class="glass intersect:animate-fadeLeft m-2 mb-4 rounded-lg p-4 opacity-0"
   >
     <div>
       <h4 class="mb-2">
@@ -42,7 +43,7 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Categories -->
   <div
-    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
+    class="glass intersect:animate-fadeLeft m-2 mb-4 rounded-lg p-4 opacity-0"
   >
     <div>
       <h4 class="mb-2">
@@ -52,13 +53,13 @@ const { categories, allTags, totalProducts } = Astro.props;
       <hr class="-mt-1 mb-2 border-cyan-500/30" />
       <ul class="space-y-2" id="category-filters">
         {
-          categories.map((category) => (
+          categories.map((category, index) => (
             <li>
               <button
                 class="category-filter glass-t w-full rounded-lg px-3 py-1.5 text-left text-sm transition-all hover:bg-white/20"
                 data-category={category}
               >
-                {category}
+                {categoryLabels[index] ?? category}
               </button>
             </li>
           ))
@@ -69,7 +70,7 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Tags -->
   <div
-    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
+    class="glass intersect:animate-fadeLeft m-2 mb-4 rounded-lg p-4 opacity-0"
   >
     <div>
       <h4 class="mb-2">
@@ -94,7 +95,7 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Customizable Filter -->
   <div
-    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
+    class="glass intersect:animate-fadeLeft m-2 mb-4 rounded-lg p-4 opacity-0"
   >
     <div>
       <h4 class="mb-2">
@@ -118,7 +119,7 @@ const { categories, allTags, totalProducts } = Astro.props;
 
   <!-- Sort -->
   <div
-    class="glass m-2 mb-4 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft"
+    class="glass intersect:animate-fadeLeft m-2 mb-4 rounded-lg p-4 opacity-0"
   >
     <div>
       <h4 class="mb-2">
@@ -139,7 +140,7 @@ const { categories, allTags, totalProducts } = Astro.props;
   </div>
 
   <!-- Clear Filters -->
-  <div class="glass m-2 rounded-lg p-4 opacity-0 intersect:animate-fadeLeft">
+  <div class="glass intersect:animate-fadeLeft m-2 rounded-lg p-4 opacity-0">
     <button
       id="clear-filters"
       class="w-full rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 px-3 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-cyan-600 hover:to-teal-600"

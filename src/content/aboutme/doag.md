@@ -3,17 +3,17 @@ visible: true
 title: "DOAG & DOAG Voices"
 description: "Meine Aktivitäten bei der DOAG und als Co-Host des DOAG VOICES Podcasts"
 intro: |
-  Die DOAG ist ein IT-Verein mit rund 6.000 Mitgliedern in Deutschland, Österreich und der Schweiz mit Hauptsitz in Berlin. Die DOAG versteht sich als Plattform für den fachlichen Austausch rund um moderne IT-Themen – von Datenbanken über Cloud-native Entwicklung bis hin zu Künstlicher Intelligenz.
+  Die DOAG ist ein IT-Verein mit rund 6.000 Mitgliedern in Deutschland, Österreich und der Schweiz mit Hauptsitz in Berlin. Die DOAG versteht sich als Plattform für den fachlichen Austausch rund um moderne IT-Themen–von Datenbanken über Cloud-native Entwicklung bis hin zu Künstlicher Intelligenz.
 
   Als Mitglied der DOAG engagiere ich mich besonders in den Themenfeldern **Cloud** und **Künstliche Intelligenz**. Die Community bietet mir die Möglichkeit, mein Wissen zu teilen, von anderen Experten zu lernen und aktiv die Zukunft der IT-Landschaft mitzugestalten.
 podcast_intro: |
   **DOAG VOICES** ist der offizielle Podcast der DOAG mit dem Untertitel „Zwischen KI, Cloud und Karriere". Als Co-Host moderiere ich regelmäßig Gespräche mit IT-Experten, Entwicklern und Vordenkern der Branche. Der Podcast erscheint in verschiedenen Editionen, die das breite Spektrum der DOAG-Community abbilden:
 
-  - **People** – Persönliche Geschichten hinter dem Fachwissen
-  - **FutureAI** – KI im Hier und Morgen, Ethik und Zukunftsvisionen
-  - **DataWorld** – Von Analytics bis zu intelligenten Architekturen
-  - **CloudTalk** – Wie Cloud-Technologien Unternehmen verändern
-  - **DevLand** – Moderne Softwareentwicklung zwischen Wandel und multiplen Perspektiven
+  - **People**–Persönliche Geschichten hinter dem Fachwissen
+  - **FutureAI**–KI im Hier und Morgen, Ethik und Zukunftsvisionen
+  - **DataWorld**–Von Analytics bis zu intelligenten Architekturen
+  - **CloudTalk**–Wie Cloud-Technologien Unternehmen verändern
+  - **DevLand**–Moderne Softwareentwicklung zwischen Wandel und multiplen Perspektiven
 
   Das Konzept verbindet technische Tiefe mit menschlichen Perspektiven. In jeder Folge geht es nicht nur um Tools und Technologien, sondern auch um die Menschen, die sie nutzen, und die Herausforderungen, vor denen sie stehen.
 podcast_platforms:
@@ -153,7 +153,7 @@ episodes:
     guests: Sarah Stemmler und Alexandra Feix
     date: 21. April 2026
     description: >-
-      Wie gelingt es, Künstliche Intelligenz nicht nur technisch, sondern auch kulturell erfolgreich in einem Unternehmen zu verankern? Sarah Stemmler von synsugar und Alexandra Feix von Vossloh sprechen über den internen KI-Assistenten 'Ed', benannt nach Firmengründer Eduard Vossloh. Die Episode beleuchtet den Weg von ersten Überlegungen bis zur eigenen Plattform und zeigt, warum erfolgreiche KI-Einführung weit mehr ist als die Auswahl eines Sprachmodells – es geht um Datenqualität, Governance und vor allem um Menschen.
+      Wie gelingt es, Künstliche Intelligenz nicht nur technisch, sondern auch kulturell erfolgreich in einem Unternehmen zu verankern? Sarah Stemmler von synsugar und Alexandra Feix von Vossloh sprechen über den internen KI-Assistenten 'Ed', benannt nach Firmengründer Eduard Vossloh. Die Episode beleuchtet den Weg von ersten Überlegungen bis zur eigenen Plattform und zeigt, warum erfolgreiche KI-Einführung weit mehr ist als die Auswahl eines Sprachmodells–es geht um Datenqualität, Governance und vor allem um Menschen.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
       apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
@@ -179,7 +179,7 @@ episodes:
     guests: Dave König, Gregor Biswanger und Florian Lenz
     date: 7. April 2026
     description: >-
-      KI schreibt Code, baut Anwendungen und übernimmt immer mehr Aufgaben – doch was bleibt eigentlich noch beim Entwickler? Dave König spricht mit den Microsoft MVPs Gregor Biswanger und Florian Lenz über die Realität moderner Softwareentwicklung zwischen KI-Hype und Architekturverantwortung. Im Gespräch wird deutlich, wie stark sich die Anforderungen verändert haben: Vom Spezialisten zum Full-Stack-Generalisten mit DevOps-, Cloud- und KI-Kompetenzen. Ein zentrales Spannungsfeld entsteht dabei zwischen Geschwindigkeit und Qualität – während KI schnelle Ergebnisse liefert, bleiben Architektur, Struktur und saubere Entwicklungsprozesse essenziell.
+      KI schreibt Code, baut Anwendungen und übernimmt immer mehr Aufgaben–doch was bleibt eigentlich noch beim Entwickler? Dave König spricht mit den Microsoft MVPs Gregor Biswanger und Florian Lenz über die Realität moderner Softwareentwicklung zwischen KI-Hype und Architekturverantwortung. Im Gespräch wird deutlich, wie stark sich die Anforderungen verändert haben: Vom Spezialisten zum Full-Stack-Generalisten mit DevOps-, Cloud- und KI-Kompetenzen. Ein zentrales Spannungsfeld entsteht dabei zwischen Geschwindigkeit und Qualität–während KI schnelle Ergebnisse liefert, bleiben Architektur, Struktur und saubere Entwicklungsprozesse essenziell.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
       apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
@@ -257,11 +257,11 @@ episodes:
     guests: Dave König und Anna Klara Kneller
     date: 3. März 2026
     description: >-
-      APIs sind das Rückgrat moderner IT – und zugleich eine der größten Quellen für Komplexität und
+      APIs sind das Rückgrat moderner IT–und zugleich eine der größten Quellen für Komplexität und
       Sicherheitsrisiken. Cloud- und API-Expertin Anna Klara Kneller spricht über ihre Arbeit im
       API-Management eines großen Public-Sector-Projekts und erklärt, warum erfolgreiche
       Schnittstellen vor allem Abstimmung zwischen Menschen erfordern. Außerdem: Wie KI-Traffic die
-      Infrastruktur zunehmend belastet, warum API-Gateways nicht immer die Lösung sind – und weshalb
+      Infrastruktur zunehmend belastet, warum API-Gateways nicht immer die Lösung sind–und weshalb
       Diversität und Women-in-Tech-Initiativen entscheidend für bessere Technologie sind.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
@@ -270,7 +270,7 @@ episodes:
     audioUrl: >-
       https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/69a686fd2d99077ec36de23e/media.mp3
   - id: doag-voices-92686
-    title: Souveräne KI aus Deutschland – Wie DeutschlandGPT Datenschutz und Innovation verbindet
+    title: Souveräne KI aus Deutschland–Wie DeutschlandGPT Datenschutz und Innovation verbindet
     edition: FutureAI
     guests: Dave König und Leonhard Benkert
     date: 24. Februar 2026
@@ -287,12 +287,12 @@ episodes:
     audioUrl: >-
       https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/699d4c7be3f0d89ce202cb80/media.mp3
   - id: doag-voices-61082
-    title: Warum KI fragt statt ersetzt – mit Mirko Seifert
+    title: Warum KI fragt statt ersetzt–mit Mirko Seifert
     edition: FutureAI
     guests: Dave König und Mirko Seifert
     date: 17. Februar 2026
     description: >-
-      Künstliche Intelligenz verspricht enorme Produktivitätsschübe in der Softwareentwicklung –
+      Künstliche Intelligenz verspricht enorme Produktivitätsschübe in der Softwareentwicklung–
       doch viele Probleme entstehen lange vor dem ersten Code. Unternehmer und Softwarearchitekt
       Mirko Seifert spricht mit Dave König darüber, warum unklare Anforderungen oft die eigentlichen
       Projektkiller sind und wie KI durch gezielte Rückfragen bessere Anforderungen ermöglicht. Die
@@ -313,7 +313,7 @@ episodes:
       Low-Code und No-Code verändern die Softwareentwicklung grundlegend. Markus Bernhart und
       Vanessa Schmitz diskutieren mit Dave König über moderne Plattformen, Citizen Developer,
       Governance-Anforderungen und das Zusammenspiel von Low-Code mit KI. Die Episode zeigt, warum
-      Low-Code keine Abkürzung, sondern eine Erweiterung professioneller Entwicklung ist – und wie
+      Low-Code keine Abkürzung, sondern eine Erweiterung professioneller Entwicklung ist–und wie
       Vibe-Coding und agentische Systeme die Zukunft prägen.
     links:
       spotify: "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB"
@@ -342,7 +342,7 @@ episodes:
     guests: "Dave König und Dr. Melanie Sigl"
     date: "27. Januar 2026"
     description: >-
-      Künstliche Intelligenz ist allgegenwärtig – doch der erfolgreiche Einsatz beginnt nicht mit
+      Künstliche Intelligenz ist allgegenwärtig–doch der erfolgreiche Einsatz beginnt nicht mit
       dem Training eines Modells, sondern mit der richtigen Auswahl.
     links:
       spotify: "https://open.spotify.com/episode/2RGCSMN8T3yUxP7bB7O641"
@@ -357,7 +357,7 @@ episodes:
     date: "20. Januar 2026"
     description: >-
       In dieser Folge stellen die drei ein neues Konferenzformat vor: DevLand. Die Veranstaltung
-      versteht sich als Plattform für moderne Softwareentwicklung – von Cloud-Architektur über
+      versteht sich als Plattform für moderne Softwareentwicklung–von Cloud-Architektur über
       KI-gestützte Entwicklung bis hin zu Daten, Karriere und strategischen C-Level-Perspektiven.
     links:
       spotify: "https://open.spotify.com/episode/37MPbh2LJ89EpsuzEZSY3L"
@@ -371,7 +371,7 @@ episodes:
     guests: "Dave König und Benedikt Backhaus"
     date: "20. Januar 2026"
     description: >-
-      Künstliche Intelligenz ist längst im Arbeitsalltag angekommen – doch zwischen technologischen
+      Künstliche Intelligenz ist längst im Arbeitsalltag angekommen–doch zwischen technologischen
       Möglichkeiten und realem Mehrwert klafft oft eine große Lücke. In dieser Folge spreche ich mit
       Benedikt Backhaus darüber, wie KI sinnvoll, verantwortungsvoll und wirksam in Organisationen
       eingesetzt werden kann.
@@ -403,10 +403,10 @@ episodes:
     guests: "Dr. Benjamin Linnik und Óscar Nájera"
     date: "30. Dezember 2025"
     description: >-
-      KI-Systeme lesen heute nicht mehr nur mit – sie dominieren den Traffic im Web. Dr. Benjamin
+      KI-Systeme lesen heute nicht mehr nur mit–sie dominieren den Traffic im Web. Dr. Benjamin
       Linnik spricht mit dem Physiker und KI-Experten Óscar Nájera über eine überraschende
       Beobachtung: Sein persönlicher Blog wurde massiv von KI-Crawlern wie OpenAI und Anthropic
-      besucht – mit spürbaren Folgen für seine eigene Infrastruktur. Sie diskutieren, was es
+      besucht–mit spürbaren Folgen für seine eigene Infrastruktur. Sie diskutieren, was es
       bedeutet, Inhalte nicht mehr primär für Menschen, sondern für Maschinen zu erstellen, warum
       klassische Monetarisierungsmodelle versagen und welche neuen Ideen es für ein faires,
       nachhaltiges Web im KI-Zeitalter braucht.
@@ -425,7 +425,7 @@ episodes:
       Wido Fath, Geschäftsführer der Fath-Gruppe, zeigt im Gespräch mit Dr. Benjamin Linnik, warum
       KI-Transformation in industriellen Unternehmen nicht mit Technologie beginnt, sondern mit
       Menschen, Kultur und mutigen Mini-Schritten. Ein Gespräch über echte Hürden, falsche
-      Erwartungen, erste Erfolge, Leadership, Ängste – und warum KI Unternehmen paradoxerweise
+      Erwartungen, erste Erfolge, Leadership, Ängste–und warum KI Unternehmen paradoxerweise
       wieder menschlicher machen kann.
     links:
       spotify: "https://open.spotify.com/episode/0yGfdZNCzRXZAUGLofl4TZ"
@@ -442,7 +442,7 @@ episodes:
       Wie souverän kann Cloud wirklich sein? Ich spreche mit Martin Mangold, Senior Vice President
       Plattform & Operations bei DriveLock SE, über europäische Sicherheitsplattformen,
       Cloud-Architekturen ohne Vendor Lock-in, die Delos-Cloud, Kubernetes-Strategien,
-      internationale Anforderungen an Security – und warum 'Made in Europe' weltweit zum Argument
+      internationale Anforderungen an Security–und warum 'Made in Europe' weltweit zum Argument
       wird. Außerdem werfen wir einen Blick auf KI in hochsensiblen Bereichen und spielen eine
       weitere Ausgabe der DOAG-Tech-oder-Myth-Fakten.
     links:
@@ -457,7 +457,7 @@ episodes:
     guests: "Dave König und Dr. Ralf S. Engelschall"
     date: "9. Dezember 2025"
     description: >-
-      In dieser Folge spreche ich mit Dr. Ralf S. Engelschall – Informatiker, Softwarearchitekt,
+      In dieser Folge spreche ich mit Dr. Ralf S. Engelschall–Informatiker, Softwarearchitekt,
       Open-Source-Pionier (u. a. Apache-Foundation-Mitbegründer), CTO und Vordenker moderner KI- und
       Systemarchitekturen. Ein Gespräch über Evolution statt Revolution, über 'Emergenz als
       Naturgesetz der Technik' und darüber, warum Software niemals fertig, sondern immer organisch
@@ -478,7 +478,7 @@ episodes:
       Im zweiten Teil tauche ich mit Sebastian Kister tief in die Praxis einer 'Production Ready
       Agentic AI Operations Architecture' ein. Sebastian zeigt, warum klassische Automatisierung im
       dynamischen IT-Umfeld an Grenzen stößt, wie Context Engineering funktioniert, was
-      deterministische KI-Workflows ermöglichen – und weshalb Audi heute als aktiver
+      deterministische KI-Workflows ermöglichen–und weshalb Audi heute als aktiver
       Open-Source-Contributor auftritt. Ein Gespräch über technische Paradigmenwechsel,
       Community-Kultur, People-First-Transformation und echte Leidenschaft für Technologie.
     links:
@@ -495,7 +495,7 @@ episodes:
     description: >-
       Sebastian Kister über Transformation, Multi-Cloud-Architekturen, Container-Plattformen und
       echte Innovationskultur. Wie transformiert man ein Unternehmen mit über 3.400 Beteiligungen?
-      Was bedeutet 'People First' wirklich – und wie baut man bei Audi eine hochskalierbare
+      Was bedeutet 'People First' wirklich–und wie baut man bei Audi eine hochskalierbare
       Containerplattform, die Tausende Anwendungen trägt? Ein Gespräch über kulturelle
       Transformation, TCO-Strategien, Multi-Cloud-Architekturen, Plattformstabilität und die Frage,
       warum Menschen und Problemlösung immer vor Prozessen stehen sollten.
@@ -515,7 +515,7 @@ episodes:
       zweier Unternehmen im KI- und Cloud-Umfeld. Paul berichtet von seiner Zeit im IBM-Watson-Team,
       seiner Arbeit in Cloud-Migrationsprojekten und den Gründen für die Gründung von Pexon und
       später Scaley. Im Mittelpunkt stehen praktische KI-Anwendungen für kleine und mittlere
-      Unternehmen – von automatisierten Angebotsprozessen bis zu Low-Code-Workflows.
+      Unternehmen–von automatisierten Angebotsprozessen bis zu Low-Code-Workflows.
     links:
       spotify: "https://open.spotify.com/episode/5piejgAWc9xTfRgMCn03zl"
       apple: "https://podcasts.apple.com/de/podcast/doag-voices-futureai-mit-dave-k%C3%B6nig-und-paul-niebler/id1847181531"
@@ -530,7 +530,7 @@ episodes:
     description: >-
       Was, wenn Gesetze nicht mehr vorschreiben, wie etwas geschehen muss, sondern nur noch wofür?
       Dr. Benjamin Linnik, Physiker und KI-Architekt, und Baltasar Cevc, Jurist für IT- und
-      Datenschutzrecht, diskutieren, ob der europäische AI Act Innovation bremst – und wie eine
+      Datenschutzrecht, diskutieren, ob der europäische AI Act Innovation bremst–und wie eine
       sinnorientierte Regulierung aussehen könnte. Ein Gespräch über Verantwortung,
       gesellschaftlichen Diskurs und die Frage, ob wir als Gesellschaft überhaupt bereit sind,
       selbst zu entscheiden, wohin die KI-Reise gehen soll.
@@ -546,11 +546,11 @@ episodes:
     guests: "Dr. Benjamin Linnik und Lyubomir Yordanov"
     date: "11. November 2025"
     description: >-
-      Wie weit ist Künstliche Intelligenz in der Praxis wirklich – und was bedeutet das für
+      Wie weit ist Künstliche Intelligenz in der Praxis wirklich–und was bedeutet das für
       Unternehmen? Dr. Benjamin Linnik und Lyubomir Yordanov sprechen über die nächste
       Evolutionsstufe von KI-Systemen: Agenten, die selbstständig denken, handeln und lernen. Vom
       Retrieval-Augmented-Generation-Ansatz über das neue Model Context Protocol (MCP) bis hin zu
-      Schwarmintelligenz und Selbstorganisation – hier geht es um nichts Geringeres als die Zukunft
+      Schwarmintelligenz und Selbstorganisation–hier geht es um nichts Geringeres als die Zukunft
       der digitalen Arbeit.
     links:
       spotify: "https://open.spotify.com/episode/2FKFEVZhoPHP0aB2d0L3b6"
@@ -568,7 +568,7 @@ episodes:
       Wandel der Softwareentwicklung durch Künstliche Intelligenz. Tobias erzählt, wie GitHub
       Copilot seinen Blick auf KI verändert hat, warum Entwickler trotz KI-Komfort ihre Skills
       trainieren müssen und wie Adesso mit der 'AI Force' die unternehmensweite Einführung von KI
-      gestaltet. Ein Gespräch über Verantwortung, Lernkultur, Communities – und den Spaß am
+      gestaltet. Ein Gespräch über Verantwortung, Lernkultur, Communities–und den Spaß am
       Ausprobieren.
     links:
       spotify: "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB"
@@ -585,7 +585,7 @@ episodes:
       Was passiert mit der Arbeit, wenn Künstliche Intelligenz immer mehr Aufgaben übernimmt? Dr.
       Benjamin Linnik spricht mit Oliver Szymanski (KI-Vorstand der DOAG & Chief Technical
       Architect, IT-Systemhaus der Bundesagentur für Arbeit) über die gesellschaftlichen und
-      beruflichen Auswirkungen der KI-Revolution. Welche Jobs verschwinden, welche entstehen – und
+      beruflichen Auswirkungen der KI-Revolution. Welche Jobs verschwinden, welche entstehen–und
       wie können wir Wandel aktiv gestalten? Ein Gespräch über Chancen, Verantwortung und den Mut,
       Technologie menschlich zu denken.
     links:
@@ -602,7 +602,7 @@ episodes:
     description: >-
       Dr. Benjamin Linnik spricht mit Johann-Peter Hartmann, CTO, Gründer und KI-Experte, über die
       Zukunft agentischer Systeme und die Frage, wie lernfähige KI-Agents die Softwareentwicklung
-      verändern. Ein Gespräch über evolutionäre Algorithmen, Explainable AI, Selbstheilung im Code –
+      verändern. Ein Gespräch über evolutionäre Algorithmen, Explainable AI, Selbstheilung im Code–
       und warum ein Agentenschwarm manchmal wie ein Sack Katzen ist.
     links:
       spotify: "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB"
@@ -618,7 +618,7 @@ episodes:
     description: >-
       In dieser Ausgabe spricht Redakteur Marcos López mit mir über meinen Werdegang bei adesso und
       meine Leidenschaft fürs Maker-Handwerk. Wir sprechen darüber, warum Softwareentwicklung für
-      mich eher Handwerk als Ingenieurskunst ist, wie ich mit Low-Code und KI experimentiere – und
+      mich eher Handwerk als Ingenieurskunst ist, wie ich mit Low-Code und KI experimentiere–und
       wie aus meinem Hobby mit 3D-Druck und Holzbau ein echtes Lebenskonzept geworden ist.
     links:
       spotify: "https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB"

@@ -1,185 +1,112 @@
 # FR006: Automatisierte Deployment-Workflows
 
-Dieses Dokument beschreibt die automatisierten Deployment-Workflows: `npm run deploy:dev` zum
-Deployen lokaler Änderungen in den `dev`-Branch, und `npm run deploy:prd` zum Promoten von `dev` in
-die Produktion auf `main`.
+Dieses Dokument beschreibt den aktuellen automatisierten Deployment-Ablauf des Repositories.
 
-- [FR006: Automatisierte Deployment-Workflows](#fr006-automatisierte-deployment-workflows)
-  - [Übersicht](#übersicht)
-  - [Architektur](#architektur)
-  - [Voraussetzungen](#voraussetzungen)
-  - [deploy:dev — Workflow-Schritte](#deploydev--workflow-schritte)
-  - [deploy:prd — Workflow-Schritte](#deployprd--workflow-schritte)
-  - [CLI-Parameter](#cli-parameter)
-    - [deploy:dev](#deploydev)
-    - [deploy:prd](#deployprd)
-  - [Fehlerbehandlung \& Rollback](#fehlerbehandlung--rollback)
-  - [Output-Design](#output-design)
+Die früher dokumentierten npm-Skripte `deploy:dev` und `deploy:prd` existieren nicht mehr. Die
+Automatisierung läuft heute über GitHub Actions und branch-basierte Workflows.
 
 ## Übersicht
 
-Beide Deployment-Modi werden über ein einziges Script gesteuert:
+Es gibt zwei operative Deployment-Wege:
 
-- **`npm run deploy:dev`** — Committet und pusht lokale Änderungen nach `dev`. Führt Quality Gates
-  mit Auto-Fix durch, generiert per Copilot CLI (oder Fallback) eine Commit-Message, und gibt den
-  Link zum GitHub Actions Deployment aus.
-- **`npm run deploy:prd`** — Mergt `dev` in `main` für ein Produktions-Deployment. Verwaltet GitHub
-  Issues (erstellen + schließen) zur Release-Dokumentation.
+- **`dev`-Deployment**: Ein Push auf `dev` triggert
+  [.github/workflows/deploy-dev.yml](../../.github/workflows/deploy-dev.yml).
+- **Produktions-Deployment**: Ein Push auf `main` triggert
+  [.github/workflows/deploy-prd.yml](../../.github/workflows/deploy-prd.yml).
 
-Die gesamte Logik liegt in einem Script: [deploy.mjs](../../scripts/workflows/ci/deploy.mjs)
+Die lokale Vorbereitung des Merges erfolgt derzeit manuell per Git oder mit
+[scripts/merge-branches.mjs](../../scripts/merge-branches.mjs). In VS Code steht zusätzlich die Task
+`Deploy to Main` aus [.vscode/tasks.json](../../.vscode/tasks.json) zur Verfügung.
 
 ## Architektur
 
-Das Script ersetzt die vorherige Architektur aus 23 Einzelscripts mit geteiltem State-File. Die neue
-Lösung:
+Die Deployments sind heute bewusst aufgeteilt:
 
-- **Ein Script, zwei Modi** — `deploy.mjs dev` oder `deploy.mjs prd`
-- **Kein State-File** — Alle Daten werden im Speicher gehalten (kein `.state/`-Ordner)
-- **Copilot CLI optional** — Falls `copilot` nicht verfügbar ist, wird eine Commit-Message
-  automatisch aus der Diff-Statistik generiert
-- **Quality Gates mit Auto-Fix** — `npm run format` und `npm run lint` statt nur Check
-- **Minimale Ausgabe** — Eine Zeile pro Schritt bei Erfolg, Details nur im Fehlerfall
-- **Rollback bei Fehler** — Bei `deploy:prd` wird `main` automatisch zurückgesetzt, wenn nach dem
-  Merge ein Fehler auftritt (sofern noch nicht gepusht wurde)
-- **Kein Shell-Escaping** — Commit-Messages werden via `execFileSync` übergeben (keine
-  Injection-Gefahr)
+- `deploy-dev.yml` stößt nach einem Push auf `dev` ein nachgelagertes HomeNet-Deployment an.
+- `deploy-prd.yml` baut die Astro-Site auf `main` und veröffentlicht sie über GitHub Pages.
+- Die Validierung vor dem Push bleibt lokal: `npm run build`, `npm run lint:check` und optional
+  `npm run prose`.
+- Der Branch-Merge von `dev` nach `main` ist ein eigener bewusst sichtbarer Schritt.
 
 ```mermaid
 flowchart TD
-  start(["npm run deploy:dev / deploy:prd"])
-  split{"dev oder prd?"}
-
-  d1["1. Prerequisites"]
-  d2["2. Analyze Changes"]
-  d3["3. Generate Commit Message (AI/Fallback)"]
-  d4["4. Quality Gates (auto-fix)"]
-  d5["5. Build"]
-  d6["6. Commit"]
-  d7["7. Push"]
-  d8["8. Merge to dev + Cleanup (nur Feature-Branch)"]
-  d9["9. Deploy Check (timeout 30s)"]
-
-  p1["1. Prerequisites (strict)"]
-  p2["2. Issue Check"]
-  p3["3. Analyze (main..dev)"]
-  p4["4. Generate Summary + Create Issue"]
-  p5["5. Merge dev → main"]
-  p6["6. Quality Gates"]
-  p7["7. Build"]
-  p8["8. Push main"]
-  p9["9. Deploy Check (timeout 30s)"]
-  p10["10. Close Issue"]
-  p11["11. Switch to dev"]
-
-  start --> split
-  split -->|dev| d1 --> d2 --> d3 --> d4 --> d5 --> d6 --> d7 --> d8 --> d9
-  split -->|prd| p1 --> p2 --> p3 --> p4 --> p5 --> p6 --> p7 --> p8 --> p9 --> p10 --> p11
+  start([Lokale Änderungen]) --> verify[Lokale Checks]
+  verify --> pushDev[Push nach dev]
+  pushDev --> devWorkflow[deploy-dev.yml]
+  devWorkflow --> homenet[HomeNet Deployment]
+  homenet --> verifyDev[Verifikation]
+  verifyDev --> mergeMain[Merge dev nach main]
+  mergeMain --> pushMain[Push nach main]
+  pushMain --> prdWorkflow[deploy-prd.yml]
+  prdWorkflow --> githubPages[GitHub Pages]
 ```
 
 ## Voraussetzungen
 
-Beide Workflows erfordern:
+Für beide Wege gilt:
 
 - **Node.js**: >= 24.x
-- **Git**: Korrekt konfiguriert mit Benutzer-Credentials
-- **GitHub CLI (`gh`)**: Authentifiziert am Repository
-- **GitHub Copilot CLI** (optional): Wird für KI-generierte Commit-Messages verwendet. Bei
-  Nichtverfügbarkeit wird eine automatische Commit-Message aus dem Diff generiert.
+- **Git**: korrekt konfiguriert mit Benutzer-Credentials
+- **Clean working tree** vor dem finalen `dev` → `main` Merge
+- **Lokale Qualitätschecks** vor dem Push, mindestens `npm run build` und `npm run lint:check`
+- **GitHub CLI (`gh`)** nur dann, wenn du mit `scripts/merge-branches.mjs` oder GitHub-Operationen
+  arbeitest
 
-## deploy:dev — Workflow-Schritte
+## Dev-Deployment
 
-| Schritt                | Beschreibung                                                                                                              |
-| :--------------------- | :------------------------------------------------------------------------------------------------------------------------ |
-| **1. Prerequisites**   | Prüft `npm`, `git`, `gh` und Git-Repo-Validität. `copilot` wird als optional geprüft.                                     |
-| **2. Analyze**         | Liest `git status` und `git diff HEAD` ein. Bricht ab, wenn keine Änderungen vorhanden sind.                              |
-| **3. Commit Message**  | Nutzt Copilot CLI zur Analyse der Änderungen. Fallback: `chore: update N files` aus Diff-Statistik.                       |
-| **4. Quality Gates**   | Führt `npm run format` und `npm run lint` aus (mit Auto-Fix). `npm run prose` wird optional ausgeführt.                   |
-| **5. Build**           | `npm run build` — Output wird nur im Fehlerfall angezeigt.                                                                |
-| **6. Commit**          | `git add .` (temp-Files ausgeschlossen), Commit mit `--no-verify` via `execFileSync`.                                     |
-| **7. Push**            | `git push -u origin <branch>`                                                                                             |
-| **8. Merge + Cleanup** | Nur bei Feature-Branches: Merge in `dev` mit `--no-ff --no-verify`, Push, optionale Branch-Löschung mit `--auto-cleanup`. |
-| **9. Deploy Check**    | Pollt den `deploy-dev.yml` Workflow-Run (max. 30s). Bei Erfolg/Fehler: Status anzeigen. Sonst: Link und weiter.           |
+1. Änderungen lokal prüfen und committen.
+2. Auf `dev` pushen.
+3. GitHub Actions startet [deploy-dev.yml](../../.github/workflows/deploy-dev.yml).
+4. Der Workflow dispatcht das HomeNet-Repository mit dem Tag `fd` und der Source-Branch-Information.
+5. Anschließend die Zielumgebung verifizieren.
 
-## deploy:prd — Workflow-Schritte
+## Produktions-Deployment
 
-| Schritt                | Beschreibung                                                                                                            |
-| :--------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| **1. Prerequisites**   | Wie dev + zusätzlich: Branch muss `dev` sein, Working Tree sauber, `dev` in Sync mit `origin/dev`.                      |
-| **2. Issue Check**     | Prüft `--issue-id` oder fragt interaktiv ab. `--skip-issue` überspringt den Prompt.                                     |
-| **3. Analyze**         | `git diff origin/main..dev` — Diff-Statistik und Commit-Log.                                                            |
-| **4. Summary + Issue** | Copilot CLI generiert Titel und Body (Fallback: automatisch). Erstellt Issue, falls keines angegeben.                   |
-| **5. Merge**           | `git checkout main && git pull && git merge dev --no-ff --no-verify`. Bei Konflikt: automatischer Rollback und Abbruch. |
-| **6. Quality Gates**   | Format + Lint auf `main`. Änderungen werden automatisch committet.                                                      |
-| **7. Build**           | `npm run build` auf `main`.                                                                                             |
-| **8. Push**            | `git push origin main` — triggert `deploy-prd.yml` GitHub Actions Workflow.                                             |
-| **9. Deploy Check**    | Pollt den `deploy-prd.yml` Workflow-Run (max. 30s). Bei Erfolg/Fehler: Status anzeigen. Sonst: Link und weiter.         |
-| **10. Close Issue**    | Schließt das zugehörige GitHub Issue.                                                                                   |
-| **11. Switch to dev**  | Wechselt zurück auf den `dev`-Branch.                                                                                   |
+1. Sicherstellen, dass `dev` den gewünschten Stand enthält.
+2. Lokal nach `main` mergen, entweder manuell oder über die VS Code Task `Deploy to Main`.
+3. `main` nach GitHub pushen.
+4. GitHub Actions startet [deploy-prd.yml](../../.github/workflows/deploy-prd.yml).
+5. Der Workflow baut die Astro-Site und veröffentlicht sie über GitHub Pages.
 
-## CLI-Parameter
+## Lokale Einstiegspunkte
 
-### deploy:dev
-
-| Parameter        | Beschreibung                                                               |
-| :--------------- | :------------------------------------------------------------------------- |
-| `--auto-cleanup` | Feature-Branch nach erfolgreichem Merge automatisch löschen (kein Prompt). |
+### Manuell mit Git
 
 ```bash
-npm run deploy:dev
-npm run deploy:dev -- --auto-cleanup
+git checkout dev
+git push origin dev
+
+git checkout main
+git pull origin main
+git merge dev --no-ff -m "Deploy dev to main"
+git push origin main
+git checkout dev
 ```
 
-### deploy:prd
+### VS Code Task
 
-| Parameter         | Beschreibung                                                      |
-| :---------------- | :---------------------------------------------------------------- |
-| `--issue-id <id>` | Eine bestehende GitHub-Issue-ID angeben.                          |
-| `--skip-issue`    | Issue-Abfrage überspringen (non-interactive Mode für Automation). |
+Die Task `Deploy to Main` in [.vscode/tasks.json](../../.vscode/tasks.json) führt den lokalen
+`dev` → `main` Merge inklusive Push in einem Schritt aus.
+
+### Interaktiv mit Skript
 
 ```bash
-npm run deploy:prd -- --issue-id 123
-npm run deploy:prd -- --skip-issue
+node scripts/merge-branches.mjs dev
+node scripts/merge-branches.mjs main
 ```
 
-> **Wichtig:** Immer den doppelten Bindestrich `--` vor den Argumenten verwenden, damit sie korrekt
-> an das zugrunde liegende Script weitergegeben werden!
+Details dazu stehen in [scripts/README.md](../../scripts/README.md).
 
-## Fehlerbehandlung & Rollback
+## Fehlerbehandlung
 
-- **deploy:dev**: Bei Fehler wird der aktuelle Zustand belassen. Kein automatischer Rollback nötig,
-  da noch nichts Destruktives passiert ist (lokale Commits können reverted werden).
-- **deploy:prd**: Bei Fehler **nach** dem Merge in `main` aber **vor** dem Push wird automatisch
-  `git reset --hard origin/main` ausgeführt und zurück auf `dev` gewechselt. Falls `main` bereits
-  gepusht wurde, ist manuelles Eingreifen nötig.
+- Schlägt `deploy-dev.yml` fehl, prüfe zuerst den Workflow-Run und das nachgelagerte HomeNet-Dispatch.
+- Schlägt `deploy-prd.yml` fehl, prüfe Build-Fehler, GitHub Pages Deployment und den letzten Push auf
+  `main`.
+- Vor jedem Produktions-Deployment sollten lokale Checks grün sein, damit Fehler nicht erst im
+  Workflow auffallen.
 
-## Output-Design
+## Siehe auch
 
-Das Script gibt eine kompakte Fortschrittsanzeige aus:
-
-```
-─── deploy:dev ───
-
-[1/9] Prerequisites... ✓
-[2/9] Analyze changes... ✓
-[3/9] Generate commit message... ✓
-[4/9] Quality gates (format, lint)... ✓
-[5/9] Build... ✓
-[6/9] Commit... ✓
-[7/9] Push... ✓
-[8/9] Deploy check...  Run: https://github.com/Frickeldave/frickeldave.github.io/actions/runs/...
-  Status: ✓ success
- ✓
-
-─── Done ───
-Branch:  dev
-Commit:  a1b2c3d
-```
-
-Der **Deploy-Check** pollt bis zu 30 Sekunden auf Abschluss des Workflows:
-- **Bei Erfolg (< 30s)**: `Status: ✓ success`
-- **Bei Fehler (< 30s)**: `Status: ✗ <conclusion>` + Error-Log (letzte 15 Zeilen)
-- **Nach 30s Timeout**: `Status: ▶ in_progress (timeout after 30s)` + Monitor-Link
-  - Die Action läuft weiter, wird aber nicht mehr gewartet
-  - Link zum manuellen Überwachen wird ausgegeben
-
-Bei Fehlern werden die letzten 30 Zeilen der Ausgabe angezeigt.
+- [Usage Guide](../11-dev-usage.md)
+- [Branching and Naming Strategy](../13-dev-branch-naming-strategy.md)
+- [Scripts Overview](../../scripts/README.md)

@@ -18,7 +18,7 @@ const { experience } = entry.data;
             <h2 class="text-txt-h dark:text-darkmode-txt-h mb-4 text-3xl font-bold lg:text-4xl">
               Professional Experience
             </h2>
-            <p class="text-lg text-txt-p dark:text-darkmode-txt-p">
+            <p class="text-txt-p dark:text-darkmode-txt-p text-lg">
               My professional journey and key achievements
             </p>
           </div>
@@ -27,7 +27,7 @@ const { experience } = entry.data;
             {experience.map((job, _index) => (
               <div class="glass relative rounded-lg p-6 lg:p-8">
                 {/* Timeline Indicator */}
-                <div class="absolute left-0 top-6 hidden h-16 w-1 rounded-full bg-gradient-to-b from-amber-500 to-orange-500 lg:block" />
+                <div class="absolute top-6 left-0 hidden h-16 w-1 rounded-full bg-gradient-to-b from-amber-500 to-orange-500 lg:block" />
 
                 <div class="lg:pl-8">
                   <div class="mb-4 flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -40,11 +40,11 @@ const { experience } = entry.data;
                       </h4>
                     </div>
                     <div class="flex flex-col lg:text-right">
-                      <span class="glass-t mb-2 rounded-full px-3 py-1 text-sm text-txt-p dark:text-darkmode-txt-p">
+                      <span class="glass-t text-txt-p dark:text-darkmode-txt-p mb-2 rounded-full px-3 py-1 text-sm">
                         {job.period}
                       </span>
                       {job.location && (
-                        <span class="text-sm text-txt-p dark:text-darkmode-txt-p">
+                        <span class="text-txt-p dark:text-darkmode-txt-p text-sm">
                           📍 {job.location}
                         </span>
                       )}
@@ -59,7 +59,7 @@ const { experience } = entry.data;
                       <ul class="space-y-2">
                         {job.responsibilities.map((responsibility) => (
                           <li class="flex items-start">
-                            <span class="mr-3 mt-1 text-amber-500">▸</span>
+                            <span class="mt-1 mr-3 text-amber-500">▸</span>
                             <span class="text-txt-p dark:text-darkmode-txt-p">
                               {responsibility}
                             </span>
@@ -79,6 +79,7 @@ const { experience } = entry.data;
 }
 
 <style>
+  @reference "../../styles/tailwind.css";
   .glass-t {
     @apply border border-white/20 bg-white/10 backdrop-blur-sm dark:border-gray-600/30 dark:bg-gray-800/20;
   }
