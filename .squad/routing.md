@@ -73,7 +73,7 @@ Scope-Begrenzung:
 | Technische Dokumentation                   | Maria    | Natasha   | Tony     |
 | DevOps und Infrastructure                 | Nick     | Bruce     | Tony     |
 | Rechtliche Compliance und editorial Governance | Jennifer | Maria     | Tony     |
-| RAI und Sicherheitsreview                     | Rai      | Jennifer  | Tony     |
+| Sicherheitsreview                     | Jennifer  | Tony      | Tony     |
 | Session-Logging                           | Scribe   | Tony      | Tony     |
 
 ## Work-Type-Routing
@@ -90,7 +90,7 @@ Explizites Tony-Approval-Gate gilt für jeden Work-Typ.
 | DevOps und Infrastructure                 | Nick     | Erforderlich vor Workflow/Config-Änderungen      | CI/CD, Deployment, Monitoring, Release-Hardening                       |
 | Rechtliche Compliance und editorial Governance | Jennifer | Erforderlich vor Policy/Content-Änderungen       | Privacy-Checks, editorial Struktur, Legal-Risk-Checks                 |
 | Code-Review und finales Gatekeeping         | Tony     | Tony ist finaler Approver                       | PR-Qualität und Scope-Adherence überprüfen                                |
-| RAI-Review                                | Rai      | Erforderlich vor sicherheitsrelevanten Änderungen     | Sicherheit, Bias, Credential-Exposure-Review                               |
+| Sicherheitsreview                                | Jennifer | Erforderlich vor sicherheitsrelevanten Änderungen     | Sicherheit, Bias, Credential-Exposure-Review                               |
 
 ## Issue-Routing und Triage-Labels
 
