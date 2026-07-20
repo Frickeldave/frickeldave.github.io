@@ -8,35 +8,34 @@ imageAlt: "Kubernetes Basis - 20 Tag 2"
 ---
 
 import Notice from "@shortcodes/Notice";
-
-> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+import { Image } from "astro:assets";
+import knba20002 from "@assets/docs/kubernetes-basis/knba-20-002.png";
 
 ## Workloads & Networking
 
 Am zweiten Tag machen wir unsere Deployments produktionsreif. Wir fügen Resource Limits, Health
 Checks und Deployment-Strategien hinzu, lagern Konfiguration in ConfigMaps und Secrets aus, deployen
-Home Assistant und Nextcloud mit persistentem Speicher und richten schließlich Ingress-Routing für
-alle vier Anwendungen ein.
+Home Assistant und Nextcloud mit persistentem Speicher.
 
 ## Zeitplan
 
-| Zeit           | Dauer  | Block                | Inhalt                                     |
-| -------------- | ------ | -------------------- | ------------------------------------------ |
-| 09:00 -- 09:15 | 15 min | Recap                | Status-Check Tag 1                         |
-| 09:15 -- 10:00 | 45 min | Theorie              | Pods: Multi-Container, Resources           |
-| 10:00 -- 10:45 | 45 min | Resource Limits      | Auf Chromium + Code-Server anwenden        |
-| 10:45 -- 11:00 | 15 min | **Pause**            |                                            |
-| 11:00 -- 11:30 | 30 min | Theorie              | Health Checks                              |
-| 11:30 -- 12:15 | 45 min | Probes konfigurieren | Chromium + Code-Server                     |
-| 12:15 -- 12:30 | 15 min | Theorie              | Deployment-Strategien                      |
-| 12:30 -- 13:30 | 60 min | **Mittagspause**     |                                            |
-| 13:30 -- 14:00 | 30 min | Rolling Updates      | Update + Rollback Code-Server              |
-| 14:00 -- 14:45 | 45 min | ConfigMaps & Secrets | Konfiguration auslagern                    |
-| 14:45 -- 15:15 | 30 min | Security             | SecurityContext, Best Practices            |
-| 15:15 -- 15:30 | 15 min | **Pause**            |                                            |
-| 15:30 -- 16:15 | 45 min | Persistent Volumes   | PVCs + Home Assistant + Nextcloud deployen |
-| 16:15 -- 17:15 | 60 min | Ingress              | Services, DNS, Host-basiertes Routing      |
-| 17:15 -- 17:30 | 15 min | Abschluss            | Zusammenfassung + Ausblick                 |
+| Zeit / Schedule         | Block                | Inhalt                                     |
+| -------------- | -------------------- | ------------------------------------------ |
+| 09:00 – 09:15  | Recap                | Status-Check Tag 1                         |
+| 09:15 – 09:45  | Theorie              | Pods: Multi-Container, Resources           |
+| 09:45 – 10:15  | ConfigMaps           | Konfiguration auslagern (Code-Server)      |
+| 10:15 – 11:00  | Resource Limits      | Auf Chromium + Code-Server anwenden        |
+| 11:00 – 11:15  | **Pause**            |                                            |
+| 11:15 – 11:45  | Theorie              | Health Checks                              |
+| 11:45 – 12:15  | Probes konfigurieren | Chromium + Code-Server                     |
+| 12:15 – 12:30  | Theorie              | Deployment-Strategien                      |
+| 12:30 – 13:30  | **Mittagspause**     |                                            |
+| 13:30 – 14:00  | Rolling Updates      | Update + Rollback Code-Server              |
+| 14:00 – 14:45  | Secrets & Security   | Passwörter auslagern, SecurityContext      |
+| 15:15 – 15:30  | **Pause**            |                                            |
+| 15:30 – 16:15  | Persistent Volumes   | PVCs + Home Assistant + Nextcloud deployen |
+| 16:15 – 17:15  | Ingress              | Services, DNS, Host-basiertes Routing      |
+| 17:15 – 17:30  | Abschluss            | Zusammenfassung + Ausblick                 |
 
 ---
 
@@ -46,28 +45,230 @@ Tag 1 ist vorbei -- aber unsere Deployments laufen noch. Bevor wir sie produktio
 stellen wir sicher, dass alles noch läuft und die Services erreichbar sind. Hier ein kurzer
 Status-Check, dann beginnen wir mit Resource Limits, Health Checks und Deployment-Strategien.
 
-Kurzer Status-Check:
+Vielleicht erinnerst du dich nicht mehr ganz an die Befehle von gestern, bevor du jetzt in das [Glossar](./90-glossar) abtauchst,
+hier ist dein all-in-one command für alle Zwecke: 
 
 ```bash
-kubectl get all -n k8s-training
+kubectl get all
 ```
 
 Prüfpunkte:
 
 - Sind alle Pods im Status `Running`?
-- Chromium im Browser erreichbar? (NodePort)
-- Code-Server im Browser erreichbar? (NodePort)
+- Chromium im Browser erreichbar?
+- Code-Server im Browser erreichbar?
 
 Falls ein Pod nicht läuft:
 
 ```bash
-kubectl describe pod <pod-name> -n k8s-training
-kubectl logs <pod-name> -n k8s-training
+kubectl describe pod <pod-name>
+kubectl logs <pod-name>
 ```
+
+## ConfigMaps
+
+Bisher stehen Konfigurationswerte wie `PUID`, `PGID`, `TZ` und das Code-Server-Passwort direkt
+in den Deployment-YAMLs aus Tag 1. Das ist wartbar, solange es nur ein Deployment betrifft --
+aber spätestens beim zweiten Deployment wiederholen sich die Werte.
+
+Eine **ConfigMap** ist ein Kubernetes-Objekt, das Konfigurationsdaten als Key-Value-Paare
+speichert und an Container weitergibt -- entweder als **Umgebungsvariable** oder als **Datei**
+(über ein Volume).
+
+### Beispiel: Code-Server-Workspace auslagern
+
+Der Code-Server aus Tag 1 hat die Umgebungsvariable `DEFAULT_WORKSPACE` hart im YAML stehen:
+
+```yaml
+env:
+  - name: DEFAULT_WORKSPACE
+    value: "/config/workspace"
+```
+
+Das lagern wir jetzt in eine ConfigMap aus.
+
+**1. ConfigMap erstellen**
+
+Datei `code-server-config-map.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: code-server-config
+  namespace: k8s-training
+data:
+  DEFAULT_WORKSPACE: "/config/workspace"
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Europe/Berlin"
+```
+
+```bash
+kubectl apply -f code-server-config-map.yaml
+```
+
+**2. ConfigMap im Deployment verwenden**
+
+Statt einzelner `env`-Einträge binden wir die gesamte ConfigMap mit `envFrom` ein:
+
+```yaml
+envFrom:
+  - configMapRef:
+      name: code-server-config
+```
+
+Das Deployment sieht dann so aus (Auszug):
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-server
+  namespace: k8s-training
+spec:
+  # ... selector, template etc. ...
+  template:
+    spec:
+      containers:
+        - name: code-server
+          image: lscr.io/linuxserver/code-server:latest
+          ports:
+            - containerPort: 8443
+          envFrom:                          # ConfigMap als Umgebungsvariablen
+            - configMapRef:
+                name: code-server-config
+          env:
+            - name: PASSWORD                # Secret bleibt vorerst hart codiert
+              value: "training2024"
+```
+
+```bash
+kubectl apply -f code-server-deployment.yaml
+```
+
+**Wichtig:** `envFrom` importiert **alle** Keys der ConfigMap als Umgebungsvariablen.
+Der Key `DEFAULT_WORKSPACE` wird zur Variable `DEFAULT_WORKSPACE` mit Wert `/config/workspace`.
+
+### ConfigMap als Volume (Datei)
+
+Neben Umgebungsvariablen kann eine ConfigMap auch als **Volume** in den Container eingebunden
+werden. Jeder Key wird dann zu einer eigenen Datei. Das ist praktisch für Konfigurationsdateien
+wie `nginx.conf`, `prometheus.yml` oder `vector.toml`.
+
+```yaml
+volumes:
+  - name: config-volume
+    configMap:
+      name: app-config
+```
+
+Im Container erscheint dann z. B. die Datei `/etc/config/DEFAULT_WORKSPACE` mit dem Inhalt
+`/config/workspace`. Dieses Pattern werden wir in der Sidecar-Übung direkt anwenden.
+
+**Zusammenfassung**
+
+| Methode | Beschreibung | Einsatz |
+|---------|-------------|---------|
+| `envFrom` + `configMapRef` | Alle Keys als Umgebungsvariablen | Mehrere Deployments teilen sich Konfiguration |
+| `valueFrom.configMapKeyRef` | Einzelner Key als Umgebungsvariable | Selektives Einbinden |
+| Volume-Mount | ConfigMap als Dateien im Dateisystem | Konfigurationsdateien für Tools (Vector, nginx, ...) |
+
+**Merke:** ConfigMaps sind für **nicht-sensitive** Daten. Für Passwörter, Tokens und
+Zertifikate gibt es Secrets.
+
+### Secret: Code-Server-Passwort auslagern
+
+Das Code-Server-Passwort steht noch hart codiert im Deployment. Das lagern wir jetzt in ein
+[Secret](/docs/kubernetes-basis/90-glossar#secret) aus.
+
+**1. Secret erstellen**
+
+Datei `code-server-secret.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: code-server-secret
+  namespace: k8s-training
+type: Opaque
+stringData:
+  PASSWORD: "trainingk8s"
+```
+
+```bash
+kubectl apply -f code-server-secret.yaml
+```
+
+**2. Secret prüfen**
+
+```bash
+kubectl get secret code-server-secret -n k8s-training -o yaml
+```
+
+Die Ausgabe zeigt `PASSWORD: dHJhaW5pbmcya3M=` – das ist Base64-kodiert, nicht verschlüsselt:
+
+```bash
+echo "dHJhaW5pbmcya3M=" | base64 -d
+# Ausgabe: trainingk8s
+```
+
+```powershell
+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("dHJhaW5pbmcya3M="))
+# Ausgabe: trainingk8s
+```
+<br/>
+
+<Notice type="info">
+
+**💡 Die häufigste Frage: "Warum ist Base64 dann keine Sicherheitskatastrophe?"**
+
+Base64 ist keine Verschlüsselung, sondern nur eine Kodierung – wie eine andere Schreibweise.
+Das ist Absicht: Secrets müssen maschinenlesbar sein und dürfen keine Sonderzeichen enthalten,
+die YAML oder Env-Variablen kaputtmachen.
+
+Die echte Sicherheit liegt nicht in der Kodierung, sondern in diesen Mechanismen:
+
+| Mechanismus | Wirkung |
+|-------------|---------|
+| **RBAC** | Nur berechtigte Personen/Systeme dürfen `kubectl get secret` ausführen |
+| **Encryption at Rest** | Der Cluster verschlüsselt Secrets auf der Festplatte (seit Kubernetes 1.13+ standardmäßig aktiviert) |
+| **Encryption in Transit** | Die API-Kommunikation läuft über TLS – niemand kann den Traffic mitlesen |
+| **Kein Git** | Secrets werden nicht in YAML-Dateien committed, sondern nur im Cluster gespeichert |
+| **stringData** | Du gibst das Passwort im Klartext an – nur Kubernetes selbst kodiert es nach Base64 |
+
+**Zusammengefasst:** Der Base64-"Schutz" ist eine Kodierung für den Datentransport, kein
+Sicherheitsfeature. Die Absicherung kommt von RBAC, TLS und Verschlüsselung im Cluster.
+Wer `kubectl get secret` ausführen darf, kommt auch an die Werte – und genau das muss
+über Berechtigungen gesteuert werden.
+
+</Notice>
+<br/>
+
+**3. Secret im Deployment verwenden**
+
+Statt `value: "training2024"` referenzieren wir den Wert aus dem Secret:
+
+```yaml
+env:
+  - name: PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: code-server-secret
+        key: PASSWORD
+```
+
+```bash
+kubectl apply -f code-server-deployment.yaml
+```
+
+**Wichtig:** Das Secret muss **im gleichen Namespace** wie der Pod erstellt werden. Bei
+Namespace-Abweichung (z. B. `k8s-prod` statt `k8s-training`) entsprechend anpassen.
 
 ---
 
-## Pods im Detail
+## Pods und Container-Typen
 
 Bisher haben wir Pods nur als einfache Container-Wrapper kennengelernt. Tatsächlich können Pods
 mehrere Container enthalten, die denselben Netzwerk-Namespace und dieselben Volumes teilen. Dieses
@@ -82,12 +283,15 @@ Konzept wird genutzt, um eng gekoppelte Prozesse gemeinsam zu deployen und zu ve
 | [**Sidecar-Container**](/docs/kubernetes-basis/90-glossar#sidecar-container) | Unterstützende Dienste (Logging, Proxy) | Läuft dauerhaft neben der App |
 
 **Regel:** Mehrere Container im selben Pod nur, wenn sie eng gekoppelt sind. Ansonsten separate Pods
-verwenden.
+verwenden. Die Container EINER App sind hier NICHT eng gekoppelt, sondern nur lose verbunden über Services und Ingress. Daher deployen wir sie in separaten Pods.
+
+<Image src={knba20002} alt="Multiple container pro Pod * Erstellt mit Microsoft Copilot" />
+
 
 ### Init-Container
 
 Init-Container laufen sequenziell, bevor die App-Container starten. Jeder muss erfolgreich
-abschließen.
+abschließen. Dies dient nur zur Voranschau, dieses Konzept werden wir später verwenden. 
 
 ```yaml
 apiVersion: v1
@@ -120,77 +324,59 @@ Typische Anwendungsfälle:
 ### Sidecar-Container
 
 Sidecar-Container laufen dauerhaft neben der Hauptanwendung und teilen sich Netzwerk und Volumes.
+Typische Einsatzmuster:
+
+| Pattern | Beschreibung | Beispiel |
+|---------|-------------|----------|
+| **Log-Shipper** | Liest Logs der App und sendet sie an eine zentrale Logging-Plattform | Vector, Fluent Bit, Promtail |
+| **Reverse-Proxy** | Übernimmt SSL-Terminierung, Auth oder Raten-Limiting für die App | nginx, Envoy, oauth2-proxy |
+| **Metrics-Exporter** | Sammelt Metriken der App und exponiert sie für Prometheus | nginx-prometheus-exporter, node-exporter |
+| **Service Mesh** | Übernimmt gesamte Netzwerk-Kommunikation (TLS, Tracing, Retries) | Envoy (Istio), Linkerd-proxy |
+
+#### Übung: Chromium mit Vector als Sidecar
+
+> **Vertiefung:** Im ConfigMap-Kapitel oben hast du gelernt, wie ConfigMaps als Umgebungsvariablen
+> funktionieren (`envFrom`). Hier kommt die zweite Variante: **ConfigMap als Volume** -- der Key
+> `vector.toml` wird zur Datei `/etc/vector/vector.toml` im Container.
+
+In dieser Übung statten wir **unser Chromium** mit einem Vector-Sidecar aus.
+Chromium (linuxserver.io) schreibt Logs nach `/config/log/` -- der Sidecar liest diese Logs
+und gibt sie als JSON auf der Konsole aus. Beide Container teilen sich ein `emptyDir`-Volume.
+
+<br/>
+
+**1. ConfigMap für Vector-Konfiguration erstellen**
+
+Datei `vector-config.yaml`:
 
 ```yaml
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: app-mit-sidecar
+  name: vector-config
   namespace: k8s-training
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: sidecar-demo
-  template:
-    metadata:
-      labels:
-        app: sidecar-demo
-    spec:
-      containers:
-        - name: app
-          image: busybox:1.28
-          command:
-            - sh
-            - -c
-            - 'while true; do echo "$(date) Log-Eintrag" >> /var/log/app.log; sleep 5; done'
-          volumeMounts:
-            - name: log-volume
-              mountPath: /var/log
-        - name: log-shipper      # Sidecar: zweiter Container im selben Pod
-          image: busybox:1.28
-          command:
-            - sh
-            - -c
-            - "tail -F /var/log/app.log"
-          volumeMounts:
-            - name: log-volume   # Dasselbe Volume wie der App-Container
-              mountPath: /var/log
-      volumes:
-        - name: log-volume
-          emptyDir: {}
+data:
+  vector.toml: |
+    [sources.chromium_logs]
+      type = "file"
+      include = ["/config/log/*.log"]
+      read_from = "beginning"
+
+    [sinks.console]
+      type = "console"
+      inputs = ["chromium_logs"]
+      encoding.codec = "json"
 ```
 
-### Requests & Limits
+```bash
+kubectl apply -f vector-config.yaml
+```
+<br/>
 
-| Konzept      | Beschreibung                                                                     |
-| ------------ | -------------------------------------------------------------------------------- |
-| [**requests**](/docs/kubernetes-basis/90-glossar#resource-limits) | Mindestgarantie -- Scheduler platziert Pod nur auf Nodes mit genügend Ressourcen |
-| [**limits**](/docs/kubernetes-basis/90-glossar#resource-limits)   | Obergrenze -- CPU wird gedrosselt, bei Speicherüberschreitung OOM-Kill           |
+**2. Chromium-Deployment um Sidecar erweitern**
 
-**CPU-Einheiten:** `1` = 1 Kern, `500m` = 0,5 Kerne, `250m` = 0,25 Kerne.
-
-**Speicher-Einheiten:** `128Mi` = 128 Mebibyte, `1Gi` = 1 Gibibyte.
-
-### QoS-Klassen
-
-| [QoS-Klasse](/docs/kubernetes-basis/90-glossar#qos-klassen)     | Bedingung                               | Eviction-Priorität           |
-| -------------- | --------------------------------------- | ---------------------------- |
-| **Guaranteed** | requests == limits (für CPU und Memory) | Niedrigste (zuletzt evicted) |
-| **Burstable**  | requests < limits                       | Mittel                       |
-| **BestEffort** | Keine requests/limits gesetzt           | Höchste (zuerst evicted)     |
-
----
-
-## Resource Limits
-
-Die Deployments von Chromium und Code-Server aus Tag 1 laufen noch ohne Resource-Angaben. Das ändern
-wir jetzt.
-
-### Chromium
-
-Datei `chromium-deployment.yaml` aktualisieren -- den `resources`-Block in die Container-Spec
-einfügen:
+Das bestehende Deployment aus Tag 1 (`chromium-deployment.yaml`) bekommt einen zweiten Container
+und ein gemeinsames Volume. Die Änderungen sind mit `# NEU` markiert:
 
 ```yaml
 apiVersion: apps/v1
@@ -215,6 +401,7 @@ spec:
           image: lscr.io/linuxserver/chromium:latest
           ports:
             - containerPort: 3000
+            - containerPort: 3001
           env:
             - name: PUID
               value: "1000"
@@ -222,7 +409,354 @@ spec:
               value: "1000"
             - name: TZ
               value: "Europe/Berlin"
-          resources:
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+            - name: chromium-logs          # NEU: gemeinsames Log-Volume
+              mountPath: /config/log
+        - name: vector                     # NEU: Sidecar-Container
+          image: timberio/vector:0.42.0-alpine
+          command:
+            - vector
+            - --config
+            - /etc/vector/vector.toml
+          volumeMounts:
+            - name: chromium-logs          # NEU: gleiches Volume wie Chromium
+              mountPath: /config/log
+            - name: vector-config
+              mountPath: /etc/vector
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: chromium-logs              # NEU: shared emptyDir für Logs
+          emptyDir: {}
+        - name: vector-config              # NEU: ConfigMap als Volume
+          configMap:
+            name: vector-config
+```
+<br/>
+```bash
+kubectl apply -f chromium-deployment.yaml
+```
+<br/>
+
+**3. Funktion prüfen**
+
+```bash
+# Warten, bis der neue Pod läuft
+kubectl get pods -l app=chromium -w
+
+# Logs des Sidecars anzeigen
+kubectl logs -l app=chromium -c vector
+
+# Logs von Chromium anzeigen (Vergleich)
+kubectl logs -l app=chromium -c chromium
+
+# Chromium im Browser öffnen und ein paar Seiten besuchen,
+# dann erneut Sidecar-Logs prüfen:
+kubectl logs -l app=chromium -c vector --tail=10
+```
+<br/>
+
+**4. Was passiert hier?**
+
+- Chromium soltle die Logs nach `/config/log/` (z. B. `chromium.log`, `Xorg.log`) schreiben
+- Der Sidecar (`vector`) liest **dieselben Dateien** über das gemeinsame `emptyDir`-Volume
+- Vector parst die Logs und gibt sie als JSON auf der Konsole aus
+- **Wichtig:** Beide Container laufen im selben Pod -- teilen sich Netzwerk (`localhost`) und Volume
+- Der Sidecar wurde **nachträglich** in ein bestehendes Deployment eingefügt -- Kubernetes startet
+  den Pod automatisch neu mit beiden Containern
+
+<br/>
+
+**5. Typische Beobachtung: Vector läuft, aber keine Logs?**
+
+```bash
+kubectl logs -l app=chromium -c vector
+```
+
+Du siehst, dass Vector startet und der Healthcheck erfolgreich ist:
+
+```
+INFO vector::app: Vector has started.
+INFO vector::topology::builder: Healthcheck passed.
+INFO vector::sources::file: Starting file server. include=["/config/log/*.log"] exclude=[]
+```
+
+Aber es kommen **keine JSON-Logs**. Das ist **kein** Fehler in deiner Konfiguration – es liegt
+daran, wie das Chromium-Image seine Logs behandelt.
+
+**Warum?** Das linuxserver/chromium-Image startet Chromium über das Script
+`/usr/bin/wrapped-chromium`. Die letzte Zeile dort leitet **alle** Ausgaben nach `/dev/null` um:
+
+```bash
+${BIN} \
+  --no-sandbox \
+  --password-store=basic \
+  --simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT' \
+  --start-maximized \
+  --test-type \
+  --user-data-dir \
+  ${WAYLAND} \
+   "$@" > /dev/null 2>&1
+```
+
+Chromium schreibt also **nie** Logs in Dateien – weder nach `/config/log/` noch sonst wohin.
+Die Container-Logs, die du mit `kubectl logs -c chromium` siehst, stammen von s6-overlay,
+nicht von Chromium selbst.
+
+**Lösung:** Wir ersetzen das `wrapped-chromium`-Script durch eine eigene Version, die Logs
+sowohl nach `/config/log/chromium.log` als auch nach stdout schreibt. Dazu mounten wir das
+angepasste Script per ConfigMap mit `subPath` über das originale Script.
+<br/>
+
+**6. Logging aktivieren: Custom Startup-Script**
+
+Datei `chromium-logging-configmap.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chromium-logging
+  namespace: k8s-training
+data:
+  wrapped-chromium: |
+    #!/bin/bash
+
+    BIN=/usr/bin/chromium
+    LOGFILE=/config/log/chromium.log
+
+    # Cleanup
+    if ! pgrep chromium > /dev/null;then
+      rm -f $HOME/.config/chromium/Singleton*
+    fi
+
+    # Wayland check
+    WAYLAND=""
+    if ls -l /dev/dri/* > /dev/null 2>&1; then
+      if pgrep labwc > /dev/null 2>&1; then
+        WAYLAND="--ozone-platform=wayland"
+      fi
+    fi
+
+    # Chromium starten mit Logs in Datei UND stdout
+    ${BIN} \
+      --no-sandbox \
+      --password-store=basic \
+      --simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT' \
+      --start-maximized \
+      --test-type \
+      --user-data-dir \
+      ${WAYLAND} \
+       "$@" > >(tee -a ${LOGFILE}) 2>&1
+```
+
+```bash
+kubectl apply -f chromium-logging-configmap.yaml
+```
+<br/>
+
+**7. Deployment aktualisieren**
+
+Das Chromium-Deployment bekommt einen zusätzlichen Volume-Mount, der das ConfigMap-Script
+über das originale `wrapped-chromium` legt. Wichtig: `subPath` mountet nur die einzelne Datei,
+ohne den Rest des Verzeichnisses zu überdecken. `defaultMode: 0755` macht das Script ausführbar.
+
+Datei `chromium-deployment-sidecar-wrapped.yaml`
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+      ...
+      volumes:
+        - name: shm
+          ...
+        - name: chromium-logging-script         # NEU: ConfigMap mit Script
+          configMap:
+            name: chromium-logging
+            defaultMode: 0755
+```
+
+```bash
+kubectl apply -f chromium-deployment.yaml
+```
+<br/>
+
+**8. Funktion prüfen**
+
+```bash
+# Warten, bis der neue Pod läuft
+kubectl get pods -l app=chromium -w
+
+# Logs des Sidecars anzeigen – jetzt sollten JSON-Logs kommen!
+kubectl logs -l app=chromium -c vector --tail=10
+
+# Prüfen, ob die Log-Datei im Container existiert
+kubectl exec -c chromium deploy/chromium -- ls -la /config/log/
+
+# Chromium-Logs live verfolgen
+kubectl logs -l app=chromium -c vector -f
+```
+
+**Erwartete Ausgabe von Vector:**
+
+```json
+{"file":"/config/log/chromium.log","host":"chromium-...","message":"[381:411:0719/...:ERROR:...] Registration response error message: DEPRECATED_ENDPOINT","source_type":"file","timestamp":"2026-07-19T..."}
+{"file":"/config/log/chromium.log","host":"chromium-...","message":"DevTools listening on ws://...","source_type":"file","timestamp":"2026-07-19T..."}
+```
+
+Jetzt streamt Vector die Chromium-Logs als strukturiertes JSON – bereit für die
+Weiterverarbeitung durch Elasticsearch, Loki oder eine andere Logging-Plattform.
+
+**Hinweis:** Die Logs enthalten jetzt auch Chromium-Internals wie `ERROR`, `WARNING` und
+`INFO`-Meldungen. Das ist normal – Chromium loggt viele interne Vorgänge (GPU, Netzwerk,
+Extensions). In Produktion könnte man mit Vector-Filtern (`[transforms]`) bestimmte
+Log-Level oder Komponenten herausfiltern.
+
+#### Produktiv-Alternativen
+
+Vector ist nur ein Beispiel. In Produktivumgebungen werden häufig diese Tools als Sidecar eingesetzt:
+
+| Tool | Größe | Besonderheit |
+|------|-------|-------------|
+| [Vector](https://vector.dev/) | ~10 MB | Rust, extrem performant, viele Outputs |
+| [Fluent Bit](https://fluentbit.io/) | ~5 MB | C, Standard in vielen Cloud-Setups |
+| [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) | ~20 MB | Speziell für Grafana Loki optimiert |
+| [Fluentd](https://www.fluentd.org/) | ~50 MB | Ruby, sehr flexibel, viele Plugins |
+
+## Requests & Limits
+
+
+Stell dir vor, im Logistikzentrum arbeiten mehrere Abteilungen nebeneinander.
+Jede Abteilung hat einen bestimmten Platzbedarf und bestimmte Maschinen.
+
+- **Ohne Absprache** würde eine Abteilung einfach den ganzen Lagerplatz blockieren,
+  die Gabelstapler dauerhaft belegen und den Strom für alle anderen verbrauchen.
+  Chromium ist so eine Abteilung – ein Speicherfresser, der sich ohne Limits
+  die ganze Node vollsaugt, bis andere Pods verhungern.
+
+- **`requests`** ist die **Mindestgarantie**: "Diese Abteilung bekommt mindestens
+  3 Regalreihen und 1 Gabelstapler – das darf ihr keiner wegnehmen." Der
+  Lagerleiter (Scheduler) platziert die Abteilung nur, wenn genug Platz frei ist.
+
+- **`limits`** ist die **Obergrenze**: "Mehr als 6 Regalreihen und 2 Gabelstapler
+  darf diese Abteilung nicht nutzen – auch wenn noch Platz wäre." So bleibt
+  für alle anderen genug übrig.
+
+**Zusammengefasst:** Ohne `requests` kann eine Abteilung verhungern, weil eine
+andere alles blockiert. Ohne `limits` kann eine Abteilung das ganze Lager lahmlegen.
+Requests und Limits sorgen für **Fairness und Stabilität** im Logistikzentrum.
+
+- **`requests`** – Mindestgarantie. Der Scheduler platziert den Pod nur auf einer Node,
+  die diese Menge garantiert frei hat.
+- **`limits`** – Obergrenze. CPU wird bei Überschreitung gedrosselt, bei Memory gibt's
+  einen OOM-Kill.
+
+> **OOM = Out Of Memory.** Überschreitet ein Container sein `limits.memory`, schickt der
+> Linux-Kernel das Signal `SIGKILL` (Exit Code 137). Der Container wird sofort beendet und
+> vom Deployment automatisch neu gestartet. Passiert das immer wieder, landet er im
+> `CrashLoopBackOff`.
+
+Der Abstand zwischen requests und limits bestimmt die [QoS-Klasse](#qos-klassen) und damit,
+wie prioritär der Pod behandelt wird, wenn die Node unter Druck gerät.
+
+| Konzept      | Beschreibung                                                                     |
+| ------------ | -------------------------------------------------------------------------------- |
+| [**requests**](/docs/kubernetes-basis/90-glossar#resource-limits) | Mindestgarantie -- Scheduler platziert Pod nur auf Nodes mit genügend Ressourcen |
+| [**limits**](/docs/kubernetes-basis/90-glossar#resource-limits)   | Obergrenze -- CPU wird gedrosselt, bei Speicherüberschreitung OOM-Kill           |
+
+**CPU-Einheiten:** `1` = 1 Kern, `500m` = 0,5 Kerne, `250m` = 0,25 Kerne.
+
+<Notice type="info">
+
+**💡 Das `m` steht für "Milli"** – ein Tausendstel eines Kerns. `1000m` = 1 voller Kern.
+Ein Container kann maximal so viele Millicores bekommen, wie die Node an Kernen hat.
+Werte über `1000m` (z. B. `2000m`) ergeben nur Sinn auf einer Node mit mindestens 2 Kernen.
+
+</Notice>
+
+**Speicher-Einheiten:** `128Mi` = 128 Mebibyte, `1Gi` = 1 Gibibyte.
+
+<Notice type="info">
+
+**💡 Das `Mi` und `Gi` steht für "Mebi" und "Gibi"** – binäre Einheiten (Basis 1024).
+`1 Mi` = 1024 × 1024 Byte = 1.048.576 Byte (im Gegensatz zu `1 MB` = 1.000.000 Byte).
+Kubernetes rechnet immer binär. Merkregel:
+
+- `i` = binär (Mi, Gi, Ti) – das ist der Kubernetes-Standard
+- Nur Buchstabe = dezimal (M, G, T) – wird von Kubernetes auch akzeptiert, aber binär interpretiert
+
+| Einheit | Bytes | Gerundet |
+|---------|-------|----------|
+| `128Mi` | 134.217.728 | ~128 MB |
+| `256Mi` | 268.435.456 | ~256 MB |
+| `512Mi` | 536.870.912 | ~512 MB |
+| `1Gi`   | 1.073.741.824 | ~1 GB |
+| `5Gi`   | 5.368.709.120 | ~5 GB |
+
+</Notice>
+
+### QoS-Klassen
+
+**Analogie zum Logistikzentrum:**
+
+Die QoS-Klasse sagt: "Wie wichtig ist diese Abteilung, wenn der Platz knapp wird?"
+
+- **BestEffort** – eine Abteilung, die nie angemeldet hat, wie viel Platz sie braucht.
+  Wenn das Lager voll wird, fliegt sie als Erste raus.
+- **Burstable** – eine Abteilung, die 3 Regalreihen reserviert hat, aber bis zu 6 nutzen
+  darf. Solange Platz ist, bekommt sie die Extrereihen. Wird es eng, muss sie auf ihre
+  reservierten 3 zurück.
+- **Guaranteed** – eine Abteilung, die genau 3 Regalreihen reserviert und auch nicht mehr
+  nutzen darf. Sie ist planbar und wird als Letzte angerührt.
+
+| [QoS-Klasse](/docs/kubernetes-basis/90-glossar#qos-klassen)     | Bedingung                               | Eviction-Priorität           | Analogie |
+| -------------- | --------------------------------------- | ---------------------------- | -------- |
+| **Guaranteed** | requests == limits (für CPU und Memory) | Niedrigste (zuletzt evicted) | Feste Zusage: genau 3 Regalreihen |
+| **Burstable**  | requests < limits                       | Mittel                       | Flexibel: 3 reserviert, bis zu 6 |
+| **BestEffort** | Keine requests/limits gesetzt           | Höchste (zuerst evicted)     | Keine Reservierung, wird zuerst geräumt |
+
+**Merke:** Je genauer du requests und limits kennst, desto planbarer ist dein Pod.
+`Guaranteed` ist der Königsweg für produktive Workloads – der Pod wird nur evicted,
+wenn es absolut keinen anderen Ausweg mehr gibt.
+
+---
+
+### Resource Limits
+
+Das Deployment von Chromium läuft noch ohne Resource-Angaben. Das ändern wir jetzt.
+
+**Beachte:** Die QoS-Klasse wird nicht direkt konfiguriert – sie ergibt sich automatisch
+aus dem Verhältnis von `requests` und `limits`:
+
+| Konstellation | QoS-Klasse |
+|---|---|
+| `requests` < `limits` | **Burstable** |
+| `requests` == `limits` | **Guaranteed** |
+| Keine `resources` | **BestEffort** |
+
+Datei `chromium-deployment-res.yaml` -- ergänze den `resources`-Block im Container.
+Der Rest des Deployments bleibt:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chromium
+  namespace: k8s-training    # ⬅️ Namespace ggf. anpassen
+  labels:
+    app: chromium
+spec:
+  # ... replicas, selector, template (unverändert) ...
+  template:
+    spec:
+      containers:
+        - name: chromium
+          # ... image, ports, env, volumeMounts (unverändert) ...
+          resources:                          # ⬅️ NEU
             requests:
               cpu: "250m"
               memory: "512Mi"
@@ -230,61 +764,58 @@ spec:
               cpu: "1000m"
               memory: "1Gi"
 ```
+<br/>
 
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-res.yaml
 ```
 
-### Code-Server
 
-Datei `code-server-deployment.yaml` aktualisieren:
+### Resources prüfen
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: code-server
-  namespace: k8s-training
-  labels:
-    app: code-server
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: code-server
-  template:
-    metadata:
-      labels:
-        app: code-server
-    spec:
-      containers:
-        - name: code-server
-          image: lscr.io/linuxserver/code-server:latest
-          ports:
-            - containerPort: 8443
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-```
+Nach dem Apply kannst du kontrollieren, ob der Container die gesetzten Limits auch wirklich
+einhält. Drei Befehle geben dir Einblick:
+
+**1. Gesetzte Resources im laufenden Pod anzeigen:**
 
 ```bash
-kubectl apply -f code-server-deployment.yaml
+kubectl describe pod -l app=chromium -n k8s-training
 ```
+
+Suche im Output nach dem Abschnitt `Containers.chromium` – dort stehen `Limits` und `Requests`.
+
+**2. QoS-Klasse prüfen** – sie zeigt, ob `requests == limits` (Guaranteed) oder nicht (Burstable):
+
+```bash
+kubectl describe pod -l app=chromium -n k8s-training | grep "QoS Class"
+```
+
+```powershell
+kubectl describe pod -l app=chromium -n k8s-training | Select-String "QoS Class"
+```
+
+**3. Tatsächlichen Ressourcenverbrauch live anzeigen:**
+
+```bash
+kubectl top pod -l app=chromium -n k8s-training
+```
+
+**Merke:** `kubectl top` zeigt den **echten** Verbrauch – der liegt oft unter den Limits.
+Erst wenn Chromium mehr CPU oder RAM will als im `limits`-Block erlaubt, greift Kubernetes ein:
+CPU wird gedrosselt, bei Memory-Überschreitung gibt es einen OOM-Kill.
 
 ### LimitRange
 
 Eine [LimitRange](/docs/kubernetes-basis/90-glossar#limitrange) setzt Standardwerte für alle Container, die keine eigenen Resources angeben.
+
+<Notice type="warning">
+
+**⚠️ Achtung:** `LimitRange` ist eine administrative Ressource und benötigt **Cluster-Admin-Rechte**.
+In vielen Trainings-Clustern hast du nur Readonly-Zugriff – dann schlägt `kubectl apply` mit
+`Forbidden` fehl. Kein Problem: Die LimitRange ist optional. Du kannst Resources auch direkt
+in jedem Deployment setzen, wie wir es bei Chromium gemacht haben.
+
+</Notice>
 
 Datei `limitrange.yaml`:
 
@@ -310,8 +841,12 @@ spec:
         memory: "32Mi"
       type: Container
 ```
-
+<br/>
 ```bash
+kubectl apply -f limitrange.yaml
+```
+
+```powershell
 kubectl apply -f limitrange.yaml
 ```
 
@@ -340,7 +875,6 @@ kubectl describe pod test-pod -n k8s-training | grep -A 6 "Limits"
 kubectl delete pod test-pod -n k8s-training
 ```
 
----
 
 ## Health Checks
 
@@ -777,269 +1311,7 @@ Führe den kompletten Lebenszyklus durch:
 
 ---
 
-## ConfigMaps & Secrets
 
-### Warum?
-
-Bisher stehen Konfigurationswerte wie `PUID`, `PGID`, `TZ` und das Code-Server-Passwort direkt im
-Deployment-YAML. Das hat Nachteile:
-
-- **Dopplung** -- die gleichen Werte in jedem Deployment
-- **Sicherheit** -- Passwörter im Klartext in YAML-Dateien (und damit in Git)
-- **Flexibilität** -- bei Änderungen muss jedes Deployment einzeln angepasst werden
-
-### ConfigMap
-
-Eine [ConfigMap](/docs/kubernetes-basis/90-glossar#configmap) speichert nicht-sensible Konfigurationsdaten als Key-Value-Paare.
-
-Datei `app-configmap.yaml`:
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config
-  namespace: k8s-training
-data:
-  PUID: "1000"
-  PGID: "1000"
-  TZ: "Europe/Berlin"
-```
-
-```bash
-kubectl apply -f app-configmap.yaml
-```
-
-### Secret
-
-Ein [Secret](/docs/kubernetes-basis/90-glossar#secret) speichert sensible Daten (Passwörter, Tokens, Zertifikate). Werte werden Base64-kodiert
-gespeichert. **Wichtig:** Base64 ist keine Verschlüsselung, sondern nur eine Kodierung -- die Daten
-sind im Cluster im Klartext lesbar. Für echte Produktions-Sicherheit braucht ihr Encryption at Rest
-oder ein externes Secret-Management (z. B. HashiCorp Vault).
-
-```bash
-# Das sieht aus wie Verschlüsselung:
-kubectl get secret code-server-secret -n k8s-training -o yaml
-# data:
-#   PASSWORD: dHJhaW5pbmcyMDI0
-
-# Aber Base64 ist trivial dekodierbar:
-echo "dHJhaW5pbmcyMDI0" | base64 -d
-# Ausgabe: training2024
-```
-
-Datei `code-server-secret.yaml` mit `stringData` (Klartext, wird automatisch kodiert):
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: code-server-secret
-  namespace: k8s-training
-type: Opaque
-stringData:
-  PASSWORD: "training2024"
-```
-
-```bash
-kubectl apply -f code-server-secret.yaml
-```
-
-Secret prüfen:
-
-```bash
-kubectl get secret code-server-secret -n k8s-training -o yaml
-```
-
-Die Werte sind Base64-kodiert. Dekodieren:
-
-```bash
-kubectl get secret code-server-secret -n k8s-training -o jsonpath='{.data.PASSWORD}' | base64 -d
-```
-
-### Deployments anpassen
-
-Die Deployments referenzieren nun ConfigMap und Secret statt hardcodierter Werte.
-
-**Code-Server** mit `envFrom` (ConfigMap) und `secretKeyRef` (Secret):
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: code-server
-  namespace: k8s-training
-  labels:
-    app: code-server
-spec:
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  selector:
-    matchLabels:
-      app: code-server
-  template:
-    metadata:
-      labels:
-        app: code-server
-    spec:
-      containers:
-        - name: code-server
-          image: lscr.io/linuxserver/code-server:latest
-          ports:
-            - containerPort: 8443
-          envFrom:
-            - configMapRef:
-                name: app-config
-          env:
-            - name: PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: code-server-secret
-                  key: PASSWORD
-            - name: DEFAULT_WORKSPACE
-              value: "/config/workspace"
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          startupProbe:
-            httpGet:
-              path: /
-              port: 8443
-              scheme: HTTPS
-            failureThreshold: 30
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 8443
-              scheme: HTTPS
-            periodSeconds: 15
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 8443
-              scheme: HTTPS
-            periodSeconds: 5
-            failureThreshold: 1
-```
-
-**Chromium** mit `envFrom`:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: chromium
-  namespace: k8s-training
-  labels:
-    app: chromium
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: chromium
-  template:
-    metadata:
-      labels:
-        app: chromium
-    spec:
-      containers:
-        - name: chromium
-          image: lscr.io/linuxserver/chromium:latest
-          ports:
-            - containerPort: 3000
-          envFrom:
-            - configMapRef:
-                name: app-config
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
-          startupProbe:
-            httpGet:
-              path: /
-              port: 3000
-            failureThreshold: 30
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            periodSeconds: 15
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            periodSeconds: 5
-            failureThreshold: 1
-          volumeMounts:
-            - name: shm
-              mountPath: /dev/shm
-            - name: config
-              mountPath: /config
-      volumes:
-        - name: shm
-          emptyDir:
-            medium: Memory
-            sizeLimit: 1Gi
-        - name: config
-          emptyDir: {}
-```
-
-```bash
-kubectl apply -f chromium-deployment.yaml
-kubectl apply -f code-server-deployment.yaml
-```
-
-### Weitere Möglichkeiten
-
-| Methode                     | Beschreibung                                       |
-| --------------------------- | -------------------------------------------------- |
-| `envFrom`                   | Alle Keys einer ConfigMap/Secret als Env-Variablen |
-| `valueFrom.configMapKeyRef` | Einzelnen Key als Env-Variable                     |
-| `valueFrom.secretKeyRef`    | Einzelnen Secret-Key als Env-Variable              |
-| Volume-Mount                | ConfigMap/Secret als Dateien mounten               |
-
-ConfigMap als Volume (z. B. für Konfigurationsdateien):
-
-```yaml
-volumes:
-  - name: config-volume
-    configMap:
-      name: app-config
-```
-
-### Übung
-
-1. Erstelle die ConfigMap `app-config` und das Secret `code-server-secret`.
-2. Passe die Deployments an, sodass sie ConfigMap und Secret verwenden.
-3. Prüfe, ob das Code-Server-Passwort noch funktioniert.
-4. Ändere das Passwort im Secret und wende es erneut an:
-
-```bash
-kubectl create secret generic code-server-secret \
-  --from-literal=PASSWORD=neuesPasswort \
-  --namespace=k8s-training \
-  --dry-run=client -o yaml | kubectl apply -f -
-```
-
-5. Lösche den Code-Server-Pod, damit er das neue Secret lädt. Teste den Login mit dem neuen
-   Passwort.
-
----
 
 ## Security
 
@@ -1170,6 +1442,8 @@ Container-Dateisysteme sind flüchtig -- stirbt ein Pod, sind alle Daten weg. Wi
 gesehen haben, verschwindet selbst eine einfache Textdatei nach einem Pod-Neustart. Für Anwendungen
 wie Home Assistant oder Nextcloud ist das keine Option. Persistent Volumes (PVs) und Persistent
 Volume Claims (PVCs) entkoppeln Storage von der Pod-Lebensdauer.
+
+
 
 ### Konzepte
 
@@ -1736,3 +2010,6 @@ graph TD
 - RBAC vertiefen -- Rollen und Berechtigungen im Detail
 - Network Policies -- Netzwerk-Segmentierung zwischen Pods
 - Horizontal Pod Autoscaler (HPA)
+
+<br />
+Weiter: [Glossar](/docs/kubernetes-basis/90-glossar)

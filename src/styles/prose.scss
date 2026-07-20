@@ -186,6 +186,11 @@
     }
   }
   // Lists
+  ul,
+  ol {
+    list-style: revert;
+    padding-left: 1.5em;
+  }
   @apply prose-li:text-txt-s prose-li:dark:text-darkmode-txt-s;
   li::marker {
     @apply text-txt-s dark:text-darkmode-txt-s;

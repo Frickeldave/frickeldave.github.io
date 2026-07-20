@@ -407,7 +407,9 @@ spec:
 ### Sidecar-Container
 
 Laufen **dauerhaft** neben dem App-Container im selben Pod und teilen sich Netzwerk und Volumes.
-Typische Anwendungsfälle: Log-Aggregation, Metrics-Exporter, Service-Mesh-Proxies (z. B. Envoy).
+Typische Anwendungsfälle: Log-Aggregation (z. B. Vector, Fluent Bit), Metrics-Exporter (z. B.
+nginx-prometheus-exporter), Service-Mesh-Proxies (z. B. Envoy in Istio) oder Reverse-Proxies
+(z. B. nginx für SSL-Terminierung).
 
 ## Control Plane Komponenten
 
@@ -485,3 +487,6 @@ k3d cluster list
 k3d cluster delete mycluster
 k3d kubeconfig get mycluster
 ```
+
+<br />
+Weiter: [kubectl](/docs/kubernetes-basis/91-kubectl)
