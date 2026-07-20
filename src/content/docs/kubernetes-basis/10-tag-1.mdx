@@ -485,7 +485,7 @@ wget -qO- http://<Node-IP>:<NodePort>
 exit
 ```
 
-Den chromium erreichbar machen, machen zum Problem vom "Später-Ich".
+Den chromium erreichbar machen, machen wir zum Problem vom "Später-Ich".
 
 ### Konfiguration nachbessern
 
@@ -696,14 +696,14 @@ kubectl run -it --rm debug --image=alpine:latest -- sh
 > sich nicht leicht dokumentieren. Mit YAML-Dateien können mehrere Entwickler gemeinsam arbeiten und
 > die Konfiguration im Git versionieren.
 
-FÜge nun noch die Volumes für `/dev/shm` hinzu, damit Chromium stabil läuft. 
+Füge nun noch die Volumes für `/dev/shm` hinzu, damit Chromium stabil läuft. 
 Chromium nutzt Shared Memory für das Rendering von Webseiten. Ohne ein
 ausreichend großes `/dev/shm` stürzt der Browser ab oder zeigt leere Seiten. Durch `medium: Memory`
 wird das Volume im RAM angelegt -- schnell und genau richtig für temporäre Rendering-Daten.
 
 ```yaml
 apiVersion: v1
-kind: Service
+kind: Deployment
 metadata:
   ...
 spec:
