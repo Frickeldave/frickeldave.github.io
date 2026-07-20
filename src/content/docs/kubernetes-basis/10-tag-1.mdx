@@ -156,9 +156,7 @@ drei Kernkomponenten, die eng mit der Control Plane zusammenarbeiten.
 
 Es gibt weitere optionale Komponenten, die Kubernetes erweitern, aber nicht immer installiert sein müssen:
 
-<!-- vale Microsoft.Plurals = NO -->
-- **Ingress Controller** — Verwaltet HTTP(S)-Routing zu Services (elegantere Alternative zu NodePort)
-<!-- vale Microsoft.Plurals = YES -->
+- **Ingress Controller** — Verwaltet Routing zu Services (elegantere Alternative zu NodePort)
 - **Metrics Server** — Sammelt CPU- und Memory-Metriken von Nodes und Pods (nötig für `kubectl top` und Autoskalierung)
 - **Dashboard** — Web-UI zur Verwaltung des Clusters
 
@@ -948,9 +946,7 @@ Erwartete Ausgabe:
 | Imperativ vs. Deklarativ | Kommandos vs. YAML-Dateien                      | Warum YAML in der Praxis der Standard ist        |
 | Volumes                  | emptyDir (normal und Memory-backed)             | Temporärer Speicher für Container-Daten          |
 | Services                 | NodePort zum Erreichen von Anwendungen          | Pods von außen zugänglich machen                 |
-<!-- vale Microsoft.Plurals = NO -->
-| Ingress                  | HTTP(S)-Routing per Host-Name                   | Anwendungen über feste URLs erreichbar machen    |
-<!-- vale Microsoft.Plurals = YES -->
+| Ingress                  | Routing per Host-Name                   | Anwendungen über feste URLs erreichbar machen    |
 | Self-Healing             | Pods werden automatisch neu erstellt            | Kubernetes sorgt für den gewünschten Zustand     |
 
 ### Spickzettel
