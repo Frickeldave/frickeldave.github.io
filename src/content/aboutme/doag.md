@@ -57,12 +57,12 @@ episodes:
     audioUrl: >-
       https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a30e66be6540bec0f0206cd/media.mp3
   - id: doag-voices-73536
-    title: Agentic Coding und Claude Code–Die Zukunft der Softwareentwicklung
+    title: Agentic Coding und Claude Code – Die Zukunft der Softwareentwicklung
     edition: FutureAI
     guests: Dave König, Jan Pfrommer, Christian Reineke und Benedikt Backhaus
     date: 9. Juni 2026
     description: >-
-      Dave König diskutiert mit seinen Gästen, wie KI-Agenten die Softwareentwicklung transformieren–von Claude Code über lokale LLMs bis hin zu neuen Rollenbildern in IT-Teams. Die Episode beleuchtet, wie Entwickler zukünftig eher Architekten und Orchestratoren sein werden, während sie wirtschaftliche Auswirkungen, Produktivität und die Abhängigkeit von amerikanischen Plattformen gegen europäische Souveränität abwägen.
+      Dave König diskutiert mit seinen Gästen, wie KI-Agenten die Softwareentwicklung transformieren – von Claude Code über lokale LLMs bis hin zu neuen Rollenbildern in IT-Teams. Die Episode beleuchtet, wie Entwickler zukünftig eher Architekten und Orchestratoren sein werden, während sie wirtschaftliche Auswirkungen, Produktivität und die Abhängigkeit von amerikanischen Plattformen gegen europäische Souveränität abwägen.
     links:
       spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
       apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
