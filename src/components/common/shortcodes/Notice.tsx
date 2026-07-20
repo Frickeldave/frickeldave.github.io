@@ -12,16 +12,16 @@ function Notice({
     <div
       className={`mb-6 rounded-lg border-2 px-4 py-3 ${
         type === "note" &&
-        "border-cyan-500 bg-cyan-100 dark:bg-cyan-900 dark:border-cyan-700"
+        "border-cyan-500 bg-cyan-100 dark:border-cyan-700 dark:bg-cyan-900"
       } ${
         type === "tip" &&
-        "border-green-500 bg-green-100 dark:bg-green-900 dark:border-green-700"
+        "border-green-500 bg-green-100 dark:border-green-700 dark:bg-green-900"
       } ${
         type === "info" &&
-        "border-amber-500 bg-amber-100 dark:bg-amber-900 dark:border-amber-700"
+        "border-amber-500 bg-amber-100 dark:border-amber-700 dark:bg-amber-900"
       } ${
         type === "warning" &&
-        "border-yellow-500 bg-yellow-100 dark:bg-yellow-900 dark:border-yellow-700"
+        "border-yellow-500 bg-yellow-100 dark:border-yellow-700 dark:bg-yellow-900"
       } `}
     >
       <div className="flex items-center">
@@ -93,36 +93,25 @@ function Notice({
             />
           </svg>
         )}
-        <p className={`font-secondary my-0 text-xl font-semibold ${
-          type === "note" &&
-          "text-cyan-900 dark:text-cyan-100"
-        } ${
-          type === "tip" &&
-          "text-green-900 dark:text-green-100"
-        } ${
-          type === "info" &&
-          "text-amber-900 dark:text-amber-100"
-        } ${
-          type === "warning" &&
-          "text-yellow-900 dark:text-yellow-100"
-        }`}
+        <p
+          className={`font-secondary my-0 text-xl font-semibold ${
+            type === "note" && "text-cyan-900 dark:text-cyan-100"
+          } ${type === "tip" && "text-green-900 dark:text-green-100"} ${
+            type === "info" && "text-amber-900 dark:text-amber-100"
+          } ${type === "warning" && "text-yellow-900 dark:text-yellow-100"}`}
         >
           {upperHumanize(type)}
         </p>
       </div>
-      <div className={`mt-3 ${
-        type === "note" &&
-        "text-cyan-900 dark:text-cyan-100"
-      } ${
-        type === "tip" &&
-        "text-green-900 dark:text-green-100"
-      } ${
-        type === "info" &&
-        "text-amber-900 dark:text-amber-100"
-      } ${
-        type === "warning" &&
-        "text-yellow-900 dark:text-yellow-100"
-      }`}>{children}</div>
+      <div
+        className={`mt-3 ${
+          type === "note" && "text-cyan-900 dark:text-cyan-100"
+        } ${type === "tip" && "text-green-900 dark:text-green-100"} ${
+          type === "info" && "text-amber-900 dark:text-amber-100"
+        } ${type === "warning" && "text-yellow-900 dark:text-yellow-100"}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }
