@@ -48,6 +48,12 @@ Im Falle einer lokalen Installation mit k3d siehe unten.
 
 ### Optional: Tuning Linux
 
+Das folgende Skript richtet den `k`-Alias für kubectl sowie die Bash-Autovervollständigung
+dauerhaft in deiner `.bashrc` ein. Es prüft, ob die Einträge bereits existieren, und fügt sie
+nur bei Bedarf hinzu – mehrfaches Ausführen ist also unschädlich. Nach einem Neustart des
+Terminals oder `source ~/.bashrc` kannst du `k get pods` statt `kubectl get pods` nutzen und
+mit Tabulator durch die Ressourcen navigieren.
+
 ``` bash
 
 BASHRC="$HOME/.bashrc"
@@ -73,6 +79,12 @@ echo "  Neuen Terminal starten oder 'source ~/.bashrc'"
 Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#enable-shell-autocompletion" target="_blank" rel="noopener noreferrer">kubectl auf Linux</a>.
 
 ### Optional: Tuning Windows
+
+Das folgende PowerShell-Skript richtet die kubectl-Autovervollständigung und den `k`-Alias
+dauerhaft in deiner PowerShell-Profil ein. Es erstellt das Profil bei Bedarf automatisch und
+ergänzt bestehende Konfigurationen, ohne doppelte Einträge zu hinterlassen. Nach einem
+Neustart der PowerShell kannst du `k get pods` statt `kubectl get pods` tippen – die
+Tabulator-Vervollständigung funktioniert dann auch für den Alias.
 
 ``` powershell
 
@@ -151,7 +163,7 @@ Für die Schulung wird ein **3-Knoten-Cluster** als Voraussetzung benötigt:
 
 Die folgenden Kapitel beschreiben mögliche Optionen zur Installation / Bereitstellung des Clusters.
 
-### Installation als lokale WSL Umgebung
+### WSL Umgebung
 
 Mit dieser Option wird Kubernetes in Form einer k3d Installation in einer lokalen WSL (Windows Subsystem für Linux) installiert. k3d erzeugt dabei docker container für den Master-Node/Control-Node und 2 Worker-Nodes. Physikalische Systeme werden in dieser Konstellation also als docker-container simuliert. Wichtig: Dieses Setup ist für Schulungen und Experimentierumgebungen interessant, nicht aber für den produktiven Einsatz vorgesehen.
 
@@ -205,7 +217,9 @@ eb207e4211cf   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint�
 - Erzeugen der [kubeconfig](/docs/kubernetes-basis/90-glossar#kubeconfig): `wsl k3d kubeconfig get mycluster > $env:USERPROFILE\.kube\wsl`
 - Aufruf mit neuer config: `kubectl --kubeconfig=$env:USERPROFILE\.kube\wsl get nodes`
 
-### Welche Option ist die richtige?
+
+
+### Nutzung eines Firmen-Clusters
 
 | Aspekt | WSL-Option | Firmen-Cluster |
 | --- | --- | --- |
@@ -221,15 +235,18 @@ haben möchtest und dein Rechner mindestens 8 GB RAM hat.
 **Wähle den Firmen-Cluster, wenn** du bereits Zugang hast, dieser genehmigt ist und du in einer
 realen Infrastruktur lernen möchtest.
 
-### Nutzung eines Firmen-Kubernetes-Clusters
 
 Wer in der eigenen Firma bereits Zugang zu einem Kubernetes-Cluster hat, kann diesen grundsätzlich auch für die Schulung nutzen. Das spart den Aufwand für die lokale Einrichtung und ermöglicht gleichzeitig ein realistischeres Umfeld.
+
+<br />
 
 <Notice type="warning">
   Kläre vorab mit deiner IT-Abteilung oder dem Cluster-Administrator, ob die Nutzung des
   Firmen-Clusters für Schulungszwecke erlaubt ist. Nicht alle Unternehmen gestatten das Deployment
   von Test-Workloads in produktionsnahen Umgebungen.
 </Notice>
+
+<br />
 
 **Voraussetzungen für die Schulungsteilnahme mit einem Firmen-Cluster**
 
@@ -243,26 +260,22 @@ Wer in der eigenen Firma bereits Zugang zu einem Kubernetes-Cluster hat, kann di
 | Internetzugang des Clusters | Die Nodes müssen Images von externen Registries ziehen können (z. B. `lscr.io`, `ghcr.io`)–oder ein lokaler Mirror ist konfiguriert |
 | DNS / Hostnamen | Entweder ein echter DNS-Eintrag für deine Schulungs-URLs oder die Nutzung von `/etc/hosts` auf deinem lokalen Rechner |
 
+<br />
+
 **Was du nicht benötigst**
 
-- Cluster-Admin-Rechte–Namespace-Admin-Rechte reichen für alle Schulungsübungen
-- Eine eigene Control Plane–der bestehende Cluster wird genutzt
+- `Cluster-Admin-Rechte` sind nicht nötig, `Namespace-Admin-Rechte` reichen für alle Schulungsübungen
+- Eine eigene Control Plane – Ein bestehender Cluster wird genutzt
+
+<br />
 
 **Einschränkungen und Hinweise**
 
 - Firmen-Cluster haben oft eingeschränkte NetworkPolicies oder Pod Security Standards. Sollten einzelne Übungen daran scheitern, kann lokal auf die WSL-Variante gewechselt werden.
-- Image-Pull-Secrets für private Registries sind in Firmen-Umgebungen häufig notwendig–das Setup wird in diesen Fällen kurz abweichen.
+- Image-Pull-Secrets für private Registries sind in Firmen-Umgebungen häufig notwendig – das Setup wird in diesen Fällen kurz abweichen.
 - Produktions-Namespaces sind tabu. Nutze ausschließlich einen dedizierten Schulungs-Namespace.
 
-**Kubeconfig prüfen**
-
-```bash
-kubectl config current-context   # aktiven Kontext anzeigen
-kubectl get nodes                # Nodes des Clusters prüfen
-kubectl get storageclass         # StorageClass prüfen
-kubectl get ingressclass         # Ingress Controller prüfen
-kubectl api-resources | grep -E "(pods|services|deployments|ingress)"  # Berechtigungen prüfen
-```
+<br />
 
 **Häufige Probleme bei Firmen-Clustern**
 
@@ -279,6 +292,109 @@ kubectl api-resources | grep -E "(pods|services|deployments|ingress)"  # Berecht
   wechseln. Die Schulungsinhalte sind mit beiden Umgebungen identisch.
 </Notice>
 
+## Kubeconfig prüfen
+
+**Linux / macOS (Bash)**
+
+```bash
+# Zeigt an, welcher Cluster gerade als Ziel eingestellt ist
+kubectl config current-context
+# Listet alle Cluster-Knoten und deren Status (Ready/NotReady)
+kubectl get nodes
+# Prüft, ob eine Speicherklasse für PersistentVolumes existiert
+kubectl get storageclass
+# Prüft, ob ein Ingress-Controller (z. B. nginx) installiert ist
+kubectl get ingressclass
+# Zeigt, ob du die wichtigsten Ressourcentypen verwenden darfst
+kubectl api-resources | grep -E "(pods|services|deployments|ingress)"
+```
+
+<br />
+
+**Windows (PowerShell)**
+
+```powershell
+# Zeigt an, welcher Cluster gerade als Ziel eingestellt ist
+kubectl config current-context
+# Listet alle Cluster-Knoten und deren Status (Ready/NotReady)
+kubectl get nodes
+# Prüft, ob eine Speicherklasse für PersistentVolumes existiert
+kubectl get storageclass
+# Prüft, ob ein Ingress-Controller (z. B. nginx) installiert ist
+kubectl get ingressclass
+# Zeigt, ob du die wichtigsten Ressourcentypen verwenden darfst
+kubectl api-resources | Select-String -Pattern "(pods|services|deployments|ingress)"
+```
+
+### get storageclass
+
+```text
+NAME                   PROVISIONER           RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+example-examplefs-sc   cephfs.csi.ceph.com   Delete          Immediate           true                   399d
+ex-exrbd-sc (default)  rbd.csi.ceph.com      Delete          Immediate           true                   91d
+```
+<br />
+Diese Tabelle zeigt dir, welche **Speicherarten** (StorageClasses) in deinem Cluster verfügbar sind – vergleichbar mit verschiedenen Festplatten-Typen in einem PC:
+
+| Spalte | Bedeutung | Einfach erklärt |
+|---|---|---|
+| `NAME` | Name der Speicherklasse | So sprichst du diese Speicherart an, wenn du später einen PersistentVolumeClaim erstellst. |
+| `PROVISIONER` | Treiber, der den Speicher bereitstellt | Sagt, welches System den Speicher wirklich liefert – hier zwei Varianten von **Ceph** (einem verteilten Speichersystem). |
+| `RECLAIMPOLICY` | Was passiert, wenn du den Speicher freigibst? | `Delete` = der Speicher wird automatisch gelöscht, wenn du ihn nicht mehr brauchst. |
+| `VOLUMEBINDINGMODE` | Wann wird der Speicher reserviert? | `Immediate` = sofort, auch wenn noch kein Pod läuft. |
+| `ALLOWVOLUMEEXPANSION` | Kann die Größe nachträglich geändert werden? | `true` = ja, du kannst später mehr Speicher anfordern. |
+| `AGE` | Seit wann gibt es diese Klasse? | `399d` = fast 400 Tage alt, also kein Neuling. |
+
+**Das Wichtigste für dich:** Die Zeile mit `(default)` – hier `csi-rbd-sc` – wird automatisch verwendet, wenn du einen PersistentVolumeClaim anlegst, ohne eine bestimmte StorageClass zu nennen. Solange mindestens eine StorageClass existiert, ist die Grundvoraussetzung für die Schulungsübungen erfüllt.
+
+### get ingressclass
+
+```text
+NAME    CONTROLLER             PARAMETERS   AGE
+nginx   k8s.io/ingress-nginx   <none>       2y209d
+```
+<br />
+Diese Tabelle zeigt, ob ein **Ingress Controller** im Cluster installiert ist – das ist die Komponente, die später dafür sorgt, dass deine Anwendungen über eine Web-Adresse (URL) von außen erreichbar sind.
+
+| Spalte | Bedeutung | Einfach erklärt |
+|---|---|---|
+| `NAME` | Name des Ingress Controllers | So sprichst du ihn in Konfigurationen an – hier heißt er `nginx`. |
+| `CONTROLLER` | Technische Kennung des Treibers | Sagt, welche Software den Datenverkehr steuert – `k8s.io/ingress-nginx` ist der bekannte **NGINX Ingress Controller**. |
+| `PARAMETERS` | Zusätzliche Konfiguration | `<none>` = es sind keine extra Parameter gesetzt, der Controller läuft mit Standardeinstellungen. |
+| `AGE` | Seit wann ist er installiert? | `2y209d` = über 2 Jahre, also stabil im Einsatz. |
+
+**Das Wichtigste für dich:** Solange hier mindestens ein Eintrag steht (wie `nginx`), ist ein Ingress Controller vorhanden. Das ist die Voraussetzung dafür, dass später in der Schulung Web-URLs für deine Anwendungen funktionieren. Fehlt der Eintrag komplett, müsstest du einen nachinstallieren – das ist aber eher in Firmen-Clustern mit strengen IT-Richtlinien der Fall.
+
+### api-resources
+
+```text
+pods                                         po                    v1                                     true    Pod
+services                                     svc                   v1                                     true    Service
+deployments                                  deploy                apps/v1                                true    Deployment
+ingresses                                    ing                   networking.k8s.io/v1                   true    Ingress
+```
+<br />
+Dieser Befehl prüft, ob du die **wichtigsten Ressourcentypen** in deinem Namespace verwenden darfst. Die Tabelle zeigt dir, welche Bausteine dir zur Verfügung stehen:
+
+| Spalte | Beispiel | Einfach erklärt |
+|---|---|---|
+| **Name** | `pods`, `services`, `deployments`, `ingresses` | Der Fachbegriff für den Baustein – so sprichst du ihn in kubectl-Befehlen an. |
+| **Kurzform** | `po`, `svc`, `deploy`, `ing` | Die Abkürzung – statt `kubectl get pods` reicht auch `kubectl get po`. |
+| **API-Version** | `v1`, `apps/v1`, `networking.k8s.io/v1` | Sagt, welche Version von Kubernetes diesen Baustein bereitstellt – `v1` ist die stabilste, `apps/v1` ist ebenfalls sehr verbreitet. |
+| **Namespaced** | `true` / `false` | `true` = die Ressource lebt in deinem eigenen Namespace (dein Bereich). `false` = sie gilt clusterweit (nur für Admins sichtbar). |
+| **KIND** | `Pod`, `Service`, `Deployment`, `Ingress` | Der genaue Typname – das ist die „Bauanleitung" für diesen Baustein. |
+
+**Die wichtigsten Zeilen für dich:**
+
+| Ressource | Kurzform | Wofür brauchst du sie in der Schulung? |
+|---|---|---|
+| `pods` | `po` | Ein Pod ist die kleinste Einheit – darin laufen deine Container (z. B. eine Web-App). |
+| `services` | `svc` | Ein Service macht einen Pod im Cluster erreichbar – wie eine „Durchwahl" zu deiner App. |
+| `deployments` | `deploy` | Ein Deployment kümmert sich darum, dass immer die richtige Anzahl Pods läuft – wie ein „Wiederbelebungs-Automat". |
+| `ingresses` | `ing` | Ein Ingress macht deine App von außen per Web-URL erreichbar – wie ein „Türschild" am Gebäudeeingang. |
+
+**Das Wichtigste für dich:** Wenn du alle vier Einträge (`pods`, `services`, `deployments`, `ingresses`) mit `true` in der Spalte „Namespaced" siehst, hast du ausreichend Berechtigungen für die gesamte Schulung. Fehlt einer oder steht dort `false`, fehlen dir Rechte – dann bitte deinen Cluster-Admin um einen Namespace mit vollen Rechten.
+
 ## Checkliste
 
 **Allgemein (alle Optionen)**
@@ -291,10 +407,12 @@ kubectl api-resources | grep -E "(pods|services|deployments|ingress)"  # Berecht
 - [ ] Internetzugang vorhanden (für Image-Downloads)
 - [ ] Default StorageClass im Cluster vorhanden (`kubectl get storageclass`)
 
+<br />
 **Zusätzlich bei Firmen-Cluster**
 
 - [ ] Namespace mit ausreichenden Rechten vorhanden (`kubectl get pods -n <namespace>` fehlerfrei)
 - [ ] Ingress Controller verfügbar (`kubectl get ingressclass`)
 - [ ] DNS-Einträge oder `/etc/hosts`-Einträge für Schulungs-URLs konfiguriert
 
-Weiter: [Ziele und Methoden](/docs/kubernetes-basis/02-ziele-methoden)
+<br />
+Weiter: [Ziele und Methoden](/docs/kubernetes-basis/10-tag-1.mdx)

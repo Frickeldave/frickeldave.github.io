@@ -10,12 +10,24 @@ function Notice({
 }) {
   return (
     <div
-      className={`mb-6 rounded-lg border border-current px-4 py-2 ${type === "note" && "text-[#24a9ab]"} ${type === "tip" && "text-[#65ab24]"} ${type === "info" && "text-[#d7af2d]"} ${type === "warning" && "text-[#f43633]"} `}
+      className={`mb-6 rounded-lg border-2 px-4 py-3 ${
+        type === "note" &&
+        "border-cyan-500 bg-cyan-100 dark:bg-cyan-900 dark:border-cyan-700"
+      } ${
+        type === "tip" &&
+        "border-green-500 bg-green-100 dark:bg-green-900 dark:border-green-700"
+      } ${
+        type === "info" &&
+        "border-amber-500 bg-amber-100 dark:bg-amber-900 dark:border-amber-700"
+      } ${
+        type === "warning" &&
+        "border-yellow-500 bg-yellow-100 dark:bg-yellow-900 dark:border-yellow-700"
+      } `}
     >
       <div className="flex items-center">
         {type === "tip" ? (
           <svg
-            className="mr-2"
+            className="mr-2 text-green-600 dark:text-green-400"
             width="20"
             height="20"
             viewBox="0 0 24 24"
@@ -31,7 +43,7 @@ function Notice({
           </svg>
         ) : type === "info" ? (
           <svg
-            className="mr-2"
+            className="mr-2 text-amber-600 dark:text-amber-400"
             width="20"
             height="20"
             viewBox="0 0 20 20"
@@ -49,7 +61,7 @@ function Notice({
           </svg>
         ) : type === "warning" ? (
           <svg
-            className="mr-2"
+            className="mr-2 text-yellow-600 dark:text-yellow-400"
             width="20"
             height="20"
             viewBox="0 0 20 20"
@@ -65,7 +77,7 @@ function Notice({
           </svg>
         ) : (
           <svg
-            className="mr-2"
+            className="mr-2 text-cyan-600 dark:text-cyan-400"
             width="20"
             height="20"
             viewBox="0 0 20 20"
@@ -81,11 +93,36 @@ function Notice({
             />
           </svg>
         )}
-        <p className="font-secondary text-txt-p dark:text-darkmode-txt-light my-0 text-xl font-semibold">
+        <p className={`font-secondary my-0 text-xl font-semibold ${
+          type === "note" &&
+          "text-cyan-900 dark:text-cyan-100"
+        } ${
+          type === "tip" &&
+          "text-green-900 dark:text-green-100"
+        } ${
+          type === "info" &&
+          "text-amber-900 dark:text-amber-100"
+        } ${
+          type === "warning" &&
+          "text-yellow-900 dark:text-yellow-100"
+        }`}
+        >
           {upperHumanize(type)}
         </p>
       </div>
-      <div className="mt-3">{children}</div>
+      <div className={`mt-3 ${
+        type === "note" &&
+        "text-cyan-900 dark:text-cyan-100"
+      } ${
+        type === "tip" &&
+        "text-green-900 dark:text-green-100"
+      } ${
+        type === "info" &&
+        "text-amber-900 dark:text-amber-100"
+      } ${
+        type === "warning" &&
+        "text-yellow-900 dark:text-yellow-100"
+      }`}>{children}</div>
     </div>
   );
 }

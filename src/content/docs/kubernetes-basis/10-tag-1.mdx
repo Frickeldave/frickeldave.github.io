@@ -8,10 +8,10 @@ imageAlt: "Kubernetes Basis - 10 Tag 1"
 ---
 
 import { Image } from "astro:assets";
-import knba101 from "@assets/docs/kubernetes-basis/knba-10-002.png";
+import knba10002 from "@assets/docs/kubernetes-basis/knba-10-002.png";
+import knba10003 from "@assets/docs/kubernetes-basis/knba-10-003.png";
+import knba10004 from "@assets/docs/kubernetes-basis/knba-10-004.png";
 import Notice from "@shortcodes/Notice";
-
-> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Grundlagen & Einstieg
 
@@ -21,20 +21,20 @@ Browser (Chromium) und eine Entwicklungsumgebung (Code-Server) -- direkt im Clus
 
 ## Zeitplan
 
-| Zeit          | Dauer  | Block                | Inhalt                                                  |
-| ------------- | ------ | -------------------- | ------------------------------------------------------- |
-| 09:00–09:30 | 30 min | Begrüßung            | Vorstellungsrunde, Ziele, Vorschau Endprodukt           |
-| 09:30–10:30 | 60 min | Theorie              | Kubernetes Architektur & Komponenten                    |
-| 10:30–10:45 | 15 min | **Pause**            |                                                         |
-| 10:45–11:30 | 45 min | Theorie              | Kubernetes-Objekte: Pod, Deployment, Service, Namespace |
-| 11:30–12:30 | 60 min | Erste Schritte       | Cluster erkunden, kubectl Basics, Namespace anlegen     |
-| 12:30–13:30 | 60 min | **Mittagspause**     |                                                         |
-| 13:30–14:30 | 60 min | Chromium deployen    | Erstes Deployment (imperativ), Pods beobachten          |
-| 14:30–15:15 | 45 min | Theorie              | YAML-Grundlagen, Imperativ vs. Deklarativ               |
-| 15:15–15:30 | 15 min | **Pause**            |                                                         |
-| 15:30–16:30 | 60 min | Code-Server deployen | Deployment per YAML (deklarativ)                        |
-| 16:30–17:15 | 45 min | Services             | NodePort für beide Anwendungen                          |
-| 17:15–17:30 | 15 min | Abschluss            | Zusammenfassung, Ausblick Tag 2                         |
+| Zeit / Schedule | Block                | Inhalt                                                  |
+| --------------- | -------------------- | ------------------------------------------------------- |
+| 09:00 – 09:30   | Begrüßung            | Vorstellungsrunde, Ziele, Vorschau Endprodukt           |
+| 09:30 – 10:30   | Theorie              | Kubernetes Architektur & Komponenten                    |
+| 10:30 – 10:45   | **Pause**            |                                                         |
+| 10:45 – 11:30   | Theorie              | Kubernetes-Objekte: Pod, Deployment, Service, Namespace |
+| 11:30 – 12:30   | Erste Schritte       | Cluster erkunden, kubectl Basics, Namespace anlegen     |
+| 12:30 – 13:30   | **Mittagspause**     |                                                         |
+| 13:30 – 14:30   | Chromium deployen    | Erstes Deployment (imperativ), Pods beobachten          |
+| 14:30 – 15:15   | Theorie              | YAML-Grundlagen, Imperativ vs. Deklarativ               |
+| 15:15 – 15:30   | **Pause**            |                                                         |
+| 15:30 – 16:15   | Chromium deklarativ  | Deployment & Service per YAML, /dev/shm-Volume          |
+| 16:15 – 17:00   | Code-Server deployen | Deployment & Service per YAML (deklarativ)              |
+| 17:00 – 17:30   | Services & Abschluss | NodePort, Port-Forwarding, Ingress, Zusammenfassung     |
 
 ---
 
@@ -45,6 +45,34 @@ Browser (Chromium) und eine Entwicklungsumgebung (Code-Server) -- direkt im Clus
 Kubernetes (K8s) ist eine Open-Source-Plattform zur **Automatisierung von Deployment, Skalierung und
 Verwaltung** von Container-Anwendungen. Ursprünglich von Google entwickelt, wird es heute von der
 Cloud Native Computing Foundation (CNCF) gepflegt.
+
+### Warum Kubernetes?
+
+Kubernetes wird eingesetzt, um containerisierte Anwendungen zuverlässig, automatisiert und skalierbar
+zu betreiben. Statt jeden Container manuell auf einem Server zu starten und bei Ausfällen selbst
+einzugreifen, übernimmt Kubernetes die gesamte Orchestrierung: Es verteilt Container intelligent
+auf verfügbare Maschinen, startet ausgefallene Container automatisch neu, skaliert Anwendungen bei
+Bedarf hoch oder runter und ermöglicht Updates ohne Ausfallzeit. Besonders in Microservice-Architekturen
+mit vielen Diensten, die sich gegenseitig beeinflussen, entfaltet Kubernetes seine Stärke -- es
+entkoppelt die Teams von der zugrunde liegenden Infrastruktur und schafft einen einheitlichen,
+wiederholbaren Betriebsstandard, egal ob on-premises, in der Cloud oder im Hybridbetrieb.
+
+### Wann kein Kubernetes?
+
+<Image src={knba10004} alt="Why not Kubernetes * Erstellt mit Microsoft Copilot" />
+
+Kubernetes ist nicht immer die richtige Wahl. Für einfache Webanwendungen, monolithische Systeme
+oder kleine Projekte mit nur einem oder wenigen Containern ist der Betriebsaufwand oft
+unverhältnismäßig hoch -- ein einzelner Server mit Docker Compose oder eine Platform-as-a-Service
+(PaaS) wie Heroku, Fly.io oder Railway liefern hier schneller und mit weniger Komplexität.
+Auch wenn kein Team mit DevOps-Know-how vorhanden ist, kann Kubernetes schnell zur
+Wartungsfalle werden: Die Lernkurve ist steil, und die tägliche Administration (Updates,
+Troubleshooting, Netzwerk, Storage) erfordert spezialisiertes Wissen. Ebenso wenig geeignet ist
+Kubernetes für Stateful-Workloads mit hohen I/O-Anforderungen (z. B. große Datenbanken), bei denen
+ein klassischer Bare-Metal-Server oder eine verwaltete Datenbank die bessere Performance und
+einfachere Handhabung bietet. Faustregel: Erst ab etwa 5-10 (Micro-)services oder wenn
+Automatisierung, Skalierung und Ausfallsicherheit explizite Anforderungen sind, lohnt sich der
+Einstieg in Kubernetes.
 
 ### Wozu K8s?
 
@@ -61,9 +89,9 @@ Produktion -- Kubernetes übernimmt dabei die Rolle des zentralen Auslieferungss
 
 ```mermaid
 graph LR
-    A["Code"] --> B["Container Image<br/>Docker Build"]
-    B --> C["Registry<br/>Harbor / GHCR / Docker Hub"]
-    C --> D["Kubernetes<br/>Deployment / Service / Ingress"]
+    A["Code"] --> B["Container Image / Docker Build"]
+    B --> C["Registry (Harbor / GHCR / Docker Hub)"]
+    C --> D["Kubernetes -> Deployment / Service / Ingress"]
     D --> E["Produktion"]
 ```
 
@@ -94,7 +122,7 @@ Empfänger (Produktion) -- zuverlässig, automatisch und mit Self-Healing bei Pr
 
 ### Cluster-Architektur
 
-<Image src={knba101} alt="Kubernetes Architektur * Erstellt mit Nano Banana" />
+<Image src={knba10002} alt="Kubernetes Architektur * Erstellt mit Microsoft Copilot" />
 
 Ein Kubernetes-Cluster besteht aus zwei Bereichen: der **Control Plane**, die das gesamte Cluster
 steuert, und den **Worker Nodes**, auf denen die Anwendungen tatsächlich laufen. Alle Komponenten
@@ -111,6 +139,7 @@ dafür, dass der gewünschte Soll-Zustand immer mit dem tatsächlichen Ist-Zusta
 | [**etcd**](/docs/kubernetes-basis/90-glossar#etcd)                    | Key-Value-Datenbank. Speichert den gesamten Cluster-Zustand. |
 | [**kube-scheduler**](/docs/kubernetes-basis/90-glossar#kube-scheduler)          | Entscheidet, auf welchem Node ein neuer Pod laufen soll.     |
 | [**kube-controller-manager**](/docs/kubernetes-basis/90-glossar#kube-controller-manager) | Gleicht Ist-Zustand ständig mit Soll-Zustand ab.             |
+| [**CoreDNS**](/docs/kubernetes-basis/90-glossar#coredns)              | DNS-Service für Service Discovery. Übersetzt Service-Namen in ClusterIPs, liest aktuell von etcd. |
 
 ### Worker Nodes
 
@@ -122,6 +151,14 @@ drei Kernkomponenten, die eng mit der Control Plane zusammenarbeiten.
 | [**kubelet**](/docs/kubernetes-basis/90-glossar#kubelet)           | Agent auf jedem Node. Sorgt dafür, dass Container in Pods laufen. |
 | [**kube-proxy**](/docs/kubernetes-basis/90-glossar#kube-proxy)        | Netzwerk-Proxy. Verwaltet Netzwerkregeln für Services.            |
 | [**Container Runtime**](/docs/kubernetes-basis/90-glossar#container-runtime) | Führt Container aus (z. B. containerd, CRI-O).                     |
+
+### Optional: Add-ons & Erweiterungen
+
+Es gibt weitere optionale Komponenten, die Kubernetes erweitern, aber nicht immer installiert sein müssen:
+
+- **Ingress Controller** — Verwaltet HTTP(S)-Routing zu Services (elegantere Alternative zu NodePort)
+- **Metrics Server** — Sammelt CPU- und Memory-Metriken von Nodes und Pods (nötig für `kubectl top` und Autoskalierung)
+- **Dashboard** — Web-UI zur Verwaltung des Clusters
 
 ---
 
@@ -192,13 +229,14 @@ Kubernetes bietet zwei Wege, Ressourcen zu erstellen:
   Beispiel: `kubectl apply -f namespace.yaml`
   Der Standard in der Praxis, da Manifeste versioniert, geteilt und reviewed
   werden können.
-
+<br/>
 In diesem Tag siehst du beide Ansätze im Vergleich–beginnend mit dem
 imperativen Weg für einen schnellen Einstieg.
-
+<br/>
 **Eigenen Namespace erstellen (imperativ):**
 
 <Notice type="info">
+<br/>
   Eventuell hast du bereits einen Cluster-Zugang über deine Firma erhalten und auch schon einen Namespace zugewiesen
   bekommen. In dem Fall ist es oft nicht möglich einen Namespace anzulegen. Das folgende Kapitel dient dann nur zur 
   Veranschaulichung. In den folgenden Kapiteln kannst du den hier verwendeten namespace-name `k8s-training` mit dem 
@@ -208,7 +246,7 @@ imperativen Weg für einen schnellen Einstieg.
 ```bash
 kubectl create namespace k8s-training
 ```
-
+<br/>
 **Eigenen Namespace erstellen (deklarativ):**
 
 Lege zuerst ein Arbeitsverzeichnis an. Dies kann (muss aber nicht) auch ein git-repository sein. Dieses Arbeitsverzeichnis
@@ -229,10 +267,12 @@ metadata:
 kubectl apply -f namespace.yaml
 ```
 
+<br/>
 <Notice type="info">
   Eventuell bekommst du bei einem vorab angelegten namespace die folgende Meldung: 
-  Warning: resource `namespaces/YOUR NAMESPACE` is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
-
+  <br/>  
+  *Warning: resource `namespaces/YOUR NAMESPACE` is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.*
+  <br/>
   Die Warnung bedeutet, dass der Namespace zwar erfolgreich konfiguriert wurde, aber ursprünglich nicht mit kubectl apply oder kubectl create --save-config angelegt wurde, weshalb Kubernetes die benötigte interne Konfigurations‑Annotation automatisch nachträgt.
 </Notice>
 
@@ -245,15 +285,14 @@ kubectl config set-context --current --namespace=k8s-training
 Ab jetzt arbeiten alle Befehle automatisch im Namespace `k8s-training`.
 
 > ⚠️ **HINWEIS**–In einem Cluster das dir von deiner Firma zur Verfügung gestellt wird, ist es ggf. nicht möglich
-einen namespance zu erstellen. In diesem Fall arbeiten wir in dem Workspace weiter, der Dir zugewiesen wurde.
+einen Namespace zu erstellen. In diesem Fall arbeiten wir in dem Workspace weiter, der Dir zugewiesen wurde.
 
 ### Übung 1
 
 1. Zeige alle Nodes des Clusters an. Welche Rollen haben sie?
    > **Erwartete Ausgabe:** Nodes mit Rolle `control-plane` für den Master-Node und `<none>` (= Worker Node) für die Worker-Nodes.
 2. Erstelle den Namespace `k8s-training` (wenn möglich).
-3. Setze `k8s-training` als Standard-Namespace (wenn möglich).
-4. Setze den Standardnamespace mit `kubectl config set-context --current --namespace=<DEIN NAMESPACE>`
+3. Setze `k8s-training` als Standard-Namespace (wenn möglich) mit `kubectl config set-context --current --namespace=<DEIN NAMESPACE>`.
 4. Prüfe mit `kubectl get pods`, dass der Namespace leer ist.
 5. Zeige alle System-Pods im Namespace `kube-system` an: `kubectl get pods -n kube-system`
 
@@ -296,6 +335,30 @@ Zusammengefasst: Ein Deployment ist die "Arbeitsanweisung" für Kubernetes, die 
 kubectl create deployment chromium --image=lscr.io/linuxserver/chromium:latest --replicas=1
 ```
 
+**Deployment überschreiben (mit neuem Image oder Replicas):**
+
+Wenn du das Deployment ändern möchtest (z. B. anderes Image oder andere Anzahl Replicas), nutze `kubectl set image` oder `kubectl scale`:
+
+```bash
+# Zu anderer Version upgraden (z. B. latest → v2.0)
+kubectl set image deployment/chromium chromium=lscr.io/linuxserver/chromium:v2.0
+
+# Anzahl der Replicas ändern
+kubectl scale deployment chromium --replicas=3
+
+```
+
+**Deployment löschen:**
+
+```bash
+# Deployment + alle dazugehörigen Pods löschen
+kubectl delete deployment chromium
+```
+
+> ⚠️ **WICHTIG:** `kubectl delete deployment` löscht auch alle Pods, die von diesem Deployment verwaltet wurden! Die Daten in den Pods gehen verloren (außer wenn Volumes verwendet werden).
+
+
+
 ### Status prüfen
 
 ```bash
@@ -308,6 +371,10 @@ kubectl get pods -o wide
 
 # Detaillierte Deployment-Informationen
 kubectl describe deployment chromium
+
+# Prüfen ob der container auf port 3000 lauscht
+kubectl exec -it deploy/chromium -- curl -I http://localhost:3000
+
 ```
 
 ### Self-Healing Demo
@@ -328,12 +395,7 @@ kubectl delete pod <pod-name>
 
 Jetzt machen wir Chromium von außen erreichbar. Wir erstellen einen **NodePort-Service** imperativ.
 
-**Wichtige Unterscheidung:**
-
-- **`--port=4000`**: Port, den der Service **im Cluster** anhört (für Pods intern)
-- **`--target-port=3000`**: Port, an dem der **Container** lauscht
-- **NodePort**: Port, der auf den **Nodes** geöffnet wird (externer Zugriff) -- automatisch im 
-  Bereich 30000-32767
+<br/>
 
 ```bash
 kubectl expose deployment chromium \
@@ -342,22 +404,24 @@ kubectl expose deployment chromium \
   --port=4000 \
   --target-port=3000
 ```
+<br/>
 
-**Wie ein NodePort-Service funktioniert:**
+**Wichtige Unterscheidung:**
 
-```mermaid
+- **`--port=4000`**: Port, den der Service **im Cluster** anhört (für Pods intern)
+- **`--target-port=3000`**: Port, an dem der **Container** lauscht
+- **NodePort**: Port, der auf den **Nodes** geöffnet wird (externer Zugriff) -- automatisch im 
+  Bereich 30000-32767
+<br/>
 
-graph LR
-    A["Externer Client<br/>Browser"] -->|"http://Node-IP:3xxxx"| B["kube-proxy<br/>auf Node"]
-    B -->|"iptables/IPVS"| C["Service: chromium<br/>ClusterIP:4000"]
-    C -->|"verteilt auf Pods"| D["Pod 1<br/>chromium:3000"]
-    C -->|"verteilt auf Pods"| E["Pod 2<br/>chromium:3000"]
-    
-```
+<Image src={knba10003} alt="Node service Kommunikation * Erstellt mit Microsoft Copilot" />
+
+
+<br/>
 
 **Was ist die ClusterIP?**
 
-Die **ClusterIP** ist eine **interne, stabile IP-Adresse** des Service (z. B. `10.43.x.x`). Sie ist der
+Die **ClusterIP** ist eine **interne, stabile IP-Adresse** des Service. Sie ist der
 zentrale Endpunkt, der immer gleich bleibt -- egal wie oft Pods neu erstellt werden oder sich ihre
 IP-Adressen ändern.
 
@@ -380,17 +444,6 @@ kubectl get service chromium
 **Ohne ClusterIP** müsste jeder externe Client direkt die Pod-IPs kennen -- die sich aber ständig
 ändern! Die ClusterIP ist der **stabile Vermittler**.
 
-
-
-**Erklärung:**
-
-1. **kube-proxy** (auf jedem Node) öffnet den Port **3xxxx** (automatisch aus 30000-32767) und leitet Traffic weiter
-2. **Service** (ClusterIP) fungiert als stabiler Endpunkt im Cluster
-3. **kube-proxy** verteilt den Traffic auf alle Pods hinter dem Service (Load Balancing)
-
-> ⚠️ **WICHTIG:** `kube-proxy` läuft auf **jedem Node** -- es gibt keinen zentralen Proxy, sondern
-> einen dezentralen auf jedem Worker-Node. Jeder Node kann eingehenden Traffic empfangen!
-
 **Analogie zum Logistikzentrum:**
 
 Stell dir den NodePort-Service wie einen **Anruf im Logistikzentrum** vor:
@@ -408,49 +461,31 @@ Stell dir den NodePort-Service wie einen **Anruf im Logistikzentrum** vor:
 
 Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port:
 
-```bash
-kubectl get service chromium
-# Ausgabe: chromium   NodePort   10.218.116.27   <none>   4000:31800/TCP   7s
-#                        ^^^^^^^       ^^^^^^^^^^^   ^^^^   ^^^^   ^^^^^^^^
-#                        ClusterIP    EXTERNAL-IP    ^^^    |      NodePort
-#                                                  Service  |
-#                                                  Port     Container Port
-```
+Nun musst du 3 Dinge tun, um deinen Container zu erreichen: 
 
-> ⚠️ **ACHTUNG:** Die **EXTERNAL-IP** zeigt bei NodePort-Services immer `<none>`! Das ist normal.
-> Du erreichst den Service **nicht** über eine externe IP, sondern über:
-> **`http://<Node-IP>:<NodePort>`** (in deinem Fall: `http://<Node-IP>:31800`)
-
-**So erreichst du Chromium:**
-
-1. **Node-IP ermitteln:**
-   ```bash
-   kubectl get nodes -o wide
-   # Spalte INTERNAL-IP oder EXTERNAL-IP enthält die Node-Adresse
-   ```
-
-2. **Im Browser öffnen:**
-   ```
-   http://<Node-IP>:31800
-   ```
-   (Der Service hört im Cluster auf Port 4000, der Container auf Port 3000)
-
-> ⚠️ **ACHTUNG:** Die Beispiel-Portzahlen (30000, 30001) in diesem Dokument sind nur **Beispiele**.
-> Kubernetes weist beim Erstellen einen **zufälligen Port** aus 30000-32767 zu. Du musst den
-> tatsächlich zugewiesenen Port mit `kubectl get service` ermitteln!
-
-Ermittle die IP-Adresse eines Worker-Nodes:
+1: Finde den node port heraus
+2: Finde die IP-Adresse eines Worker-Nodes heraus
+3: Öffne die URL im Browser (oder curl oder powershell)
 
 ```bash
 kubectl get nodes -o wide
-# Spalte INTERNAL-IP enthält die gesuchte IP-Adresse
+kubectl get service chromium
+curl -L http://<Node-IP>:<NodePort> # Linux
+Invoke-WebRequest -Uri http://<Node-IP>:<NodePort> -Method Head # Windows
+``` 
+Hier gibt es eine schlechte Nachricht, in vielen k8s Umgebungen kann auf diese Weise nicht auf den NodePort zugegriffen werden, da die Firewall oder das Netzwerk dies blockiert. In diesem Fall muss ein Ingress eingerichtet werden, was wir in Tag 2 behandeln. Aber das soll uns echte Broffis ja nicht aufhalten. 
+
+Wir basteln uns nun einen kleinen Container im Cluster, von dem aus wir den Chromium-Container erreichen können. 
+
+```bash
+kubectl run -it --rm debug --image=alpine:latest -- sh
+apk add curl
+curl -L http://chromium:4000
+wget -qO- http://<Node-IP>:<NodePort>
+exit
 ```
 
-Öffne im Browser: `http://<Node-IP>:<der-angezeigte-NodePort>`
-
-> ⚠️ **PROBLEM:** Chromium zeigt wahrscheinlich **leere Seiten** oder stürzt ab. Das liegt daran,
-> dass der Container falsche Benutzer-IDs und eine falsche Zeitzone hat. Im nächsten Schritt
-> beheben wir das.
+Den chromium erreichbar machen, machen zum Problem vom "Später-Ich".
 
 ### Konfiguration nachbessern
 
@@ -488,13 +523,13 @@ kubectl exec <pod-name> -- env | grep -E "PUID|PGID|TZ"
 # TZ=Europe/Berlin
 ```
 
-Jetzt sollte Chromium im Browser korrekt funktionieren!
+Jetzt sollte Chromium korrekt funktionieren!
 
 ### Übung 2
 
 1. Prüfe den Status des Chromium-Deployments mit `kubectl get deployment chromium`.
 2. Lösche den Pod und beobachte, wie Kubernetes ihn automatisch neu erstellt.
-3. Öffne Chromium im Browser unter `http://<Node-IP>:30000` -- was siehst du?
+3. Öffne Chromium im Browser unter `http://<Node-IP>:3xxxx` -- was siehst du?
 4. Setze die Umgebungsvariablen mit `kubectl set env deployment/chromium PUID=1000 PGID=1000 TZ=Europe/Berlin`.
 5. Warte, bis der neue Pod ready ist (`kubectl get pods -w`).
 6. Überprüfe die Umgebungsvariablen mit `kubectl exec <pod-name> -- env | grep -E "PUID|PGID|TZ"`.
@@ -519,43 +554,6 @@ Jetzt sollte Chromium im Browser korrekt funktionieren!
 In der Praxis wird fast ausschließlich deklarativ gearbeitet -- YAML-Manifeste werden in Git
 versioniert und per `kubectl apply` angewendet.
 
-### YAML-Beispiel
-
-Das imperativ erstellte Chromium-Deployment sieht als YAML wie folgt aus:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: chromium
-  namespace: k8s-training
-  labels:
-    app: chromium
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: chromium
-  template:
-    metadata:
-      labels:
-        app: chromium
-    spec:
-      containers:
-        - name: chromium
-          image: lscr.io/linuxserver/chromium:latest
-          ports:
-            - containerPort: 3000
-            - containerPort: 3001
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
-```
-
 ### YAML-Grundstruktur
 
 Jedes Kubernetes-Manifest besteht aus vier Hauptteilen:
@@ -576,6 +574,10 @@ Jedes Kubernetes-Manifest besteht aus vier Hauptteilen:
 
 ### kubectl explain
 
+**Dokumentation direkt in der Kommandozeile:**
+
+Du wirst oft fragen haben wie ein Kubernetes-Objekt aufgebaut ist oder welche Felder es gibt. Mit `kubectl explain` kannst du die offizielle Dokumentation **direkt in der Kommandozeile** abrufen, ohne im Browser nachzuschlagen. Das Tool zeigt dir die Struktur von Kubernetes-Ressourcen, ihre Felder und deren Beschreibung — sehr hilfreich beim Schreiben von YAML-Manifesten!
+
 ```bash
 kubectl explain pod
 kubectl explain pod.spec
@@ -585,18 +587,35 @@ kubectl explain deployment.spec.strategy
 
 ---
 
-## Code-Server deployen
+### Chromium neu aufbauen (Imperativ → Deklarativ)
 
-Jetzt arbeiten wir deklarativ. Zuerst löschen wir das imperativ erstellte Chromium-Deployment und
-erstellen es sauber per YAML neu -- zusammen mit dem Code-Server.
-
-### Aufräumen
+Jetzt bauen wir Chromium von Grund auf **deklarativ** auf -- das heißt, wir löschen zuerst alles,
+was wir imperativ erstellt haben, und erstellen es dann sauber per YAML neu.
 
 ```bash
+# Deployment + alle dazugehörigen Pods löschen
 kubectl delete deployment chromium
+
+# Service löschen
+kubectl delete service chromium
 ```
 
-### Chromium YAML
+> ⚠️ **WICHTIG:** Diese Befehle sind endgültig! Alle Pods und Daten gehen verloren (sofern keine
+> Volumes verwendet werden). In Produktionsumgebungen solltest du vor dem Löschen ein Backup machen.
+
+Prüfe, dass alles weg ist:
+
+```bash
+kubectl get deployments
+kubectl get services
+kubectl get pods
+# Chromium sollte nirgends mehr auftauchen!
+```
+
+### Chromium deklarativ neu anlegen
+
+Jetzt erstellen wir Chromium **deklarativ** mit einer YAML-Datei. Das ist deutlich wartbarer,
+weil die Konfiguration versioniert und im Team geteilt werden kann.
 
 Datei `chromium-deployment.yaml`:
 
@@ -631,23 +650,89 @@ spec:
               value: "1000"
             - name: TZ
               value: "Europe/Berlin"
+
+```
+
+**Datei `chromium-service.yaml`:**
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: chromium
+  namespace: k8s-training
+spec:
+  type: NodePort
+  selector:
+    app: chromium
+  ports:
+    - name: http
+      protocol: TCP
+      port: 4000
+      targetPort: 3000
+```
+
+**Anwenden:**
+
+```bash
+# Deployment erstellen
+kubectl apply -f chromium-deployment.yaml
+
+# Service erstellen
+kubectl apply -f chromium-service.yaml
+
+# Status prüfen
+kubectl get deployments
+kubectl get services
+kubectl get pods
+kubectl run -it --rm debug --image=alpine:latest -- sh 
+# Anschliessend folgendes ausführen
+# wget -qO- http://<Node-IP>:<NodePort>
+
+```
+
+> 💡 **Vergleich:** Mit einem Befehl `kubectl apply` erstellst du sowohl Deployment als auch Service
+> konsistent und reproduzierbar. Das imperativ erstellte Chromium war anfällig für Fehler und ließ
+> sich nicht leicht dokumentieren. Mit YAML-Dateien können mehrere Entwickler gemeinsam arbeiten und
+> die Konfiguration im Git versionieren.
+
+FÜge nun noch die Volumes für `/dev/shm` hinzu, damit Chromium stabil läuft. 
+Chromium nutzt Shared Memory für das Rendering von Webseiten. Ohne ein
+ausreichend großes `/dev/shm` stürzt der Browser ab oder zeigt leere Seiten. Durch `medium: Memory`
+wird das Volume im RAM angelegt -- schnell und genau richtig für temporäre Rendering-Daten.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  ...
+spec:
+  ...
+    spec:
+      containers:
+        - name: chromium
+          ...
           volumeMounts:
             - name: shm
               mountPath: /dev/shm
-            - name: config
-              mountPath: /config
       volumes:
         - name: shm
           emptyDir:
             medium: Memory
             sizeLimit: 1Gi
-        - name: config
-          emptyDir: {}
 ```
 
-**Warum `/dev/shm`?** Chromium nutzt Shared Memory für das Rendering von Webseiten. Ohne ein
-ausreichend großes `/dev/shm` stürzt der Browser ab oder zeigt leere Seiten. Durch `medium: Memory`
-wird das Volume im RAM angelegt -- schnell und genau richtig für temporäre Rendering-Daten.
+Anschließend erneut anwenden:
+
+```bash
+kubectl apply -f chromium-deployment.yaml
+```
+
+Mit `kubectl get pods` kannst du prüfen, dass der neue Pod läuft.
+
+## Code-Server deployen
+
+Nun wird der zweite container im Cluster deployed: Code-Server. Das ist eine Entwicklungsumgebung, die im Browser läuft und auf dem Cluster-Node ausgeführt wird.
 
 ### Code-Server YAML
 
@@ -695,78 +780,6 @@ spec:
           emptyDir: {}
 ```
 
-> ⚠️ **Nur für die Schulung:** Passwörter gehören in der Praxis niemals als Klartext in
-> YAML-Manifeste. Kubernetes bietet dafür
-> [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/). Für diese Schulung
-> vereinfachen wir bewusst.
-
-### Anwenden
-
-```bash
-kubectl apply -f chromium-deployment.yaml
-kubectl apply -f code-server-deployment.yaml
-
-# Status prüfen
-kubectl get deployments
-kubectl get pods
-```
-
-### Übung 3
-
-1. Prüfe, dass beide Deployments laufen: `kubectl get deployments`
-2. Vergleiche die beiden YAML-Dateien: Welche Unterschiede gibt es bei Ports, Umgebungsvariablen und
-   Volumes?
-3. Ändere das Passwort des Code-Servers in der YAML-Datei (z. B. auf `meinPasswort`) und wende die
-   Änderung an: `kubectl apply -f code-server-deployment.yaml`
-4. Nutze `kubectl explain pod.spec.volumes` um herauszufinden, welche Volume-Typen es gibt.
-
----
-
-## Services
-
-### Was ist ein Service?
-
-Ein Service gibt Pods eine **stabile Netzwerk-Adresse**. Pods sind vergänglich -- sie werden ständig
-neu erstellt und bekommen dabei neue IP-Adressen. Ein Service bleibt bestehen und leitet Traffic an
-die passenden Pods weiter.
-
-| Service-Typ   | Erreichbarkeit                    | Anwendungsfall                  |
-| ------------- | --------------------------------- | ------------------------------- |
-| [**ClusterIP**](/docs/kubernetes-basis/90-glossar#clusterip) | Nur innerhalb des Clusters        | Standard, interne Kommunikation |
-| [**NodePort**](/docs/kubernetes-basis/90-glossar#nodeport)  | Von außen über `<Node-IP>:<Port>` | Entwicklung, Tests, Schulungen  |
-
-Wir verwenden heute **NodePort**, um unsere Anwendungen im Browser zu öffnen. In Tag 2 lernen wir
-den eleganteren Weg über Ingress.
-
-### Chromium-Service
-
-Datei `chromium-service.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: chromium
-  namespace: k8s-training
-spec:
-  type: NodePort
-  selector:
-    app: chromium
-  ports:
-    - name: http
-      protocol: TCP
-      port: 3000
-      targetPort: 3000
-      nodePort: 30000
-    - name: https
-      protocol: TCP
-      port: 3001
-      targetPort: 3001
-      nodePort: 30001
-```
-
-### Code-Server-Service
-
 Datei `code-server-service.yaml`:
 
 ```yaml
@@ -784,58 +797,127 @@ spec:
       protocol: TCP
       port: 8443
       targetPort: 8443
-      nodePort: 30443
 ```
 
-### Anwenden & Testen
+> ⚠️ **Nur für die Schulung:** Passwörter gehören in der Praxis niemals als Klartext in
+> YAML-Manifeste. Kubernetes bietet dafür
+> [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/). Für diese Schulung
+> vereinfachen wir bewusst.
+
+### Anwenden
 
 ```bash
-kubectl apply -f chromium-service.yaml
+kubectl apply -f code-server-deployment.yaml
 kubectl apply -f code-server-service.yaml
 
-# Services prüfen
-kubectl get services
-
-# Endpoints prüfen (zeigt die Pods hinter dem Service)
-kubectl get endpoints
+# Status prüfen
+kubectl get deployments
+kubectl get pods
 ```
 
-### Browser-Test
+### Übung 3
 
-Ermittle zuerst die IP-Adresse eines Worker-Nodes:
+1. Prüfe, dass beide Deployments laufen: `kubectl get deployments`
+2. Vergleiche die beiden YAML-Dateien: Welche Unterschiede gibt es bei Ports, Umgebungsvariablen und
+   Volumes?
+3. Ändere das Passwort des Code-Servers in der YAML-Datei (z. B. auf `meinPasswort`) und wende die
+   Änderung an: `kubectl apply -f code-server-deployment.yaml`
+4. Nutze `kubectl explain pod.spec.volumes` um herauszufinden, welche Volume-Typen es gibt.
+
+## Container erreichbar machen
+
+Natürlich ist es nicht die Idee, immer die Node-IP und den NodePort zu verwenden, um auf die Container zuzugreifen. 
+Es gibt verschiedene Möglichkeiten, wie du die beiden Container nun von außen erreichen kannst.
+
+### Port-Forwarding
+
+Für lokale schnelle Tests kannst du Port-Forwarding nutzen. Damit leitest du einen Port auf deinem lokalen Rechner direkt an den Service im Cluster weiter. So kannst du Chromium und Code-Server bequem im Browser öffnen, ohne die Node-IP und den NodePort zu kennen.
+
+```shell
+# Terminal 1: Chromium (läuft dann auf http://localhost:4000)
+kubectl port-forward -n k8s-training svc/chromium 4000:4000
+
+# Terminal 2: Code-Server (läuft dann auf http://localhost:8443)
+kubectl port-forward -n k8s-training svc/code-server 8443:8443
+```
+
+### Ingress route via Rancher dashboard
+
+- Service Discovery -> Ingresses -> Create
+  - Namespace: k8s-training
+  - Name: chromium-ingress
+  - Rules:
+    - Request Host: chromium-*.*.com
+      - Muss wahrscheinlich gemäß von Regeln erweitert werden, z.B. [hostname]-[namespace].[clustername].[dnsdomainname]
+      - Versuchs einfach anzulegen -> Wird schon meckern ;-)
+    - Path Prefix: /
+    - Target Service: chromium
+    - Port: 4000
+
+Ist die ingress route angelegt, kannst du im Browser die URL aufrufen, die du in der Ingress-Regel als Request-Host angegeben hast.
+Es sollte nun ein chrome-browser im tab erscheinen. Dieser chrome Browser bietet dir die Möglichkeit Websiten zu öffnen, die nur innerhalb
+des Clusters erreichbar sind.
+
+### Ingress route über kubectl anlegen
+
+Alternativ zum Rancher-Dashboard kannst du die Ingress-Route auch direkt per `kubectl` anlegen.
+
+#### Imperativ
 
 ```bash
-kubectl get nodes -o wide
-# Spalte INTERNAL-IP enthält die gesuchte IP-Adresse
+# Code-Server Ingress anlegen
+kubectl create ingress code-server-ingress --rule="code-server-*.*.com/*=code-server:8443"
+
+# Ingress-Class nachträglich setzen 
+kubectl patch ingress code-server-ingress --type=merge -p '{"spec":{"ingressClassName":"nginx"}}'
 ```
 
-Öffnet folgende Adressen im Browser:
+#### Deklarativ
 
-- **Chromium:** `http://<Node-IP>:30000`
-- **Code-Server:** `http://<Node-IP>:30443` (Passwort: `training2024`)
+Die YAML-Datei für die bestehende chromium route lässt sich wie folgt auslesen: 
 
-> **Ihr habt gerade einen Browser in einem Browser geöffnet, der in eurem Kubernetes-Cluster
-> läuft!**
+```shell
 
-### Übung 4
+kubectl get ingress chromium-ingress -o yaml
 
-1. Öffne Chromium im Browser unter `http://<Node-IP>:30000`.
-2. Öffne Code-Server im Browser unter `http://<Node-IP>:30443` und melde dich mit dem Passwort
-   `training2024` an.
-3. Erstelle im Code-Server eine Datei unter `/config/workspace/test.txt` mit beliebigem Inhalt.
-4. Lösche den Code-Server-Pod: `kubectl delete pod <code-server-pod-name>`
-5. Warte, bis Kubernetes den Pod neu erstellt hat, und öffne Code-Server erneut.
-6. **Ist die Datei `test.txt` noch da?** -- NEIN! Ein [`emptyDir`](/docs/kubernetes-basis/90-glossar#emptydir)-Volume wird gelöscht, wenn der Pod
-   stirbt. In Tag 2 lösen wir das mit [PersistentVolumeClaims (PVCs)](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim)!
+```
+
+Hier eine fertige ausgestaltete Datei `code-server-ingress.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: code-server-ingress
+  namespace: k8s-training
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: code-server-*.*.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: code-server
+            port:
+              number: 8443
+```
 
 ```bash
-# Endpoints prüfen -- zeigt die Pod-IPs hinter den Services
-kubectl get endpoints
+kubectl apply -f code-server-ingress.yaml
 ```
 
----
+### Status prüfen
 
-## Status-Check
+```bash
+kubectl get ingress
+```
+
+Nach dem Anlegen ist der Code-Server unter der angegebenen Host-URL erreichbar – z. B. `code-server-*.*.com`.
+
+## Zusammenfassung
 
 Wir räumen heute bewusst **nicht** auf! Die Deployments bleiben für Tag 2 bestehen.
 
@@ -852,11 +934,9 @@ Erwartete Ausgabe:
 | Deployments | 2      | chromium, code-server                       |
 | [ReplicaSets](/docs/kubernetes-basis/90-glossar#replicaset) | 2      | je 1 pro Deployment                         |
 | Pods        | 2      | je 1 Running pro Deployment                 |
-| Services    | 2      | chromium (30000/30001), code-server (30443) |
+| Services    | 2      | chromium (4000), code-server (8443)         |
+| Ingresses   | 2      | chromium-ingress, code-server-ingress       |
 
----
-
-## Zusammenfassung
 
 | Thema                    | Gelernt                                         | Praktischer Kontext                              |
 | ------------------------ | ----------------------------------------------- | ------------------------------------------------ |
@@ -866,6 +946,7 @@ Erwartete Ausgabe:
 | Imperativ vs. Deklarativ | Kommandos vs. YAML-Dateien                      | Warum YAML in der Praxis der Standard ist        |
 | Volumes                  | emptyDir (normal und Memory-backed)             | Temporärer Speicher für Container-Daten          |
 | Services                 | NodePort zum Erreichen von Anwendungen          | Pods von außen zugänglich machen                 |
+| Ingress                  | HTTP(S)-Routing per Host-Name                   | Anwendungen über feste URLs erreichbar machen    |
 | Self-Healing             | Pods werden automatisch neu erstellt            | Kubernetes sorgt für den gewünschten Zustand     |
 
 ### Spickzettel
@@ -882,7 +963,9 @@ kubectl delete <ressource> <name>               # Einzelne Ressource löschen
 kubectl set env deployment/<name> KEY=VALUE     # Umgebungsvariable setzen
 kubectl explain <ressource>                     # Dokumentation anzeigen
 kubectl get pods -w                             # Pods live beobachten
-kubectl get all -n <namespace>                  # Alle Ressourcen im Namespace
+kubectl get ingress                            # Ingress-Routen anzeigen
+kubectl create ingress <name> --rule="..."    # Ingress-Route anlegen (imperativ)
+kubectl get all -n <namespace>                # Alle Ressourcen im Namespace
 ```
 
 ### Ausblick Tag 2
@@ -893,3 +976,6 @@ Morgen machen wir eure Deployments **produktionsreif**: [Resource Limits](/docs/
 **Security-Grundlagen** an, deployen Home Assistant und Nextcloud mit
 [**persistentem Speicher** (PVCs)](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) und richten
 [**Ingress-Routing**](/docs/kubernetes-basis/90-glossar#ingress) für alle vier Anwendungen ein.
+
+<br />
+Weiter: [Tag 2](/docs/kubernetes-basis/20-tag-2)
