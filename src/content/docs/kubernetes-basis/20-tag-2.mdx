@@ -15,7 +15,7 @@ import knba20002 from "@assets/docs/kubernetes-basis/knba-20-002.png";
 
 Am zweiten Tag machen wir unsere Deployments produktionsreif. Wir fügen Resource Limits, Health
 Checks und Deployment-Strategien hinzu, lagern Konfiguration in ConfigMaps und Secrets aus, deployen
-Home Assistant und Nextcloud mit persistentem Speicher.
+MariaDB und phpMyAdmin mit persistentem Speicher.
 
 ## Zeitplan
 
@@ -32,8 +32,9 @@ Home Assistant und Nextcloud mit persistentem Speicher.
 | 12:30 – 13:30  | **Mittagspause**     |                                            |
 | 13:30 – 14:00  | Rolling Updates      | Update + Rollback Code-Server              |
 | 14:00 – 14:45  | Secrets & Security   | Passwörter auslagern, SecurityContext      |
+| 14:45 – 15:15  | Sidecar-Container    | Vector als Sidecar für Chromium-Logs       |
 | 15:15 – 15:30  | **Pause**            |                                            |
-| 15:30 – 16:15  | Persistent Volumes   | PVCs + Home Assistant + Nextcloud deployen |
+| 15:30 – 16:15  | Persistent Volumes   | PVCs + MariaDB + phpMyAdmin deployen       |
 | 16:15 – 17:15  | Ingress              | Services, DNS, Host-basiertes Routing      |
 | 17:15 – 17:30  | Abschluss            | Zusammenfassung + Ausblick                 |
 
@@ -196,7 +197,7 @@ type: Opaque
 stringData:
   PASSWORD: "trainingk8s"
 ```
-
+<br/>
 ```bash
 kubectl apply -f code-server-secret.yaml
 ```
@@ -451,8 +452,8 @@ kubectl get pods -l app=chromium -w
 # Logs des Sidecars anzeigen
 kubectl logs -l app=chromium -c vector
 
-# Logs von Chromium anzeigen (Vergleich)
-kubectl logs -l app=chromium -c chromium
+# Log-Datei im Chromium-Container anzeigen (identische Quelle wie Vector)
+kubectl exec -c chromium deploy/chromium -- cat /config/log/chromium.log
 
 # Chromium im Browser öffnen und ein paar Seiten besuchen,
 # dann erneut Sidecar-Logs prüfen:
@@ -462,8 +463,8 @@ kubectl logs -l app=chromium -c vector --tail=10
 
 **4. Was passiert hier?**
 
-- Chromium soltle die Logs nach `/config/log/` (z. B. `chromium.log`, `Xorg.log`) schreiben
-- Der Sidecar (`vector`) liest **dieselben Dateien** über das gemeinsame `emptyDir`-Volume
+- Chromium sollte die Logs nach `/config/log/` (Bsp. `chromium.log`, `Xorg.log`) schreiben
+- Der Sidecar (`vector`) liest **dieselben Dateien** 
 - Vector parst die Logs und gibt sie als JSON auf der Konsole aus
 - **Wichtig:** Beide Container laufen im selben Pod -- teilen sich Netzwerk (`localhost`) und Volume
 - Der Sidecar wurde **nachträglich** in ein bestehendes Deployment eingefügt -- Kubernetes startet
@@ -629,7 +630,6 @@ Vector ist nur ein Beispiel. In Produktivumgebungen werden häufig diese Tools a
 
 ## Requests & Limits
 
-
 Stell dir vor, im Logistikzentrum arbeiten mehrere Abteilungen nebeneinander.
 Jede Abteilung hat einen bestimmten Platzbedarf und bestimmte Maschinen.
 
@@ -674,7 +674,7 @@ wie prioritär der Pod behandelt wird, wenn die Node unter Druck gerät.
 
 **💡 Das `m` steht für "Milli"** – ein Tausendstel eines Kerns. `1000m` = 1 voller Kern.
 Ein Container kann maximal so viele Millicores bekommen, wie die Node an Kernen hat.
-Werte über `1000m` (z. B. `2000m`) ergeben nur Sinn auf einer Node mit mindestens 2 Kernen.
+Werte über `1000m` (Bsp. `2000m`) ergeben nur Sinn auf einer Node mit mindestens 2 Kernen.
 
 </Notice>
 
@@ -804,6 +804,7 @@ kubectl top pod -l app=chromium -n k8s-training
 Erst wenn Chromium mehr CPU oder RAM will als im `limits`-Block erlaubt, greift Kubernetes ein:
 CPU wird gedrosselt, bei Memory-Überschreitung gibt es einen OOM-Kill.
 
+
 ### LimitRange
 
 Eine [LimitRange](/docs/kubernetes-basis/90-glossar#limitrange) setzt Standardwerte für alle Container, die keine eigenen Resources angeben.
@@ -860,6 +861,11 @@ kubectl describe pod -l app=chromium -n k8s-training | grep "QoS Class"
 kubectl describe pod -l app=code-server -n k8s-training | grep "QoS Class"
 ```
 
+```powershell
+kubectl describe pod -l app=chromium -n k8s-training | Select-String "QoS Class"
+kubectl describe pod -l app=code-server -n k8s-training | Select-String "QoS Class"
+```
+
 3. Zeige den Ressourcenverbrauch:
 
 ```bash
@@ -875,6 +881,19 @@ kubectl describe pod test-pod -n k8s-training | grep -A 6 "Limits"
 kubectl delete pod test-pod -n k8s-training
 ```
 
+```powershell
+kubectl run test-pod --image=nginx:1.27 -n k8s-training
+kubectl describe pod test-pod -n k8s-training | Select-String "Limits" -Context 0,6
+kubectl delete pod test-pod -n k8s-training
+```
+
+**Erwartetes Ergebnis:** Der Pod hat keine eigenen `resources`-Angaben, bekommt aber trotzdem
+Limits und Requests zugewiesen – Bsp. `cpu: 500m` / `memory: 512Mi` als Limits und
+`cpu: 250m` / `memory: 256Mi` als Requests. Die LimitRange greift als **Sicherheitsnetz**
+auf Namespace-Ebene: Jeder Pod bekommt automatisch Defaults, auch wenn das Manifest keine
+Angaben enthält. So wird verhindert, dass jemand vergisst, Ressourcen zu begrenzen.
+
+5. Bring chromium zum Absturz, indem du 2-3 4k videos auf einmal abspielst. Prüfe die Logs und den Pod-Status. Was passiert?
 
 ## Health Checks
 
@@ -884,11 +903,31 @@ eines Containers und lösen automatische Aktionen aus, wenn etwas nicht stimmt.
 
 ### Probe-Typen
 
+Stell dir ein Logistik-Unternehmen vor: Ein LKW-Fahrer liefert Pakete aus. Kubernetes ist
+der Disponent, der sicherstellt, dass alles rund läuft.
+
+- **Liveness Probe** – *"Lebt der Fahrer noch?"*  
+  Der Disponent ruft alle paar Minuten an. Geht keiner ran, schickt er einen Ersatzfahrer
+  (Container-Neustart). Der Fahrer kann aber auch einfach kurz auf der Toilette sein –
+  erst nach mehreren vergeblich Versuchen wird ersetzt.
+
+- **Readiness Probe** – *"Kann der Fahrer gerade ein Paket annehmen?"*  
+  Der Fahrer ist im Stau → kein Paket annehmen → Disponent gibt die Tour an einen anderen
+  Fahrer (Pod aus Service-Endpoints entfernt). Ist der Stau vorbei, wird er wieder
+  eingeplant.
+
+- **Startup Probe** – *"Hat der Fahrer den LKW beladen und die Route gecheckt?"*  
+  Vor der ersten Tour fragt der Disponent: "Bist du startklar?" Erst wenn "Ja" kommt,
+  beginnen die regelmäßigen Liveness/Readiness-Checks. Ein LKW, der noch belädt, soll
+  nicht ständig angerufen werden.
+
 | Probe               | Frage                                 | Aktion bei Fehlschlag                      |
 | ------------------- | ------------------------------------- | ------------------------------------------ |
 | [**Liveness Probe**](/docs/kubernetes-basis/90-glossar#liveness-probe)  | Läuft die Anwendung noch?             | Container wird neu gestartet               |
 | [**Readiness Probe**](/docs/kubernetes-basis/90-glossar#readiness-probe) | Kann die Anwendung Traffic empfangen? | Pod wird aus Service-Endpoints entfernt    |
 | [**Startup Probe**](/docs/kubernetes-basis/90-glossar#startup-probe)   | Ist die Anwendung fertig gestartet?   | Liveness/Readiness pausiert bis Startup OK |
+
+
 
 ### Probe-Mechanismen
 
@@ -908,50 +947,35 @@ eines Containers und lösen automatische Aktionen aus, wenn etwas nicht stimmt.
 | `successThreshold`    | Erfolge bis "gesund"         | 1        |
 | `failureThreshold`    | Fehlschläge bis "ungesund"   | 3        |
 
-### Liveness Demo
+### Warum Linuxserver.io-Images so robust sind
 
-Klassische Demo: Ein Container erstellt eine Health-Datei, löscht sie nach 30 Sekunden. Die Probe
-schlägt fehl und Kubernetes startet den Container neu.
+Die Images von Linuxserver.io verwenden **s6-overlay** als Init-System. Das ist kein einfacher
+Prozess-Starter, sondern ein vollwertiger Service-Manager — vergleichbar mit einem Mini-Systemd.
+s6-overlay überwacht alle gestarteten Prozesse und startet sie **automatisch neu**, falls sie
+abstürzen. Das hat weitreichende Folgen für Liveness Probes:
 
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: liveness-demo
-  namespace: k8s-training
-spec:
-  containers:
-    - name: app
-      image: busybox:1.28
-      args:
-        - /bin/sh
-        - -c
-        - "touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600"
-      livenessProbe:
-        exec:
-          command:
-            - cat
-            - /tmp/healthy
-        initialDelaySeconds: 5
-        periodSeconds: 5
-```
+| Eigenschaft | Effekt |
+|---|---|
+| **Auto-Restart** | Stirbt Chromium, startet s6 es sofort neu — oft bevor Kubernetes die Liveness Probe auslöst |
+| **PID 1** | s6 läuft als PID 1 und fängt Zombie-Prozesse, verhindert孤儿-Prozesse |
+| **Service-Dependencies** | Dienste starten in der richtigen Reihenfolge (z. B. Chromium erst nach X11/Wayland) |
+| **Log-Redirect** | s6 leitet Logs aller Dienste nach stdout — deshalb siehst du in `kubectl logs` nur s6-Meldungen, nicht Chromium selbst |
+
+**Konsequenz für Liveness Probes:** Bei Linuxserver-Images ist eine Liveness Probe oft **wirkungslos**
+für den Auto-Restart-Fall — s6 ist schneller. Die Probe greift erst, wenn der gesamte Container
+hängt (Prozess lebt, aber antwortet nicht). Das ist kein Fehler, sondern gewollte Robustheit.
+
+### Übung: Falschen Port testen
+
+Ändere in deinem `chromium-deployment.yaml` den Port der Liveness Probe auf einen nicht
+existierenden Port (Bsp. `3044`) und wende das Manifest an. Beobachte, was passiert:
 
 ```bash
-kubectl apply -f liveness-demo.yaml
-kubectl get pod liveness-demo -n k8s-training -w
+kubectl apply -f chromium-deployment.yaml
+kubectl get pods -w
 ```
 
-Nach ca. 35 Sekunden wird der Container automatisch neu gestartet. Prüfe die Events:
-
-```bash
-kubectl describe pod liveness-demo -n k8s-training
-```
-
-Aufräumen:
-
-```bash
-kubectl delete pod liveness-demo -n k8s-training
-```
+Setze den Port danach wieder auf `3000` zurück und deploye erneut.
 
 ---
 
@@ -961,54 +985,23 @@ Jetzt konfigurieren wir Probes für unsere beiden Anwendungen. Chromium und Code
 unterschiedliche Startzeiten -- Chromium ist speicher- und renderingintensiv und braucht beim Start
 deutlich länger als Code-Server. Die Probe-Konfiguration muss das berücksichtigen, sonst markiert
 Kubernetes neue Container zu früh als "ungesund" und startet sie endlos neu. Wir erweitern die
-bestehenden YAML-Manifeste um `startupProbe`, `livenessProbe` und `readinessProbe`.
+bestehenden YAML-Manifeste um `startupProbe`, `livenessProbe` und `readinessProbe`. 
+<br/>
+<Notice type="info">
+Chromium wird hier vorgegeben, experimentiere mit Code-Server.
+</Notice>
 
 ### Chromium Probes
-
-> **Hinweis zu HTTP vs. HTTPS in Probes:** Chromium läuft auf HTTP (Port 3000) -- kein
-> `scheme: HTTPS` erforderlich. Code-Server hingegen läuft auf HTTPS (Port 8443) und benötigt
-> `scheme: HTTPS` explizit. Fehlt das Schema, schlägt die Probe **still fehl** -- keine
-> Fehlermeldung, nur ein Pod, der nie `Ready` wird. Typische Fehlerquelle beim ersten Aufsetzen!
 
 Datei `chromium-deployment.yaml` erweitern (Resources + Probes):
 
 ```yaml
 apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: chromium
-  namespace: k8s-training
-  labels:
-    app: chromium
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: chromium
-  template:
-    metadata:
-      labels:
-        app: chromium
+    ...
     spec:
       containers:
         - name: chromium
-          image: lscr.io/linuxserver/chromium:latest
-          ports:
-            - containerPort: 3000
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
+          ...
           startupProbe:
             httpGet:
               path: /
@@ -1028,99 +1021,116 @@ spec:
             periodSeconds: 5
             failureThreshold: 1
 ```
+<br/>
+- StartupProbe (failureThreshold: 30, periodSeconds: 10) — Chromium braucht bis zu 5 Minuten zum Starten. Die StartupProbe sagt: "Warte ruhig, solange die noch läuft, keine Panik." Solange die StartupProbe läuft, werden Liveness und Readiness ignoriert.
+- ReadinessProbe (failureThreshold: 1, periodSeconds: 5) — Chromium ist gestartet, aber der Browser hängt gerade (z. B. eine Seite lädt ewig). Die ReadinessProbe schlägt fehl → der Pod fliegt aus den Endpoints → kein Traffic mehr → Chromium kann sich erholen. Der Pod stirbt nicht, er kriegt nur kurz keinen Traffic.
+- LivenessProbe (failureThreshold: 3, periodSeconds: 15) — Chromium ist abgestürzt (Prozess tot, Port antwortet nicht). Nach 3 Fehlschlägen = 45 Sekunden sagt Kubernetes: "Der ist tot" und startet den Container neu.
+<br/>
+```bash
+kubectl apply -f chromium-deployment.yaml
+```
 
-### Code-Server Probes
+### Übung: Readiness Probe manipulieren
 
-Datei `code-server-deployment.yaml` erweitern (Resources + Probes):
+In dieser Übung siehst du live, wie die Readiness Probe den Traffic steuert. Du änderst den Port
+in der `readinessProbe` auf einen nicht existierenden Port — der Pod wird nicht Ready und
+verschwindet aus den Endpoints. Der alte Pod läuft weiter und bedient den Traffic.
+
+1. **Startzustand prüfen** — Ein Pod läuft sauber (`2/2` Ready):
+
+```bash
+kubectl get pods -n k8s-training
+kubectl get endpointslices -n k8s-training -o wide
+```
+
+<br/>
+
+<Notice type="info">
+
+**💡 Was sind EndpointSlices?**  
+Ein Service in Kubernetes verteilt Traffic auf mehrere Pods. Damit der Service weiß, welche
+Pods gerade erreichbar sind, verwaltet er eine Liste von IPs + Ports – die Endpoints.
+`EndpointSlices` sind die moderne Version davon: Sie gruppieren diese Liste in überschaubare
+Blöcke (Slices) und aktualisieren sie live. Sobald eine Readiness Probe fehlschlägt, entfernt
+Kubernetes den Pod aus den EndpointSlices – der Service leitet dann keinen Traffic mehr an
+diesen Pod. Der Pod selbst läuft weiter, er bekommt nur keine Anfragen mehr.
+
+</Notice>
+
+<br/>
+
+2. **Falschen Port eintragen** — Ändere in `chromium-deployment.yaml` den Port der
+   `readinessProbe` von `3000` auf einen nicht existierenden Port, Bsp. `3005`:
 
 ```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: code-server
-  namespace: k8s-training
-  labels:
-    app: code-server
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: code-server
-  template:
-    metadata:
-      labels:
-        app: code-server
-    spec:
-      containers:
-        - name: code-server
-          image: lscr.io/linuxserver/code-server:latest
-          ports:
-            - containerPort: 8443
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          startupProbe:
-            httpGet:
-              path: /
-              port: 8443
-              scheme: HTTPS
-            failureThreshold: 30
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 8443
-              scheme: HTTPS
-            periodSeconds: 15
-            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /
-              port: 8443
-              scheme: HTTPS
+              port: 3005   # ← falsch! Port 3005 existiert nicht
             periodSeconds: 5
             failureThreshold: 1
 ```
+
+3. **Deployen und beobachten**:
 
 ```bash
 kubectl apply -f chromium-deployment.yaml
-kubectl apply -f code-server-deployment.yaml
-```
-
-### Übung
-
-1. Wende die Probes an und beobachte den Startup:
-
-```bash
 kubectl get pods -n k8s-training -w
 ```
 
-2. Prüfe die Endpoints der Services:
+Du siehst jetzt **zwei Pods**:
+- Der **alte Pod** (`2/2` Ready) — läuft weiter und bedient den Traffic
+- Der **neue Pod** (`1/2` Ready) — Chromium ist nicht Ready, weil die Probe auf Port 3005
+  fehlschlägt. Der Vector-Container läuft trotzdem (daher `1/2`).
+
+4. **Endpoints prüfen** — Der neue Pod hat `1/2` Ready (nur Vector läuft, Chromium ist nicht
+   Ready). Trotzdem taucht seine IP bereits im EndpointSlice auf, weil der Service Traffic
+   an den Pod sendet, solange mindestens ein Container bereit ist:
 
 ```bash
-kubectl get endpoints -n k8s-training
+kubectl get endpointslices -n k8s-training -o wide
 ```
 
-3. Teste, was passiert, wenn die Readiness Probe fehlschlägt -- ändere den Pfad auf `/nonexistent`
-   und wende das Manifest erneut an:
+Der EndpointSlice enthält beide IPs – den alten Pod (`2/2`) und den neuen (`1/2`).
+Der neue Pod bekommt also Traffic, obwohl Chromium selbst noch nicht bereit ist.
+
+5. **Port korrigieren** — Setze den Port in der `readinessProbe` zurück auf `3000` und deploye
+   erneut:
 
 ```bash
-kubectl get endpoints -n k8s-training -w
+kubectl apply -f chromium-deployment.yaml
+kubectl get pods -n k8s-training -w
 ```
 
-Der Pod verschwindet aus den Endpoints und bekommt keinen Traffic mehr. Setze den Pfad zurück auf
-`/`.
+Der alte Pod wird durch den neuen ersetzt, der jetzt `2/2` Ready ist. Der EndpointSlice zeigt
+nur noch die IP des neuen Pods.
+
+6. **Alte ReplicaSets aufräumen** — Nach der Übung sind oft mehrere ReplicaSets übrig, die
+   noch die fehlerhafte Konfiguration enthalten. Sie haben `DESIRED: 1` und erstellen immer
+   wieder neue Pods mit der kaputten Probe.
+
+   **Was ist ein ReplicaSet?** Es ist die Schicht zwischen Deployment und Pod. Das Deployment
+   erstellt ein neues ReplicaSet für jede Änderung am Pod-Template (Bsp. neues Image). Das
+   ReplicaSet sorgt dafür, dass immer die gewünschte Anzahl Pods mit einer bestimmten
+   Konfiguration läuft. Alte ReplicaSets bleiben mit 0 Replicas erhalten – sie ermöglichen
+   Rollbacks, indem das Deployment einfach das vorherige ReplicaSet wieder hochskaliert.
+
+   Prüfe, ob es solche Geister-ReplicaSets gibt:
+
+```bash
+kubectl get replicasets -l app=chromium -n k8s-training
+```
+
+Suche nach Einträgen mit `DESIRED: 1`, die nicht zum aktuellen Pod gehören. Diese ReplicaSets
+kannst du entweder auf 0 skalieren oder ganz löschen:
+
+```bash
+kubectl scale replicaset <name-des-alten-rs> --replicas=0 -n k8s-training
+# oder
+kubectl delete replicaset <name-des-alten-rs> -n k8s-training
+```
+
+Danach sollte nur noch ein Pod mit `2/2` Ready laufen.
 
 ---
 
@@ -1132,10 +1142,25 @@ Anwendungstyp wählen kannst.
 
 ### Vergleich
 
+Stell dir eine Logistik-Flotte vor: Du hast 10 LKWs und bekommst 10 neue Modelle.
+Wie tauschst du sie aus?
+
+- **RollingUpdate** – *"Einer raus, einer rein."*  
+  Du schickst LKW für LKW in die Werkstatt. Während LKW 1 umgerüstet wird, fahren die
+  anderen 9 weiter. Ist LKW 1 fertig, kommt LKW 2 dran. Der Fuhrpark bleibt jederzeit
+  zu 90% einsatzbereit – keine Tour fällt aus.
+
+- **Recreate** – *"Alle in die Werkstatt, dann alle neu."*  
+  Du holst alle 10 LKWs auf einmal in die Werkstatt. Erst wenn alle umgerüstet sind,
+  gehen sie wieder auf Tour. Kurze Auszeit, aber dafür ist die Umstellung einfacher –
+  ideal, wenn alte und neue LKWs nicht auf derselben Strecke fahren dürfen.
+
 | Strategie         | Verhalten                                    | Ausfallzeit | Einsatz                                               |
 | ----------------- | -------------------------------------------- | ----------- | ----------------------------------------------------- |
 | [**RollingUpdate**](/docs/kubernetes-basis/90-glossar#rollingupdate) | Pods werden schrittweise ersetzt             | Keine       | Standard, Produktion                                  |
 | **Recreate**      | Alle alten Pods beendet, dann neue gestartet | Kurz        | Wenn alte + neue Version nicht parallel laufen können |
+
+
 
 ### Konfiguration
 
@@ -1151,99 +1176,27 @@ spec:
 - `maxSurge: 1` -- während des Updates darf 1 Pod mehr als `replicas` laufen
 - `maxUnavailable: 0` -- es darf kein Pod fehlen (kein Traffic-Verlust)
 
-### Komplett-Manifest
-
-Hier das vollständige Deployment mit Resources, Probes und Strategie:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: code-server
-  namespace: k8s-training
-  labels:
-    app: code-server
-spec:
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  selector:
-    matchLabels:
-      app: code-server
-  template:
-    metadata:
-      labels:
-        app: code-server
-    spec:
-      containers:
-        - name: code-server
-          image: lscr.io/linuxserver/code-server:latest
-          ports:
-            - containerPort: 8443
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          startupProbe:
-            httpGet:
-              path: /
-              port: 8443
-              scheme: HTTPS
-            failureThreshold: 30
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 8443
-              scheme: HTTPS
-            periodSeconds: 15
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 8443
-              scheme: HTTPS
-            periodSeconds: 5
-            failureThreshold: 1
-```
-
----
-
-## Rolling Updates
 
 Mit der konfigurierten RollingUpdate-Strategie führen wir jetzt ein echtes Update durch -- und
-lernen, im Fehlerfall sofort zurückzurollen. Als Beispiel aktualisieren wir den Code-Server auf
-eine neuere Version und beobachten den Prozess live.
+lernen, im Fehlerfall sofort zurückzurollen. Als Beispiel ändern wir das Chromium-Image auf
+eine andere Version und beobachten den Prozess live.
 
 ### Image-Update
 
 ```bash
-kubectl set image deployment/code-server code-server=lscr.io/linuxserver/code-server:4.96.4 -n k8s-training
+kubectl set image deployment/chromium chromium=lscr.io/linuxserver/chromium:version-11e602ae -n k8s-training
 ```
 
 ### Rollout-Status
 
 ```bash
-kubectl rollout status deployment/code-server -n k8s-training
+kubectl rollout status deployment/chromium -n k8s-training
 ```
 
 ### ReplicaSets
 
 ```bash
-kubectl get replicasets -l app=code-server -n k8s-training
+kubectl get replicasets -l app=chromium -n k8s-training -o wide
 ```
 
 Es gibt jetzt zwei ReplicaSets -- das alte (0 Replicas) und das neue (1 Replica). Das alte wird für
@@ -1254,13 +1207,13 @@ Rollbacks aufbewahrt.
 Ein fehlerhaftes Image setzen:
 
 ```bash
-kubectl set image deployment/code-server code-server=lscr.io/linuxserver/code-server:nicht-existent -n k8s-training
+kubectl set image deployment/chromium chromium=lscr.io/linuxserver/chromium:nicht-existent -n k8s-training
 ```
 
 Beobachten:
 
 ```bash
-kubectl get pods -l app=code-server -n k8s-training
+kubectl get pods -l app=chromium -n k8s-training
 ```
 
 Der neue Pod bleibt in `ImagePullBackOff` hängen. Das alte ReplicaSet hält den bisherigen Pod noch
@@ -1269,181 +1222,67 @@ am Laufen (dank `maxUnavailable: 0`).
 ### Rollback
 
 ```bash
-kubectl rollout undo deployment/code-server -n k8s-training
-kubectl rollout status deployment/code-server -n k8s-training
+kubectl rollout undo deployment/chromium -n k8s-training
+kubectl rollout status deployment/chromium -n k8s-training
 ```
 
 ### Rollout-Historie
 
 ```bash
-kubectl rollout history deployment/code-server -n k8s-training
-```
-
-Zu einer bestimmten Revision zurückrollen:
-
-```bash
-kubectl rollout undo deployment/code-server --to-revision=1 -n k8s-training
+kubectl rollout history deployment/chromium -n k8s-training
 ```
 
 ### Skalierung
 
 ```bash
 # Hochskalieren
-kubectl scale deployment/code-server --replicas=3 -n k8s-training
-kubectl get pods -l app=code-server -n k8s-training
+kubectl scale deployment/chromium --replicas=3 -n k8s-training
+kubectl get pods -l app=chromium -n k8s-training
 
 # Runterskalieren
-kubectl scale deployment/code-server --replicas=1 -n k8s-training
-kubectl get pods -l app=code-server -n k8s-training
+kubectl scale deployment/chromium --replicas=1 -n k8s-training
+kubectl get pods -l app=chromium -n k8s-training
 ```
-
-### Übung
-
-Führe den kompletten Lebenszyklus durch:
-
-1. Update auf `4.96.4`
-2. Beobachte den Rollout
-3. Prüfe die ReplicaSets
-4. Setze ein fehlerhaftes Image
-5. Beobachte den Fehler
-6. Rollback
-7. Skaliere auf 3 Replicas und wieder zurück auf 1
-
----
-
-
-
-## Security
-
-Bisher laufen unsere Deployments ohne Sicherheitsrichtlinien -- Container starten standardmäßig mit
-mehr Rechten als nötig. Das Prinzip "Least Privilege" besagt: Ein Prozess bekommt nur genau die
-Rechte, die er wirklich braucht. `SecurityContext` setzt dieses Prinzip in Kubernetes um und schützt
-den Cluster vor Angriffen, die auf übermäßige Container-Berechtigungen setzen.
-
-### SecurityContext
-
-Ein [SecurityContext](/docs/kubernetes-basis/90-glossar#securitycontext) definiert Sicherheitseinstellungen für Pods und Container.
-
-| Einstellung                | Beschreibung                              |
-| -------------------------- | ----------------------------------------- |
-| `runAsNonRoot`             | Container muss als nicht-root User laufen |
-| `allowPrivilegeEscalation` | Verhindert Privilege Escalation (setuid)  |
-| `readOnlyRootFilesystem`   | Root-Filesystem wird read-only gemountet  |
-| `capabilities.drop`        | Linux Capabilities entfernen              |
-
-### Pod-Level vs Container-Level
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: secure-pod
-  namespace: k8s-training
-spec:
-  securityContext: # Pod-Level: gilt für alle Container
-    runAsNonRoot: true
-    fsGroup: 1000
-  containers:
-    - name: app
-      image: nginx:1.27
-      securityContext: # Container-Level: überschreibt Pod-Level
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
-        capabilities:
-          drop:
-            - ALL
-```
-
-### Praxis-Beispiel
-
-Sicheren nginx-Pod erstellen und testen:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: secure-nginx
-  namespace: k8s-training
-spec:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    fsGroup: 1000
-  containers:
-    - name: nginx
-      image: nginxinc/nginx-unprivileged:1.27
-      ports:
-        - containerPort: 8080
-      securityContext:
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
-        capabilities:
-          drop:
-            - ALL
-      volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: cache
-          mountPath: /var/cache/nginx
-        - name: pid
-          mountPath: /var/run
-  volumes:
-    - name: tmp
-      emptyDir: {}
-    - name: cache
-      emptyDir: {}
-    - name: pid
-      emptyDir: {}
-```
-
-```bash
-kubectl apply -f secure-nginx.yaml
-kubectl get pod secure-nginx -n k8s-training
-```
-
-**Hinweis:** Die linuxserver.io-Container verwenden ein eigenes User-Management (s6-overlay mit
-PUID/PGID) und benötigen Schreibzugriff auf das Root-Filesystem. Daher sind `readOnlyRootFilesystem`
-und `runAsNonRoot` dort nicht direkt anwendbar. Das Beispiel zeigt das Prinzip an einem
-Standard-Image.
-
-Aufräumen:
-
-```bash
-kubectl delete pod secure-nginx -n k8s-training
-```
-
-### Best Practices
-
-- **Principle of Least Privilege** -- nur die nötigsten Rechte vergeben
-- **Secrets statt Env-Variablen** -- sensible Daten nie im Klartext in YAMLs
-- **Image-Tags pinnen** -- `:latest` vermeiden, konkrete Versionen verwenden (z. B. `:4.96.4`)
-- **Nicht als root laufen** -- wenn das Image es unterstützt
-- **Capabilities droppen** -- `drop: [ALL]` und nur benötigte explizit hinzufügen
-- **Network Policies** -- Traffic zwischen Pods einschränken (weiterführend)
-- **RBAC** -- Benutzer und ServiceAccounts mit minimalen Rechten (weiterführend)
-
-### Übung
-
-1. Erstelle den `secure-nginx`-Pod und prüfe, ob er läuft.
-2. Versuche, eine Datei im Root-Filesystem zu erstellen:
-
-```bash
-kubectl exec secure-nginx -n k8s-training -- touch /test.txt
-```
-
-3. Was passiert? Warum?
-4. Lösche den Pod und erkläre, welche Security-Einstellungen den Schreibzugriff verhindern.
-
----
-
+<br/>
+<Notice type="info">
+Nicht ungedulig werden, das kann eine Weile dauern, bis die Pods hoch- oder runtergefahren sind. Mit `kubectl get pods -w` kannst du live beobachten, wie die Pods erstellt und terminiert werden.
+</Notice>
+<br/>
 ## PVs & PVCs
 
-Container-Dateisysteme sind flüchtig -- stirbt ein Pod, sind alle Daten weg. Wie wir in Übung 4
-gesehen haben, verschwindet selbst eine einfache Textdatei nach einem Pod-Neustart. Für Anwendungen
-wie Home Assistant oder Nextcloud ist das keine Option. Persistent Volumes (PVs) und Persistent
-Volume Claims (PVCs) entkoppeln Storage von der Pod-Lebensdauer.
+Container-Dateisysteme sind flüchtig -- stirbt ein Pod, sind alle Daten weg. Für Anwendungen
+wie MariaDB ist das keine Option. Persistent Volumes (PVs) und Persistent Volume Claims
+(PVCs) entkoppeln Storage von der Pod-Lebensdauer.
 
 
+
+### Analogie: Das Logistiklager
+
+Stell dir vor, du betreibst ein Logistiklager mit mehreren Hallen (Nodes). Jede Halle hat
+viel Platz, aber der ist nicht unbegrenzt.
+
+- **Ohne Persistent Storage** ist jeder Arbeitsauftrag (Pod) ein Einweg-Tisch: Du stellst
+  deine Kisten drauf, aber wenn der Auftrag erledigt ist, wird der Tisch weggeworfen –
+  mitsamt deiner Kisten. Genau das passiert mit `emptyDir`: Der Pod stirbt, die Daten sind
+  weg.
+
+- **Ein PersistentVolume (PV)** ist wie ein **fest installiertes Regal** in der Halle. Es
+  steht da, unabhängig von einzelnen Aufträgen. Der Lagerleiter (Admin) hat es aufgebaut,
+  oder es wurde automatisch bestellt (dynamische Provisionierung).
+
+- **Ein PersistentVolumeClaim (PVC)** ist der **Lagerzettel**, den ein Mitarbeiter (Pod)
+  ausfüllt: "Ich brauche ein Regal mit 1 Meter Fachbreite, das ich alleine nutzen kann
+  (`ReadWriteOnce`)." Der Lagerleiter schaut, ob ein passendes Regal (PV) frei ist, und
+  weist es dem Mitarbeiter zu.
+
+- **Die StorageClass** ist der **Katalog mit Regaltypen**: "Standard-Regal (Festplatte)",
+  "Schnell-Regal (SSD)", "Kühl-Regal (Archive)". Der Mitarbeiter sagt nur "Ich brauche
+  ein Standard-Regal" – die StorageClass kümmert sich darum, dass das richtige Regal
+  geliefert und aufgebaut wird.
+
+**Zusammengefasst:** PV = das Regal in der Halle. PVC = der Zettel, der das Regal reserviert.
+StorageClass = der Katalog, der bestimmt, welches Regal geliefert wird. Der Pod arbeitet
+am Regal – und wenn der Pod weg ist, bleibt das Regal stehen.
 
 ### Konzepte
 
@@ -1467,105 +1306,48 @@ PVC-Anforderung → StorageClass erstellt PV → Pod mountet PVC
 daran, dass `emptyDir`-Volumes mit dem Pod sterben. PVCs überleben Pod-Neustarts und sogar
 Pod-Löschungen.
 
-### Home Assistant
+### Übung: Flüchtigkeit erleben
 
-Home Assistant wird zunächst mit `emptyDir` deployt -- als Vergleich zu Nextcloud mit PVCs.
+Bevor wir mit PVCs arbeiten, sollst du selbst spüren, was "flüchtig" bedeutet.
 
-Datei `homeassistant-deployment.yaml`:
+1. **Code-Server im Browser öffnen** und eine beliebige Datei im Workspace erstellen
+   (Bsp. `test.txt` mit etwas Inhalt).
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: homeassistant
-  namespace: k8s-training
-  labels:
-    app: homeassistant
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: homeassistant
-  template:
-    metadata:
-      labels:
-        app: homeassistant
-    spec:
-      containers:
-        - name: homeassistant
-          image: lscr.io/linuxserver/homeassistant:latest
-          ports:
-            - containerPort: 8123
-          envFrom:
-            - configMapRef:
-                name: app-config
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "256Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
-          startupProbe:
-            httpGet:
-              path: /
-              port: 8123
-            failureThreshold: 30
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 8123
-            periodSeconds: 15
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 8123
-            periodSeconds: 5
-            failureThreshold: 1
-          volumeMounts:
-            - name: config
-              mountPath: /config
-      volumes:
-        - name: config
-          emptyDir: {}
-```
+2. **Pod neu starten** -- lösche den Pod, das Deployment erstellt automatisch einen neuen:
 
-Datei `homeassistant-service.yaml`:
+   ```bash
+   kubectl delete pod -l app=code-server -n k8s-training
+   ```
 
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: homeassistant
-  namespace: k8s-training
-spec:
-  type: ClusterIP
-  selector:
-    app: homeassistant
-  ports:
-    - protocol: TCP
-      port: 8123
-      targetPort: 8123
-```
+3. **Warten**, bis der neue Pod läuft:
 
-```bash
-kubectl apply -f homeassistant-deployment.yaml
-kubectl apply -f homeassistant-service.yaml
-```
+   ```bash
+   kubectl get pods -l app=code-server -n k8s-training -w
+   ```
 
-### Nextcloud + PVCs
+4. **Code-Server neu laden** -- die Datei ist weg (evt. noch im Editor geöffnet, Browser-Cache). Der Workspace wurde mit `emptyDir`
+   gemountet und existiert nicht mehr.
 
-Nextcloud bekommt persistenten Storage für Konfiguration und Daten.
+5. **Erkenntnis:** Container-Dateisysteme sind flüchtig. Ohne persistenten Storage
+   sind alle Daten nach einem Pod-Neustart verloren.
 
-Datei `nextcloud-pvc.yaml`:
+### Code-Server: PVC (persistent)
+
+Der Code-Server aus Tag 1 verwendet `emptyDir` für `/config` -- das hast du bereits in der
+Übung "Flüchtigkeit erleben" oben gesehen. Jetzt rüsten wir ihn auf **PVC** um, damit der
+Workspace Pod-Neustarts überlebt.
+
+Dazu brauchen wir zwei Dinge: den PVC und ein aktualisiertes Deployment, das den PVC statt
+`emptyDir` verwendet. Der Service bleibt unverändert -- der Code-Server ist weiterhin unter
+derselben Adresse erreichbar.
+
+Datei `code-server-pvc.yaml`:
 
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: nextcloud-config
+  name: code-server-config
   namespace: k8s-training
 spec:
   accessModes:
@@ -1573,115 +1355,37 @@ spec:
   resources:
     requests:
       storage: 1Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nextcloud-data
-  namespace: k8s-training
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
 ```
 
-Datei `nextcloud-deployment.yaml`:
+Das Deployment aus Tag 1 (`code-server-deployment.yaml`) bekommt nur eine kleine Änderung:
+Statt `emptyDir: {}` referenzieren wir den PVC. Der Rest bleibt identisch.
+
+**Alte Version (Tag 1):**
 
 ```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nextcloud
-  namespace: k8s-training
-  labels:
-    app: nextcloud
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: nextcloud
-  template:
-    metadata:
-      labels:
-        app: nextcloud
-    spec:
-      containers:
-        - name: nextcloud
-          image: lscr.io/linuxserver/nextcloud:latest
-          ports:
-            - containerPort: 443
-          envFrom:
-            - configMapRef:
-                name: app-config
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "256Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
-          startupProbe:
-            httpGet:
-              path: /
-              port: 443
-              scheme: HTTPS
-            failureThreshold: 30
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 443
-              scheme: HTTPS
-            periodSeconds: 15
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 443
-              scheme: HTTPS
-            periodSeconds: 5
-            failureThreshold: 1
-          volumeMounts:
-            - name: config
-              mountPath: /config
-            - name: data
-              mountPath: /data
+      volumes:
+        - name: config
+          emptyDir: {}
+```
+
+**Neue Version mit PVC:**
+
+```yaml
       volumes:
         - name: config
           persistentVolumeClaim:
-            claimName: nextcloud-config
-        - name: data
-          persistentVolumeClaim:
-            claimName: nextcloud-data
-```
-
-Datei `nextcloud-service.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: nextcloud
-  namespace: k8s-training
-spec:
-  type: ClusterIP
-  selector:
-    app: nextcloud
-  ports:
-    - protocol: TCP
-      port: 443
-      targetPort: 443
+            claimName: code-server-config
 ```
 
 ```bash
-kubectl apply -f nextcloud-pvc.yaml
-kubectl apply -f nextcloud-deployment.yaml
-kubectl apply -f nextcloud-service.yaml
+kubectl apply -f code-server-pvc.yaml
+kubectl apply -f code-server-deployment-pvc.yaml
 ```
 
-### Persistenz-Test
+**Wichtig:** Der Pod wird durch das Update neu gestartet -- aber weil wir vorher noch keinen
+PVC hatten, ist der Workspace beim ersten Start leer. Erst ab jetzt bleiben die Daten erhalten.
+
+### Persistenz-Test: Daten überleben den Pod-Neustart
 
 PVC-Status prüfen:
 
@@ -1689,327 +1393,361 @@ PVC-Status prüfen:
 kubectl get pvc -n k8s-training
 ```
 
-Beide PVCs sollten den Status `Bound` haben.
+Der PVC sollte den Status `Bound` haben.
 
-Datei erstellen und Pod löschen:
+Jetzt der entscheidende Test: Du erstellst eine Datei im Workspace, löschst den Pod und prüfst,
+ob sie noch da ist, wenn der neue Pod läuft.
 
 ```bash
 # Datei im persistenten Volume erstellen
-kubectl exec $(kubectl get pod -l app=nextcloud -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- touch /data/test.txt
+kubectl exec $(kubectl get pod -l app=code-server -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- touch /config/workspace/test.txt
 
 # Pod löschen (Deployment erstellt neuen)
-kubectl delete pod -l app=nextcloud -n k8s-training
+kubectl delete pod -l app=code-server -n k8s-training
 
 # Warten bis neuer Pod läuft
-kubectl get pods -l app=nextcloud -n k8s-training -w
+kubectl get pods -l app=code-server -n k8s-training -w
 
 # Datei prüfen -- sie überlebt!
-kubectl exec $(kubectl get pod -l app=nextcloud -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- ls /data/test.txt
+kubectl exec $(kubectl get pod -l app=code-server -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- ls /config/workspace/test.txt
 ```
 
-Zum Vergleich -- Home Assistant mit emptyDir:
 
-```bash
-# Datei erstellen
-kubectl exec $(kubectl get pod -l app=homeassistant -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- touch /config/test.txt
-
-# Pod löschen
-kubectl delete pod -l app=homeassistant -n k8s-training
-
-# Datei prüfen -- sie ist weg!
-kubectl exec $(kubectl get pod -l app=homeassistant -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- ls /config/test.txt
-```
-
-### Übung
-
-1. Deploye Home Assistant und Nextcloud.
-2. Prüfe den PVC-Status mit `kubectl get pvc -n k8s-training`.
-3. Teste die Persistenz bei Nextcloud (Datei erstellen, Pod löschen, Datei prüfen).
-4. Teste das Gleiche bei Home Assistant -- was passiert mit der Datei?
-5. Erkläre den Unterschied zwischen `emptyDir` und `PersistentVolumeClaim`.
+**Erkenntnis:** Vorher (Übung "Flüchtigkeit erleben") war die Datei nach dem Pod-Neustart weg -- jetzt, mit PVC, bleibt sie erhalten. PVCs überleben Pod-Neustarts, `emptyDir` nicht.
 
 ---
 
-## Services & DNS
+## 🧪 Vertiefung: MariaDB + phpMyAdmin deployen (optional)
 
-Vor dem Ingress-Setup stellen wir alle Services auf ClusterIP um und verstehen, wie
-Kubernetes-internes DNS funktioniert. Das ist die Grundlage dafür, dass der Ingress Controller die
-Services intern ansprechen kann -- ohne NodePorts nach außen zu exponieren.
+Diese Übung ist als **Wiederholung aller Konzepte aus Tag 1 und Tag 2** gedacht – ohne
+Schritt-für-Schritt-Anleitung. Du bekommst nur die Anforderungen und musst selbstständig
+die YAML-Manifeste schreiben und anwenden. Nutze bei Fragen `kubectl explain` oder blättere
+in den vorherigen Kapiteln.
 
-### Service-Typen
+<br/>
+<Notice type="info">
+Einer der Teilnehmer teilt seinen Bildschirm und zeigt live, wie er die Aufgabe löst. Du kannst dich daran orientieren, aber versuche, die Lösung selbst zu erarbeiten. 
+</Notice>
+<br/>
 
-| Typ              | Zugriff                                    | Beispiel aus dem Projekt      |
-| ---------------- | ------------------------------------------ | ----------------------------- |
-| **ClusterIP**    | Nur cluster-intern                         | homeassistant, nextcloud      |
-| **NodePort**     | Von außen über `NodeIP:Port` (30000-32767) | Chromium, Code-Server (Tag 1) |
-| **LoadBalancer** | Externe IP über Cloud-LB                   | Produktion in der Cloud       |
-| **ExternalName** | DNS-CNAME auf externen Dienst              | Externe APIs                  |
+### Aufgabe
 
-### DNS-Namensformat
+Deploye **MariaDB** und **phpMyAdmin** in den Namespace `k8s-training`. Die beiden Container
+laufen im **selben Pod** – MariaDB als App-Container, phpMyAdmin als Sidecar. Sie teilen sich
+den Netzwerk-Stack (`localhost`) und ein gemeinsames Volume für die Session-Daten.
 
-Kubernetes richtet automatisch DNS-Einträge für Services ein (über CoreDNS):
+| Eigenschaft | MariaDB | phpMyAdmin |
+|-------------|---------|------------|
+| Image | `lscr.io/linuxserver/mariadb:latest` | `lscr.io/linuxserver/phpmyadmin:latest` |
+| Container-Port | `3306` | `80` |
+| Service-Port | `3306` | `80` |
+| Service-Typ | `ClusterIP` | `NodePort` |
+| Namespace | `k8s-training` | `k8s-training` |
+| PVC | `mariadb-config` (1Gi, `ReadWriteOnce`) | – (nutzt `emptyDir` für Sessions) |
+| Mount-Pfad | `/config` | – |
+| Umgebungsvariablen | `PUID=1000`, `PGID=1000`, `TZ=Europe/Berlin`, `MYSQL_ROOT_PASSWORD=trainingk8s` | `PUID=1000`, `PGID=1000`, `TZ=Europe/Berlin` |
 
-```
-<service>.<namespace>.svc.cluster.local
-```
+**Wichtig:** Das Root-Passwort (`MYSQL_ROOT_PASSWORD`) ist ein Secret – lagere es in ein
+Kubernetes-Secret aus, nicht in die ConfigMap!
 
-Beispiele aus unserem Namespace:
+### Anforderungen (Checkliste)
 
-- `chromium.k8s-training.svc.cluster.local`
-- `code-server.k8s-training.svc.cluster.local`
-- `homeassistant.k8s-training.svc.cluster.local`
-- `nextcloud.k8s-training.svc.cluster.local`
+Deine Lösung muss folgende Konzepte aus Tag 1 und Tag 2 abdecken:
 
-### DNS testen
+- [ ] **Deklaratives Deployment** per YAML (kein `kubectl create deployment`)
+- [ ] **Labels** (`app: database`) für Selektor und Service
+- [ ] **Service (ClusterIP)** für MariaDB (Port `3306`) – damit andere Pods die Datenbank erreichen
+- [ ] **Service (NodePort)** für phpMyAdmin (Port `80`) – damit du im Browser darauf zugreifen kannst
+- [ ] **ConfigMap** für die Umgebungsvariablen (`PUID`, `PGID`, `TZ`)
+- [ ] **Secret** für `MYSQL_ROOT_PASSWORD`
+- [ ] **PersistentVolumeClaim** (1Gi, `ReadWriteOnce`) für MariaDB unter `/config`
+- [ ] **Resource Limits** für beide Container (`requests: 256Mi/250m`, `limits: 1Gi/1000m`)
+- [ ] **Health Checks** – StartupProbe, LivenessProbe, ReadinessProbe (jeweils auf Port `80` für phpMyAdmin)
+- [ ] **RollingUpdate-Strategie** (`maxSurge: 1`, `maxUnavailable: 0`)
+- [ ] **Multi-Container Pod** – MariaDB + phpMyAdmin teilen sich `localhost`
+- [ ] **Ingress route** – PhpMyAdmin ist über eine Ingress-Route erreichbar
+
+
+### Tipps
+
+- Beginne mit PVC, dann Secret, dann ConfigMap, dann Deployment, dann **zwei Services**
+- Der PVC muss `Bound` sein, bevor der Pod startet
+- phpMyAdmin verbindet sich per Config auf `localhost:3306` – das funktioniert, weil beide Container im selben Pod sind
+- **MariaDB bekommt einen eigenen `ClusterIP`-Service** (Port `3306`). Andere Pods (z. B. eine Nextcloud) können dann über den DNS-Namen `mariadb.k8s-training.svc.cluster.local:3306` auf die Datenbank zugreifen
+- Die Probes für phpMyAdmin zeigen auf HTTP `:80/`
+- MariaDB braucht keine eigene Probe – wenn die DB weg ist, merkt phpMyAdmin das
+- Nach dem Deploy: `kubectl get all -n k8s-training` – das neue Deployment sollte als drittes auftauchen
+
+### Erwartetes Ergebnis
 
 ```bash
-kubectl run dns-test --rm -it --image=busybox:1.28 --restart=Never -n k8s-training -- nslookup chromium.k8s-training.svc.cluster.local
+kubectl get deployments -n k8s-training
+# NAME            READY   UP-TO-DATE   AVAILABLE
+# chromium        1/1     1            1
+# code-server     1/1     1            1
+# database        1/1     1            1
+
+kubectl get pods -n k8s-training
+# NAME                        READY   STATUS
+# chromium-xxx                2/2     Running
+# code-server-xxx             1/1     Running
+# database-xxx                2/2     Running
+
+kubectl get pvc -n k8s-training
+# NAME                    STATUS   VOLUME
+# code-server-config      Bound    ...
+# mariadb-config          Bound    ...
 ```
 
-Innerhalb des gleichen Namespaces reicht der Kurzname:
+### Persistenz-Test
 
-```bash
-kubectl run dns-test2 --rm -it --image=busybox:1.28 --restart=Never -n k8s-training -- nslookup chromium
-```
+1. Öffne phpMyAdmin im Browser
+2. Logge dich mit `root` / `trainingk8s` ein
+3. Erstelle eine neue Datenbank (z. B. `testdb`) und eine Tabelle
+4. Lösche den Pod: `kubectl delete pod -l app=database -n k8s-training`
+5. Warte, bis der neue Pod läuft
+6. Lade phpMyAdmin neu – die erstellte Datenbank sollte **noch vorhanden** sein (Dank PVC!)
 
 ---
 
-## Ingress
+## 🧪 Vertiefung: Init-Container für MariaDB-Wartezeit (optional)
 
-### Was ist Ingress?
+In der Sidecar-Übung mit Vector hast du gesehen, wie zwei Container parallel starten.
+Bei MariaDB + phpMyAdmin ist das anders: phpMyAdmin **braucht** eine laufende MariaDB,
+sonst zeigt es nur eine Fehlerseite. Ein Init-Container löst das: Er läuft **vor** den
+App-Containern und blockiert so lange, bis MariaDB bereit ist. Erst dann starten
+phpMyAdmin (und MariaDB neu – aber die ist ja schon da).
 
-[Ingress](/docs/kubernetes-basis/90-glossar#ingress) stellt HTTP/HTTPS-Routing von außen in den Cluster bereit. Statt jeden Service über einen
-eigenen NodePort zu exponieren, wird ein zentraler [Ingress Controller](/docs/kubernetes-basis/90-glossar#ingress-controller) verwendet.
+<br/>
+<Notice type="info">
+Einer der Teilnehmer teilt seinen Bildschirm und zeigt live, wie er die Aufgabe löst. Du kannst dich daran orientieren, aber versuche, die Lösung selbst zu erarbeiten. 
+</Notice>
+<br/>
 
-**Host-basiertes Routing:** Verschiedene Hostnamen werden auf verschiedene Services geroutet:
+> **Erinnerung:** Init-Container wurden weiter oben im Kapitel [Init-Container](#init-container)
+> bereits vorgestellt. Dort gab es ein Beispiel mit `busybox` und `nslookup`. Hier setzen wir
+> das Konzept jetzt praktisch um.
 
-```
-chrome.k8s-training.frickeldave.de  → chromium:3000
-code.k8s-training.frickeldave.de    → code-server:8443
-ha.k8s-training.frickeldave.de      → homeassistant:8123
-drive.k8s-training.frickeldave.de   → nextcloud:443
-```
+### Aufgabe
 
-**Voraussetzung:** Ein NGINX Ingress Controller muss im Cluster installiert sein.
+Ergänze das Deployment aus der vorherigen Übung um einen **Init-Container**, der vor dem
+Start von phpMyAdmin prüft, ob MariaDB auf `localhost:3306` antwortet. Der Init-Container
+verwendet das offizielle `mariadb:11`-Image und führt `mysqladmin ping` aus.
 
-### ClusterIP umstellen
+### Lösung (Schritt für Schritt)
 
-Die Services von Chromium und Code-Server wurden in Tag 1 als NodePort erstellt. Für Ingress
-brauchen wir ClusterIP.
+**1. Deployment anpassen**
 
-Datei `chromium-service.yaml`:
+Füge einen `initContainers`-Block in das Deployment ein. Der Init-Container sitzt auf
+derselben Ebene wie `containers` und `volumes`:
 
 ```yaml
-apiVersion: v1
-kind: Service
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: chromium
+  name: database
   namespace: k8s-training
+  labels:
+    app: database
 spec:
-  type: ClusterIP
+  replicas: 1
   selector:
-    app: chromium
-  ports:
-    - protocol: TCP
-      port: 3000
-      targetPort: 3000
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      initContainers:                          # ⬅️ NEU: läuft vor den App-Containern
+        - name: wait-for-mariadb
+          image: mariadb:11
+          command:
+            - sh
+            - -c
+            - |
+              echo "Warte auf MariaDB auf localhost:3306 ..."
+              until mysqladmin ping -h localhost -u root -ptrainingk8s --silent; do
+                echo "MariaDB noch nicht bereit – warte 2s ..."
+                sleep 2
+              done
+              echo "MariaDB ist bereit!"
+      containers:
+        - name: mariadb
+          # ... bestehende Konfiguration ...
+        - name: phpmyadmin
+          # ... bestehende Konfiguration ...
 ```
 
-Datei `code-server-service.yaml`:
+**Was passiert hier?**
 
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: code-server
-  namespace: k8s-training
-spec:
-  type: ClusterIP
-  selector:
-    app: code-server
-  ports:
-    - protocol: TCP
-      port: 8443
-      targetPort: 8443
-```
+| Schritt | Beschreibung |
+|---------|-------------|
+| `image: mariadb:11` | Der Init-Container nutzt das offizielle MariaDB-Image – darin ist `mysqladmin` enthalten |
+| `mysqladmin ping` | Prüft, ob der MariaDB-Server auf `localhost:3306` antwortet. Exit-Code 0 = bereit |
+| `-h localhost` | MariaDB läuft im selben Pod – also über `localhost` erreichbar |
+| `-u root -ptrainingk8s` | Authentifizierung mit dem Root-Passwort aus dem Secret |
+| `--silent` | Nur Exit-Code, keine Ausgabe |
+| `until ...; do sleep 2; done` | Wiederhole die Prüfung alle 2 Sekunden, bis MariaDB antwortet |
+| `echo "MariaDB ist bereit!"` | Sobald MariaDB antwortet, beendet sich der Init-Container mit Exit-Code 0 |
+
+**2. Deployment aktualisieren**
 
 ```bash
-kubectl apply -f chromium-service.yaml
-kubectl apply -f code-server-service.yaml
+kubectl apply -f database-deployment.yaml
 ```
 
-### Haupt-Ingress
+**3. Beobachten, was passiert**
 
-Datei `k8s-training-ingress.yaml`:
+Öffne zwei Terminals:
 
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: k8s-training-ingress
-  namespace: k8s-training
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: chrome.k8s-training.frickeldave.de
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: chromium
-                port:
-                  number: 3000
-    - host: code.k8s-training.frickeldave.de
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: code-server
-                port:
-                  number: 8443
-    - host: ha.k8s-training.frickeldave.de
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: homeassistant
-                port:
-                  number: 8123
-```
+**Terminal 1 – Pod-Status live:**
 
 ```bash
-kubectl apply -f k8s-training-ingress.yaml
+kubectl get pods -l app=database -n k8s-training -w
 ```
 
-### Nextcloud Ingress
+Du siehst:
 
-Nextcloud lauscht auf HTTPS (Port 443). Der Ingress muss daher die Annotation
-`backend-protocol: HTTPS` verwenden.
-
-Datei `nextcloud-ingress.yaml`:
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nextcloud-ingress
-  namespace: k8s-training
-  annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: drive.k8s-training.frickeldave.de
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: nextcloud
-                port:
-                  number: 443
 ```
+NAME                        READY   STATUS     RESTARTS
+database-xxx                0/2     Init:0/1   0       ← Init-Container läuft
+database-xxx                0/2     Init:0/1   0       ← Init-Container wartet auf MariaDB
+database-xxx                0/2     Init:0/1   0       ← (wiederholt sich bis MariaDB bereit)
+database-xxx                0/2     PodInitializing    ← Init-Container fertig, App-Container starten
+database-xxx                1/2     Running            ← MariaDB läft, phpMyAdmin startet
+database-xxx                2/2     Running            ← Beide Container laufen
+```
+
+**Terminal 2 – Logs des Init-Containers anzeigen:**
 
 ```bash
-kubectl apply -f nextcloud-ingress.yaml
+kubectl logs -l app=database -n k8s-training -c wait-for-mariadb
 ```
 
-### DNS / hosts
+Erwartete Ausgabe:
 
-Die Ingress-IP ermitteln:
+```
+Warte auf MariaDB auf localhost:3306 ...
+MariaDB noch nicht bereit – warte 2s ...
+MariaDB noch nicht bereit – warte 2s ...
+MariaDB ist bereit!
+```
+
+**4. Test: Init-Container blockiert wirklich**
+
+Starte den Pod neu und beobachte: Solange der Init-Container läuft, zeigt der Pod
+`Init:0/1` – die App-Container (MariaDB, phpMyAdmin) starten **gar nicht erst**.
 
 ```bash
-kubectl get ingress -n k8s-training
+kubectl delete pod -l app=database -n k8s-training
+kubectl get pods -l app=database -n k8s-training -w
 ```
 
-Die angezeigte `ADDRESS` in die lokale hosts-Datei eintragen:
+**5. Bonus: Was passiert, wenn MariaDB nie startet?**
 
-**Linux/macOS:** `/etc/hosts` **Windows:** `C:\Windows\System32\drivers\etc\hosts`
-
-```
-<INGRESS-IP> chrome.k8s-training.frickeldave.de
-<INGRESS-IP> code.k8s-training.frickeldave.de
-<INGRESS-IP> ha.k8s-training.frickeldave.de
-<INGRESS-IP> drive.k8s-training.frickeldave.de
-```
-
-### Verifikation
-
-| URL                                  | Erwartetes Ergebnis     |
-| ------------------------------------ | ----------------------- |
-| `chrome.k8s-training.frickeldave.de` | Chromium Browser Web-UI |
-| `code.k8s-training.frickeldave.de`   | Code-Server Login       |
-| `ha.k8s-training.frickeldave.de`     | Home Assistant Setup    |
-| `drive.k8s-training.frickeldave.de`  | Nextcloud Setup         |
-
-### Status-Check
+Ändere im Init-Container den Host von `localhost` auf einen nicht existierenden Host
+(z. B. `localhost2`) und deploye erneut:
 
 ```bash
-kubectl get all,ingress,pvc -n k8s-training
+kubectl apply -f database-deployment.yaml
+kubectl get pods -l app=database -n k8s-training -w
 ```
 
-### Übung
+Der Init-Container läuft endlos – und der Pod bleibt in `Init:0/1` hängen. Die App-Container
+starten nie. Kubernetes unternimmt nichts, weil Init-Container **keinen Restart** haben
+(im Gegensatz zu Liveness Probes). Korrigiere den Host zurück, um den Pod freizubekommen.
 
-1. Stelle die Chromium- und Code-Server-Services auf ClusterIP um.
-2. Erstelle beide Ingress-Ressourcen.
-3. Konfiguriere die DNS-Einträge in der hosts-Datei.
-4. Teste alle 4 URLs im Browser.
-5. Lade eine Datei in Nextcloud hoch -- bleibt sie nach einem Pod-Neustart erhalten?
-6. **Bonus:** Richte TLS mit cert-manager ein, damit alle URLs über HTTPS erreichbar sind.
+### Zusammenfassung Init-Container
+
+| Aspekt | Verhalten |
+|--------|-----------|
+| **Reihenfolge** | Init-Container laufen **sequenziell** vor allen App-Containern |
+| **Lebensdauer** | Einmalig bis zum erfolgreichen Exit-Code 0 |
+| **Bei Fehler** | Pod startet App-Container nicht – bleibt in `Init:`-Status |
+| **Restart** | Init-Container werden **nicht** automatisch neu gestartet (kein CrashLoop) |
+| **Typische Nutzung** | Warten auf Abhängigkeiten, Schema-Migrationen, Dateien vorbereiten |
+| **Image** | Beliebiges Image – muss nicht zum App-Image passen |
 
 ---
 
 ## Zusammenfassung
 
-| Thema                 | Gelernt                                          | Praktischer Kontext                          |
-| --------------------- | ------------------------------------------------ | -------------------------------------------- |
-| Pods im Detail        | Multi-Container, Init-Container, Sidecar-Pattern | Container-Typen und wann man sie einsetzt    |
-| Resources             | Requests, Limits, QoS-Klassen, LimitRange        | Chromium + Code-Server mit Resource-Limits   |
-| Probes                | Liveness, Readiness, Startup                     | Health Checks für alle 4 Anwendungen         |
-| Deployment-Strategien | RollingUpdate, Recreate, maxSurge/maxUnavailable | Code-Server Update + Rollback                |
-| ConfigMaps & Secrets  | Konfiguration auslagern, sensible Daten schützen | Shared Env-Variablen + Code-Server-Passwort  |
-| Security              | SecurityContext, Least Privilege, Best Practices | Sichere Container-Konfiguration              |
-| Persistent Volumes    | PV, PVC, StorageClass, emptyDir vs. PVC          | Nextcloud mit persistentem Storage           |
-| Services & DNS        | ClusterIP, NodePort, DNS-Format                  | Service Discovery im Cluster                 |
-| Ingress               | Host-basiertes Routing, NGINX Ingress Controller | Alle 4 Apps über eigene Hostnamen erreichbar |
+Tag 2 hat eure Deployments produktionsreif gemacht. Hier der aktuelle Stand im Cluster:
 
-### Architektur
+```bash
+kubectl get all -n k8s-training
+```
 
-```mermaid
-graph TD
-    IC["Ingress Controller<br/>NGINX"]
-    IC -->|"chrome.k8s-training.frickeldave.de"| SVC1["Service :3000"]
-    IC -->|"code.k8s-training.frickeldave.de"| SVC2["Service :8443"]
-    IC -->|"ha.k8s-training.frickeldave.de"| SVC3["Service :8123"]
-    IC -->|"drive.k8s-training.frickeldave.de"| SVC4["Service :443"]
-    SVC1 --> CHR["Chromium"]
-    SVC2 --> CS["Code-Server"]
-    SVC3 --> HA["Home Assistant"]
-    SVC4 --> NC["Nextcloud"]
-    HA --> ED["emptyDir"]
-    NC --> PVC1["PVC config"]
-    NC --> PVC2["PVC data"]
+| Ressource       | Anzahl | Details                                              |
+| --------------- | ------ | ---------------------------------------------------- |
+| Deployments     | 3      | chromium, code-server, database                      |
+| ReplicaSets     | 3+     | je 1 pro Deployment (+ alte für Rollback)            |
+| Pods            | 3      | chromium (2 Container), code-server (1 Container), database (2 Container) |
+| Services        | 3      | chromium (4000), code-server (8443), database (80)   |
+| ConfigMaps      | 3      | code-server-config, vector-config, database-config   |
+| Secrets         | 2      | code-server-secret, database-secret                  |
+| PVCs            | 2      | code-server-config (1Gi), mariadb-config (1Gi)       |
+
+| Thema                         | Gelernt                                                       |
+| ----------------------------- | ------------------------------------------------------------- |
+| ConfigMaps & Secrets          | Konfiguration und Passwörter auslagern                        |
+| Multi-Container Pods          | Init-Container, Sidecar-Container (Vector)                    |
+| Resource Limits               | requests, limits, QoS-Klassen (BestEffort/Burstable/Guaranteed) |
+| Health Checks                 | Startup-, Liveness- und Readiness-Probes                      |
+| Deployment-Strategien         | RollingUpdate vs. Recreate, Rollback, Rollout-Historie        |
+| Persistent Storage            | PV, PVC, StorageClass – Daten überleben Pod-Neustarts        |
+
+### Spickzettel Tag 2
+
+```bash
+# ConfigMaps & Secrets
+kubectl create configmap <name> --from-literal=key=value
+kubectl create secret generic <name> --from-literal=key=value
+kubectl get configmaps
+kubectl get secrets
+
+# Ressourcen & Metriken
+kubectl describe pod <name> | grep -A 6 "Limits"
+kubectl top pods
+kubectl top nodes
+
+# Health Checks & Rollouts
+kubectl rollout status deployment/<name>
+kubectl rollout history deployment/<name>
+kubectl rollout undo deployment/<name>
+kubectl rollout undo deployment/<name> --to-revision=<n>
+
+# Skalierung
+kubectl scale deployment/<name> --replicas=<n>
+kubectl get replicasets
+
+# Storage
+kubectl get pvc
+kubectl get pv
+kubectl get storageclass
+
+# Multi-Container Pods
+kubectl logs -l app=<name> -c <container-name>
+kubectl logs -l app=<name> -c <container-name> -f
+kubectl exec -c <container-name> deploy/<name> -- <command>
 ```
 
 ### Ausblick
 
-- Helm Charts -- Paketmanagement für Kubernetes
-- Monitoring mit Prometheus und Grafana
-- GitOps mit ArgoCD oder Flux
-- cert-manager für automatische TLS-Zertifikate
-- RBAC vertiefen -- Rollen und Berechtigungen im Detail
-- Network Policies -- Netzwerk-Segmentierung zwischen Pods
-- Horizontal Pod Autoscaler (HPA)
+Ihr habt jetzt eine solide Kubernetes-Basis:
+
+- **Tag 1:** Erste Schritte, imperatives und deklaratives Deployment, Services, Ingress
+- **Tag 2:** ConfigMaps, Secrets, Resource Limits, Health Checks, Rolling Updates, Persistent Storage
+
+Damit könnt ihr die meisten Anwendungsfälle im Cluster abdecken. Vertiefungsthemen für die Praxis:
+
+- **Helm** – Paketmanager für Kubernetes (Chart-basierte Deployments)
+- **Monitoring** – Prometheus + Grafana für Metriken und Alerting
+- **Autoscaling** – Horizontal Pod Autoscaler (HPA) basierend auf CPU/Memory
+- **Service Mesh** – Istio oder Linkerd für erweitertes Networking (TLS, Tracing, Traffic-Splitting)
+- **GitOps** – ArgoCD oder Flux für deklaratives Deployment aus Git
+- **Backup & Restore** – Velero für Cluster-Backups
 
 <br />
 Weiter: [Glossar](/docs/kubernetes-basis/90-glossar)
