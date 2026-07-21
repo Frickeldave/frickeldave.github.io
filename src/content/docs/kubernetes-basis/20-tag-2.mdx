@@ -452,8 +452,8 @@ kubectl get pods -l app=chromium -w
 # Logs des Sidecars anzeigen
 kubectl logs -l app=chromium -c vector
 
-# Logs von Chromium anzeigen (Vergleich)
-kubectl logs -l app=chromium -c chromium
+# Log-Datei im Chromium-Container anzeigen (identische Quelle wie Vector)
+kubectl exec -c chromium deploy/chromium -- cat /config/log/chromium.log
 
 # Chromium im Browser öffnen und ein paar Seiten besuchen,
 # dann erneut Sidecar-Logs prüfen:
@@ -463,8 +463,8 @@ kubectl logs -l app=chromium -c vector --tail=10
 
 **4. Was passiert hier?**
 
-- Chromium sollte die Logs nach `/config/log/` (z. B. `chromium.log`, `Xorg.log`) schreiben
-- Der Sidecar (`vector`) liest **dieselben Dateien** über das gemeinsame `emptyDir`-Volume
+- Chromium sollte die Logs nach `/config/log/` (Bsp. `chromium.log`, `Xorg.log`) schreiben
+- Der Sidecar (`vector`) liest **dieselben Dateien** 
 - Vector parst die Logs und gibt sie als JSON auf der Konsole aus
 - **Wichtig:** Beide Container laufen im selben Pod -- teilen sich Netzwerk (`localhost`) und Volume
 - Der Sidecar wurde **nachträglich** in ein bestehendes Deployment eingefügt -- Kubernetes startet
@@ -629,7 +629,6 @@ Vector ist nur ein Beispiel. In Produktivumgebungen werden häufig diese Tools a
 | [Fluentd](https://www.fluentd.org/) | ~50 MB | Ruby, sehr flexibel, viele Plugins |
 
 ## Requests & Limits
-
 
 Stell dir vor, im Logistikzentrum arbeiten mehrere Abteilungen nebeneinander.
 Jede Abteilung hat einen bestimmten Platzbedarf und bestimmte Maschinen.
@@ -862,6 +861,11 @@ kubectl describe pod -l app=chromium -n k8s-training | grep "QoS Class"
 kubectl describe pod -l app=code-server -n k8s-training | grep "QoS Class"
 ```
 
+```powershell
+kubectl describe pod -l app=chromium -n k8s-training | Select-String "QoS Class"
+kubectl describe pod -l app=code-server -n k8s-training | Select-String "QoS Class"
+```
+
 3. Zeige den Ressourcenverbrauch:
 
 ```bash
@@ -877,6 +881,18 @@ kubectl describe pod test-pod -n k8s-training | grep -A 6 "Limits"
 kubectl delete pod test-pod -n k8s-training
 ```
 
+```powershell
+kubectl run test-pod --image=nginx:1.27 -n k8s-training
+kubectl describe pod test-pod -n k8s-training | Select-String "Limits" -Context 0,6
+kubectl delete pod test-pod -n k8s-training
+```
+
+**Erwartetes Ergebnis:** Der Pod hat keine eigenen `resources`-Angaben, bekommt aber trotzdem
+Limits und Requests zugewiesen – Bsp. `cpu: 500m` / `memory: 512Mi` als Limits und
+`cpu: 250m` / `memory: 256Mi` als Requests. Die LimitRange greift als **Sicherheitsnetz**
+auf Namespace-Ebene: Jeder Pod bekommt automatisch Defaults, auch wenn das Manifest keine
+Angaben enthält. So wird verhindert, dass jemand vergisst, Ressourcen zu begrenzen.
+
 5. Bring chromium zum Absturz, indem du 2-3 4k videos auf einmal abspielst. Prüfe die Logs und den Pod-Status. Was passiert?
 
 ## Health Checks
@@ -887,11 +903,31 @@ eines Containers und lösen automatische Aktionen aus, wenn etwas nicht stimmt.
 
 ### Probe-Typen
 
+Stell dir ein Logistik-Unternehmen vor: Ein LKW-Fahrer liefert Pakete aus. Kubernetes ist
+der Disponent, der sicherstellt, dass alles rund läuft.
+
+- **Liveness Probe** – *"Lebt der Fahrer noch?"*  
+  Der Disponent ruft alle paar Minuten an. Geht keiner ran, schickt er einen Ersatzfahrer
+  (Container-Neustart). Der Fahrer kann aber auch einfach kurz auf der Toilette sein –
+  erst nach mehreren vergeblich Versuchen wird ersetzt.
+
+- **Readiness Probe** – *"Kann der Fahrer gerade ein Paket annehmen?"*  
+  Der Fahrer ist im Stau → kein Paket annehmen → Disponent gibt die Tour an einen anderen
+  Fahrer (Pod aus Service-Endpoints entfernt). Ist der Stau vorbei, wird er wieder
+  eingeplant.
+
+- **Startup Probe** – *"Hat der Fahrer den LKW beladen und die Route gecheckt?"*  
+  Vor der ersten Tour fragt der Disponent: "Bist du startklar?" Erst wenn "Ja" kommt,
+  beginnen die regelmäßigen Liveness/Readiness-Checks. Ein LKW, der noch belädt, soll
+  nicht ständig angerufen werden.
+
 | Probe               | Frage                                 | Aktion bei Fehlschlag                      |
 | ------------------- | ------------------------------------- | ------------------------------------------ |
 | [**Liveness Probe**](/docs/kubernetes-basis/90-glossar#liveness-probe)  | Läuft die Anwendung noch?             | Container wird neu gestartet               |
 | [**Readiness Probe**](/docs/kubernetes-basis/90-glossar#readiness-probe) | Kann die Anwendung Traffic empfangen? | Pod wird aus Service-Endpoints entfernt    |
 | [**Startup Probe**](/docs/kubernetes-basis/90-glossar#startup-probe)   | Ist die Anwendung fertig gestartet?   | Liveness/Readiness pausiert bis Startup OK |
+
+
 
 ### Probe-Mechanismen
 
@@ -927,13 +963,12 @@ abstürzen. Das hat weitreichende Folgen für Liveness Probes:
 
 **Konsequenz für Liveness Probes:** Bei Linuxserver-Images ist eine Liveness Probe oft **wirkungslos**
 für den Auto-Restart-Fall — s6 ist schneller. Die Probe greift erst, wenn der gesamte Container
-hängt (Prozess lebt, aber antwortet nicht). Das ist kein Fehler, sondern gewollte Robustheit:
-Linuxserver-Images sind für den Heimgebrauch konzipiert, wo ein Container möglichst nie sterben soll.
+hängt (Prozess lebt, aber antwortet nicht). Das ist kein Fehler, sondern gewollte Robustheit.
 
 ### Übung: Falschen Port testen
 
 Ändere in deinem `chromium-deployment.yaml` den Port der Liveness Probe auf einen nicht
-existierenden Port (z. B. `3044`) und wende das Manifest an. Beobachte, was passiert:
+existierenden Port (Bsp. `3044`) und wende das Manifest an. Beobachte, was passiert:
 
 ```bash
 kubectl apply -f chromium-deployment.yaml
@@ -950,7 +985,11 @@ Jetzt konfigurieren wir Probes für unsere beiden Anwendungen. Chromium und Code
 unterschiedliche Startzeiten -- Chromium ist speicher- und renderingintensiv und braucht beim Start
 deutlich länger als Code-Server. Die Probe-Konfiguration muss das berücksichtigen, sonst markiert
 Kubernetes neue Container zu früh als "ungesund" und startet sie endlos neu. Wir erweitern die
-bestehenden YAML-Manifeste um `startupProbe`, `livenessProbe` und `readinessProbe`.
+bestehenden YAML-Manifeste um `startupProbe`, `livenessProbe` und `readinessProbe`. 
+<br/>
+<Notice type="info">
+Chromium wird hier vorgegeben, experimentiere mit Code-Server.
+</Notice>
 
 ### Chromium Probes
 
@@ -1004,8 +1043,24 @@ kubectl get pods -n k8s-training
 kubectl get endpointslices -n k8s-training -o wide
 ```
 
+<br/>
+
+<Notice type="info">
+
+**💡 Was sind EndpointSlices?**  
+Ein Service in Kubernetes verteilt Traffic auf mehrere Pods. Damit der Service weiß, welche
+Pods gerade erreichbar sind, verwaltet er eine Liste von IPs + Ports – die Endpoints.
+`EndpointSlices` sind die moderne Version davon: Sie gruppieren diese Liste in überschaubare
+Blöcke (Slices) und aktualisieren sie live. Sobald eine Readiness Probe fehlschlägt, entfernt
+Kubernetes den Pod aus den EndpointSlices – der Service leitet dann keinen Traffic mehr an
+diesen Pod. Der Pod selbst läuft weiter, er bekommt nur keine Anfragen mehr.
+
+</Notice>
+
+<br/>
+
 2. **Falschen Port eintragen** — Ändere in `chromium-deployment.yaml` den Port der
-   `readinessProbe` von `3000` auf einen nicht existierenden Port, z. B. `3005`:
+   `readinessProbe` von `3000` auf einen nicht existierenden Port, Bsp. `3005`:
 
 ```yaml
           readinessProbe:
@@ -1028,13 +1083,16 @@ Du siehst jetzt **zwei Pods**:
 - Der **neue Pod** (`1/2` Ready) — Chromium ist nicht Ready, weil die Probe auf Port 3005
   fehlschlägt. Der Vector-Container läuft trotzdem (daher `1/2`).
 
-4. **Endpoints prüfen** — Der neue Pod taucht **nicht** in den Endpoints auf:
+4. **Endpoints prüfen** — Der neue Pod hat `1/2` Ready (nur Vector läuft, Chromium ist nicht
+   Ready). Trotzdem taucht seine IP bereits im EndpointSlice auf, weil der Service Traffic
+   an den Pod sendet, solange mindestens ein Container bereit ist:
 
 ```bash
 kubectl get endpointslices -n k8s-training -o wide
 ```
 
-Nur die IP des alten Pods ist eingetragen. Der neue Pod bekommt keinen Traffic.
+Der EndpointSlice enthält beide IPs – den alten Pod (`2/2`) und den neuen (`1/2`).
+Der neue Pod bekommt also Traffic, obwohl Chromium selbst noch nicht bereit ist.
 
 5. **Port korrigieren** — Setze den Port in der `readinessProbe` zurück auf `3000` und deploye
    erneut:
@@ -1084,10 +1142,25 @@ Anwendungstyp wählen kannst.
 
 ### Vergleich
 
+Stell dir eine Logistik-Flotte vor: Du hast 10 LKWs und bekommst 10 neue Modelle.
+Wie tauschst du sie aus?
+
+- **RollingUpdate** – *"Einer raus, einer rein."*  
+  Du schickst LKW für LKW in die Werkstatt. Während LKW 1 umgerüstet wird, fahren die
+  anderen 9 weiter. Ist LKW 1 fertig, kommt LKW 2 dran. Der Fuhrpark bleibt jederzeit
+  zu 90% einsatzbereit – keine Tour fällt aus.
+
+- **Recreate** – *"Alle in die Werkstatt, dann alle neu."*  
+  Du holst alle 10 LKWs auf einmal in die Werkstatt. Erst wenn alle umgerüstet sind,
+  gehen sie wieder auf Tour. Kurze Auszeit, aber dafür ist die Umstellung einfacher –
+  ideal, wenn alte und neue LKWs nicht auf derselben Strecke fahren dürfen.
+
 | Strategie         | Verhalten                                    | Ausfallzeit | Einsatz                                               |
 | ----------------- | -------------------------------------------- | ----------- | ----------------------------------------------------- |
 | [**RollingUpdate**](/docs/kubernetes-basis/90-glossar#rollingupdate) | Pods werden schrittweise ersetzt             | Keine       | Standard, Produktion                                  |
 | **Recreate**      | Alle alten Pods beendet, dann neue gestartet | Kurz        | Wenn alte + neue Version nicht parallel laufen können |
+
+
 
 ### Konfiguration
 
@@ -1123,7 +1196,7 @@ kubectl rollout status deployment/chromium -n k8s-training
 ### ReplicaSets
 
 ```bash
-kubectl get replicasets -l app=chromium -n k8s-training
+kubectl get replicasets -l app=chromium -n k8s-training -o wide
 ```
 
 Es gibt jetzt zwei ReplicaSets -- das alte (0 Replicas) und das neue (1 Replica). Das alte wird für
@@ -1159,12 +1232,6 @@ kubectl rollout status deployment/chromium -n k8s-training
 kubectl rollout history deployment/chromium -n k8s-training
 ```
 
-Zu einer bestimmten Revision zurückrollen:
-
-```bash
-kubectl rollout undo deployment/chromium --to-revision=1 -n k8s-training
-```
-
 ### Skalierung
 
 ```bash
@@ -1176,8 +1243,11 @@ kubectl get pods -l app=chromium -n k8s-training
 kubectl scale deployment/chromium --replicas=1 -n k8s-training
 kubectl get pods -l app=chromium -n k8s-training
 ```
-
-
+<br/>
+<Notice type="info">
+Nicht ungedulig werden, das kann eine Weile dauern, bis die Pods hoch- oder runtergefahren sind. Mit `kubectl get pods -w` kannst du live beobachten, wie die Pods erstellt und terminiert werden.
+</Notice>
+<br/>
 ## PVs & PVCs
 
 Container-Dateisysteme sind flüchtig -- stirbt ein Pod, sind alle Daten weg. Für Anwendungen
@@ -1354,6 +1424,12 @@ Schritt-für-Schritt-Anleitung. Du bekommst nur die Anforderungen und musst selb
 die YAML-Manifeste schreiben und anwenden. Nutze bei Fragen `kubectl explain` oder blättere
 in den vorherigen Kapiteln.
 
+<br/>
+<Notice type="info">
+Einer der Teilnehmer teilt seinen Bildschirm und zeigt live, wie er die Aufgabe löst. Du kannst dich daran orientieren, aber versuche, die Lösung selbst zu erarbeiten. 
+</Notice>
+<br/>
+
 ### Aufgabe
 
 Deploye **MariaDB** und **phpMyAdmin** in den Namespace `k8s-training`. Die beiden Container
@@ -1389,6 +1465,8 @@ Deine Lösung muss folgende Konzepte aus Tag 1 und Tag 2 abdecken:
 - [ ] **Health Checks** – StartupProbe, LivenessProbe, ReadinessProbe (jeweils auf Port `80` für phpMyAdmin)
 - [ ] **RollingUpdate-Strategie** (`maxSurge: 1`, `maxUnavailable: 0`)
 - [ ] **Multi-Container Pod** – MariaDB + phpMyAdmin teilen sich `localhost`
+- [ ] **Ingress route** – PhpMyAdmin ist über eine Ingress-Route erreichbar
+
 
 ### Tipps
 
@@ -1423,7 +1501,7 @@ kubectl get pvc -n k8s-training
 
 ### Persistenz-Test
 
-1. Öffne phpMyAdmin im Browser (`http://<Node-IP>:3xxxx`)
+1. Öffne phpMyAdmin im Browser
 2. Logge dich mit `root` / `trainingk8s` ein
 3. Erstelle eine neue Datenbank (z. B. `testdb`) und eine Tabelle
 4. Lösche den Pod: `kubectl delete pod -l app=database -n k8s-training`
@@ -1439,6 +1517,12 @@ Bei MariaDB + phpMyAdmin ist das anders: phpMyAdmin **braucht** eine laufende Ma
 sonst zeigt es nur eine Fehlerseite. Ein Init-Container löst das: Er läuft **vor** den
 App-Containern und blockiert so lange, bis MariaDB bereit ist. Erst dann starten
 phpMyAdmin (und MariaDB neu – aber die ist ja schon da).
+
+<br/>
+<Notice type="info">
+Einer der Teilnehmer teilt seinen Bildschirm und zeigt live, wie er die Aufgabe löst. Du kannst dich daran orientieren, aber versuche, die Lösung selbst zu erarbeiten. 
+</Notice>
+<br/>
 
 > **Erinnerung:** Init-Container wurden weiter oben im Kapitel [Init-Container](#init-container)
 > bereits vorgestellt. Dort gab es ein Beispiel mit `busybox` und `nslookup`. Hier setzen wir
