@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-server
+  namespace: kw-b2824a-default
+  labels:
+    app: code-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-server
+  template:
+    metadata:
+      labels:
+        app: code-server
+    spec:
+      containers:
+        - name: code-server
+          image: lscr.io/linuxserver/code-server:latest
+          ports:
+            - containerPort: 8443
+          envFrom:                          # ConfigMap als Umgebungsvariablen
+            - configMapRef:
+                name: code-server-config
+          env:
+            - name: PASSWORD    
+              valueFrom:
+                secretKeyRef:
+                  name: code-server-secret
+                  key: PASSWORD
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: code-server-config

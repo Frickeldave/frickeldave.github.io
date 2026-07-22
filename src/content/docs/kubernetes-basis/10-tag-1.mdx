@@ -3,14 +3,17 @@ visible: true
 title: 10 Tag 1
 description: "Grundlagen, erste Deployments mit Chromium und Code-Server."
 draft: false
-image: "@assets/docs/kubernetes-basis/knba-10-001.png"
+image: "@assets/docs/kubernetes-basis/knba-10-000_header.png"
 imageAlt: "Kubernetes Basis - 10 Tag 1"
 ---
 
 import { Image } from "astro:assets";
-import knba10002 from "@assets/docs/kubernetes-basis/knba-10-002.png";
-import knba10003 from "@assets/docs/kubernetes-basis/knba-10-003.png";
-import knba10004 from "@assets/docs/kubernetes-basis/knba-10-004.png";
+import knba10010 from "@assets/docs/kubernetes-basis/knba-10-010_why-and-why-not-k8s.png";
+import knba10020 from "@assets/docs/kubernetes-basis/knba-10-020_cluster-architecture.png";
+import knba10030 from "@assets/docs/kubernetes-basis/knba-10-030_labels.png";
+import knba10040 from "@assets/docs/kubernetes-basis/knba-10-040_service.png";
+import knba10042 from "@assets/docs/kubernetes-basis/knba-10-042_service-im-cluster.png";
+import knba10090 from "@assets/docs/kubernetes-basis/knba-10-090_conclusion.png";
 import Notice from "@shortcodes/Notice";
 
 ## Grundlagen & Einstieg
@@ -59,7 +62,7 @@ wiederholbaren Betriebsstandard, egal ob on-premises, in der Cloud oder im Hybri
 
 ### Wann kein Kubernetes?
 
-<Image src={knba10004} alt="Why not Kubernetes * Erstellt mit Microsoft Copilot" />
+<Image src={knba10010} alt="Why not Kubernetes * Erstellt mit Microsoft Copilot" />
 
 Kubernetes ist nicht immer die richtige Wahl. Für einfache Webanwendungen, monolithische Systeme
 oder kleine Projekte mit nur einem oder wenigen Containern ist der Betriebsaufwand oft
@@ -122,7 +125,7 @@ Empfänger (Produktion) -- zuverlässig, automatisch und mit Self-Healing bei Pr
 
 ### Cluster-Architektur
 
-<Image src={knba10002} alt="Kubernetes Architektur * Erstellt mit Microsoft Copilot" />
+<Image src={knba10020} alt="Kubernetes Architektur * Erstellt mit Microsoft Copilot" />
 
 Ein Kubernetes-Cluster besteht aus zwei Bereichen: der **Control Plane**, die das gesamte Cluster
 steuert, und den **Worker Nodes**, auf denen die Anwendungen tatsächlich laufen. Alle Komponenten
@@ -159,6 +162,63 @@ Es gibt weitere optionale Komponenten, die Kubernetes erweitern, aber nicht imme
 - **Ingress Controller** — Verwaltet Routing zu Services (elegantere Alternative zu NodePort)
 - **Metrics Server** — Sammelt CPU- und Memory-Metriken von Nodes und Pods (nötig für `kubectl top` und Autoskalierung)
 - **Dashboard** — Web-UI zur Verwaltung des Clusters
+
+### Analogie Logistikunternehmen
+
+Um die Kubernetes-Architektur besser zu verstehen, betrachten wir eine Analogie zu einem Logistikunternehmen, das Pakete weltweit ausliefert:
+
+**Kubernetes-Cluster = Logistikunternehmen**
+Ein ganzes Logistikunternehmen mit allen Niederlassungen, Fahrzeugen und Mitarbeitern entspricht einem Kubernetes-Cluster mit allen seinen Komponenten.
+
+**Control Plane = Zentrale Geschäftsleitung**
+Die Geschäftsleitung eines Logistikunternehmens trifft alle wichtigen Entscheidungen: Wo werden neue Pakete gesammelt? Wie viele Lieferungen gehen wo hin? Was passiert bei Engpässen oder Ausfällen? In Kubernetes übernimmt die Control Plane exakt diese Planungs- und Steuerungsaufgaben.
+
+**Worker Nodes = Regionallager und Transportfahrzeuge**
+Die physischen Standorte, in denen Pakete zwischengespeichert und von wo aus sie ausgeliefert werden, entsprechen den Worker Nodes. Jedes Regionallager (Node) verfügt über eigene Ressourcen: Mitarbeiter (CPU), Lagerraum (Speicher), Transportkapazitäten (Netzwerk) und Verpackungsmaterial (Container Runtime).
+
+**Pods = Pakete**
+Die kleinsten Einheiten der Arbeit in Kubernetes sind Pods – sie entsprechen den Paketen im Logistikunternehmen. Jedes Paket/Pod enthält einen oder mehrere Artikel/Komponenten (Container), die zusammen gehören und gemeinsam transportiert/ausgeführt werden.
+
+**Deployments = Frachtaufträge**
+Ein Frachtauftrag beschreibt, wie viele Exemplare einer Ware an verschiedene Orte geliefert werden sollen. Genauso legt ein Deployment fest, wie viele Pods (gleichartige "Pakete") in welcher Konfiguration über das Cluster verteilt werden sollen. Der Dispatcher (kube-controller-manager) stellt sicher, dass immer die vereinbarte Anzahl Pakete unterwegs ist.
+
+**Services = Hotline-Nummern**
+Eine Service-Hotline in einem Logistikunternehmen ist immer erreichbar, egal welcher Mitarbeiter gerade den Anruf entgegennimmt. Genauso bietet ein Kubernetes-Service eine stabile IP-Adresse und einen Port, über den Clients immer mit der Anwendung kommunizieren können – unabhängig davon, auf welchem Node aktuell welche Pods laufen.
+
+**Labels = Adress-Etiketten**
+Jedes Paket erhält Etiketten mit wichtigen Informationen: Zielort, Dringlichkeit, Empfängergruppe. In Kubernetes sind Labels solche Metadaten, die es erlauben, Ressourcen zu organisieren, auszuwählen und miteinander zu verknüpfen. Ein Service nutzt Labels, um zu wissen, welche Pods zu ihm gehören – wie eine Hotline anhand der Abteilungskennung den richtigen Kollegen ruft.
+
+**Ingress Controller = Empfang und Zentrale Telefonanlage**
+Der Empfang eines Unternehmens nimmt externe Anrufe entgegen und leitet sie an die richtige interne Durchwahl weiter. Ein Ingress Controller macht dasselbe für Webanfragen: Er empfängt externen Traffic und leitet ihn gemäß festgelegter Regeln an die entsprechenden Services im Cluster.
+
+### Kubernetes-Komponenten im Logistik-Unternehmen
+
+**kube-apiserver = Hauptsitz / Zentrale**
+Der kube-apiserver ist das Hauptgebäude des Logistikunternehmens, in dem alle Anfragen eingehen und von wo aus alle Anweisungen ausgehen. Jeder Mitarbeiter (ob Fahrer, Lagerist oder Manager) muss sich hier anmelden, bevor er etwas tun kann. Alle Kommunikation läuft über diesen zentralen Knotenpunkt.
+
+**etcd = Archiv / Hauptdatenbank**
+Die etcd ist das riesige Archiv des Unternehmens, in dem alle wichtigen Informationen gespeichert sind: Wer hat welche Pakete bekommen? Welche Routen sind verfügbar? Wer ist gerade im Urlaub? Diese Datenbank ist so wichtig, dass sie mehrfach gesichert wird - vergleichbar mit mehreren identischen Archiven an verschiedenen Standorten.
+
+**kube-scheduler = Verkehrsleitzentrale / Disposition**
+Die kube-scheduler fungiert wie die Disposition im Logistikunternehmen. Wenn neue Pakete ankommen, entscheidet sie, welcher LKW (Node) das Paket am besten transportieren kann, basierend auf Faktoren wie Auslastung, Entfernung und Spezialanforderungen.
+
+**kube-controller-manager = Qualitätsmanagement / Prozessüberwacher**
+Der kube-controller-manager ist wie das Qualitätsmanagement, das kontinuierlich prüft, ob alles nach Plan läuft. Wenn ein Paket nicht rechtzeitig ankommt oder ein LKW ausfällt, springt er ein und sorgt dafür, dass der ursprüngliche Zustand wiederhergestellt wird - z. B. indem er einen neuen LKW losschickt.
+
+**CoreDNS = Telefonvermittlung / Adressbuch**
+CoreDNS ist wie die zentrale Telefonvermittlung mit einem riesigen Adressbuch. Wenn ein Mitarbeiter Kontakt mit einer anderen Abteilung aufnehmen will, ruft er die Vermittlung an und bekommt die aktuelle Durchwahl - egal ob sich die Mitarbeiter gerade im Büro oder unterwegs befinden.
+
+**kubelet = Regionalmanager / Standortleiter**
+Auf jedem Node gibt es einen kubelet, der wie ein Regionalmanager arbeitet. Er empfängt Anweisungen von der Zentrale und sorgt dafür, dass im jeweiligen Regionallager (Node) alles ordnungsgemäß abläuft: Pakete werden entgegengenommen, Mitarbeiter arbeiten und LKWs fahren los.
+
+**kube-proxy = Sicherheitspersonal / Zugangskontrolle**
+Der kube-proxy ist das Sicherheitspersonal jedes Regionallagers. Er kontrolliert, wer das Lager betreten darf und sorgt dafür, dass Pakete nur an autorisierte Personen weitergeleitet werden. Er führt auch Buch darüber, welche Pakete wo im Lager sind.
+
+**Container Runtime = Verpackungsabteilung / Laderaum**
+Die Container Runtime ist die Verpackungsabteilung, die sich um die korrekte Verpackung und das Laden der Pakete kümmert. Sie stellt sicher, dass jedes Paket (Container) sicher verstaut ist und dass nichts beschädigt wird während des Transports.
+
+
+
 
 ---
 
@@ -298,6 +358,153 @@ einen Namespace zu erstellen. In diesem Fall arbeiten wir in dem Workspace weite
 
 ---
 
+## Labels in Kubernetes
+
+<Image src={knba10030} alt="Labels in Kubernetes * Erstellt mit Microsoft Copilot" />
+
+### Was sind Labels?
+
+**Labels** sind Schlüssel-Wert-Paare, die an Kubernetes-Ressourcen (Pods, Deployments, Services,
+Nodes, …) angehängt werden. Sie sind frei definierbar und haben für Kubernetes selbst keine feste
+Bedeutung -- sie dienen ausschließlich dazu, Ressourcen zu **identifizieren, zu gruppieren und
+auszuwählen**.
+
+```yaml
+metadata:
+  labels:
+    app: chromium
+    environment: training
+    version: "1.0"
+    team: devops
+```
+
+Labels sind **keine Kommentare** -- sie sind maschinenlesbare Metadaten, auf die Kubernetes aktiv
+reagiert.
+
+---
+
+### Warum sind Labels so wichtig?
+
+Labels sind das **Rückgrat der Kommunikation** zwischen Kubernetes-Ressourcen. Ohne Labels würde
+kein Service wissen, welche Pods er ansprechen soll, kein Deployment würde seine eigenen Pods
+erkennen, und kein Monitoring-Tool könnte Ressourcen sinnvoll gruppieren.
+
+Konkret erfüllen Labels drei zentrale Aufgaben:
+
+#### Selektion (Label Selectors)
+
+Der wichtigste Einsatz von Labels ist die **Selektion**: Andere Ressourcen wählen über einen
+*Label Selector* aus, auf welche Pods sie wirken sollen.
+
+| Ressource | Wofür nutzt sie Labels? |
+|---|---|
+| **Service** | Leitet Traffic nur an Pods weiter, deren Labels zum Selector passen |
+| **Deployment** | Verwaltet (und zählt) nur Pods mit passenden Labels |
+| **ReplicaSet** | Stellt sicher, dass genau N Pods mit bestimmten Labels laufen |
+| **NetworkPolicy** | Erlaubt/verbietet Netzwerkverkehr anhand von Pod-Labels |
+| **HorizontalPodAutoscaler** | Skaliert Deployments, die per Label identifiziert werden |
+
+**Beispiel:** Ein Service mit dem Selector `app: chromium` leitet Anfragen ausschließlich an Pods
+weiter, die das Label `app: chromium` tragen -- unabhängig davon, auf welchem Node sie laufen.
+
+```yaml
+# Service
+spec:
+  selector:
+    app: chromium       # <-- trifft alle Pods mit diesem Label
+```
+
+```yaml
+# Pod (muss dieses Label tragen, damit der Service ihn findet)
+metadata:
+  labels:
+    app: chromium
+```
+
+#### Filterung und Abfragen
+
+Labels ermöglichen es, mit `kubectl` gezielt nach Ressourcen zu filtern, ohne alle Objekte
+durchsuchen zu müssen:
+
+```bash
+# Alle Pods mit Label app=chromium anzeigen
+kubectl get pods -l app=chromium
+
+# Pods mit mehreren Bedingungen filtern
+kubectl get pods -l app=chromium,environment=training
+
+# Alle Deployments eines bestimmten Teams
+kubectl get deployments -l team=devops
+```
+
+#### Organisation und Governance
+
+In größeren Umgebungen helfen Labels dabei, den Überblick zu behalten:
+
+- **`app`** – Name der Anwendung
+- **`version`** – Versionsnummer (z. B. für Canary-Deployments)
+- **`environment`** – `dev`, `staging`, `production`
+- **`team`** – Verantwortliches Team
+- **`managed-by`** – Tool, das die Ressource verwaltet (z. B. `helm`)
+
+Viele Tools (Helm, Argo CD, Prometheus, Grafana) verlassen sich auf standardisierte Labels, um
+Ressourcen automatisch zu erkennen und zuzuordnen.
+
+### Labels vs. Annotations
+
+Labels werden häufig mit **Annotations** verwechselt. Der Unterschied ist klar:
+
+| | Labels | Annotations |
+|---|---|---|
+| **Zweck** | Selektion & Gruppierung | Zusatzinformationen (für Menschen/Tools) |
+| **Verwendung in Selectors** | ✅ Ja | ❌ Nein |
+| **Beispiel** | `app: chromium` | `description: "Chromium Browser for Training"` |
+
+> 💡 **Faustregel:** Wenn eine andere Ressource darauf *reagieren* soll → Label. Wenn es nur
+> eine Information *beschreibt* → Annotation.
+
+---
+
+### Labels in der Praxis -- häufige Fehler
+
+> ⚠️ **ACHTUNG** -- Ein sehr häufiger Anfängerfehler: Der Label Selector eines Deployments und
+> die Labels der erzeugten Pods **müssen übereinstimmen**. Stimmen sie nicht überein, erkennt das
+> Deployment seine eigenen Pods nicht und startet immer neue -- bis das Cluster voll ist.
+
+```yaml
+spec:
+  selector:
+    matchLabels:
+      app: chromium     # <-- muss identisch sein mit ...
+  template:
+    metadata:
+      labels:
+        app: chromium   # <-- ... diesem Label
+```
+
+---
+
+### Übung: Labels erkunden
+
+1. Zeige alle Pods im aktuellen Namespace **mit ihren Labels** an:
+   ```bash
+   kubectl get pods --show-labels
+   ```
+2. Filtere Pods nach einem bestimmten Label (z. B. `app=chromium`, sobald wir eines erstellt haben):
+   ```bash
+   kubectl get pods -l app=chromium
+   ```
+3. Füge einem laufenden Pod nachträglich ein Label hinzu:
+   ```bash
+   kubectl label pod <POD-NAME> environment=training
+   ```
+4. Entferne ein Label wieder (Minus-Zeichen am Ende des Schlüssels):
+   ```bash
+   kubectl label pod <POD-NAME> environment-
+   ```
+
+---
+
 ## Chromium deployen
 
 In diesem Block deployen wir einen vollständigen Browser (Chromium) im Cluster -- imperativ, also
@@ -395,6 +602,27 @@ kubectl delete pod <pod-name>
 
 Jetzt machen wir Chromium von außen erreichbar. Wir erstellen einen **NodePort-Service** imperativ.
 
+**Analogie zum Logistikzentrum:**
+
+Stell dir den NodePort-Service wie einen **Anruf im Logistikzentrum** vor:
+
+1. **Externer Kunde** ruft das Logistikzentrum an (dein Browser ruft `Node-IP:3xxxx` auf)
+2. **Außennummer (NodePort)**–Der Kunde wählt die öffentliche Durchwahl 3xxxx (der automatisch zugewiesene NodePort)
+3. **Empfang am Node**–Ein Worker-Node nimmt den Anruf entgegen (kube-proxy auf diesem Node)
+4. **Interne Leitstelle (Service/ClusterIP:4000)**–Der Empfang leitet den Anruf an die zentrale Service-Leitstelle weiter
+5. **Mitarbeiter-Zuweisung (Pod)**–Die Leitstelle sucht sich einen freien Mitarbeiter (einen Pod) aus
+6. **Arbeitsplatz (targetPort=3000)**–Der Mitarbeiter wird an seinem Arbeitsplatz (Container-Port 3000) erreicht
+7. **Rückantwort**–Die Antwort des Mitarbeiters geht über die Leitstelle und den Empfang zurück zum Kunden
+
+
+<br/>
+<Image src={knba10040} alt="Node service Kommunikation im Logistikzentrum * Erstellt mit Microsoft Copilot" />
+
+<br/>
+
+> 💡 **Merke:** Genau wie im Logistikzentrum gibt es eine **stabile Durchwahl** (Service), die immer
+> erreichbar ist–egal welcher Mitarbeiter (Pod) gerade die Anfrage bearbeitet!
+
 <br/>
 
 ```bash
@@ -414,10 +642,6 @@ kubectl expose deployment chromium \
   Bereich 30000-32767
 <br/>
 
-<Image src={knba10003} alt="Node service Kommunikation * Erstellt mit Microsoft Copilot" />
-
-
-<br/>
 
 **Was ist die ClusterIP?**
 
@@ -444,22 +668,41 @@ kubectl get service chromium
 **Ohne ClusterIP** müsste jeder externe Client direkt die Pod-IPs kennen -- die sich aber ständig
 ändern! Die ClusterIP ist der **stabile Vermittler**.
 
-**Analogie zum Logistikzentrum:**
+Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port.
 
-Stell dir den NodePort-Service wie einen **Anruf im Logistikzentrum** vor:
+<Notice type="info">
+  **Vielleicht fragst du dich, wie der Service mit mehreren Pods umgeht und ein Load Balancing macht?**
 
-1. **Externer Kunde** ruft das Logistikzentrum an (dein Browser ruft `Node-IP:3xxxx` auf)
-2. **Außennummer (NodePort)**–Der Kunde wählt die öffentliche Durchwahl 3xxxx (der automatisch zugewiesene NodePort)
-3. **Empfang am Node**–Ein Worker-Node nimmt den Anruf entgegen (kube-proxy auf diesem Node)
-4. **Interne Leitstelle (Service/ClusterIP:4000)**–Der Empfang leitet den Anruf an die zentrale Service-Leitstelle weiter
-5. **Mitarbeiter-Zuweisung (Pod)**–Die Leitstelle sucht sich einen freien Mitarbeiter (einen Pod) aus
-6. **Arbeitsplatz (targetPort=3000)**–Der Mitarbeiter wird an seinem Arbeitsplatz (Container-Port 3000) erreicht
-7. **Rückantwort**–Die Antwort des Mitarbeiters geht über die Leitstelle und den Empfang zurück zum Kunden
+  Gute Frage! Die Antwort ist: **Der Service verteilt eingehende Anfragen automatisch per Round-Robin auf alle Pods, die zu seinem Label Selector passen** -- und zwar völlig transparent für den Client.
 
-> 💡 **Merke:** Genau wie im Logistikzentrum gibt es eine **stabile Durchwahl** (Service), die immer
-> erreichbar ist–egal welcher Mitarbeiter (Pod) gerade die Anfrage bearbeitet!
+  **Wie funktioniert das genau?**
 
-Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port:
+  1. **kube-proxy auf jedem Node** überwacht ständig den API-Server und erfährt so, welche Pods zu welchem Service gehören und welche IP-Adressen sie haben.
+  2. **iptables/IPVS-Regeln** werden von kube-proxy auf jedem Node geschrieben. Diese Regeln sagen: "Wenn ein Paket an die ClusterIP:Port des Services geht, leite es per Zufall (Round-Robin) an eine der Pod-IPs weiter."
+  3. **Der Client merkt nichts davon** -- er spricht nur die ClusterIP an und bekommt eine Antwort, ohne zu wissen, welcher Pod tatsächlich geantwortet hat.
+
+  **Beispiel:** Dein Chromium-Service hat 3 Replicas (`replicas: 3`). Drei Clients rufen gleichzeitig `http://<ClusterIP>:4000` auf:
+
+  - Client 1 → Pod A (Chromium #1)
+  - Client 2 → Pod B (Chromium #2)
+  - Client 3 → Pod C (Chromium #3)
+  - Client 4 → Pod A (wieder von vorne)
+
+  **Wichtig zu wissen:**
+  - Der Service verteilt **nur neue Verbindungen** (TCP-Verbindungen). Eine einmal aufgebaute Verbindung bleibt bei demselben Pod.
+  - Fällt ein Pod aus, entfernt kube-proxy ihn automatisch aus der Rotation -- neue Anfragen gehen nur noch an die verbleibenden Pods.
+  - Der Service hat **kein Wissen über die Auslastung** der einzelnen Pods. Er verteilt einfach gleichmäßig, ohne zu prüfen, ob ein Pod gerade stark belastet ist. Dafür gibt es dann den **HorizontalPodAutoscaler** (kommt später).
+
+  **Analogie zum Logistikzentrum:** Stell dir vor, die Service-Hotline hat mehrere Mitarbeiter (Pods), die alle denselben Anruf entgegennehmen können. Die Telefonanlage (kube-proxy) nimmt den Anruf entgegen und leitet ihn an den nächsten freien Mitarbeiter weiter -- ohne dass der Anrufer weiß, wer gerade dran ist. Fällt ein Mitarbeiter aus (Pod stirbt), wird er einfach nicht mehr angerufen.
+</Notice>
+
+Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port.
+
+
+<br/>
+<Image src={knba10042} alt="Node service Kommunikation * Erstellt mit Microsoft Copilot" />
+
+<br/>
 
 Nun musst du 3 Dinge tun, um deinen Container zu erreichen: 
 
@@ -481,11 +724,13 @@ Wir basteln uns nun einen kleinen Container im Cluster, von dem aus wir den Chro
 kubectl run -it --rm debug --image=alpine:latest -- sh
 apk add curl
 curl -L http://chromium:4000
-wget -qO- http://<Node-IP>:<NodePort>
+curl -L http://<Node-IP>:<NodePort>
 exit
 ```
 
 Den chromium erreichbar machen, machen wir zum Problem vom "Später-Ich".
+
+
 
 ### Konfiguration nachbessern
 
@@ -515,7 +760,7 @@ Prüfe, ob die Umgebungsvariablen erfolgreich gesetzt wurden:
 
 ```bash
 # Alle Umgebungsvariablen des Deployments anzeigen
-kubectl exec <pod-name> -- env | grep -E "PUID|PGID|TZ"
+kubectl exec <pod-name> -- env"
 
 # Erwartete Ausgabe:
 # PUID=1000
@@ -872,6 +1117,12 @@ kubectl create ingress code-server-ingress --rule="code-server-*.*.com/*=code-se
 kubectl patch ingress code-server-ingress --type=merge -p '{"spec":{"ingressClassName":"nginx"}}'
 ```
 
+<Notice type="info">
+  **Gateway API – der Nachfolger von Ingress**
+
+  Die klassische `Ingress`-Ressource (mit `ingressClassName: nginx`) funktioniert gut, gilt aber inzwischen als **veraltet im Design**. Der moderne Nachfolger ist die **Gateway API** (`gateway.networking.k8s.io`). Sie ist flexibler, rollenbasierter und löst die monolithische Ingress-Ressource in mehrere spezialisierte Ressourcen auf (`Gateway`, `HTTPRoute`, `TLSRoute`, …). Für den Einstieg reicht Ingress völlig aus – wer aber produktive, komplexe Routing-Szenarien baut, sollte sich die Gateway API ansehen.
+</Notice>
+
 #### Deklarativ
 
 Die YAML-Datei für die bestehende chromium route lässt sich wie folgt auslesen: 
@@ -908,6 +1159,21 @@ spec:
 ```bash
 kubectl apply -f code-server-ingress.yaml
 ```
+<br/>
+<Notice type="info">
+  **Warum mehrere kleine YAML-Dateien statt einer riesigen?**
+
+  Du könntest natürlich Deployment, Service und Ingress für eine Anwendung in eine einzige YAML-Datei packen (mit `---` getrennt). In der Praxis hat sich aber gezeigt, dass **eine Datei pro Ressource** die bessere Wahl ist:
+
+  - **Weniger Git-Konflikte** – Wenn zwei Teammitglieder gleichzeitig am Deployment und am Service arbeiten, gibt es nur einen Konflikt, wenn beide in derselben Datei ändern. Bei getrennten Dateien passiert das nicht.
+  - **Geringerer Token-Verbrauch** – KI-Tools und Code-Reviewer müssen nur die Datei lesen, die gerade relevant ist, nicht die ganze App-Konfiguration auf einmal.
+  - **Bessere Lesbarkeit** – Eine Datei = eine Ressource = eine Aufgabe. Das macht Review und Fehlersuche einfacher.
+  - **Flexiblere Deployment-Strategie** – Du kannst z. B. den Service neu anwenden, ohne das Deployment zu berühren, oder nur den Ingress aktualisieren.
+  - **Einfachere Automatisierung** – CI/CD-Pipelines können einzelne Ressourcen gezielt deployen, wenn sich nur eine Datei geändert hat.
+  - **Wiederverwendbarkeit** – Der Service manifestiert sich unabhängig vom Deployment und kann leichter in andere Projekte oder Umgebungen übernommen werden.
+
+  **Faustregel:** Eine YAML-Datei pro Kubernetes-Ressource (Deployment, Service, Ingress, ConfigMap, …). Das hält alles sauber getrennt und erleichtert die Arbeit im Team.
+</Notice>
 
 ### Status prüfen
 
@@ -918,6 +1184,11 @@ kubectl get ingress
 Nach dem Anlegen ist der Code-Server unter der angegebenen Host-URL erreichbar – z. B. `code-server-*.*.com`.
 
 ## Zusammenfassung
+
+<br/>
+<Image src={knba10090} alt="Zusammenfassung * Erstellt mit Microsoft Copilot" />
+
+<br/>
 
 Wir räumen heute bewusst **nicht** auf! Die Deployments bleiben für Tag 2 bestehen.
 

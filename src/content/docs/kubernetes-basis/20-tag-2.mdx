@@ -3,13 +3,21 @@ visible: true
 title: 20 Tag 2
 description: "Resources, Probes, Persistent Volumes, Ingress -- die komplette Plattform."
 draft: false
-image: "@assets/docs/kubernetes-basis/knba-20-001.png"
+image: "@assets/docs/kubernetes-basis/knba-20-000_header.png"
 imageAlt: "Kubernetes Basis - 20 Tag 2"
 ---
 
 import Notice from "@shortcodes/Notice";
 import { Image } from "astro:assets";
-import knba20002 from "@assets/docs/kubernetes-basis/knba-20-002.png";
+import knba20010 from "@assets/docs/kubernetes-basis/knba-20-010_init-and-sidecar-container.png";
+import knba20011 from "@assets/docs/kubernetes-basis/knba-20-011_init-and-sidecar-container-logistic.png";
+import knba20020 from "@assets/docs/kubernetes-basis/knba-20-020_requests-and-limits.png";
+import knba20021 from "@assets/docs/kubernetes-basis/knba-20-021_qos-classes.png";
+import knba20030 from "@assets/docs/kubernetes-basis/knba-20-030_heath-checks.png";
+import knba20040 from "@assets/docs/kubernetes-basis/knba-20-040_rolling-update-recreate.png";
+import knba20050 from "@assets/docs/kubernetes-basis/knba-20-050_pvs-and-pvcs.png";
+import knba20080 from "@assets/docs/kubernetes-basis/knba-20-080-mariadb-phpmyadmin.png";
+import knba20090 from "@assets/docs/kubernetes-basis/knba-20-090-conclusion.png";
 
 ## Workloads & Networking
 
@@ -37,8 +45,6 @@ MariaDB und phpMyAdmin mit persistentem Speicher.
 | 15:30 – 16:15  | Persistent Volumes   | PVCs + MariaDB + phpMyAdmin deployen       |
 | 16:15 – 17:15  | Ingress              | Services, DNS, Host-basiertes Routing      |
 | 17:15 – 17:30  | Abschluss            | Zusammenfassung + Ausblick                 |
-
----
 
 ## Recap
 
@@ -104,7 +110,7 @@ data:
   PGID: "1000"
   TZ: "Europe/Berlin"
 ```
-
+<br/>
 ```bash
 kubectl apply -f code-server-config-map.yaml
 ```
@@ -143,7 +149,7 @@ spec:
             - name: PASSWORD                # Secret bleibt vorerst hart codiert
               value: "training2024"
 ```
-
+<br/>
 ```bash
 kubectl apply -f code-server-deployment.yaml
 ```
@@ -166,6 +172,22 @@ volumes:
 
 Im Container erscheint dann z. B. die Datei `/etc/config/DEFAULT_WORKSPACE` mit dem Inhalt
 `/config/workspace`. Dieses Pattern werden wir in der Sidecar-Übung direkt anwenden.
+
+
+
+<Notice type="info">
+  **Wird ein Deployment automatisch neu gestartet, wenn sich die ConfigMap ändert?**
+
+  **Nein – und das ist eine häufige Fehlerquelle!** Wenn du eine ConfigMap änderst, die per `envFrom` oder `valueFrom.configMapKeyRef` als Umgebungsvariable eingebunden ist, werden die laufenden Pods **nicht automatisch neu gestartet**. Die Umgebungsvariablen sind zum Zeitpunkt des Pod-Starts eingefroren.
+
+  **Anders bei Volume-Mounts:** Wenn die ConfigMap als Volume eingebunden ist, werden die Dateien im Container **automatisch aktualisiert** (mit einer leichten Verzögerung, meist < 1 Minute). Der Pod muss aber auch dann nicht neu starten – die Anwendung muss die Dateiänderung selbst bemerken oder neu einlesen.
+
+  **Praktische Lösung:** Nach einer ConfigMap-Änderung startest du die Pods manuell neu:
+  ```bash
+  kubectl rollout restart deployment <deployment-name>
+  ```
+  Oder du nutzt Tools wie **Reloader** (externer Controller), der automatisch einen Restart auslöst, wenn sich eine ConfigMap oder ein Secret ändert.
+</Notice>
 
 **Zusammenfassung**
 
@@ -259,7 +281,7 @@ env:
         name: code-server-secret
         key: PASSWORD
 ```
-
+<br/>
 ```bash
 kubectl apply -f code-server-deployment.yaml
 ```
@@ -267,7 +289,6 @@ kubectl apply -f code-server-deployment.yaml
 **Wichtig:** Das Secret muss **im gleichen Namespace** wie der Pod erstellt werden. Bei
 Namespace-Abweichung (z. B. `k8s-prod` statt `k8s-training`) entsprechend anpassen.
 
----
 
 ## Pods und Container-Typen
 
@@ -286,7 +307,34 @@ Konzept wird genutzt, um eng gekoppelte Prozesse gemeinsam zu deployen und zu ve
 **Regel:** Mehrere Container im selben Pod nur, wenn sie eng gekoppelt sind. Ansonsten separate Pods
 verwenden. Die Container EINER App sind hier NICHT eng gekoppelt, sondern nur lose verbunden über Services und Ingress. Daher deployen wir sie in separaten Pods.
 
-<Image src={knba20002} alt="Multiple container pro Pod * Erstellt mit Microsoft Copilot" />
+<Image src={knba20010} alt="Multiple container pro Pod * Erstellt mit Microsoft Copilot" />
+
+
+
+### Analogie: Container-Typen im Logistikunternehmen
+
+Um die unterschiedlichen Container-Typen besser zu verstehen, betrachten wir sie im Kontext eines Logistikunternehmens, das Pakete weltweit ausliefert:
+
+**App-Container = Haupttransportfahrzeug**
+Der App-Container ist wie das Haupttransportfahrzeug (z. B. ein LKW oder Flugzeug), das die eigentliche Fracht zum Zielort liefert. Es ist das Herzstück des Lieferprozesses und führt die Hauptaufgabe aus: das Paket vom Absender zum Empfänger zu bringen. Dieses Fahrzeug ist während der gesamten Fahrt aktiv und sorgt dafür, dass die Sendung ihr Ziel erreicht.
+
+**Init-Container = Vorbereitende Logistikdienste**
+Init-Container entsprechen den notwendigen Vorbereitungsdiensten, die vor jedem Transport stattfinden müssen. Bevor ein Paket überhaupt verschickt werden kann, müssen verschiedene Schritte nacheinander erfolgen:
+- Die Sendung wird am Ursprungsort entgegengenommen und registriert
+- Zollformalitäten werden erledigt
+- Die optimale Route wird berechnet und gebucht
+- Das Transportmittel wird vorbereitet und mit Treibstoff versorgt
+Jeder dieser Schritte muss vollständig abgeschlossen sein, bevor der Haupttransport beginnen kann. Erst wenn alle Init-Container ihre Arbeit erledigt haben, kann der App-Container mit dem eigentlichen Transport beginnen.
+
+**Sidecar-Container = Begleitservices während des Transports**
+Sidecar-Container sind wie die unterstützenden Dienste, die den Haupttransport begleiten und kontinuierlich unterstützen:
+- GPS-Tracking sendet fortlaufend Positionsdaten an die Zentrale
+- Temperaturüberwachung prüft kontinuierlich, ob Kühlbedingungen eingehalten werden
+- Sicherheitsdienste überwachen das Paket auf Manipulationsversuche
+- Kommunikationssysteme halten Kontakt mit der Leitstelle
+Diese Services laufen zeitgleich mit dem Haupttransport und sorgen für Transparenz, Sicherheit und Effizienz, ohne selbst die Fracht zu transportieren.
+
+<Image src={knba20011} alt="Multiple container pro Pod im Logistikunternehmen* Erstellt mit Microsoft Copilot" />
 
 
 ### Init-Container
@@ -368,7 +416,7 @@ data:
       inputs = ["chromium_logs"]
       encoding.codec = "json"
 ```
-
+<br/>
 ```bash
 kubectl apply -f vector-config.yaml
 ```
@@ -554,7 +602,7 @@ data:
       ${WAYLAND} \
        "$@" > >(tee -a ${LOGFILE}) 2>&1
 ```
-
+<br/>
 ```bash
 kubectl apply -f chromium-logging-configmap.yaml
 ```
@@ -572,6 +620,14 @@ Datei `chromium-deployment-sidecar-wrapped.yaml`
 apiVersion: apps/v1
 kind: Deployment
       ...
+spec -> templates -> spec -> containers -> volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+            - name: chromium-logs
+              mountPath: /config/log
+            - name: chromium-logging-script     # NEU: Custom wrapped-chromium
+              mountPath: /usr/bin/wrapped-chromium
+              subPath: wrapped-chromium
       volumes:
         - name: shm
           ...
@@ -580,7 +636,7 @@ kind: Deployment
             name: chromium-logging
             defaultMode: 0755
 ```
-
+<br/>
 ```bash
 kubectl apply -f chromium-deployment.yaml
 ```
@@ -632,6 +688,9 @@ Vector ist nur ein Beispiel. In Produktivumgebungen werden häufig diese Tools a
 
 Stell dir vor, im Logistikzentrum arbeiten mehrere Abteilungen nebeneinander.
 Jede Abteilung hat einen bestimmten Platzbedarf und bestimmte Maschinen.
+
+<Image src={knba20020} alt="Requests und Limits * Erstellt mit Microsoft Copilot" />
+
 
 - **Ohne Absprache** würde eine Abteilung einfach den ganzen Lagerplatz blockieren,
   die Gabelstapler dauerhaft belegen und den Strom für alle anderen verbrauchen.
@@ -705,6 +764,9 @@ Kubernetes rechnet immer binär. Merkregel:
 
 Die QoS-Klasse sagt: "Wie wichtig ist diese Abteilung, wenn der Platz knapp wird?"
 
+<Image src={knba20021} alt="QoS * Erstellt mit Microsoft Copilot" />
+
+
 - **BestEffort** – eine Abteilung, die nie angemeldet hat, wie viel Platz sie braucht.
   Wenn das Lager voll wird, fliegt sie als Erste raus.
 - **Burstable** – eine Abteilung, die 3 Regalreihen reserviert hat, aber bis zu 6 nutzen
@@ -722,8 +784,6 @@ Die QoS-Klasse sagt: "Wie wichtig ist diese Abteilung, wenn der Platz knapp wird
 **Merke:** Je genauer du requests und limits kennst, desto planbarer ist dein Pod.
 `Guaranteed` ist der Königsweg für produktive Workloads – der Pod wird nur evicted,
 wenn es absolut keinen anderen Ausweg mehr gibt.
-
----
 
 ### Resource Limits
 
@@ -769,7 +829,7 @@ spec:
 ```bash
 kubectl apply -f chromium-deployment-res.yaml
 ```
-
+<br/>
 
 ### Resources prüfen
 
@@ -846,10 +906,7 @@ spec:
 ```bash
 kubectl apply -f limitrange.yaml
 ```
-
-```powershell
-kubectl apply -f limitrange.yaml
-```
+<br/>
 
 ### Übung
 
@@ -905,6 +962,9 @@ eines Containers und lösen automatische Aktionen aus, wenn etwas nicht stimmt.
 
 Stell dir ein Logistik-Unternehmen vor: Ein LKW-Fahrer liefert Pakete aus. Kubernetes ist
 der Disponent, der sicherstellt, dass alles rund läuft.
+
+<Image src={knba20030} alt="Health checks * Erstellt mit Microsoft Copilot" />
+
 
 - **Liveness Probe** – *"Lebt der Fahrer noch?"*  
   Der Disponent ruft alle paar Minuten an. Geht keiner ran, schickt er einen Ersatzfahrer
@@ -965,20 +1025,6 @@ abstürzen. Das hat weitreichende Folgen für Liveness Probes:
 für den Auto-Restart-Fall — s6 ist schneller. Die Probe greift erst, wenn der gesamte Container
 hängt (Prozess lebt, aber antwortet nicht). Das ist kein Fehler, sondern gewollte Robustheit.
 
-### Übung: Falschen Port testen
-
-Ändere in deinem `chromium-deployment.yaml` den Port der Liveness Probe auf einen nicht
-existierenden Port (Bsp. `3044`) und wende das Manifest an. Beobachte, was passiert:
-
-```bash
-kubectl apply -f chromium-deployment.yaml
-kubectl get pods -w
-```
-
-Setze den Port danach wieder auf `3000` zurück und deploye erneut.
-
----
-
 ## Probes anwenden
 
 Jetzt konfigurieren wir Probes für unsere beiden Anwendungen. Chromium und Code-Server haben
@@ -1026,6 +1072,7 @@ apiVersion: apps/v1
 - ReadinessProbe (failureThreshold: 1, periodSeconds: 5) — Chromium ist gestartet, aber der Browser hängt gerade (z. B. eine Seite lädt ewig). Die ReadinessProbe schlägt fehl → der Pod fliegt aus den Endpoints → kein Traffic mehr → Chromium kann sich erholen. Der Pod stirbt nicht, er kriegt nur kurz keinen Traffic.
 - LivenessProbe (failureThreshold: 3, periodSeconds: 15) — Chromium ist abgestürzt (Prozess tot, Port antwortet nicht). Nach 3 Fehlschlägen = 45 Sekunden sagt Kubernetes: "Der ist tot" und startet den Container neu.
 <br/>
+
 ```bash
 kubectl apply -f chromium-deployment.yaml
 ```
@@ -1132,8 +1179,6 @@ kubectl delete replicaset <name-des-alten-rs> -n k8s-training
 
 Danach sollte nur noch ein Pod mit `2/2` Ready laufen.
 
----
-
 ## Deploy-Strategien
 
 Wie Kubernetes alte Pods durch neue ersetzt, ist keine Kleinigkeit -- falsch konfiguriert entstehen
@@ -1144,6 +1189,9 @@ Anwendungstyp wählen kannst.
 
 Stell dir eine Logistik-Flotte vor: Du hast 10 LKWs und bekommst 10 neue Modelle.
 Wie tauschst du sie aus?
+
+<Image src={knba20040} alt="Deployment Strategien * Erstellt mit Microsoft Copilot" />
+
 
 - **RollingUpdate** – *"Einer raus, einer rein."*  
   Du schickst LKW für LKW in die Werkstatt. Während LKW 1 umgerüstet wird, fahren die
@@ -1248,6 +1296,7 @@ kubectl get pods -l app=chromium -n k8s-training
 Nicht ungedulig werden, das kann eine Weile dauern, bis die Pods hoch- oder runtergefahren sind. Mit `kubectl get pods -w` kannst du live beobachten, wie die Pods erstellt und terminiert werden.
 </Notice>
 <br/>
+
 ## PVs & PVCs
 
 Container-Dateisysteme sind flüchtig -- stirbt ein Pod, sind alle Daten weg. Für Anwendungen
@@ -1260,6 +1309,9 @@ wie MariaDB ist das keine Option. Persistent Volumes (PVs) und Persistent Volume
 
 Stell dir vor, du betreibst ein Logistiklager mit mehreren Hallen (Nodes). Jede Halle hat
 viel Platz, aber der ist nicht unbegrenzt.
+
+<Image src={knba20050} alt="PVs und PVCs * Erstellt mit Microsoft Copilot" />
+
 
 - **Ohne Persistent Storage** ist jeder Arbeitsauftrag (Pod) ein Einweg-Tisch: Du stellst
   deine Kisten drauf, aber wenn der Auftrag erledigt ist, wird der Tisch weggeworfen –
@@ -1291,6 +1343,24 @@ am Regal – und wenn der Pod weg ist, bleibt das Regal stehen.
 | [**PersistentVolume (PV)**](/docs/kubernetes-basis/90-glossar#persistentvolume)       | Ein Stück Storage im Cluster, bereitgestellt von Admin oder dynamisch |
 | [**PersistentVolumeClaim (PVC)**](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) | Anforderung eines Pods an Storage (Größe, Zugriffsart)                |
 | [**StorageClass**](/docs/kubernetes-basis/90-glossar#storageclass)                | Definiert, wie PVs dynamisch erstellt werden (Provisioner, Parameter) |
+
+### Access Modes
+
+Ein PVC legt fest, **wie** das Volume gemountet werden darf. Das steuert der `accessModes`-Wert:
+
+| Mode     | Ein Pod   | Mehrere Pods auf gleichem Node | Mehrere Nodes |
+| -------- | --------- | ------------------------------ | -------------- |
+| **RWO** (ReadWriteOnce)     | ✅        | ✅                              | ❌              |
+| **RWOP** (ReadWriteOncePod) | ✅        | ❌                              | ❌              |
+| **ROX** (ReadOnlyMany)      | ✅ Lesen  | ✅ Lesen                        | ✅ Lesen        |
+| **RWX** (ReadWriteMany)     | ✅        | ✅                              | ✅              |
+
+**Merke:** `RWO` erlaubt Schreibzugriff nur von Pods auf **einem** Node gleichzeitig (mehrere
+Pods auf demselben Node können trotzdem gleichzeitig schreiben). `RWOP` ist strenger und
+beschränkt den Zugriff auf **genau einen Pod** im gesamten Cluster. `RWX` erlaubt Schreibzugriff
+von beliebig vielen Pods auf beliebig vielen Nodes -- das setzt aber einen Storage-Provider
+voraus, der das unterstützt (z. B. NFS), was bei den meisten Cloud-Blockspeichern nicht der
+Fall ist.
 
 ### Lifecycle
 
@@ -1357,6 +1427,8 @@ spec:
       storage: 1Gi
 ```
 
+
+
 Das Deployment aus Tag 1 (`code-server-deployment.yaml`) bekommt nur eine kleine Änderung:
 Statt `emptyDir: {}` referenzieren wir den PVC. Der Rest bleibt identisch.
 
@@ -1376,7 +1448,7 @@ Statt `emptyDir: {}` referenzieren wir den PVC. Der Rest bleibt identisch.
           persistentVolumeClaim:
             claimName: code-server-config
 ```
-
+<br/>
 ```bash
 kubectl apply -f code-server-pvc.yaml
 kubectl apply -f code-server-deployment-pvc.yaml
@@ -1415,8 +1487,6 @@ kubectl exec $(kubectl get pod -l app=code-server -n k8s-training -o jsonpath='{
 
 **Erkenntnis:** Vorher (Übung "Flüchtigkeit erleben") war die Datei nach dem Pod-Neustart weg -- jetzt, mit PVC, bleibt sie erhalten. PVCs überleben Pod-Neustarts, `emptyDir` nicht.
 
----
-
 ## 🧪 Vertiefung: MariaDB + phpMyAdmin deployen (optional)
 
 Diese Übung ist als **Wiederholung aller Konzepte aus Tag 1 und Tag 2** gedacht – ohne
@@ -1431,6 +1501,9 @@ Einer der Teilnehmer teilt seinen Bildschirm und zeigt live, wie er die Aufgabe 
 <br/>
 
 ### Aufgabe
+
+<Image src={knba20080} alt="Übung: MariaDB und PHPMyAdmin deployen * Erstellt mit Microsoft Copilot" />
+
 
 Deploye **MariaDB** und **phpMyAdmin** in den Namespace `k8s-training`. Die beiden Container
 laufen im **selben Pod** – MariaDB als App-Container, phpMyAdmin als Sidecar. Sie teilen sich
@@ -1507,8 +1580,6 @@ kubectl get pvc -n k8s-training
 4. Lösche den Pod: `kubectl delete pod -l app=database -n k8s-training`
 5. Warte, bis der neue Pod läuft
 6. Lade phpMyAdmin neu – die erstellte Datenbank sollte **noch vorhanden** sein (Dank PVC!)
-
----
 
 ## 🧪 Vertiefung: Init-Container für MariaDB-Wartezeit (optional)
 
@@ -1669,9 +1740,10 @@ starten nie. Kubernetes unternimmt nichts, weil Init-Container **keinen Restart*
 | **Typische Nutzung** | Warten auf Abhängigkeiten, Schema-Migrationen, Dateien vorbereiten |
 | **Image** | Beliebiges Image – muss nicht zum App-Image passen |
 
----
 
 ## Zusammenfassung
+
+<Image src={knba20090} alt="Conclusion * Erstellt mit Microsoft Copilot" />
 
 Tag 2 hat eure Deployments produktionsreif gemacht. Hier der aktuelle Stand im Cluster:
 
@@ -1692,7 +1764,7 @@ kubectl get all -n k8s-training
 | Thema                         | Gelernt                                                       |
 | ----------------------------- | ------------------------------------------------------------- |
 | ConfigMaps & Secrets          | Konfiguration und Passwörter auslagern                        |
-| Multi-Container Pods          | Init-Container, Sidecar-Container (Vector)                    |
+| Multi-Container Pods          | Init-Container (Vorbereitende Logistikdienste), Sidecar-Container (Begleitservices), App-Container (Haupttransportfahrzeug) |
 | Resource Limits               | requests, limits, QoS-Klassen (BestEffort/Burstable/Guaranteed) |
 | Health Checks                 | Startup-, Liveness- und Readiness-Probes                      |
 | Deployment-Strategien         | RollingUpdate vs. Recreate, Rollback, Rollout-Historie        |

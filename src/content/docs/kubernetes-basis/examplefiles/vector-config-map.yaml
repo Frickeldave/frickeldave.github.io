@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-config
+  namespace: kw-b2824a-default
+data:
+  vector.toml: |
+    [sources.chromium_logs]
+      type = "file"
+      include = ["/config/log/*.log"]
+      read_from = "beginning"
+
+    [sinks.console]
+      type = "console"
+      inputs = ["chromium_logs"]
+      encoding.codec = "json"
