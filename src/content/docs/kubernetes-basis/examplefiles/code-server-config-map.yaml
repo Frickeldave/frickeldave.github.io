@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: code-server-config
+  namespace: kw-b2824a-default
+data:
+  DEFAULT_WORKSPACE: "/config/workspace"
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Europe/Berlin"

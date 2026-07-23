@@ -3,14 +3,12 @@ visible: true
 title: 01 Einleitung
 description: Einführung in die 2-tägige Kubernetes Basis Schulung -- was entsteht, für wen sie gedacht ist und wie sie aufgebaut ist.
 draft: false
-image: "@assets/docs/kubernetes-basis/knba-01-001.png"
+image: "@assets/docs/kubernetes-basis/knba-01-000_header.png"
 imageAlt: "Kubernetes Basis - 01 Einleitung"
 ---
 
 import { Image } from "astro:assets";
-import knba01002 from "@assets/docs/kubernetes-basis/knba-01-002.png";
-
-> ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
+import knba01010 from "@assets/docs/kubernetes-basis/knba-01-010_overview.png";
 
 ## Worum geht es?
 
@@ -24,21 +22,30 @@ kommt an Kubernetes nicht vorbei.
 
 ## Was entsteht am Ende?
 
-Am Ende der zwei Tage läuft eine vollständige Plattform mit vier echten Anwendungen im eigenen
-Kubernetes-Cluster -- alle hinter einem gemeinsamen Ingress-Controller erreichbar:
+Am Ende der zwei Tage laufen zwei echte Anwendungen im eigenen Kubernetes-Cluster -- beide hinter
+einem gemeinsamen Ingress-Controller erreichbar:
 
 | Anwendung        | Image                                  | URL                                |
 | ---------------- | -------------------------------------- | ---------------------------------- |
 | Chromium Browser | `lscr.io/linuxserver/chromium`         | chrome.k8s-training.frickeldave.de |
 | Code-Server IDE  | `lscr.io/linuxserver/code-server`      | code.k8s-training.frickeldave.de   |
-| Home Assistant   | `lscr.io/linuxserver/homeassistant`    | ha.k8s-training.frickeldave.de     |
-| Nextcloud        | `lscr.io/linuxserver/nextcloud`        | drive.k8s-training.frickeldave.de  |
 
-<Image src={knba01002} alt="4 Container hinter einem ingress controller" />
-
-Alle Anwendungen stammen von [linuxserver.io](https://www.linuxserver.io/) -- einer Community, die
+Beide Anwendungen stammen von [linuxserver.io](https://www.linuxserver.io/) -- einer Community, die
 standardisierte, gut dokumentierte Docker-Images pflegt. Du erhältst sofort visuelle Web-UIs und
 machst Fortschritte im Cluster direkt sichtbar.
+
+Am zweiten Tag kommt optional eine dritte Anwendung hinzu -- eine echte Datenbank mit
+Web-Administration:
+
+| Anwendung           | Image                             | URL                                     |
+| ------------------- | ---------------------------------- | ---------------------------------------- |
+| MariaDB (Datenbank) | `lscr.io/linuxserver/mariadb`      | -- (nur intern per ClusterIP erreichbar) |
+| phpMyAdmin          | `lscr.io/linuxserver/phpmyadmin`   | phpmyadmin.k8s-training.frickeldave.de   |
+
+Diese Übung ist als **Vertiefung** gedacht und fasst alle Konzepte aus Tag 1 und Tag 2 zusammen --
+inklusive PersistentVolumeClaim, Secret, Init-Container und eigener Ingress-Route.
+
+<Image src={knba01010} alt="2 Container hinter einem ingress controller" />
 
 ## Für wen ist diese Schulung?
 
@@ -53,8 +60,8 @@ Konzepte schrittweise auf.
 
 | Tag   | Schwerpunkt                   | Ergebnis am Tagesende                              |
 | ----- | ----------------------------- | -------------------------------------------------- |
-| [Tag 1](http://localhost:4321/docs/kubernetes-basis/10-tag-1) | Grundlagen & erste Schritte   | Chromium und Code-Server laufen im Cluster         |
-| [Tag 2](http://localhost:4321/docs/kubernetes-basis/20-tag-2) | Produktionsreife & Vernetzung | Alle vier Anwendungen laufen hinter Ingress        |
+| [Tag 1](http://localhost:4321/docs/kubernetes-basis/10-tag-1) | Grundlagen & erste Schritte   | Chromium und Code-Server laufen im Cluster, erreichbar per Ingress |
+| [Tag 2](http://localhost:4321/docs/kubernetes-basis/20-tag-2) | Produktionsreife & Vernetzung | Chromium und Code-Server produktionsreif (Resources, Probes, Rolling Updates, PVC); optional: MariaDB + phpMyAdmin als dritte Anwendung |
 
 <br />
 Weiter: [Lernziele und didaktisches Konzept](02-ziele-methoden)

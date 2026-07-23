@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kw-b2824a-default
-  labels:
-    purpose: kubernetes-schulung

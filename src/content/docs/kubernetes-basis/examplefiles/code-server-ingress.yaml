@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: code-server-ingress
+  namespace: kw-b2824a-default
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: code-server-kw-b2824a.dev001.k8s.adesso-projects.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: code-server
+            port:
+              number: 8443

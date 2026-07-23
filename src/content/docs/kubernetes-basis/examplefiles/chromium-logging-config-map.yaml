@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chromium-logging
+  namespace: kw-b2824a-default
+data:
+  wrapped-chromium: |
+    #!/bin/bash
+
+    BIN=/usr/bin/chromium
+    LOGFILE=/config/log/chromium.log
+
+    # Cleanup
+    if ! pgrep chromium > /dev/null;then
+      rm -f $HOME/.config/chromium/Singleton*
+    fi
+
+    # Wayland check
+    WAYLAND=""
+    if ls -l /dev/dri/* > /dev/null 2>&1; then
+      if pgrep labwc > /dev/null 2>&1; then
+        WAYLAND="--ozone-platform=wayland"
+      fi
+    fi
+
+    # Chromium starten mit Logs in Datei UND stdout
+    ${BIN} \
+      --no-sandbox \
+      --password-store=basic \
+      --simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT' \
+      --start-maximized \
+      --test-type \
+      --user-data-dir \
+      ${WAYLAND} \
+       "$@" > >(tee -a ${LOGFILE}) 2>&1
