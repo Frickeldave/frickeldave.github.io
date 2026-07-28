@@ -11,3 +11,10 @@
 
 - Team aufgesetzt mit Marvel Cinematic Universe Casting
 - Design-System dokumentiert in `docs/20-design-system.md`
+
+## 2026-07-28
+
+- Analyzed OpenSCAD 3D model display options for handmade project
+- Evaluated 5 implementation approaches (exporters, Three.js, Babylon.js, embedded viewers, code display)
+- Recommended hybrid approach: build-time PNG/STL + optional Three.js viewer + code view
+- Deliverable: Structured implementation plan for `Verteilerdose.scad` and related models

@@ -1,0 +1,202 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import type { ScadModel } from "@/types/scad";
+
+export interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+
+const MODELS_JSON_PATH = path.join(
+  process.cwd(),
+  "public/3dmodels/models.json"
+);
+const SCAD_DIR = path.join(
+  process.cwd(),
+  "src/assets/handmade/3dmodels/models"
+);
+
+let model: ScadModel | undefined;
+let scadSource = "";
+let loadError = "";
+
+// Load model metadata from the generated JSON file.
+try {
+  if (fs.existsSync(MODELS_JSON_PATH)) {
+    const raw = fs.readFileSync(MODELS_JSON_PATH, "utf-8");
+    const models: ScadModel[] = JSON.parse(raw);
+    model = models.find((m) => m.id === id);
+  }
+} catch (err) {
+  loadError = err instanceof Error ? err.message : String(err);
+}
+
+// Load the SCAD source file for the collapsible code view.
+try {
+  const scadPath = path.join(SCAD_DIR, `${id}.scad`);
+  if (fs.existsSync(scadPath)) {
+    scadSource = fs.readFileSync(scadPath, "utf-8");
+  }
+} catch {
+  // Source display is optional; ignore read errors gracefully.
+}
+
+// Resolve asset paths to site-root absolute URLs.
+const resolveAssetUrl = (relPath: string): string => {
+  if (!relPath) return "";
+  if (/^https?:\/\//i.test(relPath)) return relPath;
+  return relPath.startsWith("/") ? relPath : `/${relPath}`;
+};
+
+const previewUrl = model ? resolveAssetUrl(model.previewImage) : "";
+const stlUrl = model ? resolveAssetUrl(model.stlFile) : "";
+const displayTitle = model?.title ?? id;
+const titleId = `scad-title-${id}`;
+---
+
+{
+  model ? (
+    <section aria-labelledby={titleId} class="scad-model-display">
+      <div class="glass rounded-lg border border-white/60 p-6 dark:border-white/15">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Preview image */}
+          <figure class="m-0">
+            {previewUrl ? (
+              <div class="overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                <img
+                  src={previewUrl}
+                  alt={`3D-Vorschau: ${displayTitle}`}
+                  class="h-auto w-full object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            ) : (
+              <div class="flex aspect-video flex-col items-center justify-center gap-2 rounded-lg bg-gray-100 p-6 text-center text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                <svg
+                  class="h-10 w-10"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+                <span>Vorschau noch nicht generiert</span>
+                <span class="text-xs">
+                  (PNG-Rendering erfordert xvfb auf headless Systemen)
+                </span>
+              </div>
+            )}
+            <figcaption class="sr-only">{displayTitle}</figcaption>
+          </figure>
+
+          {/* Model info */}
+          <div class="flex flex-col gap-6">
+            <div>
+              <h2
+                id={titleId}
+                class="mb-2 text-2xl font-bold text-cyan-600 dark:text-cyan-400"
+              >
+                {displayTitle}
+              </h2>
+              {loadError && (
+                <p class="text-sm text-red-600 dark:text-red-400">
+                  Hinweis: Modelldaten konnten nicht vollständig geladen werden.
+                </p>
+              )}
+            </div>
+
+            <a
+              href={stlUrl}
+              download={`${id}.stl`}
+              class="inline-flex w-fit items-center justify-center rounded-md bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-105 hover:from-cyan-600 hover:to-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+              aria-label={`STL-Datei für ${displayTitle} herunterladen`}
+            >
+              <svg
+                class="mr-2 h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              STL herunterladen
+            </a>
+
+            {scadSource && (
+              <details class="group">
+                <summary class="scad-summary inline-flex w-full cursor-pointer items-center justify-between rounded-md bg-gray-100 px-4 py-3 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 dark:focus-visible:ring-offset-gray-900">
+                  <span>SCAD-Quellcode anzeigen</span>
+                  <svg
+                    class="h-5 w-5 transform text-cyan-600 transition-transform duration-200 group-open:rotate-180 dark:text-cyan-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </summary>
+                <div class="mt-2 rounded-md border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
+                  <pre class="max-h-96 overflow-auto p-4 text-xs text-gray-800 md:text-sm dark:text-gray-200">
+                    <code>{scadSource}</code>
+                  </pre>
+                </div>
+              </details>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  ) : (
+    <section class="scad-model-display">
+      <div class="glass rounded-lg border border-white/60 p-6 text-center dark:border-white/15">
+        <p class="text-gray-700 dark:text-gray-300">
+          3D-Modell{" "}
+          <code class="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-sm dark:bg-gray-800">
+            {id}
+          </code>{" "}
+          nicht gefunden.
+        </p>
+        {loadError && (
+          <p class="mt-2 text-sm text-red-600 dark:text-red-400">{loadError}</p>
+        )}
+        {!loadError && (
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Führe <code class="font-mono">npm run scad:render</code> aus, um die
+            Modelldaten zu generieren.
+          </p>
+        )}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  @reference "../../styles/tailwind.css";
+  .scad-summary {
+    list-style: none;
+  }
+  .scad-summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

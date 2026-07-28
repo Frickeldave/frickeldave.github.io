@@ -57,6 +57,13 @@ dist/
 # Auto-generated version file (generated at build time)
 public/version.json
 
+# OpenSCAD generated models (generated at build time)
+public/3dmodels/
+
+# OpenSCAD/core dumps
+core
+core.*
+
 # Wrangler output
 .wrangler/
 
@@ -86,3 +93,6 @@ pagefind-output.txt
 .squad-workstream
 # Active issue marker (local to this machine)
 .frickeldave-active-issue
+
+# OpenSCAD local CLI install
+.openscad/

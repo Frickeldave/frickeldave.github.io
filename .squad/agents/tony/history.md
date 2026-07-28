@@ -10,3 +10,9 @@
 
 - Team aufgesetzt mit Marvel Cinematic Universe Casting
 - Projekt: frickeldave.github.io — Astro 5.13 Multi-Content-Plattform
+
+## 2026-07-28
+
+- Approved Issue #264: [Phase 1] OpenSCAD 3D-Modelle auf der Website anzeigen
+- Verdict: Build-Time PNG/STL + models.json via npm script; WASM-Live-Editor zurückgestellt
+- Bedingungen: OpenSCAD CLI in Build-Umgebung, graceful error handling, Caching

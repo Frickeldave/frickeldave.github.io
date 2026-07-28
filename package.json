@@ -10,10 +10,12 @@
   },
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
-    "build": "astro build",
+    "scad:render": "node scripts/build-scad.mjs",
+    "scad:install": "node scripts/install-openscad.mjs",
+    "build": "npm run scad:render && astro build",
     "postbuild": "pagefind --site dist",
     "prepare": "husky",
-    "postinstall": "npm run prose-install",
+    "postinstall": "npm run prose-install && npm run scad:install",
     "format": "prettier --write ./src --log-level silent",
     "format:check": "prettier --check ./src",
     "lint": "eslint ./src --fix",
@@ -22,6 +24,7 @@
     "prose": "node scripts/prose-check.mjs"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.10",
     "@astrojs/mdx": "^7.0.0",
     "@astrojs/react": "^6.0.0",
     "@astrojs/rss": "^4.0.18",
