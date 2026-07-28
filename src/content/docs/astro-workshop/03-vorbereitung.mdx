@@ -7,6 +7,8 @@ image: "@assets/docs/astro-workshop/asws-03-001.png"
 imageAlt: "Vorbereitung"
 ---
 
+import Notice from "@shortcodes/Notice";
+
 > ⚠️ **PREVIEW**–Dieser Inhalt befindet sich noch in Arbeit und kann noch Änderungen unterliegen.
 
 ## Voraussetzungen
@@ -102,6 +104,16 @@ Der Installer stellt ein paar Fragen—empfohlene Antworten:
 | Install dependencies? | Yes |
 | Initialize a new git repository? | Yes |
 | TypeScript? | Strict |
+
+<Notice type="info">
+  Eventuell müssen noch die Zeilen in der package.json wie folgt angepasst werden, damit die Scripts korrekt laufen:
+
+  ```json
+    "dev": "astro dev --host",
+    "start": "astro dev --host",
+```
+
+</Notice>
 
 ### Schritt 2: Dev-Server starten
 
