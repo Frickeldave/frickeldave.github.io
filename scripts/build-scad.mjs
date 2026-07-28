@@ -3,8 +3,8 @@
 /**
  * OpenSCAD Build Pipeline
  *
- * Discovers SCAD files, renders PNG previews and STL outputs,
- * generates metadata JSON, and caches by file hash.
+ * Discovers SCAD files, renders STL outputs, generates metadata JSON,
+ * and caches by file hash.
  *
  * Usage:
  *   node scripts/build-scad.mjs          # Standalone
@@ -18,8 +18,6 @@ import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { getOpenSCADPath } from './get-openscad-path.mjs';
-
-const isLinux = process.platform === 'linux';
 
 // ============================================================================
 // Configuration
@@ -174,38 +172,14 @@ function prepareTemporaryScadFile(scadFile, tempDir) {
 }
 
 /**
- * Check if xvfb-run is available (needed for headless PNG rendering on Linux)
- * @returns {boolean}
- */
-function hasXvfbRun() {
-  if (!isLinux) return false;
-  try {
-    execSync('which xvfb-run', { stdio: 'ignore', timeout: 5_000 });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Build OpenSCAD command
+ * Build OpenSCAD command for STL export
  * @param {string} scadFile - Path to SCAD file
- * @param {string} outputFile - Path to output (PNG or STL)
- * @param {string} format - Output format ('png' or 'stl')
+ * @param {string} outputFile - Path to output STL
  * @returns {string} - Command to execute
  */
-function buildOpenSCADCommand(scadFile, outputFile, format) {
+function buildOpenSCADCommand(scadFile, outputFile) {
   const openscadBinary = resolveOpenSCADBinary();
-  const useXvfb = format === 'png' && hasXvfbRun();
-  const prefix = useXvfb ? 'xvfb-run -a ' : '';
-
-  if (format === 'png') {
-    return `${prefix}"${openscadBinary}" --autocenter --viewall --imgsize=800,600 -o "${outputFile}" "${scadFile}"`;
-  } else if (format === 'stl') {
-    return `${prefix}"${openscadBinary}" -o "${outputFile}" "${scadFile}"`;
-  }
-
-  throw new Error(`Unsupported format: ${format}`);
+  return `"${openscadBinary}" -o "${outputFile}" "${scadFile}"`;
 }
 
 /**
@@ -310,7 +284,6 @@ async function buildSCADModels() {
   for (const scadFile of scadFiles) {
     const modelName = path.basename(scadFile, '.scad');
     const scadPath = path.join(MODELS_SRC, scadFile);
-    const pngPath = path.join(OUTPUT_DIR, `${modelName}.png`);
     const stlPath = path.join(OUTPUT_DIR, `${modelName}.stl`);
     let tempDir = null;
 
@@ -319,7 +292,7 @@ async function buildSCADModels() {
     newCache[scadFile] = hash;
 
     // Check if cached and unchanged
-    if (cache[scadFile] === hash && fs.existsSync(pngPath) && fs.existsSync(stlPath)) {
+    if (cache[scadFile] === hash && fs.existsSync(stlPath)) {
       console.log(`⏭️  ${scadFile} (cached, unchanged)`);
       skipCount++;
 
@@ -328,7 +301,6 @@ async function buildSCADModels() {
         id: modelName,
         title: deriveTitle(modelName),
         scadFile: `src/assets/handmade/3dmodels/models/${scadFile}`,
-        previewImage: `3dmodels/${modelName}.png`,
         stlFile: `3dmodels/${modelName}.stl`,
       });
 
@@ -341,40 +313,22 @@ async function buildSCADModels() {
       tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'build-scad-'));
       const tempScadPath = prepareTemporaryScadFile(scadPath, tempDir);
 
-      // Render PNG
-      const pngCmd = buildOpenSCADCommand(tempScadPath, pngPath, 'png');
-      const pngOk = executeCommand(pngCmd, scadFile);
-      if (!pngOk && fs.existsSync(pngPath)) {
-        try {
-          fs.rmSync(pngPath, { force: true });
-        } catch (err) {
-          console.warn(`⚠️  Failed to remove failed PNG ${pngPath}: ${err.message}`);
-        }
-      }
-
       // Render STL
-      const stlCmd = buildOpenSCADCommand(tempScadPath, stlPath, 'stl');
+      const stlCmd = buildOpenSCADCommand(tempScadPath, stlPath);
       const stlOk = executeCommand(stlCmd, scadFile);
 
-      // Add model to metadata even if only STL rendered successfully.
-      // PNG rendering may fail on headless systems without xvfb-run.
       if (stlOk) {
-        if (pngOk) {
-          console.log(`✅ ${scadFile}`);
-          successCount++;
-        } else {
-          console.log(`⚠️  ${scadFile} (STL: ✓, PNG: ✗ — install xvfb for headless PNG rendering)`);
-        }
+        console.log(`✅ ${scadFile}`);
+        successCount++;
 
         models.push({
           id: modelName,
           title: deriveTitle(modelName),
           scadFile: `src/assets/handmade/3dmodels/models/${scadFile}`,
-          previewImage: pngOk ? `3dmodels/${modelName}.png` : null,
           stlFile: `3dmodels/${modelName}.stl`,
         });
       } else {
-        console.log(`❌ ${scadFile} (PNG: ${pngOk ? '✓' : '✗'}, STL: ${stlOk ? '✓' : '✗'})`);
+        console.log(`❌ ${scadFile}`);
         failCount++;
       }
     } finally {
