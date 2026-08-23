@@ -96,3 +96,5 @@ pagefind-output.txt
 
 # OpenSCAD local CLI install
 .openscad/
+
+no_sync

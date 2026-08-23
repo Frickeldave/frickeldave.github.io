@@ -266,17 +266,17 @@ module wall_holes_right(_w, _d, _h, _t, num_front, num_back, dist, diam, blocked
 
 module box_base(_w, _d, _h, _t, _r) {
     difference() {
-        roundedcube(size = [_w, _d, _h], center = false, radius = _r, "z");
+        roundedcube(size = [_w, _d, _h], center = false, radius = _r, apply_to = "z");
         translate([_t, _t, _t])
-        roundedcube(size = [_w - _t * 2, _d - _t * 2, _h], center = false, radius = _r, "z");
+        roundedcube(size = [_w - _t * 2, _d - _t * 2, _h], center = false, radius = _r, apply_to = "z");
     }
 }
 
 module lid_base(_w, _d, _h, _t, _r) {
     difference() {
-        roundedcube(size = [_w + _t * 2, _d + _t * 2, _t * 2], center = false, radius = _r, "z");
+        roundedcube(size = [_w + _t * 2, _d + _t * 2, _t * 2], center = false, radius = _r, apply_to = "z");
         translate([_t + 0.1, _t + 0.1, _t])
-        roundedcube(size = [_w + 0.2, _d + 0.2, _h], center = false, radius = _r, "z");
+        roundedcube(size = [_w + 0.2, _d + 0.2, _h], center = false, radius = _r, apply_to = "z");
     }
 }
 
@@ -454,8 +454,7 @@ module lid(_w, _d, _h, _t, _r) {
 }
 
 
-translate([_box_width +_thickness, - _thickness, 60])
-rotate([0, 180, 0])
+translate([0, 0, _box_height])
 lid(_box_width, _box_depth, _box_height, _thickness, _box_radius);
-//box(_box_width, _box_depth, _box_height, _thickness, _box_radius);
+box(_box_width, _box_depth, _box_height, _thickness, _box_radius);
 
