@@ -30,6 +30,32 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-97203
+    title: DOAG VOICES macht Sommerpause nach 40 Folgen
+    edition: People
+    guests: Keine Gäste
+    date: 7. Juli 2026
+    description: >-
+      Nach 40 Episoden verabschiedet sich DOAG VOICES für mindestens zwei Monate in die Sommerpause. Die Episode blickt zurück auf vierzig Gespräche mit Technologie-Experten und bedankt sich bei allen Hosts, Gästen und Community-Mitgliedern. Ab Mitte September geht es mit neuen Stimmen, Perspektiven und Geschichten aus der Tech-Welt weiter.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a4c95ef5bc2f8d54a7ddda1/media.mp3
+  - id: doag-voices-36855
+    title: "DORA in der Praxis: Warum Exit-Strategien über die Zukunft der Cloud entscheiden"
+    edition: CloudTalk
+    guests: Dr. Ina Humpert und Marcel Bienia
+    date: 30. Juni 2026
+    description: >-
+      Der Digital Operational Resilience Act (DORA) verpflichtet Finanzunternehmen, ihre digitale Widerstandsfähigkeit systematisch zu stärken. Dave König spricht mit Dr. Ina Humpert und Marcel Bienia über Exit-Strategien für Cloud-Dienste, Vendor Lock-in, migrationsf ähige Architekturen und den Umgang mit KI im regulierten Umfeld. Die Episode zeigt, dass DORA weit mehr ist als Compliance: Die Verordnung macht technische Schulden sichtbar, verbessert Softwarearchitekturen und kann Innovation bewusst fördern.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a435b6a3fa89e3338e80423/media.mp3
   - id: doag-voices-25441
     title: "Vibe Coding und KI-Agenten: Die Zukunft der Softwareentwicklung"
     edition: CloudTalk
