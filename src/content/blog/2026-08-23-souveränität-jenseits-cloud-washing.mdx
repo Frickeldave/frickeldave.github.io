@@ -1,0 +1,419 @@
+---
+visible: false
+draft: true
+title: Souveränität jenseits von Cloud-Washing
+description: "Warum ein europäischer Cloud-Anbieter noch keine digitale Souveränität schafft – und was Architektur, Recht, Schlüsselgewalt sowie ein getesteter Ausstieg damit zu tun haben."
+date: 2026-08-03
+image: "@assets/blog/it/2026-08-23-souveränität-jenseits-cloud-washing/sjvcw-header.png"
+imageAlt: Warum ein europäischer Cloud-Anbieter noch keine digitale Souveränität schafft – und was Architektur, Recht, Schlüsselgewalt sowie ein getesteter Ausstieg damit zu tun haben.
+categories: [IT]
+author: Frickeldave
+tags: [DevOps]
+hideToc: false
+---
+
+import { Image } from "astro:assets";
+
+Kaum hat ein großer Cloud-Anbieter Schnupfen, ruft die halbe Zeitleiste nach einer europäischen Cloud. Als würde ein Serverrack in Brandenburg automatisch einen Reisepass kontrollieren und danach souverän booten.
+
+Was ein hanebüchener Unsinn.
+
+Mich stört nicht der Wunsch nach europäischen Anbietern. Im Gegenteil. Mehr europäische Rechenleistung, Software und Fachwissen sind bitter nötig. Mich stört diese magische Gleichung:
+
+> Europäischer Anbieter + deutsches Rechenzentrum + DSGVO-Aufkleber = Souveränität
+
+Nein.
+
+Ein Anbieter kann seinen Hauptsitz in Gütersloh, Paris oder auf Borkum haben und mich trotzdem dermaßen in seine Plattform einschweißen, dass ein Umzug ungefähr so realistisch ist wie die Elbphilharmonie zum ursprünglich geplanten Preis.
+
+Souveränität entsteht nicht dadurch, dass der Anbieter wechselt. Souveränität entsteht, wenn **ich wechseln kann**.
+
+Das [Zentrum für Digitale Souveränität der Öffentlichen Verwaltung, kurz ZenDiS](https://www.zendis.de/), beschreibt digitale Souveränität als Fähigkeit, digitale Infrastrukturen selbstbestimmt zu gestalten, zu betreiben und weiterzuentwickeln – ohne unkontrollierbare Abhängigkeit von einem Anbieter oder Drittstaat. Dazu gehören rechtliche, technologische und operative Kontrolle sowie Transparenz und Wechselfähigkeit. Ein Standortversprechen allein reicht nicht.
+
+Das ist der Kern. Alles andere ist Beiwerk: die Flagge am Rechenzentrum, die Farbe des Anbieterlogos – und der nächste „Sovereign“-Tarif, den mir der Vertrieb mit 47 Seiten Leistungsbeschreibung und einem Mindestumsatz bis 2038 auf den Tisch legt.
+
+## Souverän ist nicht, wer den richtigen Anbieter gewählt hat
+
+Souverän ist, wer handlungsfähig bleibt, wenn der Anbieter morgen:
+
+- seine Preise verdoppelt,
+- einen Dienst einstellt,
+- die Programmierschnittstelle ändert,
+- meinen Vertrag kündigt,
+- von einem anderen Konzern gekauft wird,
+- von einer Regierung unter Druck gesetzt wird
+- oder schlicht für ein paar Stunden umfällt.
+
+Dabei geht es nicht um völlige Unabhängigkeit. Die gibt es nicht. Selbst mein eigener Rechner hängt an Prozessoren, Firmware, Lieferketten, Strom, Glasfaser, Betriebssystemen und Menschen, die hoffentlich wissen, welche Schraube sie gerade drehen.
+
+Souveränität heißt also nicht, alles selbst zu bauen. Die Kunst ist, Abhängigkeiten zu **kennen, zu begrenzen und austauschbar zu halten**.
+
+Die passende Cloud ergibt sich aus dem Schutzbedarf der Anwendung, nicht aus der Lieblingsfarbe des Einkaufs. Europäische Anbieter, private Plattformen und kontrollierte Varianten der großen Clouds sind Bausteine. Mehr nicht.
+
+Oder etwas direkter:
+
+> Ein Anbieter kann mir souveränere Bausteine verkaufen. Meine Souveränität verkauft er mir nicht. Die muss ich mir schon selber bauen.
+
+## Wie wir uns selbst in diese Lage gebracht haben
+
+Das übliche Vorgehen der vergangenen zehn Jahre war ungefähr dieses:
+
+**Schritt 1:** „Liebes Team, hier ist die Kreditkarte. Geht mal in die Cloud. Aber flott!“
+
+**Schritt 2:** „Oh, das ist teuer. Aber guck mal, diese proprietäre Datenbank ist billiger als unser bisheriger Betrieb.“
+
+**Schritt 3:** „Wenn wir jetzt noch das herstellereigene Nachrichtensystem, die Identitätsverwaltung, die Überwachung, die KI-Plattform und 38 ereignisgesteuerte Funktionen dazunehmen, wird alles einfacher.“
+
+**Schritt 4:** „Wir haben einen tollen Rahmenvertrag mit Mindestabnahme abgeschlossen. Sonst wäre es noch teurer geworden.“
+
+**Schritt 5:** „Warum können wir eigentlich nicht mehr wechseln?“
+
+Ich hab das Muster selber schon mitgemacht, so einen Cloud-Schwenk. Die Antwort ist ernüchternd simpel: Meistens hat halt keiner eine Ausstiegsarchitektur gebaut. Der Architekturplan bestand aus drei Herstellerlogos und einem Pfeil mit der Beschriftung „Schnittstelle“. Jede technische Abkürzung sah für sich genommen völlig vernünftig aus – bis die Summe dieser Abkürzungen einen goldenen Käfig ergab.
+
+Dazu kam, dass die Organisation den Kompetenzaufbau konsequent vermieden hat. Serverlos, vollständig verwaltet, keine Betriebsverantwortung. Klingt super. Bis man feststellt, dass „serverlos“ nur bedeutet, dass der Server jemand anderem gehört und dieser Jemand jetzt auch noch mein Betriebsmodell besitzt.
+
+## Jetzt aber Container, dann sind wir souverän?
+
+Naja, ein Container verpackt meine Anwendung. Er verpackt aber nicht automatisch:
+
+- meine Daten,
+- Identitäten und Berechtigungen,
+- die Verschlüsselungsschlüssel,
+- die komplette Netzwerktopologie,
+- Lastverteilung,
+- Ereignisse,
+- Überwachungsdaten,
+- Sicherungen – die hoffentlich nicht nur beim Anbieter liegen,
+- DNS-Einträge,
+- Zertifikate,
+- den Bereitstellungsprozess,
+- Datenbankerweiterungen
+- oder die 63 kleinen Cloud-Dienste, die der Container unterwegs aufruft.
+
+Der Container ist der Umzugskarton. Er ist nicht das Umzugsunternehmen.
+
+Wenn ich meine Anwendung in ein OCI-Abbild packe, sie aber an DynamoDB, AWS Lambda, IAM, EventBridge, Secrets Manager und proprietäre Bedrock-Schnittstellen binde, habe ich keinen portablen Dienst gebaut. Ich habe AWS mit einer hübschen Schleife drum gebaut.
+
+Dasselbe gilt natürlich für Azure und Google Cloud. Ein Kubernetes-Cluster allein hilft auch wenig, wenn die Anwendung an Azure Functions, Entra ID, Cosmos DB, Service Bus und Azure Monitor festgenagelt wurde. Dann kann ich zwar meine Pods umziehen. Nur funktionieren sie danach nicht mehr.
+
+Containerisierung ist trotzdem ein guter Anfang. Anwendungen in selbst gebauten und reproduzierbaren Abbildern, standardisierte Laufzeitschnittstellen und deklarative Bereitstellung senken die Wechselkosten erheblich. Aber erst gemeinsam mit portablen Daten, offenen Protokollen, unabhängigen Identitäten und einem getesteten Ausstiegsweg wird daraus Souveränität.
+
+## Der große Souveränitäts-Bauchladen von AWS, Microsoft und Google
+
+Die Hyperscaler haben verstanden, dass „Souveränität“ kaufentscheidend wird. Also steht das Wort inzwischen ungefähr so oft in den Produktbeschreibungen wie früher „Cloud-native“.
+
+### AWS European Sovereign Cloud
+
+AWS hat eine physisch und logisch getrennte Cloud-Umgebung für Europa angekündigt. Nach Angaben von AWS sollen Kundendaten und kundenerzeugte Metadaten in der EU bleiben. Die Umgebung soll eigene Identitäts-, Abrechnungs- und Namenssysteme erhalten und über europäische Gesellschaften nach deutschem Recht verwaltet werden. AWS spricht außerdem von einem Betrieb durch in der EU ansässiges Personal.
+
+Der Artikel [„AWS verspricht die European Sovereign Cloud“](https://blog.securecloud.de/aws-verspricht-die-european-sovereign-cloud) ordnet diese Versprechen ein.
+
+Das ist deutlich mehr als ein neues Schild am Rechenzentrum. Es reduziert reale betriebliche Risiken und trennt Systeme, Personal, Metadaten und Verwaltungswege.
+
+Meine Ausstiegsfrage beantwortet es trotzdem nicht: Wer seine Anwendung dort tief in Lambda, DynamoDB, Bedrock, IAM und AWS-eigene Steuerungsmodelle einbaut, bleibt technisch von AWS abhängig. Für AWS mag die Region ziemlich souverän sein – für mich ist sie trotzdem erstmal ein komfortabler Lock-in.
+
+Ob die organisatorische und technische Trennung das Risiko aus dem CLOUD Act tatsächlich beseitigt, hängt außerdem daran, ob eine US-Stelle noch „possession, custody or control“ über die angefragten Daten begründen kann. Das lässt sich nicht per Werbebroschüre entscheiden. Genau dieser Punkt bleibt bis zu einem echten Konfliktfall offen.
+
+### Microsoft Sovereign Cloud
+
+Microsoft bietet mehrere Varianten seiner [Microsoft Sovereign Cloud](https://learn.microsoft.com/de-de/azure/azure-sovereign-clouds/microsoft-sovereign-cloud) an.
+
+Die öffentliche Variante ergänzt die normale Azure-Infrastruktur um Mechanismen für Datenresidenz, überwachte administrative Zugriffe, externe Schlüsselverwaltung, vertrauliche Datenverarbeitung und zusätzliche Protokollierung. Daneben gibt es private beziehungsweise lokal betriebene Varianten sowie nationale Partnerangebote.
+
+Interessant ist, was Microsoft selbst dazu schreibt: Die lokalen und privaten Varianten liefern die stärksten Kontrollmöglichkeiten, weil dort Hardware, Software, Daten, Standort und Verwaltung stärker durch den Kunden oder einen ausgewählten Betreiber kontrolliert werden. Gleichzeitig bieten sie nicht denselben Funktionsumfang und dieselbe Skalierung wie die öffentliche Cloud.
+
+Mehr Kontrolle bedeutet also weniger Bequemlichkeit – wer das eine will, muss beim anderen Federn lassen.
+
+Das ist trotzdem nicht verkehrt: Externe Schlüsselverwaltung und kontrollierte administrative Zugriffe reduzieren reale Risiken. Nur wird eine Anwendung, die auf Cosmos DB, Entra ID, Azure Functions und proprietäre Verwaltungsdienste gebaut ist, dadurch nicht portabel.
+
+Microsoft kann die Souveränität seiner Plattform verbessern. Den Schwenk zu einem anderen Anbieter muss meine Architektur ermöglichen.
+
+### Google Cloud und Thales
+
+Google geht in Deutschland gemeinsam mit Thales einen anderen Weg. Laut dem Bericht [„Google Cloud: Souveräne Cloud in Deutschland bis Ende 2026“](https://www.heise.de/news/Google-Cloud-Souveraene-Cloud-in-Deutschland-bis-Ende-2026-11338334.html) soll eine dedizierte Google-Cloud-Umgebung entstehen, deren lokaler Betrieb stärker von Google getrennt wird.
+
+Eine vollständig von Thales kontrollierte deutsche Gesellschaft soll Betrieb und Unterstützung auf dedizierter Infrastruktur übernehmen. Der lokale Betreiber soll Identitäten, Authentifizierung und kryptografische Vertrauensanker kontrollieren. Aktualisierungen müssen kontrolliert in die Umgebung übertragen werden. Google-Mitarbeiter sollen keinen direkten Zugriff auf Kundendaten erhalten.
+
+Das ist ein ernsthafteres Trennungsmodell als „unsere Server stehen jetzt auch in Frankfurt“. Nur bleibt Google-Technologie Google-Technologie. Wer seine Anwendungen auf BigQuery, Spanner und anderen spezifischen Diensten aufbaut, hat damit den Zugriffspfad besser kontrolliert. Die Austauschbarkeit hat er noch nicht gebaut.
+
+Für bestimmte Schutzbedarfe ist das also durchaus ein Fortschritt.
+
+Cloud-Washing beginnt dort, wo aus einem Fortschritt ein Endzustand gemacht wird.
+
+## Die Rechtslage: ein Knäuel, kein Freifahrtschein
+
+Jetzt zum besonders beliebten Teil der Diskussion: CLOUD Act, FISA 702 und DSGVO werden gern in einen Mixer geworfen, einmal kräftig durchgeschüttelt und anschließend als Rechtsgutachten auf LinkedIn serviert.
+
+Das ist nämlich alles nicht so einfach, wie sich das auf LinkedIn anhört.
+
+### CLOUD Act
+
+Der CLOUD Act hat den amerikanischen Stored Communications Act geändert. Anbieter unter US-Gerichtsbarkeit müssen Daten in ihrem „possession, custody or control“ herausgeben, unabhängig davon, ob diese Daten innerhalb oder außerhalb der USA liegen.
+
+Entscheidend ist also nicht nur der Speicherort, sondern ob der adressierte Anbieter tatsächlich Zugriff oder Kontrolle besitzt.
+
+Der CLOUD Act ist dabei kein magischer Knopf, mit dem irgendein Beamter morgens alle europäischen Kundendaten herunterlädt. Für Inhaltsdaten braucht es ein rechtliches Verfahren. Anbieter können Anordnungen unter bestimmten Bedingungen anfechten. Das Problem ist trotzdem real: Die Pflicht nach US-Recht kann mit den Pflichten nach europäischem Recht kollidieren.
+
+Artikel 48 DSGVO sagt, dass eine Anordnung eines Drittstaats nicht allein deshalb in Europa anerkannt oder vollstreckt wird, weil dort ein Gericht oder eine Behörde sie erlassen hat. Dafür braucht es grundsätzlich eine internationale Übereinkunft, wobei andere Übermittlungsgründe aus Kapitel V der DSGVO unberührt bleiben.
+
+Der Europäische Datenschutzausschuss stellt entsprechend klar: Solche Anordnungen gelten nicht automatisch. Ohne passendes Abkommen kommen andere Rechtsgrundlagen nur ausnahmsweise und nach Prüfung des Einzelfalls in Betracht.
+
+Die Aussage „jede amerikanische Cloud ist illegal“ ist damit genauso unseriös wie „EU-Region ausgewählt, Problem gelöst“.
+
+### FISA Section 702
+
+FISA Section 702 ist ein anderes Instrument. Es dient der Auslandsaufklärung und erlaubt die Überwachung von Nicht-US-Personen außerhalb der USA, ohne für jede Zielperson eine eigene richterliche Anordnung einzuholen. Die Kommunikation von US-Personen kann dabei mit erfasst und später durchsucht werden.
+
+Der Beitrag [„FISA 702, CLOUD Act & Co.: US-Überwachung killt europäischen Datenschutz“](https://www.it-finanzmagazin.de/fisa-702-cloud-act-us-ueberwachung-killt-europaeischen-datenschutz-229640/) zeigt, warum die Frage nicht allein über den Standort des Rechenzentrums beantwortet werden kann.
+
+Wer bei einer Architekturbewertung einfach „Daten liegen in Europa, Haken dran“ schreibt, hat das Problem nicht verstanden. Der rechtliche Zugriff folgt nicht zwangsläufig dem Stromkabel.
+
+### EU-US Data Privacy Framework
+
+Das EU-US Data Privacy Framework schafft eine Grundlage für bestimmte Datenübermittlungen in die USA. Es ist aber kein Ersatz für eine technische Risikobewertung und auch kein Architekturprinzip.
+
+Rechtliche Rahmenbedingungen ändern sich. Das haben Safe Harbor und Privacy Shield bereits vorgeführt. Wer eine auf zehn oder zwanzig Jahre ausgelegte Plattform ausschließlich darauf aufbaut, dass ein Angemessenheitsbeschluss für immer hält, verwechselt eine Rechtsgrundlage mit einem Naturgesetz.
+
+Verträge und Angemessenheitsbeschlüsse sind relevant. Sie ersetzen trotzdem weder Datenminimierung noch Verschlüsselung, Schlüsselkontrolle oder einen Ausstiegsweg.
+
+### Und dann kommt OVHcloud
+
+Wer jetzt denkt, mit einem französischen Anbieter sei die Rechtsfrage endgültig erledigt, sollte sich den Fall OVHcloud ansehen.
+
+Laut dem Heise-Bericht [„Kanadisches Gericht: OVHcloud aus Frankreich muss Nutzerdaten herausgeben“](https://www.heise.de/news/Kanadisches-Gericht-OVHcloud-aus-Frankreich-muss-Nutzerdaten-herausgeben-11092024.html) wurde OVHcloud von einem kanadischen Gericht zur Herausgabe von Daten verpflichtet, obwohl diese nicht zwingend in Kanada gespeichert waren.
+
+Der Fall liefert die Pointe gleich mit:
+
+> Auch ein europäischer Anbieter schützt nicht automatisch vor extraterritorialen Ansprüchen, wenn er weltweit tätig ist und sich anderen Rechtsordnungen unterwirft.
+
+Der Sitz des Anbieters ist wichtig. Seine Konzernstruktur ebenso, und die weltweiten Niederlassungen machen das Bild auch nicht einfacher. Aber mein stärkster Schutz bleibt eine Architektur, in der der Anbieter möglichst wenig Klartext besitzt, keine alleinige Schlüsselgewalt hat und ich ihn austauschen kann.
+
+Recht ist kein Lastverteiler. Wenn zwei Rechtsordnungen kollidieren, schaltet es nicht automatisch auf den gesunden Knoten um.
+
+## Der EU Data Act: endlich ein Hebel, aber keine Umzugsfirma
+
+Der EU Data Act enthält Vorgaben, die einen Wechsel zwischen Anbietern von Datenverarbeitungsdiensten erleichtern sollen. Technische, vertragliche und organisatorische Wechselhindernisse müssen abgebaut werden. Plattform- und Softwaredienste sollen Schnittstellen sowie Exporte in gängigen, maschinenlesbaren Formaten bereitstellen.
+
+Das klingt gut – und wer in den vergangenen Jahren versucht hat, Daten aus einer Cloud zu exportieren, weiß, wie überfällig so eine Regelung ist.
+
+Nur erzeugt ein gesetzlicher Anspruch auf Wechsel noch keine wechselbare Anwendung. Der Data Act schreibt mir nicht die Datenbankmigration. Er baut keine Ereignisse aus EventBridge nach Kafka um, ersetzt keine proprietären Identitäten – und eine Lambda-Funktion übersetzt er schon gar nicht in einen Knative-Dienst.
+
+Der Data Act gibt mir also immerhin ein gesetzliches Recht auf Wechsel. Ob ich wechseln kann, entscheidet weiterhin meine Architektur: Das Gesetz migriert weder meine Datenbank noch meine Ereignisse. Den Hebel haben wir jetzt – die Arbeit bleibt unsere.
+
+## Wie eine souveräne Architektur tatsächlich aussieht
+
+Nehmen wir eine Schadenplattform einer Versicherung. Sie verarbeitet Vertragsdaten, Bilder, Gutachten, Zahlungen und Kommunikation. Die Plattform soll heute bei Anbieter A laufen und innerhalb eines festgelegten Zeitfensters zu Anbieter B wechseln können.
+
+Nicht irgendwann, nicht „nach einem Transformationsprogramm“, sondern getestet.
+
+```mermaid
+flowchart LR
+ U[Clients] --> G[Provider-independent DNS and traffic steering]
+ G --> KA
+ G -. failover.-> KB
+
+ subgraph C["Customer-controlled layer"]
+ R[Mirrored OCI registries]
+ I[OpenID Connect identity]
+ K["External KMS or HSM<br/>keys outside both providers"]
+ P["GitOps and OpenTofu<br/>reproducible deployment"]
+ O["OpenTelemetry<br/>Prometheus and Grafana"]
+ end
+
+ subgraph A["Provider A"]
+ KA[Kubernetes cluster]
+ DA[(PostgreSQL primary)]
+ OA[(S3-compatible object storage)]
+ QA[Kafka or RabbitMQ]
+ KA --> DA
+ KA --> OA
+ KA --> QA
+ end
+
+ subgraph B["Provider B"]
+ KB[Kubernetes cluster]
+ DB[(PostgreSQL standby)]
+ OB[(S3-compatible object storage)]
+ QB[Kafka or RabbitMQ]
+ KB --> DB
+ KB --> OB
+ KB --> QB
+ end
+
+ P --> KA
+ P --> KB
+ R --> KA
+ R --> KB
+ I --> KA
+ I --> KB
+ K --> KA
+ K --> KB
+ DA -->|Logical replication or WAL| DB
+ OA -->|Object replication| OB
+ QA -->|Replicated events| QB
+ KA --> O
+ KB --> O
+```
+
+Die Anwendung läuft in OCI-Containern auf Kubernetes. Dabei bleibt man möglichst bei den offenen Kubernetes-Schnittstellen. Anbieterspezifische Erweiterungen verschwinden nicht, sie werden aber in getrennten Infrastrukturmodulen gekapselt.
+
+Für Anbieter A gibt es ein Modul, für Anbieter B ein anderes. Die Behauptung, dass dieselbe Infrastrukturdefinition unverändert auf jeder Cloud funktioniert, gehört nämlich ebenfalls ins Märchenbuch.
+
+Die Abbilder liegen in mindestens zwei Registrierungen. Der Quellcode, die Bereitstellungsdefinitionen und die Signaturen der Artefakte befinden sich nicht ausschließlich beim primären Anbieter. Sonst fällt beim gesperrten Cloud-Konto auch gleich die Leiter weg, mit der man aussteigen wollte.
+
+Die Anwendungsdaten liegen in PostgreSQL. Nicht, weil PostgreSQL von Feen entwickelt wurde, sondern weil Protokoll, Datenformat, Sicherungsverfahren und Betriebswissen breit verfügbar sind. Wer einen verwalteten PostgreSQL-Dienst nutzt, prüft trotzdem Erweiterungen, Rollenmodelle, Sicherungsformate und Replikationsverfahren. „Spricht SQL“ ist noch lange kein Portabilitätsnachweis.
+
+Objekte wie Bilder und Dokumente werden über eine S3-kompatible Schnittstelle angesprochen und zwischen getrennten Speichern repliziert. Auch hier gilt: Die Schnittstelle allein genügt nicht. Versionierung, Aufbewahrungsregeln, Metadaten, Berechtigungen und Prüfsummen müssen mit umziehen.
+
+Für Ereignisse läuft Kafka oder RabbitMQ, etwa über einen Kubernetes-Operator. Alternativ kann ein verwalteter Dienst genutzt werden, solange das Domänenmodell nicht direkt von dessen proprietärer Ereignissemantik abhängt. Anbieteradapter übersetzen an der Grenze. Sie gehören nicht mitten in die Fachlogik.
+
+Die Identität hängt an OpenID Connect und liegt außerhalb beider Cloud-Konten. Die Verschlüsselungsschlüssel werden in einem eigenen oder von einer unabhängigen europäischen Stelle betriebenen HSM verwaltet. Ein mitgebrachter Schlüssel, den der Cloud-Anbieter im eigenen Schlüsselverwaltungsdienst jederzeit verwenden kann, ist besser als nichts. Wirkliche Schlüsselgewalt sieht anders aus.
+
+Die Überwachung basiert auf OpenTelemetry, Prometheus und Grafana. Das bedeutet nicht, dass niemals CloudWatch oder Azure Monitor verwendet werden darf. Es bedeutet, dass die geschäftskritische Sicht auf das System nicht nur dort existiert. Sonst sieht man beim Umzug exakt nichts.
+
+Und ganz wichtig: Multi-Cloud heißt nicht, dass jede Anwendung dauerhaft auf zwei Plattformen aktiv laufen muss. Das verdoppelt Kosten, Komplexität und gelegentlich auch die Zahl der Fehler.
+
+Für viele Systeme reicht ein vorbereiteter Zweitbetrieb mit replizierten Daten und regelmäßigem Wiederanlauf. Entscheidend sind klare Ziele für Wiederanlaufzeit, maximalen Datenverlust und vollständigen Ausstieg.
+
+## Kein bestandener Ausstiegstest, keine Souveränität
+
+Ich würde für eine kritische Anwendung mindestens folgende Nachweise verlangen:
+
+- Ein neues Zielkonto lässt sich aus Quellcode und Konfiguration allein aufbauen.
+- Anwendung, Daten, Metadaten, Berechtigungen und Protokolle lassen sich vollständig exportieren.
+- Sicherungen werden regelmäßig außerhalb des primären Anbieters wiederhergestellt – und auch mal wirklich gebraucht.
+- Der alternative Betrieb funktioniert ohne Identitäts-, Schlüssel- oder DNS-Dienst des bisherigen Anbieters.
+- Es gibt einen benannten Verantwortlichen, ein Zeitfenster und ein Budget für den Ausstieg.
+- Der Wechsel wurde praktisch geübt.
+
+Das ist kein Planspiel, das man in PowerPoint übt.
+
+Einen Ausstiegsplan zu besitzen heißt noch lange nicht, dass der Ausstieg funktioniert. Erst wenn wir ihn einmal komplett durchgespielt haben – mit echtem Konto, echten Daten, echtem Wiederanlauf – wissen wir, ob er trägt. Bis dahin ist er nur eine Idee auf Papier.
+
+## Nicht jeder proprietäre Dienst ist verboten
+
+Jetzt kommt die Stelle, an der die Cloud-Fraktion nervös wird: Nein, ich will nicht jeden verwalteten Dienst durch drei selbst kompilierte Open-Source-Projekte und einen Raspberry Pi unter Daves Schreibtisch ersetzen.
+
+Das wäre nicht souverän. Das wäre ein neues Hobby.
+
+Proprietäre Dienste sind in Ordnung, wenn die Abhängigkeit bewusst eingegangen wird. Der Nutzen muss höher sein als Wechselkosten und Risiko. Dafür braucht jede Architekturentscheidung eine Einstufung:
+
+| Klasse | Beispiel | Umgang |
+|---|---|---|
+| **Portabel** | OCI-Container, PostgreSQL, OpenID Connect, OpenTelemetry | Frei verwenden, Wechsel regelmäßig testen |
+| **Mit Anpassung wechselbar** | Verwaltete Warteschlangen, Objektspeicher, Kubernetes-Dienste | Anbieteradapter, Exportweg und Zielprodukt festlegen |
+| **Tiefer Lock-in** | Proprietäre Datenbanken, serverlose Ablaufmodelle, KI-Plattformen mit eigenen Datenformaten | Nur nach bewusster Risikoentscheidung und mit finanziertem Ablöseplan |
+
+Nutzt ihr Google Pub/Sub statt RabbitMQ oder Kafka? Kann richtig sein. Aber dann gehört der Umbaupreis in die Entscheidung.
+
+Nutzt ihr Cloud SQL? Na gut. Dann testet den Export zu einem PostgreSQL außerhalb von Google.
+
+Nutzt ihr Lambda statt OpenFaaS oder Knative? Das geht auch. Dann trennt Fachlogik vom Ausführungsmodell und haltet ein alternatives Laufzeitziel bereit.
+
+Nutzt ihr S3? Auch gut. Dann prüft nicht nur den Dateiabruf, sondern Versionen, Metadaten, Sperren, Lebenszyklusregeln und den vollständigen Massenauszug.
+
+Lock-in ist nicht automatisch schlecht. Schlecht wird es, wenn ich ihn nicht kenne. Richtig unangenehm, wenn der Ausstieg unbezahlbar wird. Und der Lock-in, der anschließend als „strategische Partnerschaft“ verkauft wird, verdient wenigstens ein ordentliches Augenrollen.
+
+## Souveränität muss messbar werden
+
+Bauchgefühl ist keine Steuerungsgröße. „Wir nutzen Open Source“ auch nicht. Genauso wenig „unsere Daten liegen in der EU“.
+
+### Sovereign Cloud Compass
+
+Der [Sovereign Cloud Compass](https://www.sovereigncloudcompass.de/) unterstützt dabei, Cloud-Angebote anhand eines konkreten Anwendungsfalls zu vergleichen. Kriterien lassen sich gewichten, Ausschlussbedingungen definieren und fehlende Nachweise als Risiko behandeln.
+
+Betrachtet werden unter anderem Eigentum und Rechtsraum, Betriebsmodell, technische Kontrolle und Abhängigkeiten. Gut daran: Das Werkzeug ruft keinen pauschalen Gesamtsieger aus. Eine Personalakte hat andere Anforderungen als eine öffentliche Produktseite. Genau so muss eine Bewertung aussehen.
+
+Das Ergebnis ersetzt keine juristische oder technische Prüfung. Es zwingt aber dazu, die eigenen Anforderungen aufzuschreiben, anstatt „souverän“ einfach aus der Produktbeschreibung des Anbieters zu übernehmen.
+
+### Souveränitäts-Kompass von Sebastian Kister
+
+Der [Souveränitäts-Kompass von Sebastian Kister](https://sebastiankister.de/) bewertet eine Infrastruktur entlang mehrerer technischer und organisatorischer Achsen. Ausgangssituation, vorhandene Maßnahmen und Risiken werden sichtbar gemacht. Die Bewertung hilft dabei, Schwächen bei Themen wie Schlüsselgewalt, Rechtsraum, Betriebsfähigkeit und Wechselmöglichkeit zu erkennen.
+
+Ein hübscher Mittelwert darf dabei keinen Totalschaden bei einer einzelnen Achse verdecken. Wenn ausschließlich der Anbieter meine Schlüssel kontrolliert oder niemand im Unternehmen die Plattform betreiben kann, hilft mir die tolle Punktzahl beim Datenexport nur begrenzt.
+
+Das Werkzeug ist kein Audit. Es ist ein brauchbarer Spiegel. Und Spiegel sind unangenehm, wenn man jahrelang nur Anbieterfolien betrachtet hat.
+
+### Der Münchner Score für Digitale Souveränität
+
+Die Stadt München hat gemeinsam mit der Technischen Universität München einen Score entwickelt, um digitale Souveränität messbar zu machen. Der Heise-Beitrag [„München macht digitale Souveränität mit eigenem Score messbar“](https://www.heise.de/news/Muenchen-macht-digitale-Souveraenitaet-mit-eigenem-Score-messbar-11164082.html#Echobox=1770137551) beschreibt den Ansatz.
+
+Bewertet werden unter anderem Hersteller- und Anbieterabhängigkeiten, Wechselmöglichkeiten, offene Standards, Einfluss auf den Betrieb sowie Daten- und Rechtsfragen.
+
+Wichtig ist die Trennung zwischen Sicherheit und Souveränität. Eine schlechte Souveränitätsbewertung bedeutet nicht automatisch, dass ein System unsicher ist. Sie zeigt, wie stark die Organisation von einem Anbieter abhängt und wie wenig sie im Konfliktfall selbst steuern kann.
+
+Ein technisch hervorragend abgesicherter Dienst kann mich trotzdem bis zur Rente an einen Anbieter binden.
+
+## Meine Definition von Souveränität
+
+Für mich ist eine Infrastruktur souverän, wenn die Organisation folgende Fragen mit belastbaren Nachweisen beantworten kann:
+
+> Wer kann auf meine Daten zugreifen? 
+> Wer besitzt die Schlüssel? 
+> Welche fremden Rechtsordnungen greifen? 
+> Kann ich den Betrieb ohne den Anbieter fortsetzen? 
+> Kann ein anderer Dienstleister übernehmen? 
+> Sind Quellcode, Abbilder, Konfiguration und Dokumentation verfügbar? 
+> Wie lange dauert der Ausstieg? 
+> Wie viel kostet er? 
+> Wann haben wir ihn zuletzt getestet?
+
+Wenn auf die letzte Frage „noch nie“ kommt, können wir uns die vorherigen Antworten fast sparen.
+
+Souveränität ist eine Eigenschaft des **gesamten Systems**: Architektur, Daten, Softwarelieferkette, Betrieb, Verträge, Rechtsraum, Schlüssel und Wissen. Der Hyperscaler ist ein Teil davon, der Standort auch. Beide sind wichtig – keiner von beiden reicht.
+
+Ohne echte Wahlmöglichkeit gibt es keine freie Entscheidung. Und die Kontrolle muss ich auch wirklich haben, sonst bleibt Souveränität ein Versprechen.
+
+## Dann hör auf zu heulen, Schantalle
+
+Ja, souveräne Architektur kostet Geld.
+
+Sie braucht außerdem Leute, die Datenbanken, Netze, Container, Identitäten, Schlüssel und Wiederanlauf nicht nur aus Herstellerzertifizierungen kennen.
+
+Und ja, der erste Aufbau dauert länger als „Kreditkarte rein und los“.
+
+Dafür kauft man sich eben keine theoretische Unabhängigkeit – sondern die Möglichkeit, morgen noch was zu sagen zu haben.
+
+Wer diesen Preis nicht zahlen will, darf sich bewusst für den Komfort eines Hyperscalers entscheiden. Das ist eine legitime Geschäftsentscheidung. Dann sollte auf der Folie aber auch „bequeme, akzeptierte Anbieterabhängigkeit“ stehen – und nicht „digitale Souveränität“.
+
+Die steckt nicht in einer Region, in keinem Zertifikat und schon gar nicht in einem Vertrag mit Mindestabnahme.
+
+Souveränität ist die Fähigkeit, **Nein zu sagen und zu gehen**.
+
+Und wenn du diese Fähigkeit weder bauen, bezahlen noch regelmäßig testen willst, dann hör wenigstens auf, deinen fehlenden Ausstiegsplan als geopolitisches Schicksal zu verkaufen.
+
+Dann hör auf zu heulen, Schantalle.
+
+---
+
+## Quellen
+
+### Cloud-Anbieter und deren Souveränitätsversprechen
+
+- [AWS verspricht die European Sovereign Cloud](https://blog.securecloud.de/aws-verspricht-die-european-sovereign-cloud)
+- [Microsoft Sovereign Cloud](https://learn.microsoft.com/de-de/azure/azure-sovereign-clouds/microsoft-sovereign-cloud)
+- [Google Cloud: Souveräne Cloud in Deutschland bis Ende 2026](https://www.heise.de/news/Google-Cloud-Souveraene-Cloud-in-Deutschland-bis-Ende-2026-11338334.html)
+- [Digitale Souveränität im Cloud-Zeitalter](https://www.silicon.de/41722019/digitale-souveraenitaet-im-cloud-zeitalter)
+
+### Recht, Datenschutz und internationale Zugriffe
+
+- [FISA 702, CLOUD Act & Co.: US-Überwachung killt europäischen Datenschutz](https://www.it-finanzmagazin.de/fisa-702-cloud-act-us-ueberwachung-killt-europaeischen-datenschutz-229640/)
+- [Kanadisches Gericht: OVHcloud aus Frankreich muss Nutzerdaten herausgeben](https://www.heise.de/news/Kanadisches-Gericht-OVHcloud-aus-Frankreich-muss-Nutzerdaten-herausgeben-11092024.html)
+- [Datenschutz-Grundverordnung bei EUR-Lex](https://eur-lex.europa.eu/eli/reg/2016/679/oj?locale=de)
+- [EDPB Guidelines 02/2024 zu Artikel 48 DSGVO](https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/guidelines-022024-article-48-gdpr_en)
+- [Cross-Border Data Sharing Under the CLOUD Act](https://www.congress.gov/crs-product/R45173)
+- [EU-Kommission: Data Act explained](https://digital-strategy.ec.europa.eu/en/policies/data-act-explained)
+
+### Souveränitäts-Washing und Bewertungsmodelle
+
+- [ZenDiS](https://www.zendis.de/)
+- [ZenDiS-Whitepaper zum Souveränitäts-Washing](https://www.connect-professional.de/markt/zendis-whitepaper-zum-souveraenitaets-washing-403748.html)
+- [München macht digitale Souveränität mit eigenem Score messbar](https://www.heise.de/news/Muenchen-macht-digitale-Souveraenitaet-mit-eigenem-Score-messbar-11164082.html#Echobox=1770137551)
+- [Sovereign Cloud Compass](https://www.sovereigncloudcompass.de/)
+- [Souveränitäts-Kompass von Sebastian Kister](https://sebastiankister.de/)
+
+### Beiträge und Diskussionen auf LinkedIn
+
+- [Peter de Lorenzi: Public Cloud vs. Private Cloud](https://www.linkedin.com/posts/peter-de-lorenzi_public-vs-private-cloud-wo-sollten-eure-ugcPost-7389617845984206849-4Mio)
+- [Max Körbächer: Sovereignty und Sovereign Cloud](https://www.linkedin.com/posts/maxkoerbaecher_sovereignty-sovereigncloud-cloud-activity-7396484743191576577-TnPM)
+- [Stefan Hessel: Digitale Souveränität, CLOUD Act und Datenschutz](https://www.linkedin.com/posts/stefan-hessel-itsec_digitalesouveraeunitaeut-cloudact-datenschutz-activity-7399445538649034753-ksj9)
