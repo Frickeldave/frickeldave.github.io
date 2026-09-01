@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-17160
+    title: Daten nutzbar machen und KI-Agenten befreien
+    edition: CloudTalk
+    guests: Azmir Abdi
+    date: 1. September 2026
+    description: >-
+      Live von der CloudLand 2026 spricht Host Dave König mit Azmir Abdi über datengetriebene Unternehmen und den Betrieb von KI-Agenten. Es geht um Data Products, Domain Ownership und semantische Layer, die Informationen fachlich verständlich machen. Im zweiten Teil wird erklärt, wie KI-Agenten mit Kubernetes statt proprietären Plattformen betrieben werden können – skalierbar, nachvollziehbar und ohne unnötige Abhängigkeiten.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a966c41341b771cca485c59/media.mp3
   - id: doag-voices-97203
     title: DOAG VOICES macht Sommerpause nach 40 Folgen
     edition: People
