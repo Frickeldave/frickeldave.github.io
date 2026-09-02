@@ -16,3 +16,9 @@
 - Approved Issue #264: [Phase 1] OpenSCAD 3D-Modelle auf der Website anzeigen
 - Verdict: Build-Time PNG/STL + models.json via npm script; WASM-Live-Editor zurückgestellt
 - Bedingungen: OpenSCAD CLI in Build-Umgebung, graceful error handling, Caching
+
+## 2026-08-25
+
+- Issue #266 ("Humanizer Skill bauen und vertesten") triagiert und mit 5 Bedingungen freigegeben (Labels `squad:maria` + `go:yes`, `.frickeldave-active-issue` → 266)
+- Maria beauftragt, den Humanizer Skill zu bauen
+- Final Review von `.squad/skills/humanizer/SKILL.md`: APPROVE (keine Änderungen erforderlich)

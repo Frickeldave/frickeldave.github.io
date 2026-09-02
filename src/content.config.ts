@@ -51,6 +51,14 @@ const blog = defineCollection({
       tags: z.array(z.string()).optional(),
       complexity: z.number().default(1),
       hideToc: z.boolean().default(false),
+      aiTransparency: z
+        .object({
+          humanShare: z.number().min(0).max(100),
+          model: z.string(),
+          confidence: z.enum(["hoch", "mittel", "niedrig"]),
+          evaluatedAt: z.string(),
+        })
+        .optional(),
     }),
 });
 

@@ -1,0 +1,74 @@
+---
+import type { BlogEntry } from "@/types";
+
+interface Props {
+  entry: BlogEntry;
+}
+
+const { entry } = Astro.props;
+const ai = entry.data.aiTransparency;
+
+const humanShare = ai?.humanShare ?? 0;
+const aiShare = ai ? 100 - ai.humanShare : 0;
+
+const scheme =
+  humanShare > 70
+    ? { name: "grün", human: "bg-green-500", ai: "bg-green-200" }
+    : humanShare >= 30
+      ? { name: "gelb", human: "bg-yellow-400", ai: "bg-yellow-200" }
+      : { name: "rot", human: "bg-red-500", ai: "bg-red-200" };
+---
+
+{
+  ai && (
+    <div class="glass-t mt-8 rounded-lg p-4">
+      <h4 class="mb-2">KI-Transparenz</h4>
+      <div
+        class="flex h-3 w-full overflow-hidden rounded"
+        role="img"
+        aria-label={`Anteile am Text: ${humanShare} Prozent menschlich, ${aiShare} Prozent KI-generiert, Farbschema ${scheme.name}`}
+      >
+        {humanShare > 0 && (
+          <div
+            class={`${scheme.human} ${
+              aiShare > 0
+                ? "dark:border-darkmode-bg-p border-r-2 border-white"
+                : ""
+            } h-full`}
+            style={`width: ${humanShare}%`}
+          />
+        )}
+        {aiShare > 0 && (
+          <div class={`${scheme.ai} h-full`} style={`width: ${aiShare}%`} />
+        )}
+      </div>
+      <p class="mt-2 mb-1">
+        {humanShare} % menschlich · {aiShare} % KI-generiert
+      </p>
+      <table>
+        <caption class="sr-only">
+          Details zur KI-Transparenz dieses Artikels
+        </caption>
+        <tbody>
+          <tr>
+            <th scope="row">KI-generierter Anteil</th>
+            <td>{aiShare} %</td>
+          </tr>
+          <tr>
+            <th scope="row">Bewertendes LLM</th>
+            <td>{ai.model}</td>
+          </tr>
+          <tr>
+            <th scope="row">Konfidenz</th>
+            <td>{ai.confidence}</td>
+          </tr>
+          <tr>
+            <th scope="row" colspan="2">
+              <a href="/blog/ki-text-erkennung/">So wird KI-Text erkannt</a>
+            </th>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  )
+}

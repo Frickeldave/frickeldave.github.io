@@ -1,0 +1,53 @@
+---
+visible: false
+draft: true
+title: Wie KI-generierter Text erkannt wird
+description: "Was hinter KI-Detektoren steckt – Perplexität, Burstiness, KI-Marker – warum sie oft danebenliegen und warum dieser Blog seinen KI-Anteil trotzdem offenlegt."
+slug: ki-text-erkennung
+date: 2026-08-28
+categories: [AI]
+author: Frickeldave
+tags: [KI]
+hideToc: false
+aiTransparency:
+  humanShare: 50            # 0-100, % menschlicher Anteil
+  model: "DeepSeek V4 Pro"  # LLM, mit dem der Wert erhoben wurde
+  confidence: "hoch"        # hoch | mittel | niedrig
+  evaluatedAt: "2026-08-28"
+---
+
+Vor Kurzem hat mir ein Bekannter stolz erzählt, sein Bewerbungsanschreiben sei „zu 87 Prozent KI". Dabei hat er es selbst geschrieben, Wort für Wort, ohne ein einziges Werkzeug. So sieht KI-Erkennung im Jahr 2026 aus: Der Detektor fällt das Urteil, der Beweis fehlt. Und der Mensch steht da und fragt sich, ob er jetzt seinem eigenen Schreibstil misstrauen soll.
+
+Wäre das eine Einzelgeschichte, könnte man sie ignorieren. Ist es aber nicht. Also schauen wir uns an, was diese Detektoren eigentlich messen, warum sie so oft danebenliegen und warum dieser Blog trotzdem auf Transparenz setzt.
+
+## Was Detektoren wirklich messen
+
+Die meisten Werkzeuge arbeiten mit zwei Größen: Perplexität und Burstiness. Perplexität ist die Frage, wie überrascht ein Sprachmodell von einem Text wäre. KI-Texte sind vorhersehbar, weil das Modell bei jedem Wort das wahrscheinlichste genommen hat. Menschen nicht. Wir haken ab, fangen einen Nebensatz an und lassen ihn einfach sterben.
+
+Burstiness meint die Unregelmäßigkeit von Satzlängen und Strukturen. Maschinen schreiben schön gleichmäßig. Menschen hauen einen 40-Wörter-Satz raus und danach: „Nö."
+
+Das Prinzip ist älter als ChatGPT. 2019 haben Sebastian Gehrmann, Hendrik Strobelt und Alexander Rush GLTR vorgestellt, ein Werkzeug, das jedes Wort eines Textes danach einfärbt, wie vorhersehbar es ist: grün für hochwahrscheinlich, rot und violett für überraschend. Bei maschinellen Texten leuchtet fast alles grün. Bei menschlichen wandern die interessanten Wörter nach rot. Das Schöne an dem Ansatz: Man braucht gar nicht das Modell, das den Text erzeugt hat. Ein fremdes Modell reicht, weil die Fußspuren ähnlich aussehen.
+
+Dazu kommen die klassischen KI-Marker, die die Wikipedia unter „Signs of AI writing" sammelt und die unser Humanizer-Skill als Checkliste führt: überglattes Vokabular, ewig gleiche Satzanfänge, „In der heutigen digitalen Welt"-Einstiege, fehlende Haltung. Genau diese Liste nutzen wir hier übrigens auch, um den KI-Anteil unserer Artikel zu bewerten.
+
+## Warum Detektoren trotzdem scheitern
+
+Erstens: False Positives. Sogar die US-Verfassung wurde von Detektoren schon teilweise als KI-Werk eingestuft, wie US-Medien 2023 breit berichteten. Alte, feierliche Texte mit gleichmäßigem Rhythmus fallen reihenweise durch, ausgerechnet die Texte, die ganz sicher kein Mensch mehr umschreiben wird.
+
+Zweitens: Kurze Texte sind Glücksspiel. Unter hundert Wörtern gibt es schlicht zu wenig Signal.
+
+Drittens: Mischtexte. Ein KI-Entwurf, den ein Mensch gründlich überarbeitet, verwirrt die Detektoren zuverlässig. Und viertens: Übersetzungen verschieben die Perplexität so stark, dass echte menschliche Autoren als Maschine dastehen können.
+
+Fünftens, und das ist der härteste Punkt: Detektoren hinken immer hinterher. Jedes neue Modell hinterlässt neue Spuren, und bis die Werkzeuge nachgezogen haben, steht schon der nächste Modellwechsel an. Wasserzeichen für KI-Texte werden diskutiert, durchgesetzt haben sie sich nicht. Detektion bleibt ein Katz-und-Maus-Spiel, bei dem die Maus schneller ist.
+
+Mein Urteil dazu ist simpel: Detektor-Scores als Wahrheit zu verkaufen, ist unseriös. Als Hinweis taugen sie, als Beweis nicht.
+
+## Warum Transparenz wichtiger ist als Detektion
+
+Das eigentliche Problem ist gar nicht, dass irgendwo KI-Text steht. Das eigentliche Problem ist, wenn Leser nicht wissen, was sie lesen. Ein ehrlich gekennzeichneter KI-Absatz ist fair. Ein unerklärter ist es nicht. Vertrauen entsteht nicht dadurch, dass ich einen Detektor auf meine Texte ansetze, sondern dadurch, dass ich offen sage, wie sie entstanden sind.
+
+Deshalb gilt auf diesem Blog seit Kurzem eine einfache Regel: Jeder Artikel trägt im Frontmatter ein aiTransparency-Objekt. Dort stehen der geschätzte menschliche Anteil in Prozent, das LLM, das die Bewertung erhoben hat, die Konfidenz und das Datum. Die sichtbare Tabelle mit Balken wird automatisch aus diesen Feldern gerendert, niemand schreibt sie von Hand in den Artikel. Und Bilder, die mit M365 Copilot erzeugt wurden, tragen das in der Bildunterschrift, wie hier im Blog schon länger üblich.
+
+## Und dieser Artikel?
+
+Der wurde von einem LLM entworfen, anschließend durch unseren Humanizer geschickt und danach von DeepSeek V4 Pro bewertet, mit dem Ergebnis 50 Prozent menschlicher Anteil und Konfidenz hoch, weil die Provenienz vollständig bekannt ist. Hätte ich 95 draufgeschrieben, wäre das genau die Art von Geschwafel, gegen die dieser Text hier argumentiert. Ehrlichkeit sieht manchmal so aus: Die Maschine schreibt mit, und es steht dran.

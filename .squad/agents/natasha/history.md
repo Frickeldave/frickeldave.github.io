@@ -18,3 +18,7 @@
 - Evaluated 5 implementation approaches (exporters, Three.js, Babylon.js, embedded viewers, code display)
 - Recommended hybrid approach: build-time PNG/STL + optional Three.js viewer + code view
 - Deliverable: Structured implementation plan for `Verteilerdose.scad` and related models
+
+## 2026-08-28
+
+- Issue #267 — KI-Transparenz-Block für Blog-Artikel umgesetzt. Neues `src/components/blog/AiTransparency.astro` (glass-t Sub-Block, Segment-Bar, Detail-Tabelle), gerendert in `EntryLayout.astro` direkt nach `<Content />`; Blog-Schema in `src/content.config.ts` um optionales `aiTransparency` erweitert. Farbschema: grün >70 % menschlich, gelb 30–70 %, rot <30 %; AI-Segment als hellere Variante. Tony: APPROVE no changes required.
