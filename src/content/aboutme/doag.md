@@ -30,6 +30,19 @@ podcast_platforms:
   - name: "Acast"
     url: "https://shows.acast.com/doag-voices-arbeitstitel"
 episodes:
+  - id: doag-voices-27688
+    title: "New Work, echte Belastung: Wie Arbeit gesünder werden kann"
+    edition: People
+    guests: Dr. Rebekka Mander und Dave König
+    date: 8. September 2026
+    description: >-
+      Dave König spricht mit der Organisationspsychologin Dr. Rebekka Mander über moderne Arbeitsmodelle und deren Auswirkungen auf die Gesundheit von Teams. Die Episode zeigt, warum Selbstorganisation und Agilität nicht automatisch zu besseren Ergebnissen führen und welche Faktoren wie psychologische Sicherheit, Vertrauen und transparente Entscheidungswege wirklich zählen. Besprochen werden zudem die Mythen rund um Multitasking und die Bedeutung von fokussierter Arbeit für gesunde und leistungsstarke Teams.
+    links:
+      spotify: https://open.spotify.com/show/5U7lAyly41FMj6IM7OE4OB
+      apple: https://podcasts.apple.com/de/podcast/doag-voices/id1847181531
+      amazon: https://music.amazon.de/podcasts/5d145588-d877-467e-b3b2-bf3da6bf28cd/doag-voices
+    audioUrl: >-
+      https://sphinx.acast.com/p/open/s/68e81ee2de9a2a62c462d72f/e/6a9fa6c02a7730b8966a3378/media.mp3
   - id: doag-voices-17160
     title: Daten nutzbar machen und KI-Agenten befreien
     edition: CloudTalk
