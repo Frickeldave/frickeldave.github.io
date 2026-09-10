@@ -1,11 +1,13 @@
 name: deploy-prd
 
 on:
-  # Trigger the workflow when a pull request targeting `main` is closed (merged)
+  # Run automatically after a successful "Squad Release" workflow completes,
   # or when manually dispatched from the Actions tab.
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows:
+      - Squad Release
+    types:
+      - completed
   workflow_dispatch:
 
 # Allow this job to clone the repo and create a page deployment
@@ -16,6 +18,7 @@ permissions:
 
 jobs:
   build-and-deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: [self-hosted, frickeldave-main]
     
     environment:
