@@ -1,4 +1,4 @@
-name: deploy-dev
+name: fd-deploy-dev
 
 on:
   # Trigger when a pull request is closed (merged)
@@ -11,8 +11,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: [self-hosted, frickeldave-main]
-    # Only run when dev branch is the target OR when manually dispatched
-    #if: ${{ github.base_ref == 'dev' || github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Print branch information
         run: |

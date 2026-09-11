@@ -4,3 +4,4 @@
 - 2026-06-30: Identität auf Nick (Fury) gesetzt, Rolle DevOps/Infrastruktur-Spezialist.
 - 2026-06-30: Owner-Kontext: David Koenig.
 - 2026-06-30: Stack-Kontext: Astro 7, TypeScript, Tailwind CSS 4.
+- 2026-09-10: Deploy-Pipeline + Squad-Workflow-Modell analysiert; Issue #269 (Workflow-Konsolidierung) auf Branch `squad/269-workflow-consolidation` implementiert, Draft PR #270 geöffnet.

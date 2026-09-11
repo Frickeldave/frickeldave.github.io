@@ -1,0 +1,78 @@
+name: FD CI
+
+on:
+  # Runs indirectly after a successful "Squad CI" workflow completes,
+  # or manually from the Actions tab.
+  workflow_run:
+    workflows:
+      - Squad CI
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-checks:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint:check
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Prose
+        run: npm run prose
+
+  scad-smoke-test:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+        with:
+          node-version: 24
+
+      - name: Install OpenSCAD
+        run: node scripts/install-openscad.mjs --quiet
+
+      - name: Run 3D smoke test
+        run: node --test test/scad/scad-build.test.cjs
+
+  e2e-test:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      # `npm ci` already installs OpenSCAD via `postinstall`; the explicit call
+      # below is a no-op safety net so `npm run build` inside the Playwright
+      # webServer always finds a renderer.
+      - name: Install OpenSCAD
+        run: node scripts/install-openscad.mjs --quiet
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        run: npx playwright test

@@ -41,11 +41,15 @@ Bevor du mit der Arbeit beginnst, prüfe dein Fähigkeitsprofil in `.squad/team.
 
 ## Branch-Namensgebung
 
-Verwende die Squad-Branch-Konvention:
+Verwende Conventional Branch Names (`<type>/<description>`), passend zum Husky-Pre-Push-Hook:
 ```
-squad/{issue-number}-{kebab-case-slug}
+<type>/<kebab-case-description>
 ```
-Beispiel: `squad/42-fix-login-validation`
+Beispiele: `ci/workflow-consolidation`, `feat/42-fix-login-validation`
+
+- `type` ist ein Conventional-Commits-Typ: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `build`, `ci`, `perf`, `style`.
+- Keine `squad/{issue}-{slug}`-Namen verwenden (der Husky-Pre-Push-Hook lehnt sie ab).
+- Commit-Messages: Conventional Commits (`type(scope): description`); Issue-Referenz in den Commit-Body/PR (`Closes #N`).
 
 ## PR-Richtlinien
 
