@@ -1,4 +1,4 @@
-name: deploy-dev
+name: fd-deploy-dev
 
 on:
   # Trigger when a pull request is closed (merged)

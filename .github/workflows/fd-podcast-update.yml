@@ -1,4 +1,4 @@
-name: Podcast Update
+name: fd-podcast-update
 
 on:
   schedule:
@@ -102,7 +102,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'deploy-dev.yml',
+              workflow_id: 'fd-deploy-dev.yml',
               ref: 'dev'
             });
             console.log('✅ Dev deployment workflow triggered');
@@ -136,7 +136,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'deploy-prd.yml',
+              workflow_id: 'fd-release.yml',
               ref: 'main'
             });
             console.log('✅ Production deployment workflow triggered');

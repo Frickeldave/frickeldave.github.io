@@ -1,0 +1,31 @@
+name: FD CI
+
+on:
+  # Runs indirectly after a successful "Squad CI" workflow completes,
+  # or manually from the Actions tab.
+  workflow_run:
+    workflows:
+      - Squad CI
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scad-smoke-test:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+        with:
+          node-version: 24
+
+      - name: Install OpenSCAD
+        run: node scripts/install-openscad.mjs --quiet
+
+      - name: Run 3D smoke test
+        run: node --test test/scad-build.test.cjs
