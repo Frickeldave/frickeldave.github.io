@@ -97,4 +97,7 @@ pagefind-output.txt
 # OpenSCAD local CLI install
 .openscad/
 
+# Playwright test output (generated at runtime, must not be committed)
+test-results/
+
 no_sync

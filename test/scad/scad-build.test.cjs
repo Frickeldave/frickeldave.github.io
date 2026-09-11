@@ -16,7 +16,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(__dirname, '..', '..');
 const MODELS_SRC = path.join(ROOT, 'src', 'assets', 'handmade', '3dmodels', 'models');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const MODELS_JSON = path.join(PUBLIC_DIR, '3dmodels', 'models.json');

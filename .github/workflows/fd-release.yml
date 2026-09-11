@@ -1,13 +1,13 @@
 name: FD Release
 
 on:
-  # Run automatically after a successful "Squad Release" workflow completes,
-  # or when manually dispatched from the Actions tab.
-  workflow_run:
-    workflows:
-      - Squad Release
-    types:
-      - completed
+  # Deploy after a successful `fd-promote` merge to main (fd-promote dispatches
+  # this workflow explicitly after pushing main), or manually from the Actions
+  # tab. The `push` trigger covers direct pushes to main that are not made with
+  # the workflow's GITHUB_TOKEN.
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 # Allow this job to clone the repo and create a page deployment
@@ -18,7 +18,6 @@ permissions:
 
 jobs:
   build-and-deploy:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: [self-hosted, frickeldave-main]
 
     environment:

@@ -22,3 +22,7 @@
 - Issue #266 ("Humanizer Skill bauen und vertesten") triagiert und mit 5 Bedingungen freigegeben (Labels `squad:maria` + `go:yes`, `.frickeldave-active-issue` → 266)
 - Maria beauftragt, den Humanizer Skill zu bauen
 - Final Review von `.squad/skills/humanizer/SKILL.md`: APPROVE (keine Änderungen erforderlich)
+
+## 2026-09-10
+
+- Issue #269 (Workflow-Konsolidierung) authored + triagiert (Labels `squad`, `squad:nick`, `go:yes`, `type:chore`), genehmigt, `.frickeldave-active-issue` aktiviert
