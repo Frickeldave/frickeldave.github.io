@@ -54,6 +54,15 @@ Scope-Begrenzung:
 
 - Nur Dateien ändern, die explizit vom Issue erwähnt oder klar vom stated Issue Scope abgeleitet sind.
 
+## Branching & Commit-Konvention
+
+Single-Developer-Workflow — Arbeit passiert direkt in `dev`.
+
+- Squad-Agenten committen direkt in `dev` (kein Feature-Branch, kein PR nötig).
+- `main` wird ausschließlich über den Workflow `fd-promote` aktualisiert (manuell, mit Versionsprüfung). Direkte Pushes oder PRs nach `main` sind nicht vorgesehen.
+- Commit-Messages nach Conventional Commits (`type(scope): description`); Issue-Referenz im Commit-Body (`Closes #N`).
+- Falls ausnahmsweise ein Branch nötig ist: Conventional Branch Names (`<type>/<description>`), passend zum Husky-Pre-Push-Hook.
+
 ## Directory Exclusions
 
 | Pfad                                 | Policy                     | Enforcement                                                                   |

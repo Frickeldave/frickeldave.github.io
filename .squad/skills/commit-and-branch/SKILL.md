@@ -16,8 +16,8 @@ Use for commit message and branch naming decisions.
 
 ## Process
 
-- Start feature work from dev and merge back to dev.
-- Use release flow for dev to main promotion.
+- Commit work directly to `dev` (single-developer workflow) — no feature branch or PR required.
+- Promote `dev` → `main` only via the `fd-promote` workflow.
 - Reference the issue in the commit body or PR (`Closes #N`) — not in the branch name.
 
 ## Gate
