@@ -18,7 +18,7 @@ Use for commit message and branch naming decisions.
 
 - Start feature work from dev and merge back to dev.
 - Use release flow for dev to main promotion.
-- Include issue context in branch names when available.
+- Reference the issue in the commit body or PR (`Closes #N`) — not in the branch name.
 
 ## Gate
 

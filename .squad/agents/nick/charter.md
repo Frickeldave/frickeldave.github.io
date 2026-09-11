@@ -32,3 +32,5 @@ Infrastruktur für Deployment, Scaling und Monitoring erstellen und pflegen. Zuv
 - Prüfen, ob Issues, die mit gelieferten Commits verknüpft sind, funktional abgeschlossen sind.
 - Funktional abgeschlossene verknüpfte Issues auf STATUS "In PR Review" setzen mit dem echten Issue/Projekt-Status-Feld (nicht Labels).
 - Mit Tony koordinieren vor wichtigen Plattform- oder Deployment-Strategie-Änderungen.
+- Branch-Namen nach Conventional Branch Names vergeben: `<type>/<description>` (z. B. `ci/workflow-consolidation`, `feat/login-fix`). `type` ist ein Conventional-Commits-Typ (`feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `build`, `ci`, `perf`, `style`). Keine `squad/{issue}-{slug}`-Branch-Namen verwenden — der Husky-Pre-Push-Hook akzeptiert nur `<type>/<description>`.
+- Commit-Messages nach Conventional Commits verfassen: `type(scope): description` (z. B. `ci: consolidate workflows (#269)`). Issue-Referenzen gehören in den Commit-Body oder den PR (`Closes #269`), nicht in den Branch-Namen.
