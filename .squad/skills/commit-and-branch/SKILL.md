@@ -17,7 +17,7 @@ Use for commit message and branch naming decisions.
 ## Process
 
 - Commit work directly to `dev` (single-developer workflow) — no feature branch or PR required.
-- Promote `dev` → `main` only via the `fd-promote` workflow.
+- Promote `dev` → `main` only via the `fd-deploy-prd` workflow.
 - Reference the issue in the commit body or PR (`Closes #N`) — not in the branch name.
 
 ## Gate
