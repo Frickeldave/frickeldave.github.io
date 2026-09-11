@@ -1,13 +1,16 @@
 name: FD CI
 
 on:
-  # Runs indirectly after a successful "Squad CI" workflow completes,
-  # or manually from the Actions tab.
-  workflow_run:
-    workflows:
-      - Squad CI
-    types:
-      - completed
+  # Single CI gate. Runs on pull requests targeting `dev`, on pushes to `dev`,
+  # and manually from the Actions tab. The deploy workflows depend on this:
+  #   - fd-deploy-dev listens for a successful FD CI push run on `dev`.
+  #   - fd-deploy-prd dispatches this workflow and waits for its success.
+  pull_request:
+    branches:
+      - dev
+  push:
+    branches:
+      - dev
   workflow_dispatch:
 
 permissions:
@@ -15,7 +18,6 @@ permissions:
 
 jobs:
   lint-checks:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
@@ -37,7 +39,6 @@ jobs:
         run: npm run prose
 
   scad-smoke-test:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
@@ -53,7 +54,6 @@ jobs:
         run: node --test test/scad/scad-build.test.cjs
 
   e2e-test:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4

@@ -93,19 +93,21 @@ jobs:
             git push origin dev
           fi
 
-      - name: Trigger dev deployment
+      - name: Trigger dev CI & deployment
         if: steps.update_dev.outcome == 'success' && steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
         continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
+            // Dispatch FD CI on dev; a successful run triggers fd-deploy-dev
+            // (workflow_run) which then dispatches the HomeNet deployment.
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'fd-deploy-dev.yml',
+              workflow_id: 'fd-ci.yml',
               ref: 'dev'
             });
-            console.log('✅ Dev deployment workflow triggered');
+            console.log('✅ Dev CI & deployment chain triggered');
 
       - name: Update main branch
         if: steps.check_episodes.outputs.missing_episode != '' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
@@ -127,19 +129,11 @@ jobs:
             git push origin main
           fi
 
-      - name: Trigger production deployment
-        if: steps.update_main.outcome == 'success' && steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
-        continue-on-error: true
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'fd-release.yml',
-              ref: 'main'
-            });
-            console.log('✅ Production deployment workflow triggered');
+      # NOTE: The previous "Trigger production deployment" step (which
+      # dispatched the now-removed fd-release.yml) has been dropped. GitHub
+      # Pages deployments are now handled exclusively by fd-deploy-prd. After
+      # this workflow updates main, the next fd-deploy-prd run will publish
+      # the site.
 
       - name: Success summary
         if: steps.check_episodes.outputs.missing_episode != ''

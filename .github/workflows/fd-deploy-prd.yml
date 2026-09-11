@@ -1,4 +1,4 @@
-name: FD Promote
+name: FD Deploy PRD
 
 on:
   workflow_dispatch:
@@ -9,13 +9,67 @@ on:
         default: false
         type: boolean
 
+# Covers all three phases: ci-gate dispatches fd-ci and waits for it
+# (actions: write), promote pushes main and creates the tag + release
+# (contents: write), deploy-pages builds and publishes the site
+# (pages + id-token).
 permissions:
   contents: write
   actions: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: fd-deploy-prd
+  cancel-in-progress: false
 
 jobs:
+  ci-gate:
+    name: Gate — FD CI must pass on dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dry run — explain CI gate
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 DRY RUN — before merging, this workflow would run fd-ci on dev and wait for it to succeed."
+
+      - name: Run FD CI on dev
+        id: dispatch
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "started_at=$STARTED_AT" >> "$GITHUB_OUTPUT"
+          gh workflow run fd-ci.yml --ref dev
+          echo "✅ Dispatched fd-ci.yml on dev (started-at: $STARTED_AT)"
+
+      - name: Wait for FD CI success
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STARTED_AT="${{ steps.dispatch.outputs.started_at }}"
+          RUN_ID=""
+          for i in $(seq 1 90); do
+            RUN_ID=$(gh run list --workflow=fd-ci.yml --branch dev --created ">$STARTED_AT" --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$RUN_ID" ]; then
+              break
+            fi
+            echo "⏳ Waiting for fd-ci run to appear (attempt $i)..."
+            sleep 10
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::Timed out waiting for fd-ci run to appear on dev."
+            exit 1
+          fi
+          echo "🔎 Watching fd-ci run: $RUN_ID"
+          gh run watch "$RUN_ID" --exit-status --interval 15
+          echo "✅ FD CI passed on dev"
+
   promote:
     name: Promote dev → main
+    needs: ci-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
@@ -97,6 +151,7 @@ jobs:
           echo "Would merge origin/dev into main with message:"
           echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
           echo "Would tag and publish: ${{ steps.version.outputs.tag }}"
+          echo "Would build and deploy the site to GitHub Pages."
 
       - name: Merge dev → main
         if: ${{ !inputs.dry_run }}
@@ -131,10 +186,24 @@ jobs:
             echo "✅ Created GitHub release $TAG"
           fi
 
-      - name: Trigger Pages deploy
-        if: ${{ !inputs.dry_run }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh workflow run fd-release.yml --ref main
-          echo "✅ Dispatched fd-release.yml for GitHub Pages deploy"
+  deploy-pages:
+    name: Build & deploy to GitHub Pages
+    needs: promote
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # withastro/action checks out the workflow's ref and builds the site.
+      # After the promote job's no-ff merge, main and dev share the same tree,
+      # so the built artifact is identical regardless of the dispatch ref.
+      - name: Install, build, and upload your site
+        uses: withastro/action@v3
+        with:
+          path: .
+          node-version: 24
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
