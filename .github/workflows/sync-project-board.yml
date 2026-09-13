@@ -1,0 +1,62 @@
+name: Sync Project Board
+
+# One-way projection: GitHub labels are the source of truth, the
+# frickeldave.de Projects V2 board mirrors them. See docs/features/fr007-project-board-sync.md.
+#
+# Requires the repository secret SQUAD_PROJECT_TOKEN (a PAT with `project`
+# scope). GitHub's built-in GITHUB_TOKEN cannot access Projects V2.
+
+on:
+  issues:
+    types: [labeled, unlabeled, closed, reopened]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run — print planned board moves without applying them'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number || 'full' }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Sync issue to project board
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+        with:
+          node-version: 24
+
+      - name: Sync single issue
+        if: github.event_name == 'issues'
+        env:
+          SQUAD_PROJECT_TOKEN: ${{ secrets.SQUAD_PROJECT_TOKEN }}
+          PROJECT_OWNER: Frickeldave
+          PROJECT_NUMBER: '2'
+          REPO_OWNER: Frickeldave
+          REPO_NAME: frickeldave.github.io
+        run: |
+          node scripts/sync-project-board.mjs --issue "${{ github.event.issue.number }}"
+
+      - name: Full re-sync of open issues
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          SQUAD_PROJECT_TOKEN: ${{ secrets.SQUAD_PROJECT_TOKEN }}
+          PROJECT_OWNER: Frickeldave
+          PROJECT_NUMBER: '2'
+          REPO_OWNER: Frickeldave
+          REPO_NAME: frickeldave.github.io
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            node scripts/sync-project-board.mjs --all --dry-run
+          else
+            node scripts/sync-project-board.mjs --all
+          fi
