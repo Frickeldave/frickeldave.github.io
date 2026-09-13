@@ -1,4 +1,4 @@
-name: Sync Squad Labels
+name: squad-sync-squad-labels (Create/update squad labels)
 
 on:
   push:

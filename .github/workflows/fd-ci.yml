@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   lint-checks:
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
 
@@ -39,7 +39,7 @@ jobs:
         run: npm run prose
 
   scad-smoke-test:
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
 
@@ -54,7 +54,7 @@ jobs:
         run: node --test test/scad/scad-build.test.cjs
 
   e2e-test:
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
 

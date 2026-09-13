@@ -26,7 +26,7 @@ concurrency:
 jobs:
   ci-gate:
     name: Gate — FD CI must pass on dev
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     steps:
       - name: Dry run — explain CI gate
         if: ${{ inputs.dry_run }}
@@ -70,7 +70,7 @@ jobs:
   promote:
     name: Promote dev → main
     needs: ci-gate
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
         with:
@@ -190,7 +190,7 @@ jobs:
     name: Build & deploy to GitHub Pages
     needs: promote
     if: ${{ !inputs.dry_run }}
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
