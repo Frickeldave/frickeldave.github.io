@@ -7,7 +7,7 @@ on:
   # deploy a build that hasn't already passed CI.
   workflow_run:
     workflows:
-      - fd-ci
+      - "fd-ci (Lint, Format, Vale, e2e checks)"
     types:
       - completed
 
