@@ -1,4 +1,4 @@
-name: fd-podcast-update
+name: fd-podcast-update (Sync podcast episodes + deploy)
 
 on:
   schedule:

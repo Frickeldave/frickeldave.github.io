@@ -1,4 +1,4 @@
-name: squad-triage
+name: squad-triage (Assign member + verdict)
 
 on:
   issues:

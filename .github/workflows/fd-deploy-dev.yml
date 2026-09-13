@@ -1,4 +1,4 @@
-name: fd-deploy-dev
+name: fd-deploy-dev (Deploy dev on CI success)
 
 on:
   workflow_dispatch:

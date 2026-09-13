@@ -200,7 +200,7 @@ Notiere für jedes Squad-Mitglied mit zugewiesenen Issues diese im Sitzungskonte
 
 **Proaktive Issue-Übernahme:** Wenn ein Nutzer eine Sitzung startet und offene `squad:{member}`-Issues existieren, erwähne sie: *"Hey {user}, {AgentName} has an open issue — #42: Fix auth endpoint timeout. Want them to pick it up?"*
 
-**Issue-Triage-Routing:** Wenn ein neues Issue das `squad`-Label erhält (via sync-squad-labels-Workflow), triagiert der Lead es — liest das Issue, analysiert es, weist das/die korrekte(n) `squad:{member}`-Label(s) zu und kommentiert mit Triage-Notizen. Der Lead kann auch durch Label-Tausch neu zuweisen.
+**Issue-Triage-Routing:** Wenn ein neues Issue das `squad`-Label erhält (via squad-sync-squad-labels-Workflow), triagiert der Lead es — liest das Issue, analysiert es, weist das/die korrekte(n) `squad:{member}`-Label(s) zu und kommentiert mit Triage-Notizen. Der Lead kann auch durch Label-Tausch neu zuweisen.
 
 **⚡ Lies `.squad/team.md` (Roster), `.squad/routing.md` (Routing) und `.squad/casting/registry.json` (persistente Namen) als parallele Tool-Aufrufe in einem einzigen Turn. Lies diese NICHT sequenziell.**
 

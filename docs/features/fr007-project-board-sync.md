@@ -11,7 +11,7 @@ Einweg-Projektion, die den Zustand visualisiert. Änderungen auf dem Board werde
 
 - Projekt-Board: <https://github.com/users/Frickeldave/projects/2>
 - Skript: [scripts/sync-project-board.mjs](../../scripts/sync-project-board.mjs)
-- Workflow: [.github/workflows/sync-project-board.yml](../../.github/workflows/sync-project-board.yml)
+- Workflow: [.github/workflows/fd-sync-project-board.yml](../../.github/workflows/fd-sync-project-board.yml)
 
 Der Workflow reagiert auf Label-Änderungen (`labeled`, `unlabeled`, `closed`,
 `reopened`) und verschiebt das Issue auf dem Board in die passende Spalte. Über
@@ -20,7 +20,7 @@ Issues auslösen.
 
 ```mermaid
 flowchart LR
-  labelChange[Label-Änderung am Issue] --> workflow[sync-project-board.yml]
+  labelChange[Label-Änderung am Issue] --> workflow[fd-sync-project-board.yml]
   workflow --> derive[Ziel-Spalte ableiten]
   derive --> upsert[Item anlegen / aktualisieren]
   upsert --> board[frickeldave.de Projekt-Board]
@@ -112,4 +112,4 @@ SQUAD_PROJECT_TOKEN=<pat> node scripts/sync-project-board.mjs --issue 272
 
 - [Squad Project Boards (Feature-Doku)](https://bradygaster.github.io/squad/docs/features/project-boards/)
 - [Work Routing](../../.squad/routing.md)
-- [Squad Label Sync Workflow](../../.github/workflows/sync-squad-labels.yml)
+- [Squad Label Sync Workflow](../../.github/workflows/squad-sync-squad-labels.yml)

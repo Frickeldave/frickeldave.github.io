@@ -143,7 +143,7 @@ Diese Dateien sind die operative Referenz für das aktuelle Modell.
 - `.github/workflows/squad-triage.yml`: reagiert auf das Label `squad` und ergänzt initiales Routing
 - `.github/workflows/squad-issue-assign.yml`: reagiert auf `squad:*`-Labels und veröffentlicht Zuweisungshinweise
 - `.github/workflows/squad-heartbeat.yml`: Workflow für operative Kontinuität des Squad-Systems
-- `.github/workflows/sync-squad-labels.yml`: hält Repository-Labels mit dem Team-Setup synchron
+- `.github/workflows/squad-sync-squad-labels.yml`: hält Repository-Labels mit dem Team-Setup synchron
 - `.github/ISSUE_TEMPLATE/`: Eingabevorlagen für Bug-, Feature-, Content- und Dokumentationsarbeit
 - `docs/40-arch-architecture-decisions.md`: breiterer Architekturkontext, wenn eine Aufgabe von Systementscheidungen abhängt
 
@@ -204,7 +204,7 @@ Verhalten in `.github/agents/squad.agent.md` und `.github/workflows/` noch zu de
 Regeln passt.
 
 Wenn sich das Label-Verhalten ändert, prüfe `.github/workflows/squad-triage.yml`,
-`.github/workflows/squad-issue-assign.yml` und `.github/workflows/sync-squad-labels.yml` gemeinsam.
+`.github/workflows/squad-issue-assign.yml` und `.github/workflows/squad-sync-squad-labels.yml` gemeinsam.
 Diese Dateien setzen die praktische Seite des Routing-Modells um.
 
 Wenn du änderst, wie Maintainer Squad verwenden sollen, aktualisiere dieses Dokument zuletzt, damit

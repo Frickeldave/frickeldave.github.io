@@ -1,4 +1,4 @@
-name: squad-issue-assign
+name: squad-issue-assign (Trigger work on squad:{member})
 
 on:
   issues:

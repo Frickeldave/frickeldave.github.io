@@ -1,4 +1,4 @@
-name: squad-label-enforce
+name: squad-label-enforce (Label mutual exclusivity)
 
 on:
   issues:

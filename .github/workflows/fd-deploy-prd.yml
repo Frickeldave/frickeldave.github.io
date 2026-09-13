@@ -1,4 +1,4 @@
-name: fd-deploy-prd
+name: fd-deploy-prd (CI gate, merge dev→main, deploy Pages)
 
 on:
   workflow_dispatch:
