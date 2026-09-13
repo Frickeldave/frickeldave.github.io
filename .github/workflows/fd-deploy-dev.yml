@@ -1,12 +1,13 @@
 name: fd-deploy-dev
 
 on:
+  workflow_dispatch:
   # Deploys only after FD CI succeeds on a push to `dev`. Using `workflow_run`
   # (rather than invoking fd-ci from here) guarantees this workflow can never
   # deploy a build that hasn't already passed CI.
   workflow_run:
     workflows:
-      - FD CI
+      - fd-ci
     types:
       - completed
 
