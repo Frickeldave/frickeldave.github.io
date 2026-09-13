@@ -66,7 +66,7 @@ jobs:
             const members = [];
             let inMembersTable = false;
             for (const line of lines) {
-              if (line.match(/^##\s+(Members|Team Roster)/i)) {
+              if (line.match(/^##\s+(Members|Team Roster|Mitglieder)/i)) {
                 inMembersTable = true;
                 continue;
               }
