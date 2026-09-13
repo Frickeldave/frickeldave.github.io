@@ -1,4 +1,4 @@
-name: Squad Label Enforce
+name: squad-label-enforce
 
 on:
   issues:

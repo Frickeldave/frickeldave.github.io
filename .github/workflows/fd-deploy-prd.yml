@@ -1,4 +1,4 @@
-name: FD Deploy PRD
+name: fd-deploy-prd
 
 on:
   workflow_dispatch:

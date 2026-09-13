@@ -1,4 +1,4 @@
-name: Sync Project Board
+name: sync-project-board
 
 # One-way projection: GitHub labels are the source of truth, the
 # frickeldave.de Projects V2 board mirrors them. See docs/features/fr007-project-board-sync.md.

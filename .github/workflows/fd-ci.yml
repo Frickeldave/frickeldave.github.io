@@ -1,4 +1,4 @@
-name: FD CI
+name: fd-ci
 
 on:
   # Single CI gate. Runs on pull requests targeting `dev`, on pushes to `dev`,
