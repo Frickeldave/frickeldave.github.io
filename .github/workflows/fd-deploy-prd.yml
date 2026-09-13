@@ -9,10 +9,10 @@ on:
         default: false
         type: boolean
 
-# Covers all three phases: ci-gate dispatches fd-ci and waits for it
-# (actions: write), promote pushes main and creates the tag + release
-# (contents: write), deploy-pages builds and publishes the site
-# (pages + id-token).
+# Phases: ci-gate dispatches fd-ci and waits (actions: write); promote merges
+# dev into main (contents: write); deploy-pages builds + publishes the site
+# (pages + id-token); release tags + releases only AFTER a successful Pages
+# deploy (contents: write) so a failed deploy does not consume a version.
 permissions:
   contents: write
   actions: write
@@ -154,8 +154,8 @@ jobs:
           echo "🔍 DRY RUN — no changes will be made."
           echo "Would merge origin/dev into main with message:"
           echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
-          echo "Would tag and publish: ${{ steps.version.outputs.tag }}"
           echo "Would build and deploy the site to GitHub Pages."
+          echo "Then (only if deploy succeeds) tag and release: ${{ steps.version.outputs.tag }}"
 
       - name: Merge dev → main
         if: ${{ !inputs.dry_run }}
@@ -165,8 +165,66 @@ jobs:
           git push origin main
           echo "✅ Pushed main"
 
+      # NOTE: Tag + release are intentionally NOT created here anymore.
+      # They are deferred to the `release` job, which runs only after the
+      # Pages deploy succeeded — so a failed deploy does not consume a version.
+
+  deploy-pages:
+    name: Build & deploy to GitHub Pages
+    needs: promote
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # IMPORTANT: withastro/action does NOT check out the repository itself.
+      # It expects an already-checked-out tree; without this checkout it fails
+      # with "No lockfile found" because it inspects an empty directory.
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+
+      - name: Install, build, and upload your site
+        uses: withastro/action@v3
+        with:
+          path: .
+          node-version: 24
+          package-manager: npm
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  release:
+    name: Tag & release (after Pages deploy)
+    needs: deploy-pages
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    steps:
+      # Deferred tag + release: only runs after deploy-pages succeeded, so a
+      # failed deploy does not burn a version number (retry needs no bump).
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+        with:
+          node-version: 24
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Create git tag
-        if: ${{ !inputs.dry_run }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
@@ -178,7 +236,6 @@ jobs:
           fi
 
       - name: Create GitHub release
-        if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -189,25 +246,3 @@ jobs:
             gh release create "$TAG" --title "$TAG" --generate-notes --latest
             echo "✅ Created GitHub release $TAG"
           fi
-
-  deploy-pages:
-    name: Build & deploy to GitHub Pages
-    needs: promote
-    if: ${{ !inputs.dry_run }}
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      # withastro/action checks out the workflow's ref and builds the site.
-      # After the promote job's no-ff merge, main and dev share the same tree,
-      # so the built artifact is identical regardless of the dispatch ref.
-      - name: Install, build, and upload your site
-        uses: withastro/action@v3
-        with:
-          path: .
-          node-version: 24
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
