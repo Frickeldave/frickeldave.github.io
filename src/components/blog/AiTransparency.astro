@@ -21,8 +21,10 @@ const scheme =
 
 {
   ai && (
-    <div class="glass-t mt-8 rounded-lg p-4">
-      <h4 class="mb-2">KI-Transparenz</h4>
+    <div class="glass-t mt-8 rounded-lg p-3 text-sm">
+      <h4 class="mb-1" style="margin: 0 0 0.25rem; line-height: 1.2">
+        KI-Transparenz
+      </h4>
       <div
         class="flex h-3 w-full overflow-hidden rounded"
         role="img"
@@ -42,30 +44,50 @@ const scheme =
           <div class={`${scheme.ai} h-full`} style={`width: ${aiShare}%`} />
         )}
       </div>
-      <p class="mt-2 mb-1">
+      <p class="mt-1 mb-1" style="line-height: 1.4; font-size: 0.875rem">
         {humanShare} % menschlich · {aiShare} % KI-generiert
       </p>
-      <table>
+      <table style="margin: 0.25rem 0 0; line-height: 1.4">
         <caption class="sr-only">
           Details zur KI-Transparenz dieses Artikels
         </caption>
         <tbody>
           <tr>
-            <th scope="row">KI-generierter Anteil</th>
-            <td>{aiShare} %</td>
-          </tr>
-          <tr>
-            <th scope="row">Bewertendes LLM</th>
-            <td>{ai.model}</td>
-          </tr>
-          <tr>
-            <th scope="row">Konfidenz</th>
-            <td>{ai.confidence}</td>
-          </tr>
-          <tr>
-            <th scope="row" colspan="2">
-              <a href="/blog/ki-text-erkennung/">So wird KI-Text erkannt</a>
+            <th scope="row" style="padding: 0.25rem 0.5rem">
+              KI-generierter Anteil
             </th>
+            <td style="padding: 0.25rem 0.5rem">{aiShare} %</td>
+          </tr>
+          <tr>
+            <th scope="row" style="padding: 0.25rem 0.5rem">
+              Bewertendes LLM
+            </th>
+            <td style="padding: 0.25rem 0.5rem">{ai.model}</td>
+          </tr>
+          <tr>
+            <th scope="row" style="padding: 0.25rem 0.5rem">
+              Konfidenz
+            </th>
+            <td style="padding: 0.25rem 0.5rem">{ai.confidence}</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding: 0.25rem 0.5rem">
+              <div class="flex items-center gap-2">
+                <a
+                  href="/blog/ki-text-erkennung/"
+                  style="text-decoration: none"
+                  aria-label="So wird KI-Text erkannt"
+                  title="So wird KI-Text erkannt"
+                >
+                  ℹ️
+                </a>
+                {ai.comment && (
+                  <span style="line-height: 1.4; font-size: 0.875rem">
+                    {ai.comment}
+                  </span>
+                )}
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>

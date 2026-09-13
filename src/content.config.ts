@@ -57,6 +57,7 @@ const blog = defineCollection({
           model: z.string(),
           confidence: z.enum(["hoch", "mittel", "niedrig"]),
           evaluatedAt: z.string(),
+          comment: z.string().optional(),
         })
         .optional(),
     }),

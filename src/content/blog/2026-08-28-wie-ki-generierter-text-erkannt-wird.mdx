@@ -14,6 +14,7 @@ aiTransparency:
   model: "DeepSeek V4 Pro"  # LLM, mit dem der Wert erhoben wurde
   confidence: "hoch"        # hoch | mittel | niedrig
   evaluatedAt: "2026-08-28"
+  comment: "erstellt mit KI und menschlicher Anweisung"
 ---
 
 Vor Kurzem hat mir ein Bekannter stolz erzählt, sein Bewerbungsanschreiben sei „zu 87 Prozent KI". Dabei hat er es selbst geschrieben, Wort für Wort, ohne ein einziges Werkzeug. So sieht KI-Erkennung im Jahr 2026 aus: Der Detektor fällt das Urteil, der Beweis fehlt. Und der Mensch steht da und fragt sich, ob er jetzt seinem eigenen Schreibstil misstrauen soll.
@@ -26,13 +27,13 @@ Die meisten Werkzeuge arbeiten mit zwei Größen: Perplexität und Burstiness. P
 
 Burstiness meint die Unregelmäßigkeit von Satzlängen und Strukturen. Maschinen schreiben schön gleichmäßig. Menschen hauen einen 40-Wörter-Satz raus und danach: „Nö."
 
-Das Prinzip ist älter als ChatGPT. 2019 haben Sebastian Gehrmann, Hendrik Strobelt und Alexander Rush GLTR vorgestellt, ein Werkzeug, das jedes Wort eines Textes danach einfärbt, wie vorhersehbar es ist: grün für hochwahrscheinlich, rot und violett für überraschend. Bei maschinellen Texten leuchtet fast alles grün. Bei menschlichen wandern die interessanten Wörter nach rot. Das Schöne an dem Ansatz: Man braucht gar nicht das Modell, das den Text erzeugt hat. Ein fremdes Modell reicht, weil die Fußspuren ähnlich aussehen.
+Das Prinzip ist älter als ChatGPT. 2019 haben Sebastian Gehrmann, Hendrik Strobelt und Alexander Rush [GLTR](https://arxiv.org/abs/1906.04043) vorgestellt, ein Werkzeug, das jedes Wort eines Textes danach einfärbt, wie vorhersehbar es ist: grün für hochwahrscheinlich, rot und violett für überraschend. Bei maschinellen Texten leuchtet fast alles grün. Bei menschlichen wandern die interessanten Wörter nach rot. Das Schöne an dem Ansatz: Man braucht gar nicht das Modell, das den Text erzeugt hat. Ein fremdes Modell reicht, weil die Fußspuren ähnlich aussehen.
 
 Dazu kommen die klassischen KI-Marker, die die Wikipedia unter „Signs of AI writing" sammelt und die unser Humanizer-Skill als Checkliste führt: überglattes Vokabular, ewig gleiche Satzanfänge, „In der heutigen digitalen Welt"-Einstiege, fehlende Haltung. Genau diese Liste nutzen wir hier übrigens auch, um den KI-Anteil unserer Artikel zu bewerten.
 
 ## Warum Detektoren trotzdem scheitern
 
-Erstens: False Positives. Sogar die US-Verfassung wurde von Detektoren schon teilweise als KI-Werk eingestuft, wie US-Medien 2023 breit berichteten. Alte, feierliche Texte mit gleichmäßigem Rhythmus fallen reihenweise durch, ausgerechnet die Texte, die ganz sicher kein Mensch mehr umschreiben wird.
+Erstens: False Positives. Sogar die US-Verfassung wurde von Detektoren schon teilweise als KI-Werk eingestuft, wie [US-Medien 2023 breit berichteten](https://arstechnica.com/information-technology/2023/07/why-ai-detectors-think-the-us-constitution-was-written-by-ai/). Alte, feierliche Texte mit gleichmäßigem Rhythmus fallen reihenweise durch, ausgerechnet die Texte, die ganz sicher kein Mensch mehr umschreiben wird.
 
 Zweitens: Kurze Texte sind Glücksspiel. Unter hundert Wörtern gibt es schlicht zu wenig Signal.
 
@@ -46,7 +47,7 @@ Mein Urteil dazu ist simpel: Detektor-Scores als Wahrheit zu verkaufen, ist unse
 
 Das eigentliche Problem ist gar nicht, dass irgendwo KI-Text steht. Das eigentliche Problem ist, wenn Leser nicht wissen, was sie lesen. Ein ehrlich gekennzeichneter KI-Absatz ist fair. Ein unerklärter ist es nicht. Vertrauen entsteht nicht dadurch, dass ich einen Detektor auf meine Texte ansetze, sondern dadurch, dass ich offen sage, wie sie entstanden sind.
 
-Deshalb gilt auf diesem Blog seit Kurzem eine einfache Regel: Jeder Artikel trägt im Frontmatter ein aiTransparency-Objekt. Dort stehen der geschätzte menschliche Anteil in Prozent, das LLM, das die Bewertung erhoben hat, die Konfidenz und das Datum. Die sichtbare Tabelle mit Balken wird automatisch aus diesen Feldern gerendert, niemand schreibt sie von Hand in den Artikel. Und Bilder, die mit M365 Copilot erzeugt wurden, tragen das in der Bildunterschrift, wie hier im Blog schon länger üblich.
+Deshalb gilt auf diesem Blog seit Kurzem eine einfache Regel: Jeder Artikel trägt im Frontmatter ein aiTransparency-Objekt. Dort stehen der geschätzte menschliche Anteil in Prozent, das LLM, das die Bewertung erhoben hat, die Konfidenz und das Datum. Die sichtbare Tabelle mit Balken wird automatisch aus diesen Feldern gerendert, niemand schreibt sie von Hand in den Artikel. Und Bilder, die mit KI erzeugt wurden, tragen das in der Bildunterschrift, wie hier im Blog schon länger üblich.
 
 ## Und dieser Artikel?
 
