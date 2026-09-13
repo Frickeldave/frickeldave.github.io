@@ -1,4 +1,4 @@
-name: fd-ci
+name: fd-ci (Lint, Format, Vale, e2e checks)
 
 on:
   # Single CI gate. Runs on pull requests targeting `dev`, on pushes to `dev`,

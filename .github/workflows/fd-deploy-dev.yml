@@ -1,12 +1,13 @@
-name: fd-deploy-dev
+name: fd-deploy-dev (Deploy dev on CI success)
 
 on:
+  workflow_dispatch:
   # Deploys only after FD CI succeeds on a push to `dev`. Using `workflow_run`
   # (rather than invoking fd-ci from here) guarantees this workflow can never
   # deploy a build that hasn't already passed CI.
   workflow_run:
     workflows:
-      - FD CI
+      - "fd-ci (Lint, Format, Vale, e2e checks)"
     types:
       - completed
 
@@ -19,7 +20,7 @@ jobs:
     # explicit workflow_dispatch (fd-podcast-update / manual CI). Pull_request
     # runs never trigger a dev deploy.
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     steps:
       - name: Print branch information
         run: |

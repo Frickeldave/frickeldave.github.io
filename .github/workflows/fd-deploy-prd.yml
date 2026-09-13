@@ -1,4 +1,4 @@
-name: fd-deploy-prd
+name: fd-deploy-prd (CI gate, merge dev→main, deploy Pages)
 
 on:
   workflow_dispatch:
@@ -27,6 +27,10 @@ jobs:
   ci-gate:
     name: Gate — FD CI must pass on dev
     runs-on: ubuntu-latest
+    env:
+      # The ci-gate job has no checkout step, so `gh` cannot auto-detect the
+      # repository from a git remote. Pin it explicitly for all gh commands.
+      GH_REPO: ${{ github.repository }}
     steps:
       - name: Dry run — explain CI gate
         if: ${{ inputs.dry_run }}

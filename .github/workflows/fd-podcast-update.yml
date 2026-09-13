@@ -1,4 +1,4 @@
-name: fd-podcast-update
+name: fd-podcast-update (Sync podcast episodes + deploy)
 
 on:
   schedule:
@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   podcast-update:
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -il {0}
@@ -159,7 +159,7 @@ jobs:
   deploy-main:
     needs: podcast-update
     if: (github.event.inputs.target == 'all' || github.event_name == 'schedule') && github.event.inputs.dryRun != 'true'
-    runs-on: [self-hosted, frickeldave-main]
+    runs-on: ubuntu-latest
     environment: github-pages
     steps:
       - name: Checkout main
