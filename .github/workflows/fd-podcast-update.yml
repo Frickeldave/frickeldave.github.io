@@ -20,6 +20,12 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+  actions: write
+  pages: write
+  id-token: write
+
 jobs:
   podcast-update:
     runs-on: [self-hosted, frickeldave-main]
@@ -130,10 +136,11 @@ jobs:
           fi
 
       # NOTE: The previous "Trigger production deployment" step (which
-      # dispatched the now-removed fd-release.yml) has been dropped. GitHub
-      # Pages deployments are now handled exclusively by fd-deploy-prd. After
-      # this workflow updates main, the next fd-deploy-prd run will publish
-      # the site.
+      # dispatched the now-removed fd-release.yml) has been dropped. main is
+      # now deployed to GitHub Pages by the `deploy-main` job below
+      # (withastro/action@v3 build + actions/deploy-pages@v4) whenever this
+      # workflow actually updates main. fd-deploy-prd remains available as a
+      # standalone production deploy.
 
       - name: Success summary
         if: steps.check_episodes.outputs.missing_episode != ''
@@ -148,3 +155,25 @@ jobs:
           echo "  • Branches updated: dev ${{ (github.event.inputs.target == 'all' || github.event_name == 'schedule') && 'and main' || '' }}"
           echo ""
           echo "✅ Branches have been updated directly."
+
+  deploy-main:
+    needs: podcast-update
+    if: (github.event.inputs.target == 'all' || github.event_name == 'schedule') && github.event.inputs.dryRun != 'true'
+    runs-on: [self-hosted, frickeldave-main]
+    environment: github-pages
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build site
+        uses: withastro/action@v3
+        with:
+          node-version: 24
+          path: .
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
