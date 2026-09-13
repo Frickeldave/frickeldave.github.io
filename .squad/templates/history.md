@@ -1,10 +1,10 @@
-# Projektkontext
+# Project Context
 
-- **Owner:** {Benutzername}
-- **Projekt:** {Projektdescription}
-- **Stack:** {Sprachen, Frameworks, Tools}
-- **Erstellt:** {Zeitstempel}
+- **Owner:** {user name}
+- **Project:** {project description}
+- **Stack:** {languages, frameworks, tools}
+- **Created:** {timestamp}
 
-## Erkenntnisse
+## Learnings
 
-<!-- Neue Erkenntnisse unten anfügen. Jeder Eintrag ist etwas Dauerhaftes über das Projekt. -->
+<!-- Append new learnings below. Each entry is something lasting about the project. -->

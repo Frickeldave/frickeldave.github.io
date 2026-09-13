@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "@components/base/BaseLayout.astro";
 import BlogCard from "@components/blog/Card.astro";
+import AiTransparency from "@components/blog/AiTransparency.astro";
 import Share from "@components/common/Share.astro";
 import { plainify } from "@lib/textConverter";
 import type { BlogEntry } from "@/types";
@@ -47,6 +48,7 @@ const entryDescription =
         </section>
         <section class="content glass mb-4 rounded-lg px-4">
           <Content />
+          <AiTransparency entry={entry} />
         </section>
       </article>
     </div>

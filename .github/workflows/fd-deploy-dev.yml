@@ -1,0 +1,59 @@
+name: fd-deploy-dev
+
+on:
+  # Deploys only after FD CI succeeds on a push to `dev`. Using `workflow_run`
+  # (rather than invoking fd-ci from here) guarantees this workflow can never
+  # deploy a build that hasn't already passed CI.
+  workflow_run:
+    workflows:
+      - FD CI
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    # Deploy when FD CI passed on `dev` after a push (human push) or an
+    # explicit workflow_dispatch (fd-podcast-update / manual CI). Pull_request
+    # runs never trigger a dev deploy.
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
+    runs-on: [self-hosted, frickeldave-main]
+    steps:
+      - name: Print branch information
+        run: |
+          echo "Triggered by branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Commit SHA: ${{ github.event.workflow_run.head_sha }}"
+
+      - name: Trigger HomeNet Ansible Deployment by calling waltrauds playbook with tag fd
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.HOMENET_PAT }}
+          script: |
+            try {
+              const result = await github.rest.actions.createWorkflowDispatch({
+                owner: 'Frickeldave',
+                repo: 'HomeNet',
+                workflow_id: 'host-waltraud.yaml',
+                ref: 'main',
+                inputs: {
+                  homeassistant_reset: 'false',
+                  tag_select: 'fd',
+                  source_branch: '${{ github.event.workflow_run.head_branch }}'
+                }
+              });
+              console.log('Workflow dispatch successful:', result.status);
+            } catch (error) {
+              console.error('Error triggering workflow:', error);
+              console.error('Error message:', error.message);
+              console.error('Error status:', error.status);
+              throw error;
+            }
+
+      - name: Log build deployment trigger
+        run: |
+          echo "Triggered HomeNet deployment via host-waltraud.yaml workflow (build)"
+          echo "Target: waltraud-dc.yaml playbook"
+          echo "Limit: waltraud"
+          echo "Variables: homeassistant_reset=false, tag_select=fd, source_branch=${{ github.event.workflow_run.head_branch }}"

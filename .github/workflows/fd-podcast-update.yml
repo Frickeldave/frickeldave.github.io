@@ -1,0 +1,179 @@
+name: fd-podcast-update
+
+on:
+  schedule:
+    # Every Tuesday at 09:00 CET/CEST
+    - cron: "0 8 * * 2" # 08:00 UTC = 09:00 CET (winter) / 07:00 UTC = 09:00 CEST (summer)
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Target environment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - all
+      dryRun:
+        description: "Dry run (validate without committing)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  actions: write
+  pages: write
+  id-token: write
+
+jobs:
+  podcast-update:
+    runs-on: [self-hosted, frickeldave-main]
+    defaults:
+      run:
+        shell: bash -il {0}
+    steps:
+      - name: Checkout repository (main)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set git config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check Node.js version
+        run: |
+          echo "🔍 Checking Node.js version..."
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+          if [ "$NODE_VERSION" != "24" ]; then
+            echo "❌ Node.js v24 is required, but v$NODE_VERSION is installed."
+            exit 1
+          fi
+          echo "✅ Node.js v24 is available"
+
+      - name: Global episode comparison (against main)
+        id: check_episodes
+        run: |
+          echo "📡 Comparing RSS feed with main branch..."
+          node scripts/workflows/podcast-update/compare-episodes.mjs
+        env:
+          GITHUB_OUTPUT: ${{ github.workspace }}/episode-check.txt
+
+      - name: Exit if no new episodes
+        if: steps.check_episodes.outputs.missing_episode == ''
+        run: |
+          echo "✅ No new episodes found. All episodes are up to date."
+          exit 0
+
+      - name: Generate episode metadata using Copilot CLI
+        if: steps.check_episodes.outputs.missing_episode != ''
+        id: generate_metadata
+        run: |
+          echo "🤖 Generating episode metadata using GitHub Copilot CLI..."
+          node scripts/workflows/podcast-update/generate-metadata.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Update dev branch
+        if: steps.check_episodes.outputs.missing_episode != ''
+        id: update_dev
+        run: |
+          TITLE=$(jq -r '.title' metadata.json)
+          echo "🌿 Updating dev branch with episode: $TITLE"
+
+          git checkout dev
+          git pull origin dev
+
+          if [ "${{ github.event.inputs.dryRun }}" == "true" ]; then
+            node scripts/workflows/podcast-update/update-doag.mjs --dry-run
+            echo "🦁 DRY RUN: Skipping git commit and push."
+          else
+            node scripts/workflows/podcast-update/update-doag.mjs
+            git add src/content/aboutme/doag.md
+            git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
+            git push origin dev
+          fi
+
+      - name: Trigger dev CI & deployment
+        if: steps.update_dev.outcome == 'success' && steps.check_episodes.outputs.missing_episode != '' && github.event.inputs.dryRun != 'true'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Dispatch FD CI on dev; a successful run triggers fd-deploy-dev
+            // (workflow_run) which then dispatches the HomeNet deployment.
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'fd-ci.yml',
+              ref: 'dev'
+            });
+            console.log('✅ Dev CI & deployment chain triggered');
+
+      - name: Update main branch
+        if: steps.check_episodes.outputs.missing_episode != '' && (github.event.inputs.target == 'all' || github.event_name == 'schedule')
+        id: update_main
+        run: |
+          TITLE=$(jq -r '.title' metadata.json)
+          echo "🚀 Updating main branch with episode: $TITLE"
+
+          git checkout main
+          git pull origin main
+
+          if [ "${{ github.event.inputs.dryRun }}" == "true" ]; then
+            echo "🦁 DRY RUN: Would copy doag.md from dev (same ID as dev)."
+          else
+            # Copy doag.md directly from dev to avoid generating a new random ID
+            git checkout dev -- src/content/aboutme/doag.md
+            git add src/content/aboutme/doag.md
+            git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
+            git push origin main
+          fi
+
+      # NOTE: The previous "Trigger production deployment" step (which
+      # dispatched the now-removed fd-release.yml) has been dropped. main is
+      # now deployed to GitHub Pages by the `deploy-main` job below
+      # (withastro/action@v3 build + actions/deploy-pages@v4) whenever this
+      # workflow actually updates main. fd-deploy-prd remains available as a
+      # standalone production deploy.
+
+      - name: Success summary
+        if: steps.check_episodes.outputs.missing_episode != ''
+        run: |
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════╗"
+          echo "║  🎉 Independent Podcast Update Completed Successfully      ║"
+          echo "╚════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "📊 Summary:"
+          echo "  • Episode: $(jq -r '.title' metadata.json)"
+          echo "  • Branches updated: dev ${{ (github.event.inputs.target == 'all' || github.event_name == 'schedule') && 'and main' || '' }}"
+          echo ""
+          echo "✅ Branches have been updated directly."
+
+  deploy-main:
+    needs: podcast-update
+    if: (github.event.inputs.target == 'all' || github.event_name == 'schedule') && github.event.inputs.dryRun != 'true'
+    runs-on: [self-hosted, frickeldave-main]
+    environment: github-pages
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build site
+        uses: withastro/action@v3
+        with:
+          node-version: 24
+          path: .
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

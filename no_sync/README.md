@@ -1,1 +1,0 @@
-Dieser Ordner ist für reine offline daten da, die nicht gesynched werden sollen

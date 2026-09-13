@@ -21,10 +21,13 @@ export const getEntries = async (
   entries = noDrafts
     ? entries.filter(
         (entry: GenericEntry) =>
-          "draft" in entry.data &&
-          !entry.data.draft &&
-          "visible" in entry.data &&
-          entry.data.visible
+          // In dev mode (npm run dev), drafts/hidden entries stay visible for local preview.
+          // In production builds, only entries with draft=false and visible=true are shown.
+          import.meta.env.DEV ||
+          ("draft" in entry.data &&
+            !entry.data.draft &&
+            "visible" in entry.data &&
+            entry.data.visible)
       )
     : entries;
   entries = sortFunction ? sortFunction(entries) : entries;

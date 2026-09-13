@@ -1,0 +1,209 @@
+name: fd-deploy-prd
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run — print what would happen without merging or pushing'
+        required: false
+        default: false
+        type: boolean
+
+# Covers all three phases: ci-gate dispatches fd-ci and waits for it
+# (actions: write), promote pushes main and creates the tag + release
+# (contents: write), deploy-pages builds and publishes the site
+# (pages + id-token).
+permissions:
+  contents: write
+  actions: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: fd-deploy-prd
+  cancel-in-progress: false
+
+jobs:
+  ci-gate:
+    name: Gate — FD CI must pass on dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dry run — explain CI gate
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 DRY RUN — before merging, this workflow would run fd-ci on dev and wait for it to succeed."
+
+      - name: Run FD CI on dev
+        id: dispatch
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "started_at=$STARTED_AT" >> "$GITHUB_OUTPUT"
+          gh workflow run fd-ci.yml --ref dev
+          echo "✅ Dispatched fd-ci.yml on dev (started-at: $STARTED_AT)"
+
+      - name: Wait for FD CI success
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STARTED_AT="${{ steps.dispatch.outputs.started_at }}"
+          RUN_ID=""
+          for i in $(seq 1 90); do
+            RUN_ID=$(gh run list --workflow=fd-ci.yml --branch dev --created ">$STARTED_AT" --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$RUN_ID" ]; then
+              break
+            fi
+            echo "⏳ Waiting for fd-ci run to appear (attempt $i)..."
+            sleep 10
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::Timed out waiting for fd-ci run to appear on dev."
+            exit 1
+          fi
+          echo "🔎 Watching fd-ci run: $RUN_ID"
+          gh run watch "$RUN_ID" --exit-status --interval 15
+          echo "✅ FD CI passed on dev"
+
+  promote:
+    name: Promote dev → main
+    needs: ci-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+        with:
+          node-version: 24
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch all branches
+        run: git fetch --all
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Version: $VERSION (tag: v$VERSION)"
+
+      - name: Validate version consistency with CHANGELOG
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
+            echo "::error::Version $VERSION not found in CHANGELOG.md — update CHANGELOG.md before promoting."
+            exit 1
+          fi
+          echo "✅ Version $VERSION has a CHANGELOG entry"
+
+      - name: Determine latest GitHub release
+        id: latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // empty' 2>/dev/null || true)
+          if [ -z "$LATEST" ]; then
+            echo "ℹ️ No existing GitHub release found — version check passes."
+          else
+            echo "🔎 Latest GitHub release: $LATEST"
+          fi
+          echo "tag=$LATEST" >> "$GITHUB_OUTPUT"
+
+      - name: Verify version is greater than latest release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST_TAG: ${{ steps.latest.outputs.tag }}
+        run: |
+          node -e '
+            const v = process.env.VERSION;
+            const latestRaw = process.env.LATEST_TAG;
+            if (!latestRaw) {
+              console.log("ℹ️ No existing release — version check passes.");
+              process.exit(0);
+            }
+            const latest = latestRaw.replace(/^v/, "");
+            const pa = v.split(".").map(Number);
+            const pb = latest.split(".").map(Number);
+            for (let i = 0; i < 3; i++) {
+              const a = pa[i] || 0;
+              const b = pb[i] || 0;
+              if (a > b) { console.log(`✅ ${v} > ${latest}`); process.exit(0); }
+              if (a < b) break;
+            }
+            console.error(`❌ Version ${v} is not greater than the latest release ${latest}. Bump the version in package.json.`);
+            process.exit(1);
+          '
+
+      - name: Dry run — show plan
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 DRY RUN — no changes will be made."
+          echo "Would merge origin/dev into main with message:"
+          echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
+          echo "Would tag and publish: ${{ steps.version.outputs.tag }}"
+          echo "Would build and deploy the site to GitHub Pages."
+
+      - name: Merge dev → main
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git checkout main
+          git merge origin/dev --no-ff -m "chore(release): promote dev to main v${{ steps.version.outputs.version }}"
+          git push origin main
+          echo "✅ Pushed main"
+
+      - name: Create git tag
+        if: ${{ !inputs.dry_run }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "⏭️ Tag $TAG already exists — skipping."
+          else
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+            echo "✅ Created and pushed tag $TAG"
+          fi
+
+      - name: Create GitHub release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "⏭️ Release $TAG already exists — skipping."
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes --latest
+            echo "✅ Created GitHub release $TAG"
+          fi
+
+  deploy-pages:
+    name: Build & deploy to GitHub Pages
+    needs: promote
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # withastro/action checks out the workflow's ref and builds the site.
+      # After the promote job's no-ff merge, main and dev share the same tree,
+      # so the built artifact is identical regardless of the dispatch ref.
+      - name: Install, build, and upload your site
+        uses: withastro/action@v3
+        with:
+          path: .
+          node-version: 24
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
