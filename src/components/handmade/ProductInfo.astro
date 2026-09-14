@@ -1,6 +1,8 @@
 ---
 import type { HandmadeItem } from "@/types";
 import { getHandmadeCategoryLabel } from "@/lib/handmadeCategoryLabels";
+import AddToCartButton from "./AddToCartButton.astro";
+import CartNavLink from "./CartNavLink.astro";
 
 interface Props {
   product: HandmadeItem;
@@ -38,6 +40,11 @@ const formatPrice = (price: number): string => {
       >
         {formatPrice(product.price)}
       </span>
+    </div>
+
+    <div class="mt-4 space-y-3">
+      <AddToCartButton item={product} variant="detail" />
+      <CartNavLink variant="inline" />
     </div>
   </div>
 

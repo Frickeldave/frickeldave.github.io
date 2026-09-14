@@ -1,0 +1,555 @@
+---
+import HandmadeLayout from "@components/handmade/HandmadeLayout.astro";
+import { CART_EMAIL } from "../../lib/cart";
+
+const title = "Warenkorb - Frickeldave Handmade";
+const description =
+  "Dein Warenkorb für handgefertigte Produkte aus Holz, 3D-Druck, Laser und Epoxidharz. Stelle deine Auswahl zusammen und sende sie per E-Mail an Frickeldave.";
+---
+
+<HandmadeLayout title={title} description={description}>
+  <div data-cart-root>
+    <div class="glass mb-6 rounded-lg p-6">
+      <h2 class="mb-3 text-2xl font-bold">Warenkorb</h2>
+      <p class="text-txt-p dark:text-darkmode-txt-p">
+        Deine Auswahl bleibt ausschließlich in diesem Browser gespeichert. Es
+        findet keine Übertragung an einen Server statt. Zum Abschluss wird deine
+        Auswahl an dein E-Mail-Programm übergeben.
+      </p>
+    </div>
+
+    <p
+      class="glass-subtle mb-6 rounded-lg p-4 text-sm"
+      role="status"
+      data-cart-status
+      hidden
+    >
+    </p>
+
+    <p class="glass-subtle mb-6 rounded-lg p-4 text-sm" data-cart-notice hidden>
+    </p>
+
+    <!-- Empty state -->
+    <section class="glass rounded-lg p-8 text-center" data-cart-empty hidden>
+      <p class="mb-2 text-xl font-semibold">Dein Warenkorb ist leer.</p>
+      <p class="text-txt-p dark:text-darkmode-txt-p mb-6">
+        Stöbere im Shop und lege Produkte in den Warenkorb.
+      </p>
+      <a
+        href="/handmade/shop"
+        class="inline-flex items-center justify-center rounded-md bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:from-cyan-600 hover:to-teal-600"
+      >
+        Zum Shop
+      </a>
+    </section>
+
+    <!-- Cart lines (rendered client-side) -->
+    <section
+      class="space-y-4"
+      data-cart-list
+      hidden
+      aria-label="Warenkorbpositionen"
+    >
+    </section>
+
+    <!-- Summary + contact details + send -->
+    <section class="mt-6 space-y-6" data-cart-summary hidden>
+      <div class="glass rounded-lg p-6">
+        <div
+          class="flex items-center justify-between border-b border-white/10 pb-4"
+        >
+          <span class="text-lg font-semibold">
+            <span data-cart-item-count>0</span> Artikel
+          </span>
+          <span
+            class="text-2xl font-bold text-cyan-600 dark:text-cyan-400"
+            data-cart-total>0,00 €</span
+          >
+        </div>
+
+        <div class="mt-6 space-y-4">
+          <div>
+            <label for="cart-name" class="mb-1 block text-sm font-medium">
+              Name (optional)
+            </label>
+            <input
+              id="cart-name"
+              type="text"
+              data-cart-field="name"
+              autocomplete="name"
+              class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm focus:border-cyan-400 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label for="cart-email" class="mb-1 block text-sm font-medium">
+              E-Mail für Rückfragen (optional)
+            </label>
+            <input
+              id="cart-email"
+              type="email"
+              data-cart-field="email"
+              autocomplete="email"
+              class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm focus:border-cyan-400 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label for="cart-message" class="mb-1 block text-sm font-medium">
+              Nachricht (optional)
+            </label>
+            <textarea
+              id="cart-message"
+              data-cart-field="message"
+              rows="4"
+              class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm focus:border-cyan-400 focus:outline-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+          <a
+            href={`mailto:${CART_EMAIL}`}
+            data-cart-send
+            class="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-3 text-sm font-medium text-white transition-all duration-300 hover:from-cyan-600 hover:to-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+          >
+            <svg
+              class="h-4 w-4 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+              ></path>
+            </svg>
+            Warenkorb per E-Mail senden
+          </a>
+
+          <button
+            type="button"
+            data-cart-clear
+            class="inline-flex items-center justify-center rounded-md border border-white/20 px-4 py-3 text-sm font-medium transition-all duration-300 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+          >
+            Warenkorb leeren
+          </button>
+        </div>
+
+        <p class="text-txt-p dark:text-darkmode-txt-p mt-4 text-xs">
+          Die E-Mail wird in deinem E-Mail-Programm an
+          <span class="font-mono">{CART_EMAIL}</span> vorbereitet. Erst dort wird
+          sie versendet.
+        </p>
+      </div>
+
+      <!-- Fallback for carts too large for a mailto link -->
+      <div class="glass rounded-lg p-6" data-cart-fallback hidden>
+        <h3 class="mb-2 text-lg font-semibold">Warenkorb manuell senden</h3>
+        <p class="text-txt-p dark:text-darkmode-txt-p mb-4 text-sm">
+          Dein Warenkorb ist zu umfangreich für einen E-Mail-Link. Kopiere den
+          Text und sende ihn an
+          <span class="font-mono">{CART_EMAIL}</span>.
+        </p>
+        <pre
+          class="max-h-64 overflow-auto rounded-lg border border-white/20 bg-white/5 p-4 text-xs whitespace-pre-wrap"
+          data-cart-fallback-text>
+        </pre>
+        <button
+          type="button"
+          data-cart-copy
+          class="mt-4 inline-flex items-center justify-center rounded-md bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2 text-sm font-medium text-white transition-all duration-300 hover:from-cyan-600 hover:to-teal-600"
+        >
+          In Zwischenablage kopieren
+        </button>
+      </div>
+    </section>
+
+    <noscript>
+      <p class="glass mt-6 rounded-lg p-4 text-sm">
+        Für den Warenkorb ist JavaScript erforderlich.
+      </p>
+    </noscript>
+  </div>
+</HandmadeLayout>
+
+<script>
+  import {
+    buildCartMailto,
+    CART_EMAIL,
+    clearCart,
+    extractCartProducts,
+    formatPrice,
+    readCart,
+    removeFromCart,
+    setLineQuantity,
+    summarizeCart,
+    writeCart,
+  } from "../../lib/cart";
+  import { bindCartDom } from "../../lib/cart-dom";
+  import type {
+    CartProduct,
+    CartSummary,
+    DetailedCartLine,
+  } from "../../lib/cart";
+
+  // The nav badge lives outside this page's markup — bind it here as well, so
+  // direct visits to /handmade/warenkorb keep the counter in sync.
+  bindCartDom();
+
+  const HTML_ESCAPES: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+
+  const escapeHtml = (value: string): string =>
+    value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char);
+
+  /**
+   * Current DOM bindings. Astro re-runs page scripts on navigation while the
+   * document (and this module) persists, so every reference has to be
+   * re-resolved against the fresh markup inside `bind()`.
+   */
+  let root: HTMLElement | null = null;
+  let listEl: HTMLElement | null = null;
+  let emptyEl: HTMLElement | null = null;
+  let summaryEl: HTMLElement | null = null;
+  let fallbackEl: HTMLElement | null = null;
+  let fallbackTextEl: HTMLElement | null = null;
+  let statusEl: HTMLElement | null = null;
+  let noticeEl: HTMLElement | null = null;
+
+  /** Root element the current listeners are attached to. */
+  let boundRoot: HTMLElement | null = null;
+
+  let products: CartProduct[] = [];
+  let latestSummary: CartSummary | null = null;
+
+  /** Set while the current cart exceeds the `mailto:` length limit. */
+  let mailtoTooLong = false;
+
+  const setMessage = (
+    element: HTMLElement | null | undefined,
+    message: string
+  ): void => {
+    if (!element) return;
+    element.textContent = message;
+    element.hidden = message === "";
+  };
+
+  const readField = (name: string): string =>
+    root
+      ?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+        `[data-cart-field="${name}"]`
+      )
+      ?.value.trim() ?? "";
+
+  // ---------------------------------------------------------------------
+  // Rendering
+  // ---------------------------------------------------------------------
+
+  const renderLine = (line: DetailedCartLine): string => {
+    const articleNumber = escapeHtml(line.articleNumber);
+    const name = escapeHtml(line.product.name);
+    const decreaseDisabled = line.quantity <= 1 ? " disabled" : "";
+
+    return `
+      <article class="glass rounded-lg p-4" data-cart-line="${articleNumber}">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0">
+            <h3 class="text-lg font-semibold text-cyan-600 dark:text-cyan-400">
+              <a href="/handmade/${articleNumber}" class="hover:underline">${name}</a>
+            </h3>
+            <p class="text-txt-p dark:text-darkmode-txt-p text-sm">
+              Artikelnr. <span class="font-mono">${articleNumber}</span> ·
+              ${formatPrice(line.product.price)} / Stück
+            </p>
+          </div>
+
+          <div class="flex items-center justify-between gap-4 sm:justify-end">
+            <div class="flex items-center gap-1">
+              <button
+                type="button"
+                data-cart-decrease
+                class="glass-subtle h-8 w-8 rounded-md text-lg leading-none transition-colors hover:bg-cyan-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Menge für ${name} verringern"${decreaseDisabled}
+              >−</button>
+              <input
+                type="number"
+                min="1"
+                max="99"
+                value="${line.quantity}"
+                data-cart-quantity
+                aria-label="Menge für ${name}"
+                class="h-8 w-14 rounded-md border border-white/20 bg-white/10 text-center text-sm focus:border-cyan-400 focus:outline-none"
+              />
+              <button
+                type="button"
+                data-cart-increase
+                class="glass-subtle h-8 w-8 rounded-md text-lg leading-none transition-colors hover:bg-cyan-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                aria-label="Menge für ${name} erhöhen"
+              >+</button>
+            </div>
+
+            <span class="w-24 text-right font-semibold">${formatPrice(line.lineTotal)}</span>
+
+            <button
+              type="button"
+              data-cart-remove
+              class="text-txt-p dark:text-darkmode-txt-p rounded-md p-2 transition-colors hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:hover:text-red-400"
+              aria-label="${name} aus dem Warenkorb entfernen"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </article>
+    `;
+  };
+
+  const render = (focusArticleNumber?: string): void => {
+    const saved = readCart();
+    const summary = summarizeCart(products, saved);
+    latestSummary = summary;
+
+    // Drop lines whose product left the catalog, so the stored cart and the
+    // displayed cart never drift apart.
+    if (summary.lines.length !== saved.length) {
+      writeCart(
+        summary.lines.map((line) => ({
+          articleNumber: line.articleNumber,
+          quantity: line.quantity,
+        }))
+      );
+      setMessage(
+        noticeEl,
+        "Einzelne Artikel sind nicht mehr verfügbar und wurden aus dem Warenkorb entfernt."
+      );
+    }
+
+    const isEmpty = summary.lines.length === 0;
+
+    if (emptyEl) emptyEl.hidden = !isEmpty;
+    if (listEl) {
+      listEl.hidden = isEmpty;
+      listEl.innerHTML = summary.lines.map(renderLine).join("");
+    }
+    if (summaryEl) summaryEl.hidden = isEmpty;
+    if (fallbackEl) fallbackEl.hidden = true;
+    if (!isEmpty) setMessage(statusEl, "");
+
+    const countEl = root?.querySelector<HTMLElement>("[data-cart-item-count]");
+    const totalEl = root?.querySelector<HTMLElement>("[data-cart-total]");
+    if (countEl) countEl.textContent = String(summary.itemCount);
+    if (totalEl) totalEl.textContent = formatPrice(summary.total);
+
+    if (focusArticleNumber) {
+      const selector = `[data-cart-line="${CSS.escape(focusArticleNumber)}"] [data-cart-quantity]`;
+      const input = root?.querySelector<HTMLInputElement>(selector);
+      input?.focus();
+      input?.select();
+    }
+
+    updateMailtoTarget();
+  };
+
+  // ---------------------------------------------------------------------
+  // Interaction
+  // ---------------------------------------------------------------------
+
+  const lineArticleNumber = (target: Element): string | null => {
+    const lineEl = target.closest("[data-cart-line]");
+    return lineEl?.getAttribute("data-cart-line") ?? null;
+  };
+
+  const quantityOf = (articleNumber: string): number => {
+    const selector = `[data-cart-line="${CSS.escape(articleNumber)}"] [data-cart-quantity]`;
+    const input = root?.querySelector<HTMLInputElement>(selector);
+    return Number(input?.value ?? "1");
+  };
+
+  const handleClick = (event: Event): void => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const articleNumber = lineArticleNumber(target);
+    if (!articleNumber) return;
+
+    if (target.closest("[data-cart-increase]")) {
+      setLineQuantity(articleNumber, quantityOf(articleNumber) + 1);
+      render(articleNumber);
+      return;
+    }
+
+    if (target.closest("[data-cart-decrease]")) {
+      setLineQuantity(articleNumber, quantityOf(articleNumber) - 1);
+      render(articleNumber);
+      return;
+    }
+
+    if (target.closest("[data-cart-remove]")) {
+      removeFromCart(articleNumber);
+      render();
+      setMessage(statusEl, "Der Artikel wurde aus dem Warenkorb entfernt.");
+    }
+  };
+
+  const handleChange = (event: Event): void => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (!target.matches("[data-cart-quantity]")) return;
+
+    const articleNumber = lineArticleNumber(target);
+    if (!articleNumber) return;
+
+    setLineQuantity(articleNumber, Number(target.value));
+    render(articleNumber);
+  };
+
+  /**
+   * Keep the send link in sync with the cart and the contact fields, so the
+   * generated mail text is inspectable (and copyable) before it is opened.
+   */
+  const updateMailtoTarget = (): void => {
+    const sendEl = root?.querySelector<HTMLAnchorElement>("[data-cart-send]");
+    if (!sendEl) return;
+
+    if (!latestSummary || latestSummary.itemCount === 0) {
+      mailtoTooLong = false;
+      sendEl.setAttribute("href", `mailto:${CART_EMAIL}`);
+      return;
+    }
+
+    const result = buildCartMailto(latestSummary, {
+      name: readField("name"),
+      email: readField("email"),
+      message: readField("message"),
+    });
+
+    mailtoTooLong = result.tooLong;
+    sendEl.setAttribute("href", result.tooLong ? "#" : result.url);
+
+    if (result.tooLong && fallbackTextEl) {
+      fallbackTextEl.textContent = `${result.subject}\n\n${result.body}`;
+    }
+  };
+
+  const handleSendClick = (event: Event): void => {
+    if (!mailtoTooLong) return;
+
+    event.preventDefault();
+    if (fallbackEl) fallbackEl.hidden = false;
+    setMessage(
+      statusEl,
+      "Der Warenkorb ist zu umfangreich für einen E-Mail-Link. Bitte nutze den Text unten."
+    );
+    fallbackEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleCopy = async (): Promise<void> => {
+    const text = fallbackTextEl?.textContent ?? "";
+    if (!text) return;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setMessage(
+        statusEl,
+        "Der Warenkorb-Text wurde in die Zwischenablage kopiert."
+      );
+    } catch {
+      setMessage(
+        statusEl,
+        "Kopieren war nicht möglich. Bitte markiere den Text und kopiere ihn manuell."
+      );
+    }
+  };
+
+  const handleClear = (): void => {
+    if (!window.confirm("Warenkorb wirklich leeren?")) return;
+    clearCart();
+    render();
+    setMessage(statusEl, "Der Warenkorb wurde geleert.");
+  };
+
+  const bind = (): void => {
+    const nextRoot = document.querySelector<HTMLElement>("[data-cart-root]");
+    if (!nextRoot) return;
+
+    // Same markup (the initial `astro:page-load` right after a direct visit):
+    // already wired up, so only refresh the rendered state.
+    if (nextRoot === boundRoot) {
+      render();
+      return;
+    }
+
+    boundRoot = nextRoot;
+    root = nextRoot;
+    listEl = root.querySelector<HTMLElement>("[data-cart-list]");
+    emptyEl = root.querySelector<HTMLElement>("[data-cart-empty]");
+    summaryEl = root.querySelector<HTMLElement>("[data-cart-summary]");
+    fallbackEl = root.querySelector<HTMLElement>("[data-cart-fallback]");
+    fallbackTextEl = root.querySelector<HTMLElement>(
+      "[data-cart-fallback-text]"
+    );
+    statusEl = root.querySelector<HTMLElement>("[data-cart-status]");
+    noticeEl = root.querySelector<HTMLElement>("[data-cart-notice]");
+
+    if (!listEl || !summaryEl) return;
+
+    // Elements are re-created on every navigation, so their listeners die with
+    // them — no explicit teardown needed.
+    listEl.addEventListener("click", handleClick);
+    listEl.addEventListener("change", handleChange);
+
+    root
+      .querySelector("[data-cart-send]")
+      ?.addEventListener("click", handleSendClick);
+
+    // Rebuild the mail link while the visitor types their contact details.
+    summaryEl?.addEventListener("input", updateMailtoTarget);
+    root
+      .querySelector("[data-cart-copy]")
+      ?.addEventListener("click", handleCopy);
+    root
+      .querySelector("[data-cart-clear]")
+      ?.addEventListener("click", handleClear);
+
+    render();
+  };
+
+  const initialize = async (): Promise<void> => {
+    if (!document.querySelector("[data-cart-root]")) return;
+
+    if (products.length === 0) {
+      try {
+        const response = await fetch("/data/handmade.json");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        products = extractCartProducts(await response.json());
+      } catch {
+        setMessage(
+          document.querySelector<HTMLElement>("[data-cart-status]"),
+          "Die Produktdaten konnten nicht geladen werden. Bitte lade die Seite neu."
+        );
+        return;
+      }
+    }
+
+    bind();
+  };
+
+  document.addEventListener("astro:page-load", () => {
+    void initialize();
+  });
+
+  if (document.readyState !== "loading") {
+    void initialize();
+  }
+</script>

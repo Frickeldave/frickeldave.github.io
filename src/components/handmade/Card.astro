@@ -1,6 +1,7 @@
 ---
 import type { HandmadeItem } from "@/types";
 import { getHandmadeCategoryLabel } from "@/lib/handmadeCategoryLabels";
+import AddToCartButton from "./AddToCartButton.astro";
 import { Image } from "astro:assets";
 
 interface Props {
@@ -20,10 +21,10 @@ const truncateDescription = (text: string, maxLength: number = 80): string => {
 const shortDescription = truncateDescription(item.description);
 ---
 
-<a href={`/handmade/${item.articleNumber}`} class="group block h-full">
-  <article
-    class="glass flex h-full cursor-pointer flex-col overflow-hidden rounded-lg shadow-lg transition-transform group-hover:scale-105 group-hover:shadow-xl"
-  >
+<article
+  class="glass group flex h-full flex-col overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105 hover:shadow-xl"
+>
+  <a href={`/handmade/${item.articleNumber}`} class="flex flex-1 flex-col">
     <div class="relative aspect-square overflow-hidden">
       <Image
         src={image}
@@ -55,7 +56,7 @@ const shortDescription = truncateDescription(item.description);
       </div>
     </div>
 
-    <div class="flex flex-grow flex-col p-6">
+    <div class="flex flex-grow flex-col p-6 pb-2">
       <h3 class="mb-2 text-xl font-bold text-cyan-600 dark:text-cyan-400">
         {item.name}
       </h3>
@@ -69,7 +70,7 @@ const shortDescription = truncateDescription(item.description);
         }
       </div>
 
-      <div class="mb-2 min-h-[2rem]">
+      <div class="mt-auto mb-2 min-h-[2rem]">
         {
           item.size && (
             <p class="text-sm opacity-70">
@@ -78,14 +79,18 @@ const shortDescription = truncateDescription(item.description);
           )
         }
       </div>
-
-      <div
-        class="mt-auto flex items-center justify-between border-t border-white/10 pt-4"
-      >
-        <span class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
-          {item.price.toFixed(2)} €
-        </span>
-      </div>
     </div>
-  </article>
-</a>
+  </a>
+
+  <div class="px-6 pb-6">
+    <div
+      class="mb-4 flex items-center justify-between border-t border-white/10 pt-4"
+    >
+      <span class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
+        {item.price.toFixed(2)} €
+      </span>
+    </div>
+
+    <AddToCartButton item={item} variant="card" />
+  </div>
+</article>

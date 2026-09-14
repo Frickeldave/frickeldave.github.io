@@ -1,4 +1,6 @@
 ---
+import CartNavLink from "./CartNavLink.astro";
+
 const links = [
   { href: "/handmade/shop", text: "Shop" },
   { href: "/handmade/3d-druck", text: "3D Druck" },
@@ -22,6 +24,9 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
 ---
 
 <nav class="space-y-6">
+  {/* Warenkorb Box */}
+  <CartNavLink />
+
   {/* Bereiche Box */}
   <div class="glass accordion-item overflow-hidden rounded-lg">
     <button

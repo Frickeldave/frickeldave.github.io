@@ -2,7 +2,9 @@
 
 ## Übersicht
 
-Das Handmade Produktcatalog-System ist ein Etsy-ähnlicher Online-Katalog, der handgefertigte Produkte präsentiert. Besucher können Produkte durchsuchen, filtern und sich über E-Mail über Produkte informieren, jedoch keine direkten Käufe tätigen.
+Das Handmade Produktcatalog-System ist ein Etsy-ähnlicher Online-Katalog, der handgefertigte
+Produkte präsentiert. Besucher können Produkte durchsuchen, filtern und sich über E-Mail über
+Produkte informieren, jedoch keine direkten Käufe tätigen.
 
 **URL:** `/handmade`  
 **Erstellt:** November 2025  
@@ -18,11 +20,11 @@ Das Handmade Produktcatalog-System ist ein Etsy-ähnlicher Online-Katalog, der h
 
 ### Seiten & Routen
 
-1. **Übersichtsseite:** `/handmade`
+1. **Übersichtsseite:** `/handmade/shop`
    - Zeigt alle sichtbaren Produkte als Grid
    - Sidebar mit Filter- und Suchfunktionen (Desktop)
    - Mobile Filter-Bar (Mobile)
-   - Datei: `src/pages/handmade.astro`
+   - Datei: `src/pages/handmade/shop.astro`
 
 2. **Produktdetailseite:** `/handmade/[articleNumber]`
    - Dynamisch generierte Seiten für jedes Produkt
@@ -30,14 +32,20 @@ Das Handmade Produktcatalog-System ist ein Etsy-ähnlicher Online-Katalog, der h
    - Datei: `src/pages/handmade/[articleNumber].astro`
    - Static Site Generation (SSG) für alle sichtbaren Produkte
 
+3. **Warenkorb:** `/handmade/warenkorb`
+   - Clientseitiger Warenkorb, siehe Abschnitt [Warenkorb](#warenkorb)
+   - Datei: `src/pages/handmade/warenkorb.astro`
+
 ### Komponenten
 
-| Komponente | Pfad | Beschreibung |
-|------------|------|--------------|
-| `Card.astro` | `src/components/handmade/Card.astro` | Produktkarte für Grid-Ansicht |
-| `ProductGallery.astro` | `src/components/handmade/ProductGallery.astro` | Bildergalerie auf Detailseite |
-| `ProductInfo.astro` | `src/components/handmade/ProductInfo.astro` | Produktinformationen auf Detailseite |
-| `Sidebar.astro` | `src/components/handmade/Sidebar.astro` | Desktop-Filter-Sidebar |
+| Komponente               | Pfad                                             | Beschreibung                                        |
+| ------------------------ | ------------------------------------------------ | --------------------------------------------------- |
+| `Card.astro`             | `src/components/handmade/Card.astro`             | Produktkarte für Grid-Ansicht                       |
+| `ProductGallery.astro`   | `src/components/handmade/ProductGallery.astro`   | Bildergalerie auf Detailseite                       |
+| `ProductInfo.astro`      | `src/components/handmade/ProductInfo.astro`      | Produktinformationen auf Detailseite                |
+| `Sidebar.astro`          | `src/components/handmade/Sidebar.astro`          | Desktop-Filter-Sidebar                              |
+| `ScadModelDisplay.astro` | `src/components/handmade/ScadModelDisplay.astro` | 3D-Modell mit STL-Download und SCAD-Quelltext       |
+| `AddToCartButton.astro`  | `src/components/handmade/AddToCartButton.astro`  | "In den Warenkorb"-Button für Karte und Detailseite |
 
 ## Datenstruktur
 
@@ -45,16 +53,16 @@ Das Handmade Produktcatalog-System ist ein Etsy-ähnlicher Online-Katalog, der h
 
 ```typescript
 type HandmadeItem = {
-  articleNumber: string;      // Eindeutige Artikelnummer
-  name: string;                // Produktname (Deutsch)
-  description: string;         // Beschreibung (Deutsch)
-  picture: string;             // Bildpfad (nicht mehr verwendet, Legacy)
+  articleNumber: string; // Eindeutige Artikelnummer
+  name: string; // Produktname (Deutsch)
+  description: string; // Beschreibung (Deutsch)
+  picture: string; // Bildpfad (nicht mehr verwendet, Legacy)
   category: "3D-Druck" | "Holz" | "Laser" | "Epoxidharz";
-  tags: string[];              // Array von Tags
-  price: number;               // Preis in Euro
-  size?: string;               // Optionale Größenangabe
-  visible: boolean;            // Sichtbarkeit (nur visible=true werden angezeigt)
-  customizable: boolean;       // Personalisierbar (zeigt ✨-Symbol)
+  tags: string[]; // Array von Tags
+  price: number; // Preis in Euro
+  size?: string; // Optionale Größenangabe
+  visible: boolean; // Sichtbarkeit (nur visible=true werden angezeigt)
+  customizable: boolean; // Personalisierbar (zeigt ✨-Symbol)
 };
 ```
 
@@ -76,14 +84,15 @@ type HandmadeItem = {
 
 ## Kategorien
 
-Das System unterstützt **vier feste Kategorien**, die die verschiedenen Herstellungsverfahren repräsentieren:
+Das System unterstützt **vier feste Kategorien**, die die verschiedenen Herstellungsverfahren
+repräsentieren:
 
-| Kategorie | Beschreibung | Beispiele |
-|-----------|-------------|-----------|
-| **3D-Druck** | 3D-gedruckte Produkte | Weihnachtsbaum Deko, Geschenkboxen, Namensschilder |
-| **Holz** | Handgefertigte Holzprodukte | Schneidebretter, Schmuckkästchen |
-| **Laser** | Lasergeschnittene Produkte | Osterhasen, Weihnachtsanhänger |
-| **Epoxidharz** | Epoxidharz-Produkte | River Tables, Untersetzer |
+| Kategorie      | Beschreibung                | Beispiele                                          |
+| -------------- | --------------------------- | -------------------------------------------------- |
+| **3D-Druck**   | 3D-gedruckte Produkte       | Weihnachtsbaum Deko, Geschenkboxen, Namensschilder |
+| **Holz**       | Handgefertigte Holzprodukte | Schneidebretter, Schmuckkästchen                   |
+| **Laser**      | Lasergeschnittene Produkte  | Osterhasen, Weihnachtsanhänger                     |
+| **Epoxidharz** | Epoxidharz-Produkte         | River Tables, Untersetzer                          |
 
 ## Tags
 
@@ -114,6 +123,7 @@ Tags sind **frei wählbar** und dienen der thematischen Zuordnung. Aktuell verwe
 ### Format
 
 Artikelnummern folgen einem **6-stelligen alphanumerischen Format**:
+
 - Format: `[Präfix][Ziffern/Buchstaben]`
 - Beispiele: `3DA8F3`, `WO52K9`, `LAH7M4`, `EPR6N8`
 
@@ -121,12 +131,12 @@ Artikelnummern folgen einem **6-stelligen alphanumerischen Format**:
 
 Die ersten 2-3 Zeichen sind ein **Kategoriepräfix**:
 
-| Präfix | Kategorie | Beispiele |
-|--------|-----------|-----------|
-| **3D** | 3D-Druck | 3DA8F3, 3DG4V7, 3DM5B8 |
-| **WO** | Holz (Woodwork) | WO52K9, WOT3P5, WON4C6 |
-| **LA** | Laser | LAH7M4, LAW9X2 |
-| **EP** | Epoxidharz (Epoxy) | EPR6N8, EPQ8D6 |
+| Präfix | Kategorie          | Beispiele              |
+| ------ | ------------------ | ---------------------- |
+| **3D** | 3D-Druck           | 3DA8F3, 3DG4V7, 3DM5B8 |
+| **WO** | Holz (Woodwork)    | WO52K9, WOT3P5, WON4C6 |
+| **LA** | Laser              | LAH7M4, LAW9X2         |
+| **EP** | Epoxidharz (Epoxy) | EPR6N8, EPQ8D6         |
 
 Die restlichen Zeichen sind **zufällige alphanumerische Zeichen** zur eindeutigen Identifikation.
 
@@ -180,6 +190,7 @@ src/assets/handmade/
 ### Übersichtsseite (/handmade)
 
 #### Desktop-Ansicht
+
 - **Grid-Layout:** 2-spaltig (responsive)
 - **Sidebar (rechts):**
   - Suchfeld (Name, Beschreibung, Artikelnummer)
@@ -190,6 +201,7 @@ src/assets/handmade/
   - "Filter zurücksetzen"-Button
 
 #### Mobile-Ansicht
+
 - **Mobile Filter-Bar (oben):**
   - Suchfeld + Sortierung
   - Ausklappbare Kategorie-Filter
@@ -199,6 +211,7 @@ src/assets/handmade/
   - "Filter zurücksetzen"-Button
 
 #### Produktkarten
+
 - **Anzeige:**
   - Produktbild (quadratisch)
   - Artikelnummer (oben links, Monospace-Font)
@@ -214,6 +227,7 @@ src/assets/handmade/
   - Klick öffnet Detailseite
 
 #### Filter-Logik
+
 - **Kategorien:** Mehrfachauswahl möglich (OR-Verknüpfung)
 - **Tags:** Mehrfachauswahl möglich (AND-Verknüpfung - alle gewählten Tags müssen vorhanden sein)
 - **Suche:** Durchsucht Name, Beschreibung, Artikelnummer und Tags
@@ -223,17 +237,20 @@ src/assets/handmade/
 ### Produktdetailseite (/handmade/[articleNumber])
 
 #### Layout
+
 - **Breadcrumb-Navigation:** Home > Handmade > Artikelnummer
 - **Zweispaltig:**
   - **Links:** Bildergalerie (vertikale Thumbnails) + Hauptbild
   - **Rechts:** Produktinformationen
 
 #### Bildergalerie
+
 - **Thumbnails:** Vertikal untereinander angeordnet
 - **Hauptbild:** Zeigt ausgewähltes Bild (Default: erstes Bild)
 - **Interaktion:** Klick auf Thumbnail wechselt Hauptbild
 
 #### Produktinformationen
+
 1. **Header-Sektion:**
    - Produktname (groß)
    - Artikelnummer (Monospace)
@@ -252,40 +269,90 @@ src/assets/handmade/
    - E-Mail-Button mit vorausgefülltem Betreff
    - Link zur Portfolio-Seite
 
+## Warenkorb
+
+Der Warenkorb ist **rein clientseitig**. Es gibt kein Backend, keinen Formular-Dienst und keine
+serverseitige Speicherung von Warenkörben.
+
+### Ablauf
+
+1. `AddToCartButton` auf Produktkarte oder Detailseite legt eine Position an bzw. erhöht die Menge.
+2. Der Warenkorb-Zähler in `HandmadeNav.astro` aktualisiert sich sofort.
+3. Auf `/handmade/warenkorb` lässt sich die Menge ändern, entfernen oder der Warenkorb leeren;
+   optional werden Name, E-Mail und Nachricht ergänzt.
+4. „Warenkorb per E-Mail senden“ übergibt die Auswahl als vorformulierten Text an das
+   E-Mail-Programm (`mailto:` an `handmade@frickeldave.de`). Erst dort wird die Mail tatsächlich
+   versendet.
+
+### Speicherung
+
+- **Key:** `frickeldave:handmade-cart` in `localStorage`
+- **Inhalt:** ausschließlich `articleNumber` + `quantity` je Position
+- **Keine Preisduplikation:** Name und Preis werden zur Anzeigezeit aus `public/data/handmade.json`
+  aufgelöst. Katalogänderungen wirken damit sofort auf den Warenkorb, ohne dass veraltete Preise
+  angezeigt werden.
+- **Vorhandener Storage wird bereinigt:** Positionen, deren Produkt nicht mehr sichtbar oder nicht
+  mehr im Katalog ist, werden beim Rendern entfernt.
+- **Ungültige Daten** (fremde oder beschädigte Payloads) werden wie ein leerer Warenkorb behandelt,
+  damit ein fehlerhafter Eintrag den Shop nicht bricht.
+
+### Module
+
+| Datei                                | Aufgabe                                                                                                                                                          |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/cart.ts`                    | Speicherung, Mengenlogik, Summen, `mailto:`-Erzeugung. Läuft auch server-seitig (ohne `window` liefert es leere Ergebnisse).                                     |
+| `src/lib/cart-dom.ts`                | DOM-Anbindung: Click-Delegation für die Buttons und Aktualisierung der Zähler-Badges. Idempotent, damit Astro-Scripts bei View-Transitions nicht doppelt binden. |
+| `src/pages/handmade/warenkorb.astro` | Warenkorb-Seite (Rendering, Mengensteuerung, Kontaktfelder, Versand)                                                                                             |
+
+### Grenzen des `mailto:`-Versands
+
+E-Mail-Programme und Browser kürzen `mailto:`-URLs ab etwa 2000 Zeichen. Für sehr große Warenkörbe
+zeigt die Seite deshalb statt des Links einen kopierbaren Text an (`MAILTO_LENGTH_LIMIT = 1900`).
+
+### Nicht enthalten
+
+- Zahlungsabwicklung, Bestell- oder Lagerverwaltung
+- Serverseitige Speicherung von Warenkörben oder Kundendaten
+- Versand-, Rabatt- oder Steuerlogik
+
 ## Metaeigenschaften
 
-| Eigenschaft | Typ | Pflicht | Beschreibung |
-|-------------|-----|---------|--------------|
-| `articleNumber` | string | ✓ | Eindeutige 6-stellige ID |
-| `name` | string | ✓ | Produktname (Deutsch) |
-| `description` | string | ✓ | Produktbeschreibung (Deutsch) |
-| `category` | string | ✓ | Eine von 4 Kategorien |
-| `tags` | string[] | ✓ | Array von Tags (kann leer sein) |
-| `price` | number | ✓ | Preis in Euro (Decimal) |
-| `visible` | boolean | ✓ | Sichtbarkeit (false = ausgeblendet) |
-| `customizable` | boolean | ✓ | Personalisierbar (zeigt ✨) |
-| `size` | string | - | Größenangabe (optional) |
-| `picture` | string | - | Legacy-Feld (nicht mehr verwendet) |
+| Eigenschaft     | Typ      | Pflicht | Beschreibung                        |
+| --------------- | -------- | ------- | ----------------------------------- |
+| `articleNumber` | string   | ✓       | Eindeutige 6-stellige ID            |
+| `name`          | string   | ✓       | Produktname (Deutsch)               |
+| `description`   | string   | ✓       | Produktbeschreibung (Deutsch)       |
+| `category`      | string   | ✓       | Eine von 4 Kategorien               |
+| `tags`          | string[] | ✓       | Array von Tags (kann leer sein)     |
+| `price`         | number   | ✓       | Preis in Euro (Decimal)             |
+| `visible`       | boolean  | ✓       | Sichtbarkeit (false = ausgeblendet) |
+| `customizable`  | boolean  | ✓       | Personalisierbar (zeigt ✨)         |
+| `size`          | string   | -       | Größenangabe (optional)             |
+| `picture`       | string   | -       | Legacy-Feld (nicht mehr verwendet)  |
 
 ## Technische Details
 
 ### TypeScript-Typen
+
 - Definiert in: `src/types/index.d.ts`
 - Typen: `HandmadeItem`, `HandmadeData`
 
 ### Styling
+
 - **Design System:** Türkis/Cyan (`from-cyan-500 to-teal-500`)
 - **Glass Morphism:** `.glass` Klassen für Karten
 - **Responsive:** TailwindCSS Breakpoints
 - **Dark Mode:** Unterstützt
 
 ### Client-Side Logic
+
 - **Filtering & Sorting:** Inline `<script>` in `handmade.astro`
 - **State Management:** Lokale Variablen (selectedCategories, selectedTags, etc.)
 - **Event Handling:** Vanilla JavaScript mit Event Listeners
 - **Re-initialization:** Astro Page Events (`astro:page-load`, `astro:after-swap`)
 
 ### Static Site Generation
+
 - **getStaticPaths():** Generiert Pfade für alle visible Produkte
 - **Build-Zeit:** Alle Seiten werden beim Build generiert
 - **404 Handling:** Redirect zu /404 bei ungültiger Artikelnummer
@@ -295,12 +362,14 @@ src/assets/handmade/
 ### Neues Produkt hinzufügen
 
 1. **Bilder vorbereiten:**
+
    ```bash
    mkdir -p src/assets/handmade/<kategorie>/<articleNumber>/
    # Bilder kopieren: <articleNumber>-000.png, -001.png, etc.
    ```
 
 2. **Produkt in JSON eintragen:**
+
    ```json
    {
      "articleNumber": "NEW123",
@@ -323,12 +392,14 @@ src/assets/handmade/
 ### Neue Kategorie hinzufügen
 
 1. **TypeScript-Typ erweitern:**
+
    ```typescript
    // src/types/index.d.ts
    category: "3D-Druck" | "Holz" | "Laser" | "Epoxidharz" | "Neue Kategorie";
    ```
 
 2. **Ordnerstruktur anlegen:**
+
    ```bash
    mkdir -p src/assets/handmade/neue-kategorie/
    ```
@@ -344,10 +415,10 @@ src/assets/handmade/
 
 ## Bekannte Einschränkungen
 
-1. **Keine echte E-Commerce-Funktionalität**
-   - Kein Warenkorb
+1. **Eingeschränkte E-Commerce-Funktionalität**
+   - Warenkorb vorhanden (rein clientseitig, siehe unten)
    - Keine Zahlungsabwicklung
-   - Nur Kontakt per E-Mail
+   - Bestellabschluss nur per E-Mail
 
 2. **Statische Produktliste**
    - Änderungen erfordern Rebuild
@@ -356,4 +427,4 @@ src/assets/handmade/
 3. **Manuelle Bildverwaltung**
    - Bilder müssen manuell in Ordnerstruktur abgelegt werden
    - Keine automatische Bildoptimierung außer Astro's Image-Komponente
-   - 
+   -
