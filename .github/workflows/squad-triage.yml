@@ -138,10 +138,13 @@ jobs:
 
             // If not routed to @copilot, use keyword-based routing
             if (!assignedMember) {
+              // Whole-word match for short/ambiguous role keywords. Otherwise
+              // "ui" would match "reqUIrement" in "Lead & Requirement Gatekeeper".
+              const hasWord = (text, word) => new RegExp('\\b' + word + '\\b', 'i').test(text);
               for (const member of members) {
                 const role = member.role.toLowerCase();
-                if ((role.includes('frontend') || role.includes('ui')) &&
-                    (issueText.includes('ui') || issueText.includes('frontend') ||
+                if ((role.includes('frontend') || hasWord(role, 'ui')) &&
+                    (hasWord(issueText, 'ui') || issueText.includes('frontend') ||
                      issueText.includes('css') || issueText.includes('component') ||
                      issueText.includes('button') || issueText.includes('page') ||
                      issueText.includes('layout') || issueText.includes('design'))) {
@@ -149,7 +152,7 @@ jobs:
                   triageReason = 'Issue relates to frontend/UI work';
                   break;
                 }
-                if ((role.includes('backend') || role.includes('api') || role.includes('server')) &&
+                if ((role.includes('backend') || hasWord(role, 'api') || role.includes('server')) &&
                     (issueText.includes('api') || issueText.includes('backend') ||
                      issueText.includes('database') || issueText.includes('endpoint') ||
                      issueText.includes('server') || issueText.includes('auth'))) {
@@ -157,7 +160,7 @@ jobs:
                   triageReason = 'Issue relates to backend/API work';
                   break;
                 }
-                if ((role.includes('test') || role.includes('qa') || role.includes('quality')) &&
+                if ((role.includes('test') || hasWord(role, 'qa') || role.includes('quality')) &&
                     (issueText.includes('test') || issueText.includes('bug') ||
                      issueText.includes('fix') || issueText.includes('regression') ||
                      issueText.includes('coverage'))) {
@@ -165,7 +168,7 @@ jobs:
                   triageReason = 'Issue relates to testing/quality work';
                   break;
                 }
-                if ((role.includes('devops') || role.includes('infra') || role.includes('ops')) &&
+                if ((role.includes('devops') || role.includes('infra') || hasWord(role, 'ops')) &&
                     (issueText.includes('deploy') || issueText.includes('ci') ||
                      issueText.includes('pipeline') || issueText.includes('docker') ||
                      issueText.includes('infrastructure'))) {
