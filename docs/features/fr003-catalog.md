@@ -221,10 +221,11 @@ src/assets/handmade/
   - Gekürzte Beschreibung (max. 80 Zeichen)
   - Tags (kleine Badges)
   - Größe (optional)
-  - Preis (groß, türkis)
+  - Preis (groß, türkis) und "In den Warenkorb"-Button nebeneinander
 - **Interaktion:**
   - Hover-Effekt (Scale-Up)
-  - Klick öffnet Detailseite
+  - Klick auf Karte öffnet Detailseite
+  - Klick auf "In den Warenkorb" fügt die Position hinzu, ohne die Detailseite zu öffnen
 
 #### Filter-Logik
 

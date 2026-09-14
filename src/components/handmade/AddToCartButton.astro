@@ -12,12 +12,16 @@ const { item, variant = "detail" } = Astro.props;
 const isCard = variant === "card";
 
 const buttonClasses = [
-  "inline-flex w-full items-center justify-center gap-2 rounded-md",
+  "inline-flex items-center justify-center gap-2 rounded-md",
   "bg-gradient-to-r from-cyan-500 to-teal-500 font-medium text-white",
   "transition-all duration-300 hover:from-cyan-600 hover:to-teal-600",
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500",
   "focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900",
-  isCard ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm",
+  // Fixed width in cards: it sits next to the price and the "Hinzugefügt"
+  // confirmation swaps the label, which must not reflow the row.
+  isCard
+    ? "w-40 flex-shrink-0 whitespace-nowrap px-3 py-2 text-xs"
+    : "w-full px-4 py-3 text-sm",
 ].join(" ");
 ---
 
