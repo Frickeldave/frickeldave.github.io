@@ -180,7 +180,7 @@ function findOption(options, column) {
 function resolveColumn(issue) {
   if (issue.state === 'CLOSED') return COLUMNS.DONE;
 
-  const labelNames = issue.labels.map((l) => l.name);
+  const labelNames = (issue.labels?.nodes ?? []).map((l) => l.name);
   const hasGoYes = labelNames.includes('go:yes');
   const hasSquadMember = labelNames.some((l) => l.startsWith('squad:'));
   const hasNeedsResearch = labelNames.includes('go:needs-research');
