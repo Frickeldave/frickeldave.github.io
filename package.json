@@ -1,6 +1,6 @@
 {
   "name": "Astrogon",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Template.",
   "author": "Frickeldave",
   "license": "MIT",
@@ -88,6 +88,7 @@
     "typescript-eslint": "^8.62.1"
   },
   "overrides": {
-    "undici": "^7.19.0"
+    "undici": "^7.19.0",
+    "smol-toml": "^1.7.1"
   }
 }

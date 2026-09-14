@@ -281,11 +281,6 @@ const recipes = defineCollection({
     }),
 });
 
-const terms = defineCollection({
-  loader: glob({ pattern: "-index.{md,mdx}", base: "./src/content/terms" }),
-  schema: searchable,
-});
-
 const downloads = defineCollection({
   loader: glob({ pattern: "-index.{md,mdx}", base: "./src/content/downloads" }),
   schema: searchable.extend({
@@ -316,5 +311,4 @@ export const collections = {
   indexCards,
   aboutme,
   recipes,
-  terms,
 };
