@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { readFileSync } from 'node:fs';
+import { test, expect } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 /**
  * End-to-end coverage for the client-side Handmade cart.
@@ -11,52 +11,72 @@ import { readFileSync } from 'node:fs';
  */
 
 const catalog = JSON.parse(
-  readFileSync(new URL('../../public/data/handmade.json', import.meta.url), 'utf8')
+  readFileSync(
+    new URL("../../public/data/handmade.json", import.meta.url),
+    "utf8"
+  )
 );
 
-const CART_STORAGE_KEY = 'frickeldave:handmade-cart';
+const CART_STORAGE_KEY = "frickeldave:handmade-cart";
+
+// The header shows a shortcut icon, the Handmade sidebar a full entry — both
+// carry a counter, so every locator has to name the one it means.
+const HEADER_CART = "header [data-cart-hide-when-empty]";
+const HEADER_BADGE = "header [data-cart-count]";
+const NAV_CART = "[data-cart-nav-link]";
+const NAV_BADGE = "[data-cart-nav-link] [data-cart-count]";
 
 /** Same formatting the cart page uses, so expectations stay in sync. */
 const formatPrice = (value) =>
-  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value);
+  new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(
+    value
+  );
 
 /** The cart formats prices with a non-breaking space; compare on plain spaces. */
-const normalize = (value) => value.replace(/\u00a0/g, ' ');
+const normalize = (value) => value.replace(/\u00a0/g, " ");
 
 const findProduct = (articleNumber) =>
   catalog.products.find((product) => product.articleNumber === articleNumber);
 
 /** Decode the body of a `mailto:` link built by the cart. */
 const mailBodyOf = (href) => {
-  const body = href.split('&body=')[1];
-  return body ? decodeURIComponent(body) : '';
+  const body = href.split("&body=")[1];
+  return body ? decodeURIComponent(body) : "";
 };
 
-test.describe('handmade cart', () => {
-  test('shows the empty state without any items', async ({ page }) => {
-    await page.goto('/handmade/warenkorb');
+test.describe("handmade cart", () => {
+  test("shows the empty state without any items", async ({ page }) => {
+    await page.goto("/handmade/warenkorb");
 
-    await expect(page.locator('[data-cart-empty]')).toBeVisible();
-    await expect(page.locator('[data-cart-list]')).toBeHidden();
-    await expect(page.locator('[data-cart-summary]')).toBeHidden();
-    await expect(page.locator('[data-cart-count]')).toBeHidden();
+    await expect(page.locator("[data-cart-empty]")).toBeVisible();
+    await expect(page.locator("[data-cart-list]")).toBeHidden();
+    await expect(page.locator("[data-cart-summary]")).toBeHidden();
+    await expect(page.locator(NAV_BADGE)).toBeHidden();
+    // The header shortcut only appears once the cart holds something.
+    await expect(page.locator(HEADER_CART)).toBeHidden();
   });
 
-  test('adds from the grid, updates quantity and builds the mail link', async ({
+  test("adds from the grid, updates quantity and builds the mail link", async ({
     page,
   }) => {
-    await page.goto('/handmade/shop');
+    await page.goto("/handmade/shop");
 
-    const addButton = page.locator('[data-add-to-cart]').first();
-    const articleNumber = await addButton.getAttribute('data-article-number');
-    const productName = await addButton.getAttribute('data-product-name');
+    const addButton = page.locator("[data-add-to-cart]").first();
+    const articleNumber = await addButton.getAttribute("data-article-number");
+    const productName = await addButton.getAttribute("data-product-name");
     const product = findProduct(articleNumber);
-    expect(product, `product ${articleNumber} must exist in the catalog`).toBeTruthy();
+    expect(
+      product,
+      `product ${articleNumber} must exist in the catalog`
+    ).toBeTruthy();
 
     await addButton.click();
 
-    // The nav counter reflects the new cart immediately.
-    await expect(page.locator('[data-cart-count]')).toHaveText('1');
+    // The nav counter reflects the new cart immediately, and the header
+    // shortcut appears for the first time.
+    await expect(page.locator(NAV_BADGE)).toHaveText("1");
+    await expect(page.locator(HEADER_CART)).toBeVisible();
+    await expect(page.locator(HEADER_BADGE)).toHaveText("1");
 
     // Only the article number and quantity are persisted — never the price.
     const stored = await page.evaluate(
@@ -66,52 +86,72 @@ test.describe('handmade cart', () => {
     expect(JSON.parse(stored)).toEqual([{ articleNumber, quantity: 1 }]);
 
     // Navigate through the nav link so the view transition path is covered too.
-    await page.locator('[data-cart-link]').click();
+    await page.locator(NAV_CART).click();
     await expect(page).toHaveURL(/\/handmade\/warenkorb\/?$/);
 
-    const line = page.locator('[data-cart-line]');
-    await expect(line).toHaveCount(1);
-    await expect(line.first()).toHaveAttribute('data-cart-line', articleNumber);
+    // The header shortcut survives the client-side navigation.
+    await expect(page.locator(HEADER_CART)).toBeVisible();
 
-    const quantity = page.locator('[data-cart-quantity]').first();
-    await expect(quantity).toHaveValue('1');
-    await expect(page.locator('[data-cart-total]')).toHaveText(
+    const line = page.locator("[data-cart-line]");
+    await expect(line).toHaveCount(1);
+    await expect(line.first()).toHaveAttribute("data-cart-line", articleNumber);
+
+    const quantity = page.locator("[data-cart-quantity]").first();
+    await expect(quantity).toHaveValue("1");
+    await expect(page.locator("[data-cart-total]")).toHaveText(
       formatPrice(product.price)
     );
 
     // Raise the quantity and confirm both the line and the total follow.
-    await page.locator('[data-cart-increase]').first().click();
-    await expect(quantity).toHaveValue('2');
-    await expect(page.locator('[data-cart-total]')).toHaveText(
+    await page.locator("[data-cart-increase]").first().click();
+    await expect(quantity).toHaveValue("2");
+    await expect(page.locator("[data-cart-total]")).toHaveText(
       formatPrice(product.price * 2)
     );
 
-    const mailto = page.locator('[data-cart-send]');
-    const href = await mailto.getAttribute('href');
-    expect(href.startsWith('mailto:handmade@frickeldave.de?')).toBe(true);
+    const mailto = page.locator("[data-cart-send]");
+    const href = await mailto.getAttribute("href");
+    expect(href.startsWith("mailto:handmade@frickeldave.de?")).toBe(true);
 
     const body = normalize(mailBodyOf(href));
     expect(body).toContain(`2 × ${productName} (${articleNumber})`);
-    expect(body).toContain(`Gesamtsumme: ${normalize(formatPrice(product.price * 2))}`);
+    expect(body).toContain(
+      `Gesamtsumme: ${normalize(formatPrice(product.price * 2))}`
+    );
 
     // Contact details are folded into the link as they are typed.
-    await page.locator('[data-cart-field="name"]').fill('Testkunde');
-    const hrefWithName = await mailto.getAttribute('href');
-    expect(normalize(mailBodyOf(hrefWithName))).toContain('Name: Testkunde');
+    await page.locator('[data-cart-field="name"]').fill("Testkunde");
+    const hrefWithName = await mailto.getAttribute("href");
+    expect(normalize(mailBodyOf(hrefWithName))).toContain("Name: Testkunde");
 
     // Removing the last position falls back to the empty state.
-    page.on('dialog', (dialog) => dialog.accept());
-    await page.locator('[data-cart-clear]').click();
-    await expect(page.locator('[data-cart-empty]')).toBeVisible();
-    await expect(page.locator('[data-cart-count]')).toBeHidden();
+    page.on("dialog", (dialog) => dialog.accept());
+    await page.locator("[data-cart-clear]").click();
+    await expect(page.locator("[data-cart-empty]")).toBeVisible();
+    await expect(page.locator(NAV_BADGE)).toBeHidden();
+    await expect(page.locator(HEADER_CART)).toBeHidden();
   });
 
-  test('adds from the product detail page', async ({ page }) => {
+  test("adds from the product detail page", async ({ page }) => {
     const product = catalog.products.find((entry) => entry.visible);
 
     await page.goto(`/handmade/${product.articleNumber}`);
-    await page.locator('[data-add-to-cart]').first().click();
+    await page.locator("[data-add-to-cart]").first().click();
 
-    await expect(page.locator('[data-cart-count]')).toHaveText('1');
+    await expect(page.locator(NAV_BADGE)).toHaveText("1");
+    await expect(page.locator(HEADER_CART)).toBeVisible();
+  });
+
+  test("keeps the header shortcut in sync across other sections", async ({
+    page,
+  }) => {
+    await page.goto("/handmade/shop");
+    await page.locator("[data-add-to-cart]").first().click();
+    await expect(page.locator(HEADER_CART)).toBeVisible();
+
+    // A section without any cart UI of its own still shows the header entry.
+    await page.goto("/news");
+    await expect(page.locator(HEADER_CART)).toBeVisible();
+    await expect(page.locator(HEADER_BADGE)).toHaveText("1");
   });
 });

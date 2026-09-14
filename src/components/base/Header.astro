@@ -1,6 +1,7 @@
 ---
 import ThemeSwitcher from "@components/base/ThemeSwitcher.astro";
-import { IoSearch } from "react-icons/io5";
+import { CART_PAGE_PATH } from "../../lib/cart";
+import { IoCartOutline, IoSearch } from "react-icons/io5";
 
 const { pathname } = Astro.url;
 
@@ -94,6 +95,31 @@ const menu = [
       }
     </ul>
     <div class="order-1 ml-auto flex items-center md:order-2 lg:ml-0">
+      {
+        /*
+        Cart shortcut. Deliberately carries no display utility: it is toggled
+        with the `hidden` attribute, which a `flex`/`inline-flex` class would
+        override. The icon box inside handles the layout instead.
+      */
+      }
+      <a
+        href={CART_PAGE_PATH}
+        data-cart-link
+        data-cart-hide-when-empty
+        data-cart-link-label="Zum Warenkorb"
+        aria-label="Zum Warenkorb"
+        class="border-border text-txt-p dark:border-darkmode-border dark:text-darkmode-txt-p relative mr-4 text-xl"
+        hidden
+      >
+        <span class="inline-flex items-center">
+          <IoCartOutline />
+          <span
+            class="absolute -top-1 -right-1.5 min-w-4 rounded-full bg-cyan-600 px-1 text-center text-[0.625rem] leading-4 font-semibold text-white"
+            data-cart-count
+            hidden>0</span
+          >
+        </span>
+      </a>
       <a
         class="border-border text-txt-p dark:border-darkmode-border dark:text-darkmode-txt-p mr-4 inline-block text-xl"
         href="/search"
@@ -105,3 +131,11 @@ const menu = [
     </div>
   </nav>
 </header>
+
+<script>
+  // The header ships on every page, so it owns the cart DOM binding: the
+  // counter, the reveal-on-non-empty behaviour and the add-to-cart clicks.
+  import { bindCartDom } from "../../lib/cart-dom";
+
+  bindCartDom();
+</script>

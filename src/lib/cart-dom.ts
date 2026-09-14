@@ -28,8 +28,9 @@ interface CartGlobal extends Window {
 }
 
 /**
- * Reflect the current cart size in every `[data-cart-count]` badge and keep the
- * accessible name of `[data-cart-link]` in sync.
+ * Reflect the current cart size in every `[data-cart-count]` badge, reveal
+ * `[data-cart-hide-when-empty]` elements, and keep the accessible name of
+ * `[data-cart-link]` in sync.
  */
 export const refreshCartBadges = (): void => {
   const total = getCartItemCount();
@@ -39,6 +40,13 @@ export const refreshCartBadges = (): void => {
     .forEach((badge) => {
       badge.textContent = String(total);
       badge.hidden = total === 0;
+    });
+
+  // Header entries that only make sense once the cart holds something.
+  document
+    .querySelectorAll<HTMLElement>("[data-cart-hide-when-empty]")
+    .forEach((element) => {
+      element.hidden = total === 0;
     });
 
   document

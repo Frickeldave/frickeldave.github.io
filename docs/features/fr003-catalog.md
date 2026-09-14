@@ -38,14 +38,15 @@ Produkte informieren, jedoch keine direkten Käufe tätigen.
 
 ### Komponenten
 
-| Komponente               | Pfad                                             | Beschreibung                                        |
-| ------------------------ | ------------------------------------------------ | --------------------------------------------------- |
-| `Card.astro`             | `src/components/handmade/Card.astro`             | Produktkarte für Grid-Ansicht                       |
-| `ProductGallery.astro`   | `src/components/handmade/ProductGallery.astro`   | Bildergalerie auf Detailseite                       |
-| `ProductInfo.astro`      | `src/components/handmade/ProductInfo.astro`      | Produktinformationen auf Detailseite                |
-| `Sidebar.astro`          | `src/components/handmade/Sidebar.astro`          | Desktop-Filter-Sidebar                              |
-| `ScadModelDisplay.astro` | `src/components/handmade/ScadModelDisplay.astro` | 3D-Modell mit STL-Download und SCAD-Quelltext       |
-| `AddToCartButton.astro`  | `src/components/handmade/AddToCartButton.astro`  | "In den Warenkorb"-Button für Karte und Detailseite |
+| Komponente               | Pfad                                             | Beschreibung                                                  |
+| ------------------------ | ------------------------------------------------ | ------------------------------------------------------------- |
+| `Card.astro`             | `src/components/handmade/Card.astro`             | Produktkarte für Grid-Ansicht                                 |
+| `ProductGallery.astro`   | `src/components/handmade/ProductGallery.astro`   | Bildergalerie auf Detailseite                                 |
+| `ProductInfo.astro`      | `src/components/handmade/ProductInfo.astro`      | Produktinformationen auf Detailseite                          |
+| `Sidebar.astro`          | `src/components/handmade/Sidebar.astro`          | Desktop-Filter-Sidebar                                        |
+| `ScadModelDisplay.astro` | `src/components/handmade/ScadModelDisplay.astro` | 3D-Modell mit STL-Download und SCAD-Quelltext                 |
+| `AddToCartButton.astro`  | `src/components/handmade/AddToCartButton.astro`  | "In den Warenkorb"-Button; in Karten kompakt als "Hinzufügen" |
+| `CartNavLink.astro`      | `src/components/handmade/CartNavLink.astro`      | Warenkorb-Einstieg mit Zähler (Sidebar und Detailseite)       |
 
 ## Datenstruktur
 
@@ -221,11 +222,16 @@ src/assets/handmade/
   - Gekürzte Beschreibung (max. 80 Zeichen)
   - Tags (kleine Badges)
   - Größe (optional)
-  - Preis (groß, türkis) und "In den Warenkorb"-Button nebeneinander
+  - Preis (groß, türkis) und "Hinzufügen"-Button nebeneinander
 - **Interaktion:**
   - Hover-Effekt (Scale-Up)
   - Klick auf Karte öffnet Detailseite
-  - Klick auf "In den Warenkorb" fügt die Position hinzu, ohne die Detailseite zu öffnen
+  - Klick auf "Hinzufügen" fügt die Position hinzu, ohne die Detailseite zu öffnen
+
+> Die Zeile aus Preis und Button ist der schmalste Bereich der Karte. Bei `xl` rendert das Grid drei
+> Spalten, wodurch nur rund 213 px zur Verfügung stehen. Deshalb trägt der Button in Karten das
+> kürzere Label und eine feste Breite — letzteres, damit die "Hinzugefügt"-Bestätigung die Zeile
+> nicht verschiebt. Die Zeile bricht bei Bedarf um (`flex-wrap`), statt über den Rand zu laufen.
 
 #### Filter-Logik
 
@@ -278,7 +284,9 @@ serverseitige Speicherung von Warenkörben.
 ### Ablauf
 
 1. `AddToCartButton` auf Produktkarte oder Detailseite legt eine Position an bzw. erhöht die Menge.
-2. Der Warenkorb-Zähler in `HandmadeNav.astro` aktualisiert sich sofort.
+2. Die Warenkorb-Zähler aktualisieren sich sofort: die Sidebar (`CartNavLink.astro`) und das
+   Kurzsymbol im globalen Header (`Header.astro`), das erst erscheint, sobald der Warenkorb gefüllt
+   ist.
 3. Auf `/handmade/warenkorb` lässt sich die Menge ändern, entfernen oder der Warenkorb leeren;
    optional werden Name, E-Mail und Nachricht ergänzt.
 4. „Warenkorb per E-Mail senden“ übergibt die Auswahl als vorformulierten Text an das
@@ -304,6 +312,11 @@ serverseitige Speicherung von Warenkörben.
 | `src/lib/cart.ts`                    | Speicherung, Mengenlogik, Summen, `mailto:`-Erzeugung. Läuft auch server-seitig (ohne `window` liefert es leere Ergebnisse).                                     |
 | `src/lib/cart-dom.ts`                | DOM-Anbindung: Click-Delegation für die Buttons und Aktualisierung der Zähler-Badges. Idempotent, damit Astro-Scripts bei View-Transitions nicht doppelt binden. |
 | `src/pages/handmade/warenkorb.astro` | Warenkorb-Seite (Rendering, Mengensteuerung, Kontaktfelder, Versand)                                                                                             |
+
+`bindCartDom()` wird zentral aus `src/components/base/Header.astro` aufgerufen. Der Header liegt
+über `BaseLayout` auf jeder Seite, damit das Header-Kurzsymbol auch außerhalb von `/handmade`
+korrekt ist. Die Aufrufe in `AddToCartButton.astro` und `CartNavLink.astro` sind redundant, halten
+die Komponenten aber eigenständig funktionsfähig — die Funktion ist idempotent.
 
 ### Grenzen des `mailto:`-Versands
 
