@@ -255,3 +255,20 @@ jobs:
             });
 
             core.info(`Triaged issue #${issue.number} → ${assignedMember.name} (${assignLabel})`);
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+        with:
+          node-version: 24
+
+      # Board sync runs inline (not via label events) so it works even though
+      # the labels above were added with GITHUB_TOKEN (which does not cascade).
+      - name: Sync issue to project board
+        continue-on-error: true
+        env:
+          SQUAD_PROJECT_TOKEN: ${{ secrets.SQUAD_PROJECT_TOKEN }}
+          PROJECT_OWNER: Frickeldave
+          PROJECT_NUMBER: '2'
+          REPO_OWNER: Frickeldave
+          REPO_NAME: frickeldave.github.io
+        run: |
+          node scripts/sync-project-board.mjs --issue "${{ github.event.issue.number }}"
