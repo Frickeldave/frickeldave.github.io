@@ -299,7 +299,7 @@ async function setItemStatus(projectId, itemId, statusFieldId, optionId) {
         $projectId: ID!
         $itemId: ID!
         $fieldId: ID!
-        $optionId: ID!
+        $optionId: String!
       ) {
         updateProjectV2ItemFieldValue(
           input: {
