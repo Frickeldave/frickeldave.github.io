@@ -227,11 +227,13 @@ src/assets/handmade/
   - Hover-Effekt (Scale-Up)
   - Klick auf Karte öffnet Detailseite
   - Klick auf "Hinzufügen" fügt die Position hinzu, ohne die Detailseite zu öffnen
+  - Bestätigung: das Warenkorb-Symbol wechselt kurz auf ein Häkchen und der Button wird grün
 
-> Die Zeile aus Preis und Button ist der schmalste Bereich der Karte. Bei `xl` rendert das Grid drei
-> Spalten, wodurch nur rund 213 px zur Verfügung stehen. Deshalb trägt der Button in Karten das
-> kürzere Label und eine feste Breite — letzteres, damit die "Hinzugefügt"-Bestätigung die Zeile
-> nicht verschiebt. Die Zeile bricht bei Bedarf um (`flex-wrap`), statt über den Rand zu laufen.
+> Die Zeile aus Preis und Button ist der schmalste Bereich der Karte: bei `xl` rendert das Grid drei
+> Spalten, wodurch nur rund 213 px zur Verfügung stehen (Preis bis 73 px, 8 px Abstand). Deshalb
+> trägt der Button in Karten das kürzere Label. Das Label bleibt außerdem konstant — die Bestätigung
+> tauscht nur das Icon, weil ein wechselnder Text die Buttonbreite und damit die ganze Zeile
+> verschieben würde. Die Zeile bricht bei Bedarf um (`flex-wrap`), statt über den Rand zu laufen.
 
 #### Filter-Logik
 
@@ -310,6 +312,7 @@ serverseitige Speicherung von Warenkörben.
 | Datei                                | Aufgabe                                                                                                                                                          |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/lib/cart.ts`                    | Speicherung, Mengenlogik, Summen, `mailto:`-Erzeugung. Läuft auch server-seitig (ohne `window` liefert es leere Ergebnisse).                                     |
+| `src/lib/formatPrice.ts`             | Einheitliche Euro-Formatierung (`35,00 €`) für Karte, Detailseite und Warenkorb.                                                                                 |
 | `src/lib/cart-dom.ts`                | DOM-Anbindung: Click-Delegation für die Buttons und Aktualisierung der Zähler-Badges. Idempotent, damit Astro-Scripts bei View-Transitions nicht doppelt binden. |
 | `src/pages/handmade/warenkorb.astro` | Warenkorb-Seite (Rendering, Mengensteuerung, Kontaktfelder, Versand)                                                                                             |
 

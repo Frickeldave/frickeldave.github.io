@@ -13,6 +13,8 @@
  * to empty results instead of throwing.
  */
 
+import { formatPrice } from "./formatPrice";
+
 /** `localStorage` key holding the serialized cart lines. */
 export const CART_STORAGE_KEY = "frickeldave:handmade-cart";
 
@@ -258,13 +260,6 @@ export const clearCart = (): CartLine[] => writeCart([]);
 /** Total number of items across all lines. */
 export const getCartItemCount = (lines: CartLine[] = readCart()): number =>
   lines.reduce((sum, line) => sum + line.quantity, 0);
-
-/** Format a euro amount for the German locale. */
-export const formatPrice = (value: number): string =>
-  new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
-  }).format(value);
 
 /**
  * Resolve persisted lines against the catalog.

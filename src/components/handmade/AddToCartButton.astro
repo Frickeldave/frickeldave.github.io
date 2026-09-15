@@ -12,8 +12,9 @@ const { item, variant = "detail" } = Astro.props;
 const isCard = variant === "card";
 
 // The card button shares its row with the price inside the narrow `xl` grid
-// columns, so it gets the shorter label and a fixed width. The fixed width
-// keeps the "Hinzugefügt" confirmation from reflowing that row.
+// columns (~213px of room), so it carries the shorter label. The label never
+// changes: the confirmation swaps the icon instead, which keeps the width
+// stable and the row from reflowing.
 const label = isCard ? "Hinzufügen" : "In den Warenkorb";
 
 const buttonClasses = [
@@ -23,7 +24,7 @@ const buttonClasses = [
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500",
   "focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900",
   isCard
-    ? "w-32 flex-shrink-0 justify-center px-2 py-2 text-xs whitespace-nowrap"
+    ? "flex-shrink-0 px-2.5 py-2 text-xs whitespace-nowrap"
     : "w-full px-4 py-3 text-sm",
 ].join(" ");
 ---
@@ -40,6 +41,7 @@ const buttonClasses = [
   >
     <svg
       class="h-4 w-4 flex-shrink-0"
+      data-add-to-cart-icon="cart"
       fill="none"
       stroke="currentColor"
       stroke-width="1.5"
@@ -52,10 +54,39 @@ const buttonClasses = [
         d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
       ></path>
     </svg>
+    <svg
+      class="hidden h-4 w-4 flex-shrink-0"
+      data-add-to-cart-icon="done"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M4.5 12.75l6 6 9-13.5"></path>
+    </svg>
     <span data-add-to-cart-label>{label}</span>
   </button>
   <span class="sr-only" role="status" data-add-to-cart-status></span>
 </div>
+
+<style>
+  /*
+   * Confirmation state, driven by `data-state` rather than swapped Tailwind
+   * classes: competing `from-*`/`to-*` utilities would resolve by stylesheet
+   * order, not by the order they appear in the class attribute.
+   */
+  .add-to-cart button[data-state="added"] {
+    background-image: linear-gradient(
+      to right,
+      var(--color-green-500, #22c55e),
+      var(--color-emerald-500, #10b981)
+    );
+  }
+</style>
 
 <script>
   import { bindCartDom } from "../../lib/cart-dom";

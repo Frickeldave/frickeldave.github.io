@@ -1,6 +1,7 @@
 ---
 import type { HandmadeItem } from "@/types";
 import { getHandmadeCategoryLabel } from "@/lib/handmadeCategoryLabels";
+import { formatPrice } from "@/lib/formatPrice";
 import AddToCartButton from "./AddToCartButton.astro";
 import { Image } from "astro:assets";
 
@@ -88,8 +89,9 @@ const shortDescription = truncateDescription(item.description);
     >
       <span
         class="text-xl font-bold whitespace-nowrap text-cyan-600 dark:text-cyan-400"
+        data-product-price
       >
-        {item.price.toFixed(2)} €
+        {formatPrice(item.price)}
       </span>
 
       <AddToCartButton item={item} variant="card" />

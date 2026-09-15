@@ -182,13 +182,13 @@ const description =
     CART_EMAIL,
     clearCart,
     extractCartProducts,
-    formatPrice,
     readCart,
     removeFromCart,
     setLineQuantity,
     summarizeCart,
     writeCart,
   } from "../../lib/cart";
+  import { formatPrice } from "../../lib/formatPrice";
   import { bindCartDom } from "../../lib/cart-dom";
   import type {
     CartProduct,

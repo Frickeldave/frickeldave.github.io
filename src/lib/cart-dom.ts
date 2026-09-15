@@ -11,14 +11,14 @@
 
 import { CART_UPDATED_EVENT, addToCart, getCartItemCount } from "./cart";
 
-/** How long the "Hinzugefügt" confirmation stays on a button. */
+/** How long the confirmation stays on a button. */
 const FEEDBACK_DURATION_MS = 2000;
+
+/** Value of `data-state` while a button shows its confirmation. */
+const FEEDBACK_STATE = "added";
 
 /** Global flag that makes the binding survive repeated script execution. */
 const BOUND_FLAG = "__handmadeCartDomBound";
-
-/** Label of the "add to cart" button while the confirmation is showing. */
-const FEEDBACK_LABEL = "✓ Hinzugefügt";
 
 /** Timers per button, so rapid clicks reset rather than stack the confirmation. */
 const feedbackTimers = new WeakMap<HTMLElement, number>();
@@ -60,19 +60,31 @@ export const refreshCartBadges = (): void => {
     });
 };
 
-/** Briefly swap the button label for a confirmation. */
+/**
+ * Toggle a button between its cart icon and its checkmark.
+ *
+ * The label deliberately stays untouched: swapping it would change the button
+ * width and reflow the price row it shares inside the product card.
+ */
+const setIconState = (button: HTMLElement, added: boolean): void => {
+  button
+    .querySelector<SVGElement>('[data-add-to-cart-icon="cart"]')
+    ?.classList.toggle("hidden", added);
+  button
+    .querySelector<SVGElement>('[data-add-to-cart-icon="done"]')
+    ?.classList.toggle("hidden", !added);
+};
+
+/** Briefly switch a button into its confirmation state. */
 const showButtonFeedback = (button: HTMLElement, productName: string): void => {
-  const label = button.querySelector<HTMLElement>("[data-add-to-cart-label]");
   const status = button.querySelector<HTMLElement>("[data-add-to-cart-status]");
 
   if (status) {
     status.textContent = `${productName} wurde in den Warenkorb gelegt.`;
   }
 
-  if (!label) return;
-
-  button.dataset.defaultLabel ??= label.textContent ?? "";
-  label.textContent = FEEDBACK_LABEL;
+  setIconState(button, true);
+  button.dataset.state = FEEDBACK_STATE;
 
   const pending = feedbackTimers.get(button);
   if (pending !== undefined) window.clearTimeout(pending);
@@ -80,7 +92,8 @@ const showButtonFeedback = (button: HTMLElement, productName: string): void => {
   feedbackTimers.set(
     button,
     window.setTimeout(() => {
-      label.textContent = button.dataset.defaultLabel ?? "";
+      setIconState(button, false);
+      delete button.dataset.state;
       feedbackTimers.delete(button);
     }, FEEDBACK_DURATION_MS)
   );
