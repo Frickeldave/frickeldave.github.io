@@ -1,29 +1,20 @@
 ---
 import { CART_PAGE_PATH } from "../../lib/cart";
 
-interface Props {
-  /** `sidebar` for the Handmade navigation, `inline` for the detail page card. */
-  variant?: "sidebar" | "inline";
-}
-
-const { variant = "sidebar" } = Astro.props;
-
-const isSidebar = variant === "sidebar";
+/**
+ * "Zum Warenkorb" entry for the product detail page.
+ *
+ * The Handmade sidebar deliberately has no cart box — the global header icon
+ * (see `Header.astro`) is the site-wide entry point.
+ */
 const isCurrentPage = Astro.url.pathname.replace(/\/$/, "") === CART_PAGE_PATH;
 
-const linkClasses = isSidebar
-  ? [
-      "glass flex items-center justify-between gap-3 rounded-lg p-4 transition-all",
-      isCurrentPage
-        ? "border-cyan-600/50 bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md"
-        : "text-txt-h dark:text-darkmode-txt-h hover:bg-cyan-500/20",
-    ].join(" ")
-  : [
-      "glass-subtle flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all",
-      isCurrentPage
-        ? "border-cyan-600/50 bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md"
-        : "hover:bg-cyan-500/20",
-    ].join(" ");
+const linkClasses = [
+  "glass-subtle flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all",
+  isCurrentPage
+    ? "border-cyan-600/50 bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md"
+    : "hover:bg-cyan-500/20",
+].join(" ");
 ---
 
 <a
@@ -49,7 +40,7 @@ const linkClasses = isSidebar
         d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
       ></path>
     </svg>
-    {isSidebar ? "Warenkorb" : "Zum Warenkorb"}
+    Zum Warenkorb
   </span>
   <span
     class="min-w-6 rounded-full bg-cyan-600 px-2 py-0.5 text-center text-xs font-semibold text-white"

@@ -46,7 +46,7 @@ Produkte informieren, jedoch keine direkten Käufe tätigen.
 | `Sidebar.astro`          | `src/components/handmade/Sidebar.astro`          | Desktop-Filter-Sidebar                                        |
 | `ScadModelDisplay.astro` | `src/components/handmade/ScadModelDisplay.astro` | 3D-Modell mit STL-Download und SCAD-Quelltext                 |
 | `AddToCartButton.astro`  | `src/components/handmade/AddToCartButton.astro`  | "In den Warenkorb"-Button; in Karten kompakt als "Hinzufügen" |
-| `CartNavLink.astro`      | `src/components/handmade/CartNavLink.astro`      | Warenkorb-Einstieg mit Zähler (Sidebar und Detailseite)       |
+| `CartNavLink.astro`      | `src/components/handmade/CartNavLink.astro`      | "Zum Warenkorb"-Einstieg mit Zähler auf der Detailseite       |
 
 ## Datenstruktur
 
@@ -235,6 +235,20 @@ src/assets/handmade/
 > tauscht nur das Icon, weil ein wechselnder Text die Buttonbreite und damit die ganze Zeile
 > verschieben würde. Die Zeile bricht bei Bedarf um (`flex-wrap`), statt über den Rand zu laufen.
 
+#### Ausrichtung der Produktliste
+
+Der Wrapper der Produktliste trägt zusätzlich zu `section` die Klasse `shop-products`. Ohne diese
+Klasse starten die Karten 64 px (bei `xl`) unterhalb der ersten Sidebar-Box, weil `.section` oben
+3–4 rem Innenabstand mitbringt.
+
+Ein Tailwind-Utility kann das **nicht** aufheben: `utilities.scss` wird in Tailwinds
+`utilities`-Layer geladen, und zwar _nach_ den generierten Utilities, sodass `.section` gegen `pt-0`
+gewinnt (verifiziert — `pt-0` ändert den Wert nicht). Die zusätzliche Klasse `shop-products` hebt
+stattdessen die Spezifität an.
+
+Hinweis: `.section py-2` auf der mobilen Filterleiste hat denselben Konflikt, ist aber nicht
+angepasst worden — dort greift `py-2` ebenfalls nicht.
+
 #### Filter-Logik
 
 - **Kategorien:** Mehrfachauswahl möglich (OR-Verknüpfung)
@@ -286,9 +300,10 @@ serverseitige Speicherung von Warenkörben.
 ### Ablauf
 
 1. `AddToCartButton` auf Produktkarte oder Detailseite legt eine Position an bzw. erhöht die Menge.
-2. Die Warenkorb-Zähler aktualisieren sich sofort: die Sidebar (`CartNavLink.astro`) und das
-   Kurzsymbol im globalen Header (`Header.astro`), das erst erscheint, sobald der Warenkorb gefüllt
-   ist.
+2. Der Warenkorb-Zähler im Kurzsymbol des globalen Headers (`Header.astro`) aktualisiert sich
+   sofort. Das Symbol erscheint erst, sobald der Warenkorb gefüllt ist. Die Handmade-Sidebar hat
+   **bewusst keinen** Warenkorb-Eintrag; auf der Detailseite gibt es zusätzlich den Einstieg über
+   `CartNavLink.astro`.
 3. Auf `/handmade/warenkorb` lässt sich die Menge ändern, entfernen oder der Warenkorb leeren;
    optional werden Name, E-Mail und Nachricht ergänzt.
 4. „Warenkorb per E-Mail senden“ übergibt die Auswahl als vorformulierten Text an das

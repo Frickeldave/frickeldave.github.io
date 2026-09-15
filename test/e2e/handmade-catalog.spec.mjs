@@ -40,4 +40,26 @@ test.describe("handmade catalog", () => {
       /^\d+(\.\d{3})*,\d{2}\s*€$/
     );
   });
+
+  test("the product grid lines up with the first sidebar box", async ({
+    page,
+  }) => {
+    // Desktop only: below `lg` the sidebar moves above the grid by design.
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/handmade/shop");
+
+    const grid = page.locator("#products-grid");
+    const sidebar = page.locator("nav.space-y-6 > *").first();
+    await expect(grid).toBeVisible();
+    await expect(sidebar).toBeVisible();
+
+    const gridBox = await grid.boundingBox();
+    const sidebarBox = await sidebar.boundingBox();
+    expect(gridBox).not.toBeNull();
+    expect(sidebarBox).not.toBeNull();
+
+    // `<section class="section">` adds 3-4rem of top padding, which used to
+    // push the product cards below the top edge of the sidebar.
+    expect(Math.abs(gridBox.y - sidebarBox.y)).toBeLessThanOrEqual(1);
+  });
 });

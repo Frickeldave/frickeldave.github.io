@@ -194,7 +194,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
     </div>
   </section>
 
-  <section class="section">
+  <section class="section shop-products">
     <div class="container flex">
       <div class="row mx-0 w-full px-0">
         <!-- Products Grid -->
@@ -828,3 +828,18 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
     })();
   </script>
 </HandmadeLayout>
+
+<style>
+  /*
+   * The product grid has to line up with the first box of the Handmade sidebar
+   * ("Bereiche"), but `.section` adds 3-4rem of top padding.
+   *
+   * A Tailwind utility cannot cancel it: `utilities.scss` is loaded into
+   * Tailwind's `utilities` layer *after* the generated utilities, so `.section`
+   * wins against `pt-0` (verified — adding `pt-0` leaves the padding at 64px).
+   * The extra class raises the specificity instead.
+   */
+  section.shop-products {
+    padding-top: 0;
+  }
+</style>

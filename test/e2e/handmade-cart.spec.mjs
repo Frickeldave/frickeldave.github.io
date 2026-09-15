@@ -4,10 +4,10 @@ import { readFileSync } from "node:fs";
 /**
  * End-to-end coverage for the client-side Handmade cart.
  *
- * Exercises the real built site: adding from the product grid, the nav counter,
- * the view-transition navigation to the cart page, quantity changes, and the
- * generated `mailto:` link. The link is asserted via its `href` so the test
- * never has to actually hand off to a mail client.
+ * Exercises the real built site: adding from the product grid, the header
+ * counter, the view-transition navigation to the cart page, quantity changes,
+ * and the generated `mailto:` link. The link is asserted via its `href` so the
+ * test never has to actually hand off to a mail client.
  */
 
 const catalog = JSON.parse(
@@ -19,12 +19,13 @@ const catalog = JSON.parse(
 
 const CART_STORAGE_KEY = "frickeldave:handmade-cart";
 
-// The header shows a shortcut icon, the Handmade sidebar a full entry — both
-// carry a counter, so every locator has to name the one it means.
+// The header carries the site-wide cart shortcut with a counter. The product
+// detail page renders its own "Zum Warenkorb" entry; the Handmade sidebar has
+// none by design.
 const HEADER_CART = "header [data-cart-hide-when-empty]";
 const HEADER_BADGE = "header [data-cart-count]";
-const NAV_CART = "[data-cart-nav-link]";
-const NAV_BADGE = "[data-cart-nav-link] [data-cart-count]";
+const DETAIL_CART = "[data-cart-nav-link]";
+const DETAIL_BADGE = "[data-cart-nav-link] [data-cart-count]";
 
 /** Same formatting the cart page uses, so expectations stay in sync. */
 const formatPrice = (value) =>
@@ -51,7 +52,6 @@ test.describe("handmade cart", () => {
     await expect(page.locator("[data-cart-empty]")).toBeVisible();
     await expect(page.locator("[data-cart-list]")).toBeHidden();
     await expect(page.locator("[data-cart-summary]")).toBeHidden();
-    await expect(page.locator(NAV_BADGE)).toBeHidden();
     // The header shortcut only appears once the cart holds something.
     await expect(page.locator(HEADER_CART)).toBeHidden();
   });
@@ -72,9 +72,7 @@ test.describe("handmade cart", () => {
 
     await addButton.click();
 
-    // The nav counter reflects the new cart immediately, and the header
-    // shortcut appears for the first time.
-    await expect(page.locator(NAV_BADGE)).toHaveText("1");
+    // The header shortcut appears for the first time and shows the count.
     await expect(page.locator(HEADER_CART)).toBeVisible();
     await expect(page.locator(HEADER_BADGE)).toHaveText("1");
 
@@ -85,8 +83,9 @@ test.describe("handmade cart", () => {
     );
     expect(JSON.parse(stored)).toEqual([{ articleNumber, quantity: 1 }]);
 
-    // Navigate through the nav link so the view transition path is covered too.
-    await page.locator(NAV_CART).click();
+    // Navigate through the header shortcut so the view transition path is
+    // covered too.
+    await page.locator(HEADER_CART).click();
     await expect(page).toHaveURL(/\/handmade\/warenkorb\/?$/);
 
     // The header shortcut survives the client-side navigation.
@@ -128,7 +127,6 @@ test.describe("handmade cart", () => {
     page.on("dialog", (dialog) => dialog.accept());
     await page.locator("[data-cart-clear]").click();
     await expect(page.locator("[data-cart-empty]")).toBeVisible();
-    await expect(page.locator(NAV_BADGE)).toBeHidden();
     await expect(page.locator(HEADER_CART)).toBeHidden();
   });
 
@@ -138,7 +136,9 @@ test.describe("handmade cart", () => {
     await page.goto(`/handmade/${product.articleNumber}`);
     await page.locator("[data-add-to-cart]").first().click();
 
-    await expect(page.locator(NAV_BADGE)).toHaveText("1");
+    // The detail page keeps its own entry next to the add-to-cart button.
+    await expect(page.locator(DETAIL_BADGE)).toHaveText("1");
+    await expect(page.locator(DETAIL_CART)).toBeVisible();
     await expect(page.locator(HEADER_CART)).toBeVisible();
   });
 
