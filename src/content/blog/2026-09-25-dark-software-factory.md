@@ -9,11 +9,11 @@ author: frickeldave
 tags: [KI]
 hideToc: false
 aiTransparency:
-  humanShare: 82
+  humanShare: 83
   model: "DeepSeek V4 Pro"
   confidence: "hoch"
   evaluatedAt: "2026-09-25"
-  comment: "Klare Ich-Haltung, belegte Quellen, unregelmäßige Satzlängen; Gegenprobe über Vibe-Coding-Plattformen (v0, Lovable, Bolt.new, Replit), StrongDM über die Willison-Referenz belegt."
+  comment: "Klare Ich-Haltung, belegte Quellen, unregelmäßige Satzlängen; Gegenprobe über Vibe-Coding-Plattformen (v0, Lovable, Bolt.new, Replit), StrongDM über die Willison-Referenz belegt. Das Beispielschema ist als GitHub-Issue-Template im YAML-Format gefasst."
 ---
 
 *Von der GitHub-Issue zum automatischen Deployment: Die Werkzeuge existieren. Was noch fehlt, ist eine ebenso verlässliche Maschine für Absicht, Prüfung und Verantwortung.*
@@ -27,7 +27,7 @@ Eine Kundin klickt auf "Rechnungen exportieren". Die Datei öffnet sich. Darin s
 
 Genau diesen Satz schreibt ein Fachbereich heute in ein GitHub Issue. Ein Coding-Agent erstellt daraus einen Branch, verändert mehrere Dateien, ergänzt Tests und öffnet einen Pull Request. Nach dem Merge baut eine Pipeline ein Artefakt und stellt es bereit. Das klingt nach einer fast vollständig automatisierten Softwareentwicklung. Tatsächlich ist die Kette technisch greifbar. Die kritische Frage lautet aber nicht mehr nur: "Kann ein Agent Code schreiben?" Sie lautet: "Wer definiert und prüft, welches Verhalten dieser Code haben darf?"
 
-Ich bleibe in den konkreten Beispielen bei GitHub und GitHub Copilot – stellvertretend für den Rest. Wer mit GitLab oder mit JetBrains-Werkzeugen arbeitet oder ein vergleichbares agentisches Werkzeug einsetzt, kennt dieselben Bausteine unter anderen Namen: Issues, Branches, Prüfungen, Freigaben, Auslieferung. Was ich hier an GitHub zeige, lässt sich auf jede solche Werkzeugkette übertragen.
+Ich fokussiere in den konkreten Beispielen stark auf GitHub und GitHub Copilot zusammen mit dem [Squad-Framework von Brady Gaster](https://bradygaster.github.io/squad/) und, um auch die Claude Welt abzudecken, das hauseigene Framework der adesso [adSCAILE](https://www.adesso.de/de/impulse/adscaile/index.jsp) – stellvertretend für viele andere Frameworks mit ähnlichen Ansätzen. Wer mit GitLab oder mit JetBrains-Werkzeugen arbeitet oder ein vergleichbares agentisches Werkzeug einsetzt, kennt dieselben Bausteine unter anderen Namen: Issues, Branches, Prüfungen, Freigaben, Auslieferung. Was ich hier an GitHub zeige, lässt sich auf jede solche Werkzeugkette übertragen.
 
 ## Was "Dark Fabric" hier bedeutet
 
@@ -39,35 +39,100 @@ Der nüchterne Istzustand beginnt bei vorhandenen Werkzeugen. Der [GitHub Copilo
 
 Einen radikalen Gegensatz stellen Vibe-Coding-Plattformen wie v0 von Vercel, Lovable, Bolt.new und Replit dar. [^4] Dort beschreiben Menschen in Alltagssprache, was sie wollen; die Plattform erzeugt daraus eine lauffähige Anwendung, und der erzeugte Code wird in der Regel nicht Zeile für Zeile von Menschen geprüft. Spannend ist das. Eine unabhängige Prüfung von Qualität und Sicherheit fehlt dabei trotzdem, und ob sich dieselbe Herangehensweise auf ernsthafte Produkte übertragen lässt, bleibt offen.
 
-Zwischen den einzelnen Werkzeugen und einer vollständigen Factory liegt eine Koordinationsschicht: Wer darf welche Datei anfassen, wer prüft, wer gibt frei, und wo bleibt das nachvollziehbar? Genau dort setzt das [Squad-Framework von Brady Gaster](https://bradygaster.github.io/squad/) an. Squad orchestriert mehrere Agentenrollen parallel; der Mensch gibt die Richtung vor und behält die letzte Entscheidung. Der Teamzustand liegt als `.squad/`-Verzeichnis im Repository selbst, versioniert mit dem Code. Schreibschutz, PII-Bereinigung, eine Sperre, die nach einer Ablehnung den ursprünglichen Autor von der Überarbeitung ausschließt, und klare Eskalationspunkte sind als Code durchgesetzt – nicht als Bitte im Prompt. Entscheidungen und Konventionen überleben das Ende einer Sitzung. Das Framework ist MIT-lizenziert, als Alpha gekennzeichnet (Version 0.13.1) und lässt sich per `npm i -g @bradygaster/squad-cli` installieren. [^5]
+Zwischen einem statischen, meist human-driven, automatisierten Workflow mit ggf. agentischer Unterstützung und einer vollständig autonomenen VibeCoding Plattform liegen agentische Softwareframeworks, wie adSCAILE oder das Squad-Framework von Brady Gaster. 
+
+Bei adSCAILE legen Menschen fachliche Ziele, Architekturprinzipien und Grenzen fest. Daraus entstehen strukturierte Spezifikationen und Anweisungen, mit denen Agenten gezielt arbeiten können. Sie setzen Anforderungen in Code um, führen Tests aus, beheben Fehler und erstellen Dokumentation. Automatisierte Prüfungen und KI-gestützte Reviews begleiten die kurzen Entwicklungszyklen. Die abschließende Validierung, die Entscheidung über das Zusammenführen von Änderungen und die Abnahme bleiben beim Team. Auch nach dem Release können Agenten Fehler beheben und die Software optimieren. Der Unterschied zum Vibe Coding liegt damit vor allem in den Leitplanken und Prüfpunkten: Die Umsetzung läuft weitgehend agentisch, aber nicht ohne menschliche Verantwortung. 
+
+Squad orchestriert mehrere Agentenrollen parallel; der Mensch gibt die Richtung vor und behält die letzte Entscheidung. Der Teamzustand liegt als `.squad/`-Verzeichnis im Repository selbst, versioniert mit dem Code. Schreibschutz, PII-Bereinigung, eine Sperre, die nach einer Ablehnung den ursprünglichen Autor von der Überarbeitung ausschließt, und klare Eskalationspunkte sind als Code durchgesetzt – nicht als Bitte im Prompt. Entscheidungen und Konventionen überleben das Ende einer Sitzung. GitHub Actions hosten einen Agenten der autonom Issues abarbeiten kann.
 
 ## Die Kette vom Wunsch zur laufenden Funktion
 
-Eine "Issue-to-Production"-Kette besteht nicht aus einem einzigen großen Prompt. Sie ist ein Ablauf mit getrennten Rechten und überprüfbaren Zuständen. In einer robusten Umsetzung läuft eine Änderung etwa durch die Stationen **Eingang, Klärung, Umsetzung, unabhängige Prüfung, Freigabe, Rollout und Beobachtung**. Bei einem Fehler geht sie nicht automatisch weiter, sondern zurück zur passenden Station.
+Eine "Issue-to-Production"-Kette besteht nicht aus einem einzigen großen Prompt. Sie ist ein Ablauf mit getrennten Rechten und überprüfbaren Zuständen. In einer robusten Umsetzung läuft eine Änderung etwa durch die Stationen "Eingang -> Klärung -> Umsetzung -> unabhängige Prüfung -> Freigabe -> Rollout und Beobachtung". Bei einem Fehler geht sie nicht automatisch weiter, sondern zurück zur passenden Station.
 
 ### 1. Das Issue beschreibt ein Problem, nicht bloß eine Lösung
 
 Nehmen wir den Rechnungsexport. Der Satz "Bitte CSV-Button hinzufügen" klingt eindeutig. Tatsächlich steckt er voller offener Fragen: Braucht die Kundin einen einmaligen Download, eine Buchhaltungsschnittstelle oder regelmäßige Zustellung? Ob das für alle Rechnungen gilt, nur für bezahlte oder nur für die eines Mandanten, ist eine zweite offene Baustelle. Interne Vermerke dürfen dabei nicht auftauchen, und ein Export von zehntausend Einträgen braucht andere Antwortzeiten als einer mit zehn. Und dann bleibt noch die Frage, wer entscheidet, wenn zwei Anforderungen sich widersprechen.
 
-Bevor ein Agent den Auftrag annimmt, braucht er eine fachliche Vereinbarung. Ein Issue enthält Zielgruppe, gewünschtes Ergebnis, ausgeschlossene Daten, beobachtbares Verhalten, Grenzen, zuständige Person und Risikoklasse. Das folgende JSON ist **ein redaktionelles Beispielschema**, kein Standard und keine direkt lauffähige GitHub-Konfiguration.
+Bevor ein Agent den Auftrag annimmt, braucht er eine fachliche Vereinbarung. Ein Issue enthält Zielgruppe, gewünschtes Ergebnis, ausgeschlossene Daten, beobachtbares Verhalten, Grenzen, zuständige Person und Risikoklasse. Das folgende Listing zeigt eine solche Vereinbarung als GitHub-Issue-Template. GitHub verwendet dafür YAML, kein JSON – ein redaktionelles Beispiel bleibt es trotzdem: Die Feldnamen sind hier eine Skizze für den Artikel, keine Konfiguration zum direkten Kopieren.
 
-**Listing 1 – Sprache: JSON. Beispiel einer strukturierten Issue-Vereinbarung.**
+**Listing 1 – YAML. Beispiel eines GitHub-Issue-Templates.**
 
-```json
-{
-  "ziel": "Kundinnen und Kunden exportieren eigene Rechnungen",
-  "berechtigung": "nur Rechnungen des angemeldeten Kontos",
-  "format": "CSV für maschinelle Weiterverarbeitung",
-  "akzeptanz": [
-    "Export enthält keine Daten anderer Konten",
-    "Zeitraumfilter wirkt auf alle exportierten Zeilen",
-    "bei mehr als 10000 Zeilen läuft der Export asynchron"
-  ],
-  "ausgeschlossen": ["interne Bearbeitungsvermerke"],
-  "offene_fragen": ["Wie werden stornierte Rechnungen dargestellt?"],
-  "risiko": "mittel",
-  "fachlich_verantwortlich": "Rolle: Produktverantwortung"
-}
+```yaml
+name: Fachliche Vereinbarung
+description: Vereinbarung, bevor ein Agent aus einem Wunsch Code macht
+title: "[Fachlich] "
+labels: ["triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dieses Template macht aus einem Wunsch eine fachliche Vereinbarung:
+        Ziel, Berechtigung, Format, Akzeptanzkriterien, ausgeschlossene Daten,
+        offene Fragen, Risiko und fachliche Verantwortung.
+  - type: textarea
+    id: ziel
+    attributes:
+      label: Ziel
+      description: Was soll die Änderung erreichen, und für wen?
+      placeholder: "Kundinnen und Kunden exportieren eigene Rechnungen"
+    validations:
+      required: true
+  - type: textarea
+    id: berechtigung
+    attributes:
+      label: Berechtigung
+      description: Wer darf was sehen oder tun?
+      placeholder: "nur Rechnungen des angemeldeten Kontos"
+    validations:
+      required: true
+  - type: dropdown
+    id: format
+    attributes:
+      label: Format
+      description: In welcher Form soll das Ergebnis vorliegen?
+      options:
+        - CSV für maschinelle Weiterverarbeitung
+        - PDF für Menschen
+        - JSON für Schnittstellen
+    validations:
+      required: true
+  - type: checkboxes
+    id: akzeptanz
+    attributes:
+      label: Akzeptanzkriterien
+      description: Woran sich erkennen lässt, dass die Änderung richtig ist.
+      options:
+        - label: Export enthält keine Daten anderer Konten
+          required: true
+        - label: Zeitraumfilter wirkt auf alle exportierten Zeilen
+        - label: Bei mehr als 10000 Zeilen läuft der Export asynchron
+  - type: textarea
+    id: ausgeschlossen
+    attributes:
+      label: Ausgeschlossene Daten
+      description: Was in keinem Fall in die Ausgabe darf.
+      placeholder: "interne Bearbeitungsvermerke"
+  - type: textarea
+    id: offene_fragen
+    attributes:
+      label: Offene Fragen
+      description: Was noch geklärt werden muss, bevor die Umsetzung startet.
+      placeholder: "Wie werden stornierte Rechnungen dargestellt?"
+  - type: dropdown
+    id: risiko
+    attributes:
+      label: Risiko
+      description: Welche Risikoklasse trägt die Änderung?
+      options:
+        - niedrig
+        - mittel
+        - hoch
+  - type: input
+    id: fachlich_verantwortlich
+    attributes:
+      label: Fachlich verantwortlich
+      description: Wer die fachliche Richtigkeit verantwortet.
+      placeholder: "Rolle: Produktverantwortung"
 ```
 
 Das Schema macht Unklarheit sichtbar. Auflösen muss sie trotzdem jemand. Solange die Storno-Frage offen ist, darf ein Agent Varianten vorschlagen oder Rückfragen stellen. Die produktive Umsetzung startet erst, wenn jemand die Antwort festhält. Sonst verwandelt die Automatisierung eine ungeklärte Entscheidung in unbemerkt ausgeliefertes Verhalten.
@@ -192,5 +257,5 @@ Vielleicht wird die Dark Fabric irgendwann dunkel genug sein, dass niemand mehr 
 
 - **Exklusivität:** Dies ist eine neu ausgearbeitete Manuskriptfassung. Ob bereits veröffentlichte Vorfassungen oder Teile des Texts anderswo online stehen, muss der Autor selbst prüfen. Vor einer Zusage von Informatik Aktuell keine weitere Online-Veröffentlichung.
 - **Bildmaterial:** Es sind keine Bilder eingebunden. Damit sind aktuell weder Bilddateien noch Bild-Copyrights oder Auflösungsnachweise erforderlich. Falls später Grafiken hinzukommen: separate PNG/GIF-Dateien für Grafiken und Screenshots, mindestens 1000 Pixel Breite bei 72 dpi, mit Bildunterschrift und Urheberangabe einreichen.
-- **Listings:** Das einzige Listing ist ausdrücklich als JSON gekennzeichnet. Es ist ein Schema-Beispiel, keine Konfiguration zum unmittelbaren Einsatz.
+- **Listings:** Das einzige Listing ist als YAML gekennzeichnet und ahmt ein GitHub-Issue-Template nach. Es ist ein Beispiel-Schema für den Artikel, keine direkt einsatzfertige Template-Datei.
 - **Autorenunterlagen:** Kurze Vita und Porträtbild (mindestens 300 Pixel Breite) sowie ein verbindlicher Abgabetermin sind noch vom Autor beizusteuern. Die Quellen und produktspezifischen Aussagen vor der Abgabe bitte erneut prüfen.
