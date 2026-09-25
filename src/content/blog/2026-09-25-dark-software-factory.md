@@ -9,11 +9,11 @@ author: frickeldave
 tags: [KI]
 hideToc: false
 aiTransparency:
-  humanShare: 80
+  humanShare: 82
   model: "DeepSeek V4 Pro"
   confidence: "hoch"
   evaluatedAt: "2026-09-25"
-  comment: "Klare Ich-Haltung, belegte Quellen, unregelmäßige Satzlängen; Plattform-Fokus und Squad-Referenz im selben Register."
+  comment: "Klare Ich-Haltung, belegte Quellen, unregelmäßige Satzlängen; Gegenprobe über Vibe-Coding-Plattformen (v0, Lovable, Bolt.new, Replit), StrongDM über die Willison-Referenz belegt."
 ---
 
 *Von der GitHub-Issue zum automatischen Deployment: Die Werkzeuge existieren. Was noch fehlt, ist eine ebenso verlässliche Maschine für Absicht, Prüfung und Verantwortung.*
@@ -31,13 +31,13 @@ Ich bleibe in den konkreten Beispielen bei GitHub und GitHub Copilot – stellve
 
 ## Was "Dark Fabric" hier bedeutet
 
-"Dark Fabric" ist in diesem Artikel ein **Arbeitsbegriff**, kein etablierter technischer Standard. Gemeint ist ein zusammenhängendes Geflecht aus Anforderungen, Agenten, Entwicklungsumgebungen, Versionsverwaltung, Tests, Sicherheitsregeln, Auslieferung und Betriebsdaten. Aus einer beschriebenen Absicht entsteht eine überprüfte Änderung an laufender Software. "Dunkel" ist dabei die Produktionsfläche: Menschen müssen nicht jeden Codebaustein selbst erstellen oder jede Änderung Zeile für Zeile begleiten, das Licht bleibt aus, die Maschinen arbeiten im dunkeln. Die Menschen bleiben aber für Ziele, Grenzen und Folgen verantwortlich.
+"Dark Fabric" ist in diesem Artikel ein Arbeitsbegriff, kein etablierter technischer Standard. Gemeint ist ein zusammenhängendes Geflecht aus Anforderungen, Agenten, Entwicklungsumgebungen, Versionsverwaltung, Tests, Sicherheitsregeln, Auslieferung und Betriebsdaten. Aus einer beschriebenen Absicht entsteht eine überprüfte Änderung an laufender Software. "Dunkel" ist dabei die Produktionsfläche: Menschen müssen nicht jeden Codebaustein selbst erstellen oder jede Änderung Zeile für Zeile begleiten, das Licht bleibt aus, die Maschinen arbeiten im dunkeln. Die Menschen bleiben aber für Ziele, Grenzen und Folgen verantwortlich.
 
 Ich schreibe bewusst "Fabric" und nicht nur "Factory": Eine Factory beschreibt vor allem den Herstellungsprozess, die Fabric reicht weiter und schließt die Zeit **nach** dem Deployment mit ein. Sie beobachtet, ob die neue Funktion genutzt wird, ob Fehler auftreten und ob das Ergebnis zum ursprünglichen Bedarf passt. Ohne diese Rückkopplung produziert die Fabrik vor allem eines: immer mehr Software.
 
 Der nüchterne Istzustand beginnt bei vorhandenen Werkzeugen. Der [GitHub Copilot Cloud Agent](https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent) kann ein Repository untersuchen, Änderungen auf einem Branch vornehmen, Tests ausführen und einen Pull Request vorbereiten. Ein Agentenlauf lässt sich auch aus einem Issue oder über eine Automation starten. [^1] [GitHub Agentic Workflows](https://docs.github.com/en/copilot/concepts/agents/about-github-agentic-workflows) formulieren wiederkehrende Aufgaben wie Issue-Triage oder die Diagnose fehlgeschlagener CI-Läufe als Markdown-Anweisungen und führen sie als GitHub-Actions-Workflows aus – mit Freigaben und eingeschränkten Schreibzielen statt frei laufender Agenten. [^2] [GitHub Actions](https://docs.github.com/en/actions) verbindet Issues, Commits und Deployments zu Workflows, die auf Ereignisse reagieren und menschliche Freigaben einbauen können. [^3] Diese Beispiele belegen Fähigkeiten und Integrationsmöglichkeiten – für die Frage, ob vollautomatische Produktentwicklung insgesamt zuverlässig funktioniert, sagen sie wenig aus.
 
-Die radikalere Gegenprobe liefert [StrongDMs Beschreibung seiner Software Factory](https://factory.strongdm.ai/). Dort definieren Menschen Spezifikationen und Szenarien; Agenten implementieren und prüfen iterativ, nach eigener Darstellung ohne menschliches Code-Review. Spannend zu lesen ist das. Eine unabhängige Prüfung aller Ergebnisse fehlt dabei trotzdem, und ob sich dieselbe Autonomie auf jedes Produkt übertragen lässt, bleibt offen. [^4]
+Einen radikalen Gegensatz stellen Vibe-Coding-Plattformen wie v0 von Vercel, Lovable, Bolt.new und Replit dar. [^4] Dort beschreiben Menschen in Alltagssprache, was sie wollen; die Plattform erzeugt daraus eine lauffähige Anwendung, und der erzeugte Code wird in der Regel nicht Zeile für Zeile von Menschen geprüft. Spannend ist das. Eine unabhängige Prüfung von Qualität und Sicherheit fehlt dabei trotzdem, und ob sich dieselbe Herangehensweise auf ernsthafte Produkte übertragen lässt, bleibt offen.
 
 Zwischen den einzelnen Werkzeugen und einer vollständigen Factory liegt eine Koordinationsschicht: Wer darf welche Datei anfassen, wer prüft, wer gibt frei, und wo bleibt das nachvollziehbar? Genau dort setzt das [Squad-Framework von Brady Gaster](https://bradygaster.github.io/squad/) an. Squad orchestriert mehrere Agentenrollen parallel; der Mensch gibt die Richtung vor und behält die letzte Entscheidung. Der Teamzustand liegt als `.squad/`-Verzeichnis im Repository selbst, versioniert mit dem Code. Schreibschutz, PII-Bereinigung, eine Sperre, die nach einer Ablehnung den ursprünglichen Autor von der Überarbeitung ausschließt, und klare Eskalationspunkte sind als Code durchgesetzt – nicht als Bitte im Prompt. Entscheidungen und Konventionen überleben das Ende einer Sitzung. Das Framework ist MIT-lizenziert, als Alpha gekennzeichnet (Version 0.13.1) und lässt sich per `npm i -g @bradygaster/squad-cli` installieren. [^5]
 
@@ -173,7 +173,7 @@ Vielleicht wird die Dark Fabric irgendwann dunkel genug sein, dass niemand mehr 
 [^1]: GitHub. (o. D.). *About GitHub Copilot cloud agent*. GitHub Docs. https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent
 [^2]: GitHub. (o. D.). *About GitHub Agentic Workflows*. GitHub Docs. https://docs.github.com/en/copilot/concepts/agents/about-github-agentic-workflows
 [^3]: GitHub. (o. D.). *GitHub Actions documentation*. GitHub Docs. https://docs.github.com/en/actions
-[^4]: StrongDM. (2026). *Software factories and the agentic moment*. https://factory.strongdm.ai/
+[^4]: Vercel. (o. D.). *v0 by Vercel*. https://v0.dev/; Lovable. (o. D.). *Lovable*. https://lovable.dev/; StackBlitz. (o. D.). *Bolt.new*. https://bolt.new/; Replit. (o. D.). *Replit*. https://replit.com/
 [^5]: Gaster, B. (2026). *Squad*. https://bradygaster.github.io/squad/
 [^6]: GitHub. (o. D.). *Managing a branch protection rule*. GitHub Docs. https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule
 [^7]: OWASP Foundation. (o. D.). *CSV injection*. https://owasp.org/www-community/attacks/CSV_Injection
