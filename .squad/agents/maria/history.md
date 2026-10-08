@@ -38,4 +38,13 @@
 - Issue #267: Skill `.squad/skills/ai-content-score/SKILL.md` v1.0.0 erstellt — bewertet den KI-Anteil von Blog-Prosa (humanShare 0-100) und läuft IMMER als letzter Schritt nach jeder Artikel-Schreib- oder Update-Arbeit; Raster mit KI-Signal-Abzügen aus den Humanizer-KI-Marker-Listen und Schutz durch menschliche Signale; Schwellen grün >70 / gelb 30-70 / rot <30; Dokumentationspflicht: `aiTransparency`-Frontmatter (humanShare, model, confidence, evaluatedAt); Konfidenz hoch/mittel/niedrig; Tabelle + Balken rendert automatisch die `AiTransparency`-Komponente in `EntryLayout.astro` — Maria schreibt die Tabelle nie von Hand in den Artikelkörper; Erklaerseite `/blog/ki-text-erkennung/`.
 - Neuen Artikel `src/content/blog/2026-08-28-wie-ki-generierter-text-erkannt-wird.mdx` erstellt (Kategorie AI, slug `ki-text-erkennung`, ~670 Wörter, humanisiert) mit ehrlichem `aiTransparency` (humanShare 50, Konfidenz hoch — Provenienz bekannt: LLM-Entwurf + Humanizer).
 - Backfill: alle 40 `.mdx`-Dateien in `src/content/blog/` gelesen, bewertet und `aiTransparency` ergänzt: 37 x 95/hoch (Bestand 2019-2023), 1 x 90/mittel (2024-09-14), 1 x 82/mittel (2026-08-03, gemischte Signale), 1 x 88/hoch (2026-08-23, humanizer-verifiziert).
+
+## 2026-09-25
+
+- Issue #281 ("Humanizer-Nacharbeit: Dark Software Factory Artikel"), von Tony triagiert und freigegeben (Label `squad:maria`).
+- Unabhängige KI-vs-Mensch-Autorenschafts-Bewertung von `src/content/blog/2026-09-25-dark-software-factory.md`: ~45-60 % Mensch vs. deklarierten 85 % im Frontmatter — signifikante Abweichung.
+- Nach Nutzerfreigabe revidiert: 2 Anapher-Ketten behoben, 6 von 7 „X, nicht Y"-Hedge-Wiederholungen variiert, ein LLM-schablonenhafter Satz umformuliert.
+- `ai-content-score`-Skill erneut ausgeführt; `aiTransparency`-Frontmatter aktualisiert (humanShare 85 → 92, Konfidenz mittel → hoch).
+- Commit `0caa9e9` auf `dev`; Issue #281 geschlossen.
+- `.frickeldave-active-issue` (lokal, gitignored) für diese Sitzung von 209 auf 281 umgestellt — nächste Sitzung sollte prüfen, ob Rückstellung nötig ist.
 - Rubrik-Kurzfassung: Startwert 100, Abzüge für Marker-Cluster (KI-Vokabular, Sprach-, Inhalts-, Stil-Muster, Hedging), Schutz durch Ich-Stimme/Humor/unregelmäßigen Rhythmus/belegte Fakten. Nur bewertet und Frontmatter gepflegt — keine Prosa verändert.
