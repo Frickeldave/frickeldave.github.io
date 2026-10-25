@@ -42,10 +42,7 @@ Workflow wenn Issue fehlt:
 1. Nach Issue-Nummer fragen.
 2. Über GitHub CLI prüfen, ob Issue existiert und offen ist.
 3. Wenn kein gültiges Issue existiert, Angebot zur Erstellung über passendes Template in `.github/ISSUE_TEMPLATE`:
-	- `bug_report.yml`
-	- `feature_request.yml`
-	- `content_creation.yml`
-	- `documentation_improvement.yml`
+	- `standard.yaml`
 4. `.github/ISSUE_TEMPLATE/config.yml` Anleitung bei Issue-Erstellung respektieren.
 5. Sicherstellen, dass neues Issue mit `squad` gelabelt wird während Intake.
 6. Wenn Nutzer Issue-Erstellung ablehnt, stoppen ohne Code-Änderungen.
