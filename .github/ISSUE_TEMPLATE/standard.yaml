@@ -1,9 +1,7 @@
 name: Standard-Ticket
 description: Standardvorlage für alle Änderungen an dieser Website
 title: '[FEATURE][BUG][TASK][CHORE] '
-# Nur `squad`: der Triage-Workflow setzt Typ und Priorität selbst.
-# Ein fest verdrahtetes `go:no` würde jedes neue Issue als "nicht weiterverfolgt" markieren.
-labels: ['squad']
+labels: ['go:no', 'squad', 'priority:p1', 'type:feature']
 body:
   - type: markdown
     attributes:
