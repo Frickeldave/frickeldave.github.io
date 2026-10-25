@@ -100,6 +100,20 @@ Bei jeder künftigen Cast-Änderung wird der Block erneut leer bzw. konservativ 
 Empfehlung: `## Members` als zusätzliche Heading-Zeile in `team.md` aufnehmen oder auf
 SDK-Support für deutsche Headings warten. `team.md` wurde hier bewusst nicht verändert.
 
+#### 2026-10-25: Issue #282 Steps 9–16 — CI auf eigene Runner, Bootstrap, Promote
+
+**By:** David Koenig (via Squad) · **Issue:** #282
+**What:**
+- **Alle `fd-ci`-Jobs laufen auf den self-hosted Runnern (`fd`)**. Runner-Limits 3 CPU / 8 GiB bei unveränderten Requests (100m/512Mi), weil die Worker-Nodes geteilt und fast ausreserviert sind; `webServer.timeout` 600 s wegen 376–493 s Cold-Build. Requests steuern das Scheduling, Limits die Nutzung.
+- **`fd-configure` besitzt nur die statischen Label-Namespaces** (`go:*`, `release:*`, `type:*`, `priority:*`, `bug`, `feedback`, Basis `squad`); `squad:<member>` bleibt bei `squad-sync-squad-labels.yml`. Zwei Workflows dürfen nie unterschiedliche Werte für dasselbe Label schreiben.
+- **Dev-Maschinen werden auch ohne SSH-Key angelegt.** Ohne Key: kein `sshd`, keine `authorized_keys`, PID 1 `sleep infinity`, Zugang `kubectl exec`; Readiness über `$HOME/.fd-ready` statt Port 22. Keys werden nie erfunden, nur eingetragen.
+- **Neue RBAC-Rolle `dev-machines`** in `scripts/bootstrap/k8s/rbac.yaml` (statefulsets, services, pods delete, pods/exec). Ohne sie hätte der Runner 403 bekommen.
+- **Dev-Machine-Manifeste liegen unter `.github/workflows/fd-bootstrap/k8s/`**, nicht in `scripts/bootstrap/k8s/`: dort steht nur, was `bootstrap.mjs` einmalig rendert (Portabilitäts-Guard), Dev-Machines sind Laufzeit-Objekte des Workflows.
+- **`fd-promote-prd` ist in Phase 1 manuell** (`workflow_dispatch`). Ein automatischer Promote (`workflow_run` auf `fd-ci`) ist vorbereitet, aber nicht aktiv — ein Promote nach `main` bleibt eine menschliche Entscheidung, gekoppelt an einen Versions-Bump.
+- **PR-Template ohne CRAFT-Tooling:** keine `release:yes/no`, kein `check-release-label`, kein `versionbump` — das Template verweist auf die echten Gates (`release:*`-Labels, `CHANGELOG.md`-Pflicht, Promote nur über den Workflow).
+- **Image-Referenzen müssen kleingeschrieben sein.** `ghcr.io/<owner>/…` aus `github.repository_owner` erzeugt Großbuchstaben und damit `InvalidImageName`; Ableitung nur über lowercase + Guard, abgesichert durch Tests.
+**Why:** Nutzerentscheidungen zu #282 (eigene Runner, Dev-Container für David Koenig) plus zwei im Betrieb gefundene Fehlerklassen (Windows-Installer, OCI-Groß-/Kleinschreibung), die ohne Testabdeckung erneut auftreten würden.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens

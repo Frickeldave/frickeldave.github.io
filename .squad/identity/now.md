@@ -1,6 +1,6 @@
 ---
-updated_at: 2026-10-25T19:34:31+0100
-focus_area: Issue #282 — CRAFT-Workflows adaptieren; Steps 9–10 (fd-ci komplett auf Runner-Label `fd`) abgeschlossen
+updated_at: 2026-10-25T23:55:00+0100
+focus_area: Issue #282 — CRAFT-Artefakte portiert bis Step 16 (CI, Configure, Bootstrap, Podcast, Promote); offen: fd-deploy.yaml (Kaniko-Deploy), Release-Bump
 active_issues:
   - 282
 ---
