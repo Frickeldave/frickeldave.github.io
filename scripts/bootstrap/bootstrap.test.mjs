@@ -7,9 +7,11 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  isTransientDockerFailure,
   isValidKubernetesLabelValue,
   resolveImageBuildSettings,
   resolvePartOfLabel,
+  retryTransientDockerFailure,
 } from "./bootstrap.mjs";
 
 const packageDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -489,6 +491,155 @@ test("no project literal survives outside bootstrap.json (portability guard)", (
       `${relativePath} still contains a project-specific literal; it must come from bootstrap.json`
     );
   }
+});
+
+test("transient docker failures are retried and eventually succeed", () => {
+  let calls = 0;
+  const sleeps = [];
+  const logged = [];
+  const errored = [];
+
+  const result = retryTransientDockerFailure({
+    label: "docker push <image>",
+    attempts: 3,
+    backoffMs: 1000,
+    sleep: (milliseconds) => sleeps.push(milliseconds),
+    logger: {
+      log: (message) => logged.push(message),
+      error: (message) => errored.push(message),
+    },
+    invoke: () => {
+      calls += 1;
+
+      if (calls < 3) {
+        const error = new Error("Command failed: docker push <image>");
+        error.stderr = "received unexpected HTTP status: 503 Service Unavailable";
+        throw error;
+      }
+    },
+  });
+
+  assert.equal(result.attemptsUsed, 3);
+  assert.equal(calls, 3);
+  assert.deepEqual(sleeps, [1000, 2000]);
+  assert.equal(logged.length, 2);
+  assert.match(logged[0], /transient failure/);
+  assert.match(logged[0], /503/);
+  assert.match(logged[1], /attempt 3\/3/);
+  assert.deepEqual(errored, []);
+});
+
+test("a successful docker step is not retried", () => {
+  let calls = 0;
+  const sleeps = [];
+
+  const result = retryTransientDockerFailure({
+    label: "docker push <image>",
+    sleep: (milliseconds) => sleeps.push(milliseconds),
+    logger: { log: () => {}, error: () => {} },
+    invoke: () => {
+      calls += 1;
+    },
+  });
+
+  assert.equal(result.attemptsUsed, 1);
+  assert.equal(calls, 1);
+  assert.deepEqual(sleeps, []);
+});
+
+test("non-transient docker credential errors fail on the first attempt", () => {
+  let calls = 0;
+  const sleeps = [];
+  const errored = [];
+
+  assert.throws(
+    () =>
+      retryTransientDockerFailure({
+        label: "docker login <registry>",
+        attempts: 3,
+        backoffMs: 1000,
+        sleep: (milliseconds) => sleeps.push(milliseconds),
+        logger: { log: () => {}, error: (message) => errored.push(message) },
+        invoke: () => {
+          calls += 1;
+          const error = new Error("Command failed: docker login");
+          error.stderr = "Error response from daemon: denied: incorrect username or password";
+          throw error;
+        },
+      }),
+    /incorrect username or password/
+  );
+
+  assert.equal(calls, 1);
+  assert.deepEqual(sleeps, []);
+  assert.equal(errored.length, 1);
+  assert.match(errored[0], /not retryable/);
+});
+
+test("a repeatedly transient docker failure gives up after the configured attempts", () => {
+  let calls = 0;
+
+  assert.throws(
+    () =>
+      retryTransientDockerFailure({
+        label: "docker push <image>",
+        attempts: 2,
+        backoffMs: 10,
+        sleep: () => {},
+        logger: { log: () => {}, error: () => {} },
+        invoke: () => {
+          calls += 1;
+          const error = new Error("Command failed: docker push");
+          error.stderr = "write tcp: connection reset by peer";
+          throw error;
+        },
+      }),
+    /connection reset by peer/
+  );
+
+  assert.equal(calls, 2);
+});
+
+test("docker failure classification only retries transient causes", () => {
+  const transient = [
+    "received unexpected HTTP status: 502 Bad Gateway",
+    "received unexpected HTTP status: 503",
+    "received unexpected HTTP status: 504",
+    "toomanyrequests: You have reached your pull rate limit",
+    "unexpected EOF",
+    "read tcp 10.0.0.1:443: connection reset by peer",
+    "net/http: TLS handshake timeout",
+    "dial tcp: i/o timeout",
+    "denied: 503 Service Unavailable",
+    "unauthorized: secondary rate limit exceeded",
+  ];
+
+  const nonTransient = [
+    "denied: requested access to the resource is denied",
+    "permission_denied: The token provided does not match expected scopes.",
+    "unauthorized: authentication required",
+    "denied: incorrect username or password",
+    "not authorized to perform this operation",
+    "",
+  ];
+
+  for (const message of transient) {
+    assert.equal(isTransientDockerFailure(message), true, `${message} should be transient`);
+  }
+
+  for (const message of nonTransient) {
+    assert.equal(isTransientDockerFailure(message), false, `${message} must not be retried`);
+  }
+});
+
+test("docker push and login both go through the retry helper", () => {
+  assert.match(
+    bootstrapScript,
+    /label: `docker push \$\{image\}`,\n\s+invoke: \(\) =>\n\s+runDocker\(\['push', image\]/
+  );
+  assert.match(bootstrapScript, /label: `docker login \$\{DEFAULT_REGISTRY\}`/);
+  assert.match(bootstrapScript, /const DOCKER_RETRY_ATTEMPTS = 3;/);
+  assert.match(bootstrapScript, /const DOCKER_RETRY_BACKOFF_MS = 2000;/);
 });
 
 test("the PowerShell wrapper leaves the namespace default to bootstrap.json", () => {

@@ -179,6 +179,8 @@ einzige Quelle für projektspezifische Werte (Namespace, Repository, Images, Lab
 - Rendert die Templates unter `scripts/bootstrap/k8s/` (`namespace.yaml`,
   `rbac.yaml`, `runner-secrets.yaml`, `runner-deployment.yaml`) und wendet sie
   per `kubectl apply` an
+- Wiederholt `docker login`/`docker push` bei transienten Registry-Fehlern
+  (3 Versuche, Backoff); echte Credential-Probleme brechen sofort ab
 - Zielt mit `-k` / `--kubeconfig` auf einen expliziten Cluster, statt den
   aktuellen kubectl-Kontext des Rechners zu verwenden
 - Idempotent: ein erneuter Lauf rotiert Token und Secrets und rollt die Pods neu aus

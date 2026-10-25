@@ -92,6 +92,18 @@ Steps 2 bis 5 werden dann explizit übersprungen, Steps 6 bis 10 laufen weiter. 
 werden `devBaseImage` und `kanikoImage` **nicht** benötigt; nur `ghRunnerImage` ist Pflicht, weil das
 Deployment es immer referenziert.
 
+## Registry-Transienten
+
+`docker login` und `docker push` werden bei transienten Registry-Fehlern wiederholt (3 Versuche mit
+kurzem Backoff). Wiederholt werden unter anderem `EOF`, `connection reset`, `i/o timeout`,
+`TLS handshake`, `502/503/504`, `toomanyrequests` sowie `denied`/`unauthorized` **nur dann**, wenn
+dieselbe Meldung zusätzlich einen Server- oder Rate-Limit-Hinweis enthält. Jeder Versuch wird mit
+Grund geloggt, damit sichtbar ist, was passiert ist.
+
+Nicht wiederholt werden echte Credential-Probleme: `incorrect username or password`,
+`not authorized` oder `permission_denied: The token provided does not match expected scopes` brechen
+sofort mit der bekannten Handlungsanweisung ab.
+
 ## Runner-only: was hier bewusst fehlt
 
 - Keine Anwendungs-Secrets, keine App-Manifeste, keine App-RBAC. Das Bootstrap kennt nur den
@@ -112,5 +124,6 @@ Deployment es immer referenziert.
 | `Kubeconfig not found: ...`                                               | Pfad in `-Kubeconfig`, `KUBECONFIG` oder `bootstrap.json` prüfen; es wurde nichts angewendet                               |
 | `kubectl could not reach the target cluster after 3 attempts`             | Rancher-Proxy/VPN nicht erreichbar; der Fehler listet alle drei Versuche und den benutzten Kubeconfig-Pfad                |
 | `Docker CLI found, but the Docker daemon is not reachable`                | Docker Desktop starten und erneut ausführen                                                                               |
+| `docker push ... failed and is not retryable: denied: ...`                | Der PAT hat keine `write:packages`-Berechtigung für dieses Paket; Scope bzw. Paketfreigabe korrigieren                     |
 | `GitHub API returned 403 while requesting a runner registration token`     | PAT ohne `repo`-Scope, fehlende Admin-Rechte am Repository oder offene SSO-Autorisierung                                  |
 | Rollout bleibt in `ImagePullBackOff`                                      | `ghcr-pull-secret` prüfen: der PAT muss `read:packages` besitzen und für das Paket freigeschaltet sein                    |

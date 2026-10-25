@@ -23,6 +23,12 @@ const KUBECTL_REQUEST_TIMEOUT = '60s';
 // with backoff removes them without masking a genuinely broken kubeconfig.
 const KUBECTL_RETRY_ATTEMPTS = 3;
 const KUBECTL_RETRY_BACKOFF_MS = 2000;
+// Docker registries answer transiently: a `docker push` can upload every layer
+// and then have the final manifest PUT rejected with a plain `denied`, and an
+// immediate retry succeeds. Three attempts with a short linear backoff cover
+// that without hiding a wrong password or a missing scope.
+const DOCKER_RETRY_ATTEMPTS = 3;
+const DOCKER_RETRY_BACKOFF_MS = 2000;
 const CONFIG_FILENAME = 'bootstrap.json';
 const CONFIG_PATH = `scripts/bootstrap/${CONFIG_FILENAME}`;
 const K8S_NAMESPACE_MANIFEST_PATH = 'scripts/bootstrap/k8s/namespace.yaml';
@@ -694,6 +700,150 @@ function runDocker(args, options = {}) {
 const MISSING_DOCKER_MESSAGE =
   'Docker is required to build and push the bootstrap images (dev base, GitHub runner, Kaniko). Install Docker Desktop or the Docker Engine CLI and try again.';
 
+// Credential problems look like transient failures at a glance ("denied",
+// "unauthorized") but no amount of retrying fixes them, so they win over every
+// transient pattern.
+const DOCKER_NON_TRANSIENT_PATTERNS = [
+  'incorrect username or password',
+  'not authorized',
+  'does not match expected scopes',
+  'invalid username or password',
+  'authentication required',
+];
+
+// Whole-message signals of a flaky registry or network path.
+const DOCKER_TRANSIENT_PATTERNS = [
+  'connection reset',
+  'i/o timeout',
+  'tls handshake',
+  'unexpected eof',
+  'eof',
+  'toomanyrequests',
+  'secondary rate limit',
+  'too many requests',
+  'bad gateway',
+  'service unavailable',
+  'gateway timeout',
+];
+const DOCKER_TRANSIENT_HTTP_STATUS_PATTERN = /\b(?:502|503|504)\b/;
+
+// `denied` / `permission_denied` / `unauthorized` are only retried when the
+// same message also carries a server-side or rate-limit signal: on their own
+// they mean the token does not have the scope this push needs.
+const DOCKER_CONDITIONAL_TRANSIENT_PATTERNS = ['denied', 'unauthorized'];
+const DOCKER_SERVER_SIDE_HTTP_STATUS_PATTERN = /\b(?:500|502|503|504)\b/;
+const DOCKER_SERVER_SIDE_PATTERNS = [
+  'internal server error',
+  'bad gateway',
+  'service unavailable',
+  'gateway timeout',
+  'toomanyrequests',
+  'secondary rate limit',
+  'too many requests',
+];
+
+function extractFailureText(error) {
+  if (!error || typeof error !== 'object') {
+    return typeof error === 'string' ? error : '';
+  }
+
+  return [error.stderr, error.stdout, error.message]
+    .filter((part) => typeof part === 'string' && part.trim().length > 0)
+    .join('\n')
+    .trim();
+}
+
+function summarizeFailureText(text) {
+  const firstMeaningfulLine = text
+    .split('\n')
+    .map((line) => line.trim())
+    .find((line) => line.length > 0);
+
+  return firstMeaningfulLine ?? 'unknown failure';
+}
+
+export function isTransientDockerFailure(message) {
+  const text = String(message ?? '').toLowerCase();
+
+  if (text.length === 0) {
+    return false;
+  }
+
+  if (DOCKER_NON_TRANSIENT_PATTERNS.some((pattern) => text.includes(pattern))) {
+    return false;
+  }
+
+  if (DOCKER_TRANSIENT_HTTP_STATUS_PATTERN.test(text)) {
+    return true;
+  }
+
+  if (DOCKER_TRANSIENT_PATTERNS.some((pattern) => text.includes(pattern))) {
+    return true;
+  }
+
+  if (DOCKER_CONDITIONAL_TRANSIENT_PATTERNS.some((pattern) => text.includes(pattern))) {
+    return (
+      DOCKER_SERVER_SIDE_HTTP_STATUS_PATTERN.test(text) ||
+      DOCKER_SERVER_SIDE_PATTERNS.some((pattern) => text.includes(pattern))
+    );
+  }
+
+  return false;
+}
+
+// The registry's own wording is only visible because stderr is captured, so it
+// is appended to the rethrown error to keep the operator's output complete.
+function withFailureText(error, failureText) {
+  const annotated = error instanceof Error ? error : new Error(String(error));
+
+  if (failureText.length > 0 && !annotated.message.includes(failureText)) {
+    annotated.message = `${annotated.message}\n${failureText}`;
+  }
+
+  return annotated;
+}
+
+// Shared by `docker login` and `docker push`: both can be hit by the same
+// transient registry hiccup, and both must surface genuine credential problems
+// immediately. `invoke` is injected so the retry policy is testable without a
+// Docker daemon.
+export function retryTransientDockerFailure({
+  label,
+  invoke,
+  attempts = DOCKER_RETRY_ATTEMPTS,
+  backoffMs = DOCKER_RETRY_BACKOFF_MS,
+  sleep = sleepSync,
+  logger = console,
+}) {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      invoke();
+      return { attemptsUsed: attempt };
+    } catch (error) {
+      const failureText = extractFailureText(error);
+      const reason = summarizeFailureText(failureText);
+
+      if (!isTransientDockerFailure(failureText)) {
+        logger.error(`  • ${label} failed and is not retryable: ${reason}`);
+        throw withFailureText(error, failureText);
+      }
+
+      if (attempt >= attempts) {
+        logger.error(`  • ${label} still failing after ${attempts} attempts: ${reason}`);
+        throw withFailureText(error, failureText);
+      }
+
+      const waitMs = backoffMs * attempt;
+      logger.log(
+        `  • ${label} hit a transient failure (${reason}); retrying in ${waitMs / 1000}s (attempt ${attempt + 1}/${attempts})...`
+      );
+      sleep(waitMs);
+    }
+  }
+
+  throw new Error(`${label} failed: no attempt was made.`);
+}
+
 function parseArgs(argv) {
   let namespace;
   let kubeconfig;
@@ -857,9 +1007,16 @@ function validateGhcrImageRef(variableName, image) {
 
 function loginToGhcr(githubUsername, githubPat) {
   console.log(`  • docker login ${DEFAULT_REGISTRY} as ${githubUsername}`);
-  runDocker(['login', DEFAULT_REGISTRY, '--username', githubUsername, '--password-stdin'], {
-    input: `${githubPat}\n`,
-    missingBinaryMessage: MISSING_DOCKER_MESSAGE,
+  retryTransientDockerFailure({
+    label: `docker login ${DEFAULT_REGISTRY}`,
+    invoke: () =>
+      runDocker(['login', DEFAULT_REGISTRY, '--username', githubUsername, '--password-stdin'], {
+        input: `${githubPat}\n`,
+        // Capture stderr only: the password prompt and progress stay visible,
+        // and the registry's error text is available for retry classification.
+        stdio: ['pipe', 'inherit', 'pipe'],
+        missingBinaryMessage: MISSING_DOCKER_MESSAGE,
+      }),
   });
 }
 
@@ -879,7 +1036,17 @@ function buildDockerImage({ image, dockerfilePath, contextPath, buildArgs = [] }
 }
 
 function pushDockerImage(image) {
-  runDocker(['push', image], { missingBinaryMessage: MISSING_DOCKER_MESSAGE });
+  retryTransientDockerFailure({
+    label: `docker push ${image}`,
+    invoke: () =>
+      runDocker(['push', image], {
+        // Capture stderr only: layer progress stays on stdout, and the final
+        // manifest error (e.g. a plain "denied") is available for the retry
+        // decision instead of only being printed.
+        stdio: ['ignore', 'inherit', 'pipe'],
+        missingBinaryMessage: MISSING_DOCKER_MESSAGE,
+      }),
+  });
 }
 
 function checkDockerCliAvailable() {

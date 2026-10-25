@@ -332,6 +332,11 @@ Bei `SKIP_IMAGE_BUILD=true` läuft Step 1 weiterhin (inklusive der Kubeconfig-Pr
 aber die Docker-spezifischen Prüfungen und die Anforderung der Build-only-Images, und Steps 2-5
 werden geloggt und explizit übersprungen, während Steps 6-10 weiterlaufen.
 
+`docker login` und `docker push` werden bei transienten Registry-Fehlern automatisch wiederholt
+(3 Versuche, kurzer Backoff, jede Wiederholung wird mit Grund geloggt). Echte Credential-Probleme
+(`incorrect username or password`, fehlende Scopes) werden **nicht** wiederholt, sondern brechen
+sofort ab.
+
 Das Kaniko-Image wird bewusst hier gebaut und nicht in einem Workflow: Ein künftiger
 Anwendungs-Deploy-Workflow benötigt ein einsatzbereites Executor-Image, bevor er irgendeinen
 Build-Job starten kann. Es wird hier gebaut, aber dort verwendet — das Runner-Deployment selbst
