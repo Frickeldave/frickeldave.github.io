@@ -50,7 +50,8 @@ der aktuelle kubectl-Kontext.
 ## Was das Bootstrap anwendet
 
 1. `k8s/fd-k8s-namespaces.yaml` — legt `fd-infra` an
-2. `k8s/fd-k8s-rbac.yaml` — Kaniko-Builder-Role und -RoleBinding in `fd-infra`
+2. `k8s/fd-k8s-rbac.yaml` — Kaniko-Builder-Role und -RoleBinding im gewählten Namespace
+   (Standard `fd-infra`)
 3. `k8s/fd-k8s-ghrunner-secrets.yaml` — `github-runner-registration` (frischer Registration-Token
    pro Lauf) und `ghcr-pull-secret`
 4. `k8s/fd-k8s-ghrunner-deployments.yaml` — das Runner-Deployment, gefolgt von

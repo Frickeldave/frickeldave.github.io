@@ -175,12 +175,43 @@ test("the runner deployment runs two replicas in the fd namespace", () => {
   assert.match(rendered, /namespace: fd-infra/);
 });
 
-test("runner RBAC keeps the kaniko capability and stays in fd-infra", () => {
-  assert.match(rbacTemplate, /name: kaniko-builder/);
-  assert.match(rbacTemplate, /namespace: fd-infra/);
-  assert.match(rbacTemplate, /namespace: __NAMESPACE__/);
-  assert.match(rbacTemplate, /resources: \["jobs"\]/);
-  assert.match(rbacTemplate, /resources: \["secrets"\]/);
+test("runner RBAC renders into the target namespace and keeps the kaniko capability", () => {
+  const rbacObjects = rbacTemplate
+    .split(/^---$/m)
+    .map((document) => document.trim())
+    .filter(Boolean);
+
+  assert.equal(rbacObjects.length, 2, "expected exactly a Role and a RoleBinding");
+
+  for (const object of rbacObjects) {
+    assert.match(object, /name: kaniko-builder/);
+    assert.match(object, /namespace: __NAMESPACE__/);
+    assert.doesNotMatch(
+      object,
+      /fd-infra/,
+      "RBAC objects must not hardcode a namespace"
+    );
+  }
+
+  const rendered = rbacTemplate.replaceAll("__NAMESPACE__", "demo-ns");
+
+  assert.doesNotMatch(rendered, /__[A-Z0-9_]+__/);
+  assert.match(
+    rendered,
+    /kind: Role\nmetadata:\n {2}name: kaniko-builder\n {2}namespace: demo-ns\n/
+  );
+  assert.match(
+    rendered,
+    /kind: RoleBinding\nmetadata:\n {2}name: kaniko-builder\n {2}namespace: demo-ns\n/
+  );
+  assert.match(
+    rendered,
+    /subjects:\n {2}- kind: ServiceAccount\n {4}name: default\n {4}namespace: demo-ns\n/
+  );
+  assert.match(rendered, /resources: \["jobs"\]/);
+  assert.match(rendered, /resources: \["pods", "pods\/log"\]/);
+  assert.match(rendered, /resources: \["secrets"\]/);
+  assert.match(rendered, /verbs: \["create", "update", "get", "delete"\]/);
 });
 
 test("the package contains no leftover upstream naming", () => {

@@ -10,7 +10,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: kaniko-builder
-  namespace: fd-infra
+  namespace: __NAMESPACE__
 rules:
   - apiGroups: ["batch"]
     resources: ["jobs"]
@@ -26,7 +26,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: kaniko-builder
-  namespace: fd-infra
+  namespace: __NAMESPACE__
 subjects:
   - kind: ServiceAccount
     name: default

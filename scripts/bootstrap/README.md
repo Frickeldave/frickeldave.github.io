@@ -145,8 +145,9 @@ und RoleBindings an.
 
 Die generierten Berechtigungen sind auf die Kaniko-Baufähigkeit beschränkt:
 
-- `kaniko-builder`-Role und -RoleBinding in `fd-infra`, die dem Runner- ServiceAccount
-  `fd-infra:default` erlauben, Kaniko-Jobs zu erstellen, zu beobachten und zu löschen.
+- `kaniko-builder`-Role und -RoleBinding im gewählten Runner-Namespace (Standard `fd-infra`), die
+  dem Runner-ServiceAccount `<namespace>:default` erlauben, Kaniko-Jobs zu erstellen, zu beobachten
+  und zu löschen.
 
 Die Role gewährt `jobs.batch`: `create`, `get`, `list`, `watch`, `delete`; `pods` und `pods/log`:
 `get`, `list`; sowie `secrets`: `create`, `update`, `get`, `delete` (für die kurzlebigen
