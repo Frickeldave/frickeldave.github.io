@@ -24,6 +24,29 @@
 | Ralph | Work-Monitor | `.squad/agents/ralph/charter.md` | 🔄 Monitor |
 | Rai | RAI-Reviewer | `.squad/agents/Rai/charter.md` | 🛡️ RAI |
 
+## Menschliche Mitglieder
+
+| Name | Spitznamen | Rolle | Sprache | Badge | GitHub | E-Mail |
+|------|-----------|-------|---------|-------|--------|--------|
+| David Koenig | Frickeldave, Dave | Techlead / Developer | German (de) | 👤 Human | Frickeldave | dave@frickeldave.de |
+
+### Dev-Container für menschliche Mitglieder
+
+Der Workflow `fd-bootstrap` legt für **jedes menschliche Mitglied mit einem GitHub-Handle** in der Spalte `GitHub` genau einen Dev-Container an (`fd-dev-<handle-slug>`, ein StatefulSet plus Service im Namespace `fd-infra`). Das Handle ist die einzige Pflichtangabe; die Rolle entscheidet, ob ein Container entsteht — `Developer`/`Techlead` bekommen einen, Projektleitung nicht.
+
+Der SSH-Zugang ist optional. Ein öffentlicher Schlüssel gehört in die Tabelle `## Developer SSH Keys` (`GitHub`-Handle plus `SSH Public Key`; nur öffentliche Schlüssel, niemals private), der Vergleich läuft case-insensitive über das Handle. Liegt ein Schlüssel vor, startet der Container `sshd` auf Port `2222` und legt den Schlüssel als `authorized_keys` ab; fehlt ein Schlüssel (aktueller Stand: für David Koenig ist hier kein Schlüssel hinterlegt), wird der Container trotzdem angelegt, `sshd` und `authorized_keys` bleiben aus, und der Zugang erfolgt ausschließlich über `kubectl exec`:
+
+```bash
+kubectl -n fd-infra exec -it fd-dev-frickeldave-0 -c dev -- bash
+```
+
+Der Schlüssel wird beim Anlegen über die Umgebungsvariable `FD_SSH_PUBLIC_KEY` übergeben (kein Volume, kein Kubernetes-Secret). Ein später eingetragener Schlüssel greift erst nach einem bewussten Neustart des Containers (`restart_machines` mit Datenverlust-Warnung), weil die StatefulSets `updateStrategy: OnDelete` verwenden und laufende Container nie automatisch neu starten.
+
+## Developer SSH Keys
+
+| GitHub | SSH Public Key |
+|--------|----------------|
+
 ## Projektkontext
 
 - **Projekt:** frickeldave.github.io

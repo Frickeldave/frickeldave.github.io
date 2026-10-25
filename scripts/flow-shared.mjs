@@ -320,55 +320,107 @@ export function assignIssueToUser(runCommand, issueNumber, login) {
   }
 }
 
+// Heading aliases: this repository writes German team files, imported Squad team
+// files use English. Both spellings must yield the same roster. The agent roster
+// headings (`## Mitglieder` / `## Members`) are *not* human members; they end the
+// human section like any other heading.
+export const HUMAN_MEMBERS_HEADING = /^##\s+(?:Human\s+Members|Menschliche\s+Mitglieder)\s*$/i;
+
+const HUMAN_MEMBER_COLUMNS = {
+  name: ['name'],
+  nicknames: ['nicknames', 'nickname', 'spitznamen', 'spitzname'],
+  role: ['role', 'rolle'],
+  language: ['language', 'sprache'],
+  github: ['github'],
+};
+
+const normalizeCell = (cell) =>
+  String(cell ?? '')
+    .replace(/^`|`$/g, '')
+    .replace(/^@/, '')
+    .trim();
+
+function resolveColumnIndex(header, names) {
+  return header.findIndex((cell) =>
+    names.includes(
+      cell
+        .replace(/[*`]/g, '')
+        .trim()
+        .toLowerCase()
+    )
+  );
+}
+
+/**
+ * Reads the human roster table (`## Human Members` / `## Menschliche Mitglieder`).
+ * Columns are resolved from the header row, so the column order may differ
+ * between team files; unknown columns are ignored.
+ */
 export function parseHumanMembers(teamMarkdown) {
   const lines = String(teamMarkdown ?? '').split('\n');
   const members = [];
   let inHumanMembers = false;
-  let githubColumn = -1;
+  let columns = null;
 
   for (const line of lines) {
-    if (/^##\s+Human Members\b/i.test(line)) {
+    const trimmed = line.trim();
+
+    if (HUMAN_MEMBERS_HEADING.test(trimmed)) {
       inHumanMembers = true;
+      columns = null;
       continue;
     }
 
-    if (inHumanMembers && /^##\s+/.test(line)) {
+    if (inHumanMembers && /^##\s+/.test(trimmed)) {
       break;
     }
 
-    if (inHumanMembers && line.startsWith('|') && line.includes('Name')) {
-      githubColumn = line
-        .split('|')
-        .slice(1, -1)
-        .findIndex((cell) => cell.trim().toLowerCase() === 'github');
+    if (!inHumanMembers || !trimmed.startsWith('|')) {
       continue;
     }
 
-    if (!inHumanMembers || !line.startsWith('|') || line.includes('---')) {
-      continue;
-    }
-
-    const cells = line
+    const cells = trimmed
       .split('|')
       .slice(1, -1)
       .map((cell) => cell.trim());
 
-    if (cells.length < 4) {
+    if (cells.every((cell) => /^:?-{2,}:?$/.test(cell))) {
+      continue;
+    }
+
+    if (!columns) {
+      const header = cells.map((cell) => cell.toLowerCase());
+      const resolved = {};
+      for (const [field, aliases] of Object.entries(HUMAN_MEMBER_COLUMNS)) {
+        const index = resolveColumnIndex(header, aliases);
+        if (index >= 0) {
+          resolved[field] = index;
+        }
+      }
+      if (resolved.name === undefined) {
+        continue;
+      }
+      columns = resolved;
+      continue;
+    }
+
+    const cellAt = (field) =>
+      columns[field] === undefined ? '' : (cells[columns[field]] ?? '').trim();
+    const name = normalizeCell(cellAt('name'));
+
+    if (!name) {
       continue;
     }
 
     members.push({
-      name: cells[0],
-      nicknames: cells[1]
+      name,
+      nicknames: cellAt('nicknames')
         .split(',')
         .map((nickname) => nickname.trim())
         .filter(Boolean),
-      role: cells[2],
-      language: cells[3],
-      github:
-        githubColumn >= 0
-          ? (cells[githubColumn] ?? '').replace(/^`|`$/g, '').replace(/^@/, '')
-          : '',
+      role: cellAt('role'),
+      language: cellAt('language'),
+      github: normalizeCell(cellAt('github')),
     });
   }
 

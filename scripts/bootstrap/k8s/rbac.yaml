@@ -2,10 +2,11 @@
 # Template placeholders use the double-underscore NAME convention and must be
 # substituted by scripts/bootstrap/bootstrap.mjs before kubectl apply.
 #
-# Scope: the runner only needs the capability to start, observe and delete
-# throwaway Kaniko build Jobs (and the short-lived build secrets those Jobs
-# read) in its own namespace. A future application deploy workflow reuses
-# exactly this capability, so the objects below stay.
+# Scope: `kaniko-builder` lets the runner start, observe and delete throwaway
+# Kaniko build Jobs (and the short-lived build secrets those Jobs read) in its
+# own namespace. A future application deploy workflow reuses exactly this
+# capability, so those objects stay. `dev-machines` additionally covers the
+# StatefulSets/Services/pods the dev-machine bootstrap workflow creates and restarts.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -35,3 +36,43 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: kaniko-builder
+---
+# Dev machines (bootstrap workflow for developer containers).
+#
+# The workflow renders one StatefulSet + Service per human member with a GitHub
+# handle and applies them; restarts are a deliberate `kubectl delete pod` and
+# the active-session probe runs `kubectl exec`. None of that is covered by
+# `kaniko-builder`, so this Role is kept separate instead of widening the build
+# permissions. Objects are limited to the runner's own namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dev-machines
+  namespace: __NAMESPACE__
+rules:
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dev-machines
+  namespace: __NAMESPACE__
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: __NAMESPACE__
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dev-machines

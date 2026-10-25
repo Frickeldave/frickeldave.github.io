@@ -1,0 +1,20 @@
+# Docker build context for the dev images that are built from the repository root
+# (.github/workflows/fd-bootstrap/docker-dev-full). The Dockerfile copies only
+# tracked scripts and workflow files, so build outputs, dependencies and local
+# state must never travel to the build daemon.
+.git
+.github/ISSUE_TEMPLATE
+.astro
+.cache
+.vscode
+node_modules
+dist
+test-results
+playwright-report
+public
+src
+docs
+no_sync
+*.log
+.env
+.env.*

@@ -189,6 +189,47 @@ test('parseHumanMembers reads the optional GitHub column by header', () => {
   );
 });
 
+test('parseHumanMembers accepts the German heading and resolves columns from the header', () => {
+  const members = parseHumanMembers(`
+## Mitglieder
+
+| Name | Rolle | Charter | Status |
+|------|-------|---------|--------|
+| Tony | Lead | .squad/agents/tony/charter.md | ✅ Aktiv |
+
+## Menschliche Mitglieder
+
+| Rolle | Name | GitHub | Spitznamen | Sprache |
+|-------|------|--------|------------|---------|
+| Techlead / Developer | David Koenig | Frickeldave | Frickeldave, Dave | German (de) |
+
+## Developer SSH Keys
+`);
+
+  assert.deepEqual(members, [
+    {
+      name: 'David Koenig',
+      nicknames: ['Frickeldave', 'Dave'],
+      role: 'Techlead / Developer',
+      language: 'German (de)',
+      github: 'Frickeldave',
+    },
+  ]);
+});
+
+test('parseHumanMembers does not read the agent roster when no human heading exists', () => {
+  assert.deepEqual(
+    parseHumanMembers(`
+## Mitglieder
+
+| Name | Rolle | Charter | Status |
+|------|-------|---------|--------|
+| Tony | Lead | .squad/agents/tony/charter.md | ✅ Aktiv |
+`),
+    []
+  );
+});
+
 test('ensureProjectPropertyAccess instructs gh auth refresh when read:project is missing', () => {
   let calls = 0;
 

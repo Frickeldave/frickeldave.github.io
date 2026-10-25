@@ -1,0 +1,110 @@
+# Template for one dev machine (rendered once per human member by
+# .github/workflows/fd-bootstrap/dev-machines.mjs, applied by .github/workflows/fd-bootstrap.yml).
+# Placeholders use the double-underscore NAME convention. __SSH_PUBLIC_KEY__ is
+# replaced by a JSON string literal; an empty string means "no key": the container
+# then runs without sshd and is reachable via `kubectl exec` only.
+# There are intentionally no volume definitions: all data lives in the container
+# and is lost when the pod is recreated.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: __MACHINE_NAME__
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: fd-dev-machine
+    app.kubernetes.io/part-of: fd-dev-machines
+    app.kubernetes.io/managed-by: fd-bootstrap
+    frickeldave.github.io/developer: __DEVELOPER_SLUG__
+  annotations:
+    frickeldave.github.io/developer-name: __DEVELOPER_NAME__
+    frickeldave.github.io/developer-github: __DEVELOPER_GITHUB__
+spec:
+  serviceName: __MACHINE_NAME__
+  replicas: 1
+  # OnDelete: applying a changed pod template (image, key, env) never restarts a
+  # running machine; it takes effect only when the pod is deleted on purpose.
+  updateStrategy:
+    type: OnDelete
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fd-dev-machine
+      frickeldave.github.io/developer: __DEVELOPER_SLUG__
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fd-dev-machine
+        app.kubernetes.io/part-of: fd-dev-machines
+        frickeldave.github.io/developer: __DEVELOPER_SLUG__
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: dev
+          image: __IMAGE__
+          imagePullPolicy: Always
+          env:
+            # Empty = no SSH: the entrypoint keeps the container alive for `kubectl exec`.
+            - name: FD_SSH_PUBLIC_KEY
+              value: __SSH_PUBLIC_KEY__
+            - name: FD_REPO_URL
+              value: __REPO_URL__
+            - name: FD_REPO_BRANCH
+              value: __REPO_BRANCH__
+          ports:
+            - name: ssh
+              containerPort: 2222
+            - name: squad-rc
+              containerPort: 3000
+          # Readiness marker written by the entrypoint in both modes (with and
+          # without sshd), so a machine without an SSH key is Ready as well.
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - test -f "${HOME}/.fd-ready"
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          # Cluster policy requires cpu and memory for requests and limits.
+          # 4 CPUs cover Node/Playwright/test-runner load of an interactive dev machine.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: __MACHINE_NAME__
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: fd-dev-machine
+    app.kubernetes.io/part-of: fd-dev-machines
+    app.kubernetes.io/managed-by: fd-bootstrap
+    frickeldave.github.io/developer: __DEVELOPER_SLUG__
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: fd-dev-machine
+    frickeldave.github.io/developer: __DEVELOPER_SLUG__
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: ssh
+    - name: squad-rc
+      port: 3000
+      targetPort: squad-rc

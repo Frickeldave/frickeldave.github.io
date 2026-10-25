@@ -1,0 +1,258 @@
+name: fd-bootstrap (Developer machines)
+
+# Creates one fd-dev-full StatefulSet + Service per human member with a GitHub
+# handle in .squad/team.md (## Menschliche Mitglieder / ## Human Members) and
+# deletes machines of members who are no longer listed.
+#
+# Difference to the ported original: the machine is created for every
+# Developer/Techlead with a GitHub handle, even without an SSH public key in
+# ## Developer SSH Keys. Without a key the container runs no sshd and no
+# authorized_keys; access is `kubectl exec` only. With a key, sshd listens on
+# port 2222 inside the container.
+#
+# The fd-dev-full image is built by a throwaway Kaniko Job (same pattern as the
+# ported original) when its Dockerfile directory or a shared runtime script
+# changes, or when `build_image` is set. The runner image ships kubectl + crane
+# and fd-infra holds the kaniko-builder Role/RoleBinding plus the fd-dev-kaniko
+# image for exactly this job.
+#
+# Running machines are never restarted automatically (StatefulSet updateStrategy
+# OnDelete); a restart is deliberate via restart_machines. See
+# .github/workflows/fd-bootstrap/docker-dev-full/README.md and the
+# "Dev-Container für menschliche Mitglieder" section of .squad/team.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_image:
+        description: Rebuild and push the fd-dev-full image before deploying
+        required: false
+        type: boolean
+        default: false
+      restart_machines:
+        description: "DELETES the pods of the listed machines, so ALL DATA IN THE CONTAINER IS LOST (gh/copilot login, worktrees, unpushed work). Empty = restart nothing; all or comma-separated GitHub handles / machine names. Machines with an active SSH session are skipped unless force_restart is set."
+        required: false
+        type: string
+        default: ""
+      force_restart:
+        description: Also restart machines with an active SSH session (their data is lost)
+        required: false
+        type: boolean
+        default: false
+      image:
+        description: Dev machine image (default fd-dev-full:latest)
+        required: false
+        type: string
+        default: ghcr.io/frickeldave/fd-dev-full:latest
+  push:
+    branches:
+      - dev
+    paths:
+      - ".squad/team.md"
+      - ".github/workflows/fd-bootstrap/**"
+      - ".github/workflows/fd-bootstrap.yml"
+      - "scripts/copilot-environment.mjs"
+      - "scripts/platform-shared.mjs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fd-bootstrap
+  cancel-in-progress: false
+
+env:
+  NAMESPACE: fd-infra
+  KUBECTL_REQUEST_TIMEOUT: 60s
+  BOOTSTRAP_DIR: .github/workflows/fd-bootstrap
+
+jobs:
+  build-image:
+    name: Build fd-dev-full image
+    runs-on: [self-hosted, fd]
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      built: ${{ steps.plan.outputs.built }}
+    env:
+      DEV_BASE_IMAGE: ghcr.io/${{ github.repository_owner }}/fd-dev-base:latest
+      KANIKO_IMAGE: ghcr.io/${{ github.repository_owner }}/fd-dev-kaniko:latest
+      KANIKO_NAMESPACE: fd-infra
+      KANIKO_JOB_TEMPLATE: .github/workflows/fd-bootstrap/k8s/fd-k8s-kaniko-build-job.yaml
+      KANIKO_JOB_TIMEOUT_SECONDS: "600"
+      DOCKERFILE_PATH: .github/workflows/fd-bootstrap/docker-dev-full/Dockerfile
+      IMAGE_REF: ${{ inputs.image || 'ghcr.io/frickeldave/fd-dev-full:latest' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - id: plan
+        name: Decide whether the image must be rebuilt
+        env:
+          BUILD_REQUESTED: ${{ inputs.build_image }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          build=false
+          if [ "${BUILD_REQUESTED}" = "true" ]; then
+            build=true
+          elif [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            if [ -z "${BEFORE_SHA}" ] || [ -z "${BEFORE_SHA//0/}" ] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+              build=true
+            elif ! git diff --quiet "${BEFORE_SHA}" "${GITHUB_SHA}" -- "${BOOTSTRAP_DIR}/docker-dev-full" scripts/copilot-environment.mjs scripts/platform-shared.mjs; then
+              build=true
+            fi
+          fi
+          echo "built=${build}" >> "${GITHUB_OUTPUT}"
+
+          # DNS-1123 compliant and <= 63 characters, unique per run attempt.
+          job_name="kaniko-fd-dev-full-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          job_name="$(printf '%s' "${job_name}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c1-63)"
+          echo "job_name=${job_name%%-}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build and push fd-dev-full in a throwaway Kaniko Job
+        if: steps.plan.outputs.built == 'true'
+        env:
+          # Ephemeral, run-scoped token; the Secret is deleted by the cleanup step.
+          KANIKO_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOB_NAME: ${{ steps.plan.outputs.job_name }}
+          GIT_CONTEXT_REF: refs/heads/${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          secret_name="${JOB_NAME}-git"
+
+          kubectl create secret generic "${secret_name}" \
+            --namespace "${KANIKO_NAMESPACE}" \
+            --from-literal=token="${KANIKO_GIT_TOKEN}" \
+            --dry-run=client -o yaml |
+            kubectl apply --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" -f -
+
+          # Kaniko clones the build context itself; the commit id is what gets built.
+          git_context="git://github.com/${GITHUB_REPOSITORY}.git#${GIT_CONTEXT_REF}#${GITHUB_SHA}"
+          job_manifest="$(sed \
+            -e "s|__JOB_NAME__|${JOB_NAME}|g" \
+            -e "s|__NAMESPACE__|${KANIKO_NAMESPACE}|g" \
+            -e "s|__KANIKO_IMAGE__|${KANIKO_IMAGE}|g" \
+            -e "s|__GIT_TOKEN_SECRET_NAME__|${secret_name}|g" \
+            -e "s|__GIT_CONTEXT__|${git_context}|g" \
+            -e "s|__DOCKERFILE_PATH__|${DOCKERFILE_PATH}|g" \
+            -e "s|__DESTINATION_ARGS__|--destination=${IMAGE_REF}|g" \
+            -e "s|__DEV_BASE_IMAGE__|${DEV_BASE_IMAGE}|g" \
+            -e "/__EXTRA_BUILD_ARGS__/d" \
+            "${KANIKO_JOB_TEMPLATE}")"
+          printf '%s\n' "${job_manifest}" | kubectl apply --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" -f -
+
+          # `kubectl wait` never returns for a failed Job, so poll both conditions.
+          deadline=$(( $(date +%s) + KANIKO_JOB_TIMEOUT_SECONDS ))
+          build_status="timeout"
+          while [ "$(date +%s)" -lt "${deadline}" ]; do
+            conditions="$(kubectl get job "${JOB_NAME}" -n "${KANIKO_NAMESPACE}" \
+              --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" \
+              -o jsonpath='{.status.conditions[?(@.status=="True")].type}' 2>/dev/null || true)"
+            case " ${conditions} " in
+              *" Failed "*) build_status="failed"; break ;;
+              *" Complete "*) build_status="complete"; break ;;
+            esac
+            sleep 10
+          done
+
+          kubectl logs "job/${JOB_NAME}" -n "${KANIKO_NAMESPACE}" --all-containers=true --tail=-1 ||
+            echo "No logs available for job/${JOB_NAME}."
+          if [ "${build_status}" != "complete" ]; then
+            echo "Kaniko build Job ${JOB_NAME} ended with status: ${build_status}" >&2
+            exit 1
+          fi
+
+      - name: Clean up Kaniko build Job and git token secret
+        if: always() && steps.plan.outputs.built == 'true'
+        env:
+          JOB_NAME: ${{ steps.plan.outputs.job_name }}
+        run: |
+          kubectl delete job "${JOB_NAME}" -n "${KANIKO_NAMESPACE}" \
+            --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" --ignore-not-found || true
+          kubectl delete secret "${JOB_NAME}-git" -n "${KANIKO_NAMESPACE}" \
+            --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" --ignore-not-found || true
+
+  dev-machines:
+    needs: build-image
+    runs-on: [self-hosted, fd]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Render dev machine manifests
+        env:
+          IMAGE: ${{ inputs.image || 'ghcr.io/frickeldave/fd-dev-full:latest' }}
+        run: |
+          set -euo pipefail
+          node "${BOOTSTRAP_DIR}/dev-machines.mjs" render \
+            --namespace "${NAMESPACE}" --image "${IMAGE}" > dev-machines.yaml
+          node "${BOOTSTRAP_DIR}/dev-machines.mjs" names > dev-machines.names
+          echo "Desired dev machines:"
+          cat dev-machines.names
+
+      - name: Apply dev machines
+        run: |
+          set -euo pipefail
+          if [ -s dev-machines.yaml ] && [ -s dev-machines.names ]; then
+            kubectl apply --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" -f dev-machines.yaml
+          else
+            echo "No human member with a GitHub handle in .squad/team.md; nothing to apply."
+          fi
+
+      - name: Delete machines of removed developers
+        run: |
+          set -euo pipefail
+          kubectl get statefulset,service -n "${NAMESPACE}" \
+            -l app.kubernetes.io/part-of=fd-dev-machines \
+            --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" -o name > dev-machines.existing
+          node "${BOOTSTRAP_DIR}/dev-machines.mjs" stale < dev-machines.existing > dev-machines.stale
+          if [ -s dev-machines.stale ]; then
+            echo "Removing stale dev machines:"
+            cat dev-machines.stale
+            xargs -r kubectl delete -n "${NAMESPACE}" --ignore-not-found \
+              --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" < dev-machines.stale
+          else
+            echo "No stale dev machines."
+          fi
+
+      - name: Restart selected machines (deliberate, data is lost)
+        if: inputs.restart_machines != ''
+        env:
+          RESTART_TARGETS: ${{ inputs.restart_machines }}
+          FORCE_RESTART: ${{ inputs.force_restart }}
+          MACHINES_FILE: dev-machines.restart
+          SESSIONS_SCRIPT: .github/workflows/fd-bootstrap/active-sessions.sh
+        run: |
+          set -euo pipefail
+          node "${BOOTSTRAP_DIR}/dev-machines.mjs" select --targets "${RESTART_TARGETS}" > "${MACHINES_FILE}"
+          if [ ! -s "${MACHINES_FILE}" ]; then
+            echo "restart_machines matched no dev machine; nothing restarted."
+            exit 0
+          fi
+          bash "${BOOTSTRAP_DIR}/restart-machines.sh"
+
+      - name: Wait for new or restarted machines
+        run: |
+          set -euo pipefail
+          # OnDelete StatefulSets do not report update progress via `rollout status`;
+          # wait for the pod itself (created by the StatefulSet controller).
+          while read -r machine; do
+            pod="${machine}-0"
+            deadline=$(( $(date +%s) + 120 ))
+            until kubectl get pod "${pod}" -n "${NAMESPACE}" --request-timeout="${KUBECTL_REQUEST_TIMEOUT}" >/dev/null 2>&1; do
+              if [ "$(date +%s)" -ge "${deadline}" ]; then
+                echo "Pod ${pod} was not created within 120s." >&2
+                exit 1
+              fi
+              sleep 3
+            done
+            kubectl wait --for=condition=Ready "pod/${pod}" -n "${NAMESPACE}" --timeout=300s
+          done < dev-machines.names
+
+      - name: Report machines still on an old image or spec
+        env:
+          IMAGE_BUILT: ${{ needs.build-image.outputs.built }}
+          MACHINES_FILE: dev-machines.names
+        run: bash "${BOOTSTRAP_DIR}/report-outdated.sh"

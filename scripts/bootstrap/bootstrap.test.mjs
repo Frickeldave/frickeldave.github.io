@@ -386,10 +386,10 @@ test("runner RBAC renders into the target namespace and keeps the kaniko capabil
     .map((document) => document.trim())
     .filter(Boolean);
 
-  assert.equal(rbacObjects.length, 2, "expected exactly a Role and a RoleBinding");
+  assert.equal(rbacObjects.length, 4, "expected a Role and a RoleBinding per capability");
 
   for (const object of rbacObjects) {
-    assert.match(object, /name: kaniko-builder/);
+    assert.match(object, /name: (?:kaniko-builder|dev-machines)/);
     assert.match(object, /namespace: __NAMESPACE__/);
     assert.ok(
       !object.includes(config.namespace),
@@ -413,6 +413,16 @@ test("runner RBAC renders into the target namespace and keeps the kaniko capabil
   );
   assert.ok(
     rendered.includes(
+      `kind: Role\nmetadata:\n  name: dev-machines\n  namespace: ${namespace}\n`
+    )
+  );
+  assert.ok(
+    rendered.includes(
+      `kind: RoleBinding\nmetadata:\n  name: dev-machines\n  namespace: ${namespace}\n`
+    )
+  );
+  assert.ok(
+    rendered.includes(
       `subjects:\n  - kind: ServiceAccount\n    name: default\n    namespace: ${namespace}\n`
     )
   );
@@ -420,6 +430,10 @@ test("runner RBAC renders into the target namespace and keeps the kaniko capabil
   assert.match(rendered, /resources: \["pods", "pods\/log"\]/);
   assert.match(rendered, /resources: \["secrets"\]/);
   assert.match(rendered, /verbs: \["create", "update", "get", "delete"\]/);
+  // The dev-machine bootstrap workflow creates, applies and deletes machines and probes them via exec.
+  assert.match(rendered, /resources: \["statefulsets"\]/);
+  assert.match(rendered, /resources: \["services"\]/);
+  assert.match(rendered, /resources: \["pods\/exec"\]/);
 });
 
 test("the secrets template keeps every placeholder the script renders", () => {

@@ -1,0 +1,104 @@
+# Ad-hoc Kaniko build Job template.
+#
+# Rendered and applied by `.github/workflows/fd-bootstrap.yml` once per image
+# build, then deleted again in the same workflow run. Placeholder convention is
+# the same as for every other manifest in this repository: double-underscore
+# tokens are substituted in memory (via `sed`) right before `kubectl apply -f -`.
+#
+# Why a dedicated Job instead of running the executor inside the runner pod:
+# Kaniko unpacks the base image filesystem directly onto `/` of its own
+# container. Running it as a subprocess inside the long-lived runner container
+# would (a) fail because the runner runs non-root and cannot chown `/`, and
+# (b) corrupt the runner's own `/bin`, `/usr`, ... if it were allowed to. A
+# throwaway pod per build gives Kaniko the disposable root filesystem it is
+# designed for.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: __JOB_NAME__
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: kaniko-build
+    app.kubernetes.io/part-of: fd-infra
+spec:
+  # No automatic retry: a failing build must surface as a failed workflow step.
+  backoffLimit: 0
+  # Keep finished Jobs long enough to inspect after a failed workflow. The
+  # workflow removes its own Jobs explicitly; failures remain until this TTL
+  # expires so their pod logs and status are still available.
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kaniko-build
+        app.kubernetes.io/part-of: fd-infra
+    spec:
+      restartPolicy: Never
+      # ghcr-pull-secret is required here too: fd-dev-kaniko and the fd-dev-base
+      # parent image are private packages, so an anonymous pull always fails.
+      # The same secret carries the GHCR credentials Kaniko uses to push.
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - name: kaniko
+          image: __KANIKO_IMAGE__
+          imagePullPolicy: Always
+          securityContext:
+            # Deliberately root. Kaniko extracts the base image onto the root
+            # filesystem of its own container and needs unrestricted chown /
+            # write access on `/` to do so. This is process isolation inside a
+            # throwaway container, not host root: no privileged mode, no added
+            # capabilities, no hostPath/hostNetwork/hostPID, and the pod is
+            # deleted right after the build.
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            privileged: false
+          # Invoke the pinned executor explicitly instead of relying on the
+          # image entrypoint.
+          command:
+            - /kaniko/executor
+          # __EXTRA_BUILD_ARGS__ is deleted by the workflow when it is unused.
+          args:
+            - --context=__GIT_CONTEXT__
+            # Relative to the root of the cloned Git context.
+            - --dockerfile=__DOCKERFILE_PATH__
+            - __DESTINATION_ARGS__
+            - --build-arg=DEV_BASE_IMAGE=__DEV_BASE_IMAGE__
+            - __EXTRA_BUILD_ARGS__
+          env:
+            # Registry credentials for both the base-image pull and the push.
+            - name: DOCKER_CONFIG
+              value: /kaniko/.docker
+            # Clone auth for the private Git build context. Kaniko's Git
+            # resolver consumes the credentials as username/password. Passed
+            # via env (not embedded in the context URL) so the token never
+            # shows up in `kubectl get job -o yaml` or Kubernetes event logs.
+            - name: GIT_USERNAME
+              value: x-access-token
+            - name: GIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: __GIT_TOKEN_SECRET_NAME__
+                  key: token
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              # Higher than the runner container's limit: no runner process
+              # shares this container, and image builds are memory hungry.
+              memory: 4Gi
+          volumeMounts:
+            - name: ghcr-registry-config
+              mountPath: /kaniko/.docker
+              readOnly: true
+      volumes:
+        - name: ghcr-registry-config
+          secret:
+            secretName: ghcr-pull-secret
+            defaultMode: 0440
+            items:
+              - key: .dockerconfigjson
+                path: config.json
