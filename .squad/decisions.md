@@ -64,19 +64,44 @@
 - Commit `0caa9e9` auf `dev`; Issue #281 geschlossen.
 **Why:** Deklarierter KI-Anteil im Frontmatter wich signifikant von einer unabhängigen Bewertung ab — Nacharbeit zur Angleichung von Anspruch und tatsächlichem Text.
 
+#### 2026-10-25: User directive — Branch/PR-Modell gilt
+
+**By:** David Koenig (via Copilot)
+**What:** Option **A** aus der Konfliktdarstellung: Das Branch/PR-Modell der portierten Start-Flow-Skripte (`start-work`, `start-reqeng`, `start-review`) wird übernommen. Issue-Branch, Worktree und Draft-PR sind damit der Standardweg für Squad-Arbeit.
+**Konsequenz:** Der Abschnitt "Branching & Commit-Konvention" in `.squad/routing.md` (bisher: "Single-Developer-Workflow — Arbeit passiert direkt in `dev`", kein Feature-Branch, kein PR) widerspricht dem und muss an das Branch/PR-Modell angepasst werden.
+**Why:** User-Entscheidung im Rahmen der Flow-Angleichung an Issue #282.
+
+#### 2026-10-25: Squad-Upgrade auf v1.1.0 — lokale Anpassungen erhalten
+
+**By:** Nick (DevOps / Infrastructure) · **Issue:** #282
+**What:** `squad upgrade` (0.13.1 → 1.1.0) wurde durchgeführt. Der Upgrader clobbert bewusst Squad-eigene Dateien; alles, was Repo-Policy oder lokale Anpassung ist, wurde davor gesichert und danach byte-genau wiederhergestellt.
+**Why:** Upgrade auf Squad v1.1.0 durchführen, ohne Repo-Policy und lokale Anpassungen zu verlieren.
+
+##### Was der Upgrader nicht durfte
+
+1. **Casting-Legacy-Daten normalisiert** (damit die CLI selbst migrieren kann):
+   - `.squad/casting/registry.json`: `retired_at` für die 5 retired Agents ergänzt.
+   - `.squad/casting/history.json`: `members: ["Tony", …]` → `agents: ["tony", …]`
+     (1:1-Mapping Name → Registry-Id, verifiziert). 1.1.0 akzeptiert nur diese Form.
+   - Originale liegen unter `.squad/casting/legacy-archive-*`.
+2. **Workflows auf 0.13.1 zurückgesetzt.** Die 1.1.0-Templates haben `Mitglieder`
+   aus dem `## …`-Regex entfernt; `team.md` ist deutsch, Label-Sync hätte 0 Member
+   gefunden. Die 7 neu hinzugefügten Workflows wurden entfernt (Sicherung außerhalb des Repos).
+3. **Capabilities-Block neu generiert.** 1.1.0 parst nur englische Headings
+   (`## Members`, `## Work Type → Agent`), `team.md`/`routing.md` sind deutsch →
+   Block kam leer (`specialists=0`). Neu erzeugt mit dem SDK-Generator aus echten Daten,
+   nur mit heading-normalisierter Parse-Sicht; Repo-Dateien unverändert.
+
+##### Offener Punkt (bewusst nicht "gefixt")
+
+Englisch-only Parser + deutsche Charter-Prosa ⇒ `Capability boundaries` im generierten
+Block ist konservativ/unvollständig (nennt Doku/CI/Security als "nicht beansprucht").
+Bei jeder künftigen Cast-Änderung wird der Block erneut leer bzw. konservativ erzeugt.
+Empfehlung: `## Members` als zusätzliche Heading-Zeile in `team.md` aufnehmen oder auf
+SDK-Support für deutsche Headings warten. `team.md` wurde hier bewusst nicht verändert.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
 - Architektonische Entscheidungen hier dokumentieren
 - History auf Arbeit fokussieren, Entscheidungen auf Richtung fokussieren
-# Squad Decisions
-
-## Active Decisions
-
-No decisions recorded yet.
-
-## Governance
-
-- All meaningful changes require team consensus
-- Document architectural decisions here
-- Keep history focused on work, decisions focused on direction
