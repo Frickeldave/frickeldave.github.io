@@ -41,12 +41,28 @@ cleanup() {
   fi
 }
 
+# BEGIN runner-name resolution
+# Append the pod name so multiple Deployment replicas each register under a
+# unique runner identity instead of replacing one another (--replace below).
+# The Deployment already names its pods after the runner prefix, so prepend the
+# prefix only when the identity does not carry it yet. Unconditional prepending
+# produced double-prefixed names such as
+# github-actions-runner-github-actions-runner-55795b4dcb-2wjn6.
+resolve_runner_name() {
+  runner_prefix="${RUNNER_NAME_PREFIX:-github-actions-runner}"
+  runner_identity="${POD_NAME:-$(hostname)}"
+
+  case "${runner_identity}" in
+    "${runner_prefix}"*) printf '%s\n' "${runner_identity}" ;;
+    *) printf '%s\n' "${runner_prefix}-${runner_identity}" ;;
+  esac
+}
+# END runner-name resolution
+
 if [[ -n "${REPO_URL:-}" || -n "${RUNNER_TOKEN:-}" ]]; then
   REPO_URL="${REPO_URL:?REPO_URL is required for runner mode}"
   RUNNER_TOKEN="${RUNNER_TOKEN:?RUNNER_TOKEN is required for runner mode}"
-  # Append POD_NAME so multiple Deployment replicas each register under a
-  # unique runner identity instead of replacing one another (--replace below).
-  RUNNER_NAME="${RUNNER_NAME_PREFIX:-github-actions-runner}-${POD_NAME:-$(hostname)}"
+  RUNNER_NAME="$(resolve_runner_name)"
   RUNNER_LABELS="${RUNNER_LABELS:-}"
   RUNNER_SCOPE="${RUNNER_SCOPE:-repo}"
 

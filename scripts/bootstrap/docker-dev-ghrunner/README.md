@@ -36,9 +36,13 @@ Der finale Laufzeit-Nutzer bleibt `appuser`, geerbt vom Base-Image. Die Runner-D
 
 ## Runner-Identität
 
-Der Entrypoint bildet den Runner-Namen als
-`${RUNNER_NAME_PREFIX:-github-actions-runner}-${POD_NAME}`. Das Deployment läuft mit zwei Replicas;
-jede Pod registriert sich damit unter einer eigenen Identität statt die andere zu ersetzen.
+Der Entrypoint bildet den Runner-Namen aus `RUNNER_NAME_PREFIX` und `POD_NAME`. Das Präfix
+(Standard `github-actions-runner`) wird nur vorangestellt, wenn der Pod-Name es nicht bereits
+enthält: Pods heißen im Deployment schon `github-actions-runner-<hash>-<suffix>`, ein
+unbedingtes Voranstellen erzeugte doppelte Namen wie
+`github-actions-runner-github-actions-runner-55795b4dcb-2wjn6`. Das Deployment läuft mit zwei
+Replicas; jeder Pod registriert sich damit unter einer eigenen Identität statt die andere zu
+ersetzen.
 
 ## Build
 

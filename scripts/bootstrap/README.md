@@ -79,9 +79,9 @@ Test-Dependency).
 - Ergänzt die gepinnte GitHub-Runner-Binary (`RUNNER_VERSION=2.337.0`), den gepinnten `crane`-Client
   (`v0.22.1`) und die Logik des Registrierungs-Entrypoints
 - Finaler Laufzeit-Nutzer: `appuser`
-- Der Entrypoint setzt `RUNNER_NAME=<RUNNER_NAME_PREFIX>-<POD_NAME>` mit dem Default-Präfix
-  `github-actions-runner`, damit beide Replicas unter unterschiedlichen Runner-Identitäten
-  registriert werden
+- Der Entrypoint setzt `RUNNER_NAME` aus `RUNNER_NAME_PREFIX` und `POD_NAME` und stellt das Präfix
+  (Standard `github-actions-runner`) nur voran, wenn der Pod-Name es nicht schon enthält, damit beide
+  Replicas unter unterschiedlichen, nicht doppelt präfigierten Runner-Identitäten registriert werden
 
 ### `fd-dev-kaniko`
 
@@ -330,9 +330,10 @@ kann. Es wird hier gebaut, aber dort verwendet — das Runner-Deployment selbst 
 
 ## Runner-Replicas
 
-Das Deployment läuft mit `spec.replicas: 2`. Jeder Pod registriert sich unter einem eindeutigen
-Namen (`github-actions-runner-<pod-name>`), sodass bis zu zwei Workflow-Jobs parallel laufen können,
-statt sich auf einen einzigen Runner-Slot zu serialisieren.
+Das Deployment läuft mit `spec.replicas: 2`. Jeder Pod registriert sich unter seinem eigenen
+Pod-Namen, sodass bis zu zwei Workflow-Jobs parallel laufen können, statt sich auf einen einzigen
+Runner-Slot zu serialisieren. Der Entrypoint stellt `RUNNER_NAME_PREFIX` nur dann voran, wenn der
+Pod-Name das Präfix nicht schon enthält, sonst entstünden doppelt präfigierte Namen.
 
 ## Registrierung prüfen
 

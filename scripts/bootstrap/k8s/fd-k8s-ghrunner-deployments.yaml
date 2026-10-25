@@ -43,8 +43,10 @@ spec:
                 secretKeyRef:
                   name: github-runner-registration
                   key: RUNNER_TOKEN
-            # Base name only: the entrypoint appends POD_NAME so replicas don't
-            # register under the same runner identity and replace each other.
+            # Base name only: the entrypoint combines it with POD_NAME (and
+            # prepends this prefix only when the pod name lacks it) so replicas
+            # don't register under the same runner identity and replace each
+            # other.
             - name: RUNNER_NAME_PREFIX
               valueFrom:
                 secretKeyRef:

@@ -16,8 +16,9 @@ diesem Repository noch nicht; die Kaniko-Bausteine sind vorbereitet, aber nicht 
 | Runner-Label         | `fd`                                         |
 | Kubeconfig           | `C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml` |
 
-Die Runner registrieren sich als `github-actions-runner-<pod-name>` (der Entrypoint hängt `POD_NAME`
-an `RUNNER_NAME_PREFIX` an), damit beide Replicas gleichzeitig Jobs annehmen können.
+Die Runner registrieren sich unter ihrem eigenen Pod-Namen (`github-actions-runner-<hash>-<suffix>`);
+der Entrypoint stellt `RUNNER_NAME_PREFIX` nur voran, wenn der Pod-Name das Präfix noch nicht enthält.
+Damit können beide Replicas gleichzeitig Jobs annehmen.
 
 ## Voraussetzungen auf dem Operator-Rechner
 

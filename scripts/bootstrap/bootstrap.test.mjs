@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -30,6 +31,10 @@ const rbacTemplate = readFileSync(
   path.join(packageDirectory, "k8s", "fd-k8s-rbac.yaml"),
   "utf8"
 );
+const runnerEntrypoint = readFileSync(
+  path.join(packageDirectory, "docker-dev-ghrunner", "entrypoint.sh"),
+  "utf8"
+);
 
 const K8S_MANIFESTS = [
   "fd-k8s-ghrunner-deployments.yaml",
@@ -44,6 +49,56 @@ function listPackageFiles(directory) {
 
     return entry.isDirectory() ? listPackageFiles(entryPath) : [entryPath];
   });
+}
+
+function findPosixShell() {
+  const candidates =
+    process.platform === "win32"
+      ? [
+          "sh",
+          "C:\\Program Files\\Git\\bin\\sh.exe",
+          "C:\\Program Files\\Git\\usr\\bin\\sh.exe",
+        ]
+      : ["sh", "/bin/sh"];
+
+  for (const candidate of candidates) {
+    const probe = spawnSync(candidate, ["-c", "exit 0"], { stdio: "ignore" });
+
+    if (!probe.error && probe.status === 0) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+// The naming block is delimited by markers so the test can execute the exact
+// shipped code instead of a copy of it.
+const runnerNameBlock = runnerEntrypoint.match(
+  /^# BEGIN runner-name resolution$([\s\S]*?)^# END runner-name resolution$/m
+)?.[1];
+
+function resolveRunnerName(shell, { prefix, podName }) {
+  const env = { ...process.env };
+  delete env.RUNNER_NAME_PREFIX;
+  delete env.POD_NAME;
+
+  if (prefix !== undefined) {
+    env.RUNNER_NAME_PREFIX = prefix;
+  }
+
+  if (podName !== undefined) {
+    env.POD_NAME = podName;
+  }
+
+  const result = spawnSync(
+    shell,
+    ["-eu", "-c", `${runnerNameBlock}\nresolve_runner_name`],
+    { encoding: "utf8", env }
+  );
+
+  assert.equal(result.status, 0, `runner-name block failed: ${result.stderr}`);
+  return result.stdout.trim();
 }
 
 test("bootstrap.json carries the fd target values", () => {
@@ -122,6 +177,68 @@ test("the PowerShell wrapper leaves the namespace default to bootstrap.json", ()
   assert.match(powershellWrapper, /\[string\]\$Namespace,/);
   assert.doesNotMatch(powershellWrapper, /\$Namespace\s*=\s*["']/);
   assert.match(powershellWrapper, /if \(\$Namespace\) \{\r?\n\s+\$nodeArgs \+= @\("--namespace", \$Namespace\)/);
+});
+
+test("the runner entrypoint never double-prefixes the runner name", (t) => {
+  assert.ok(
+    runnerNameBlock,
+    "entrypoint.sh must keep the runner-name resolution block between its BEGIN/END markers"
+  );
+
+  // Regression guard that works even without a shell: the old unconditional
+  // template is what produced github-actions-runner-github-actions-runner-*.
+  assert.doesNotMatch(
+    runnerEntrypoint,
+    /RUNNER_NAME="\$\{RUNNER_NAME_PREFIX:-github-actions-runner\}-\$\{POD_NAME/,
+    "entrypoint.sh must not prepend the prefix unconditionally"
+  );
+
+  const shell = findPosixShell();
+  if (!shell) {
+    t.skip("no POSIX shell available to execute the runner-name block");
+    return;
+  }
+
+  assert.equal(
+    resolveRunnerName(shell, {
+      prefix: "github-actions-runner",
+      podName: "github-actions-runner-55795b4dcb-2wjn6",
+    }),
+    "github-actions-runner-55795b4dcb-2wjn6",
+    "a pod already named after the prefix keeps its name"
+  );
+
+  assert.equal(
+    resolveRunnerName(shell, {
+      prefix: "github-actions-runner",
+      podName: "runner-a",
+    }),
+    "github-actions-runner-runner-a"
+  );
+
+  assert.equal(
+    resolveRunnerName(shell, {
+      prefix: "fd-runner",
+      podName: "github-actions-runner-abc",
+    }),
+    "fd-runner-github-actions-runner-abc",
+    "a prefix that is not part of the pod name is still prepended"
+  );
+
+  assert.equal(
+    resolveRunnerName(shell, { podName: "github-actions-runner-abc" }),
+    "github-actions-runner-abc",
+    "the built-in default prefix matches the deployment pod names"
+  );
+
+  assert.equal(
+    resolveRunnerName(shell, { podName: "some-pod" }),
+    "github-actions-runner-some-pod"
+  );
+
+  // Without POD_NAME (plain `docker run`) the hostname is used and prefixed once.
+  const hostnameName = resolveRunnerName(shell, { prefix: "github-actions-runner" });
+  assert.match(hostnameName, /^github-actions-runner-.+$/);
 });
 
 test("kaniko stays part of the bootstrap flow", () => {
