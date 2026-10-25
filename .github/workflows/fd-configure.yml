@@ -1,0 +1,314 @@
+name: fd-configure (Sync static label namespaces)
+
+# Port of the CRAFT `craft-configure` workflow (issue #282, step 12).
+#
+# What this workflow does
+#   Keeps the static, non-member label namespaces in sync with the definitions
+#   below: `go:*`, `release:*`, `type:*`, `priority:*`, the high-signal labels
+#   `bug` / `feedback` and the base `squad` triage label. It also parses
+#   `.squad/team.md` and fails loudly when the roster table cannot be read.
+#
+# Ownership split (two workflows must never write different values to the same
+# label)
+#   * fd-configure owns the static namespaces listed above.
+#   * `squad-sync-squad-labels.yml` keeps ownership of everything member
+#     related: `squad:<member>` and `squad:copilot`. Those are deliberately NOT
+#     synced here — the roster is parsed and validated only, so a German roster
+#     that the parser cannot read still breaks this run instead of silently
+#     producing zero member labels.
+#   * `status:in-pr-review` and `podcast-update` are created by hand / by the
+#     podcast workflow and are intentionally untouched.
+#   * The static lists below repeat the values of `squad-sync-squad-labels.yml`
+#     byte for byte (`go:spec-finished` is the only addition, see below). Both
+#     workflows trigger on a push to `.squad/team.md`, so both still look at
+#     these labels; because the payloads are identical and unchanged labels are
+#     not rewritten at all, the two runs converge on the same state instead of
+#     flip-flopping. Before any value here may diverge, the static block has to
+#     be removed from `squad-sync-squad-labels.yml` (follow-up: retire that
+#     workflow once this one has run green).
+#
+# Deviations from the CRAFT original
+#   * `go:spec-finished` (Pepper's gate, see `.squad/routing.md`) was not
+#     managed by any workflow before; it is synced here with the live colour.
+#   * `go:done` / `go:cancelled` are NOT ported: nothing in this repo consumes
+#     them. `scripts/sync-project-board.mjs` derives the Done column from the
+#     issue state, and `squad-label-enforce.yml` only enforces `go:`
+#     exclusivity, so the two labels would be unused noise.
+#   * No `configure-board` job. CRAFT's script ensures CRAFT-specific Status
+#     options ("In Review", "Cancelled"); this repo's board consumer
+#     (`scripts/sync-project-board.mjs`) resolves Backlog / Needs Research /
+#     Ready / In Progress / Done by alias and skips an issue with a hint when an
+#     option is missing. A write-capable board job would therefore mutate a live
+#     Projects V2 board for options nothing reads, and its current Status
+#     options cannot be verified locally (that needs a project-scoped token).
+#   * No `setup-node` step: `actions/github-script` runs on the runner's own
+#     Node runtime and no other Node code is executed here.
+#
+# Runner: self-hosted, label `fd` (see scripts/bootstrap/README.md).
+
+on:
+  push:
+    # `.squad/team.md` is the roster source (validation only), the workflow file
+    # itself is listed so a change to the label definitions takes effect with the
+    # same commit.
+    paths:
+      - ".squad/team.md"
+      - ".github/workflows/fd-configure.yml"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — print the planned label state without writing it"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sync-labels:
+    name: Sync static label namespaces
+    runs-on: [self-hosted, fd]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Parse roster and sync static labels
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        with:
+          script: |
+            const fs = require('fs');
+
+            const TEAM_FILE = '.squad/team.md';
+            const MEMBER_HEADING = /^#{2,3}\s+(mitglieder|members|team roster)\s*$/i;
+            const SKIPPED_MEMBERS = new Set(['scribe']);
+            const dryRun = process.env.DRY_RUN === 'true';
+
+            if (!fs.existsSync(TEAM_FILE)) {
+              core.setFailed(`${TEAM_FILE} not found — cannot validate the squad roster`);
+              return;
+            }
+
+            // The roster table is parsed header-driven: `.squad/team.md` is
+            // German (`## Mitglieder`, `| Name | Rolle | Charter | Status |`),
+            // while other Squad repos use `## Members` / `## Team Roster` with
+            // English column names.
+            function parseRoster(content) {
+              const members = [];
+              let inSection = false;
+              let header = null;
+
+              for (const rawLine of content.split(/\r?\n/)) {
+                const line = rawLine.trim();
+                if (/^#{1,6}\s/.test(line)) {
+                  inSection = MEMBER_HEADING.test(line);
+                  header = null;
+                  continue;
+                }
+                if (!inSection || !line.startsWith('|')) continue;
+
+                const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
+                if (cells.length < 2) continue;
+                if (cells.every((cell) => /^:?-{2,}:?$/.test(cell))) continue;
+
+                if (!header) {
+                  if (cells.some((cell) => /^name$/i.test(cell.replace(/[*`]/g, '')))) {
+                    header = cells.map((cell) => cell.toLowerCase());
+                  }
+                  continue;
+                }
+
+                const nameIndex = header.indexOf('name');
+                const roleIndex = header.findIndex((cell) => cell === 'rolle' || cell === 'role');
+                const name = (cells[nameIndex] ?? '').replace(/[*`@]/g, '').trim();
+                if (!name || SKIPPED_MEMBERS.has(name.toLowerCase())) continue;
+                if (members.some((member) => member.name.toLowerCase() === name.toLowerCase())) continue;
+
+                members.push({ name, role: (cells[roleIndex] ?? '').replace(/[*`]/g, '').trim() });
+              }
+
+              return members;
+            }
+
+            const content = fs.readFileSync(TEAM_FILE, 'utf8');
+            const members = parseRoster(content);
+
+            if (members.length === 0) {
+              core.setFailed(
+                `No squad members found in ${TEAM_FILE} — expected a "## Mitglieder" / ` +
+                  '"## Members" table with a "Name" column.'
+              );
+              return;
+            }
+
+            core.info(`Roster: ${members.length} members (${members.map((m) => m.name).join(', ')})`);
+            for (const member of members) core.info(`  ${member.name} — ${member.role || 'no role'}`);
+
+            // Static namespaces only. `squad:<member>` / `squad:copilot` belong to
+            // squad-sync-squad-labels.yml; see the ownership note in the header.
+            const SQUAD_LABELS = [
+              { name: 'squad', color: '9B8FCC', description: 'Squad triage inbox — Lead will assign to a member' },
+            ];
+
+            const GO_LABELS = [
+              { name: 'go:no', color: 'B60205', description: 'Not pursuing' },
+              { name: 'go:needs-research', color: 'FBCA04', description: 'Needs investigation' },
+              { name: 'go:spec-finished', color: '0075CA', description: "Spec finished — awaiting Tony's approval" },
+              { name: 'go:yes', color: '0E8A16', description: 'Ready to implement' },
+            ];
+
+            const RELEASE_LABELS = [
+              { name: 'release:v0.4.0', color: '6B8EB5', description: 'Targeted for v0.4.0' },
+              { name: 'release:v0.5.0', color: '6B8EB5', description: 'Targeted for v0.5.0' },
+              { name: 'release:v0.6.0', color: '8B7DB5', description: 'Targeted for v0.6.0' },
+              { name: 'release:v1.0.0', color: '8B7DB5', description: 'Targeted for v1.0.0' },
+              { name: 'release:backlog', color: 'D4E5F7', description: 'Not yet targeted' },
+            ];
+
+            const TYPE_LABELS = [
+              { name: 'type:feature', color: 'DDD1F2', description: 'New capability' },
+              { name: 'type:bug', color: 'FF0422', description: 'Something broken' },
+              { name: 'type:spike', color: 'F2DDD4', description: 'Research/investigation — produces a plan, not code' },
+              { name: 'type:docs', color: 'D4E5F7', description: 'Documentation work' },
+              { name: 'type:chore', color: 'D4E5F7', description: 'Maintenance, refactoring, cleanup' },
+              { name: 'type:epic', color: 'CC4455', description: 'Parent issue that decomposes into sub-issues' },
+            ];
+
+            const PRIORITY_LABELS = [
+              { name: 'priority:p0', color: 'B60205', description: 'Blocking release' },
+              { name: 'priority:p1', color: 'D93F0B', description: 'This sprint' },
+              { name: 'priority:p2', color: 'FBCA04', description: 'Next sprint' },
+            ];
+
+            // High-signal labels — these MUST visually dominate all others
+            const SIGNAL_LABELS = [
+              { name: 'bug', color: 'FF0422', description: "Something isn't working" },
+              { name: 'feedback', color: '00E5FF', description: 'User feedback — high signal, needs attention' },
+            ];
+
+            const labels = [
+              ...SQUAD_LABELS,
+              ...GO_LABELS,
+              ...RELEASE_LABELS,
+              ...TYPE_LABELS,
+              ...PRIORITY_LABELS,
+              ...SIGNAL_LABELS,
+            ];
+
+            const seen = new Set();
+            for (const label of labels) {
+              if (seen.has(label.name)) {
+                core.setFailed(`Duplicate label definition: ${label.name}`);
+                return;
+              }
+              seen.add(label.name);
+              if (!/^[0-9a-f]{6}$/i.test(label.color)) {
+                core.setFailed(`Invalid colour for ${label.name}: ${label.color}`);
+                return;
+              }
+            }
+
+            core.info(`Planned static labels: ${labels.length}`);
+
+            const rows = [];
+            let created = 0;
+            let updated = 0;
+            let unchanged = 0;
+
+            for (const label of labels) {
+              let existing = null;
+              try {
+                const response = await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                });
+                existing = response.data;
+              } catch (err) {
+                if (err.status !== 404) throw err;
+              }
+
+              if (existing) {
+                const sameColor = String(existing.color ?? '').toLowerCase() === label.color.toLowerCase();
+                const sameDescription = (existing.description ?? '') === label.description;
+                if (sameColor && sameDescription) {
+                  unchanged++;
+                  rows.push([label.name, label.color, label.description, 'unchanged']);
+                  core.info(`ok      ${label.name} (#${label.color})`);
+                  continue;
+                }
+                if (dryRun) {
+                  rows.push([label.name, label.color, label.description, 'would update']);
+                  core.info(`update  ${label.name} (#${existing.color} -> #${label.color}) [dry run]`);
+                  continue;
+                }
+                await github.rest.issues.updateLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description,
+                });
+                updated++;
+                rows.push([label.name, label.color, label.description, 'updated']);
+                core.info(`update  ${label.name} (#${existing.color} -> #${label.color})`);
+                continue;
+              }
+
+              if (dryRun) {
+                rows.push([label.name, label.color, label.description, 'would create']);
+                core.info(`create  ${label.name} (#${label.color}) [dry run]`);
+                continue;
+              }
+
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description,
+                });
+                created++;
+                rows.push([label.name, label.color, label.description, 'created']);
+                core.info(`create  ${label.name} (#${label.color})`);
+              } catch (err) {
+                // A concurrent run (squad-sync-squad-labels.yml) may have created
+                // the same label between the GET and the POST — that is not a
+                // conflict, both runs write the same payload.
+                if (err.status === 422) {
+                  rows.push([label.name, label.color, label.description, 'exists (concurrent create)']);
+                  core.info(`skip    ${label.name} (created concurrently by another run)`);
+                  continue;
+                }
+                throw err;
+              }
+            }
+
+            core.info(
+              `Done: ${created} created, ${updated} updated, ${unchanged} unchanged` +
+                (dryRun ? ' [dry run — nothing was written]' : '')
+            );
+
+            await core.summary
+              .addHeading(`fd-configure — ${dryRun ? 'dry run' : 'static label sync'}`, 3)
+              .addRaw(
+                `${members.length} roster members parsed from \`${TEAM_FILE}\`: ` +
+                  members.map((member) => `**${member.name}** (${member.role || 'no role'})`).join(', ')
+              )
+              .addTable([
+                [
+                  { data: 'Label', header: true },
+                  { data: 'Colour', header: true },
+                  { data: 'Description', header: true },
+                  { data: 'Result', header: true },
+                ],
+                ...rows,
+              ])
+              .write();
