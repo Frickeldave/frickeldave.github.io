@@ -16,7 +16,7 @@
  */
 
 import { execFile, execFileSync } from "node:child_process";
-import { chmod, mkdir, rm, stat } from "node:fs/promises";
+import { chmod, mkdir, readdir, rm, stat } from "node:fs/promises";
 import { createWriteStream, existsSync } from "node:fs";
 import https from "node:https";
 import path from "node:path";
@@ -60,14 +60,25 @@ function error(...args) {
   console.error("\x1b[31m✖ ", ...args, "\x1b[0m");
 }
 
+// PowerShell literal string; the escape for a single quote is '' (doubling).
+function psLiteral(value) {
+  return `'${path.resolve(value).replace(/'/g, "''")}'`;
+}
+
 function execShell(cmd, args = [], opts = {}) {
   return new Promise((resolve, reject) => {
     const proc = execFile(
       cmd,
       args,
       { ...opts, timeout: 120_000 },
-      (err, stdout, _stderr) => {
-        if (err) return reject(err);
+      (err, stdout, stderr) => {
+        if (err) {
+          // execFile's error object does not carry the captured output here, so
+          // attach it for callers that build readable failure messages.
+          err.stdout = stdout;
+          err.stderr = stderr;
+          return reject(err);
+        }
         resolve(stdout);
       }
     );
@@ -75,6 +86,25 @@ function execShell(cmd, args = [], opts = {}) {
       proc.stdout?.pipe(process.stdout);
       proc.stderr?.pipe(process.stderr);
     }
+  });
+}
+
+// Runs a PowerShell command line and reports the exact command on failure, so
+// a missing/broken tool surfaces as a readable message instead of a bare ENOENT.
+function runPowershell(command) {
+  const args = ["-NoProfile", "-NonInteractive", "-Command", command];
+  return new Promise((resolve, reject) => {
+    execShell("powershell.exe", args).then(resolve, (err) => {
+      const detail = (err.stderr?.toString() ?? "").trim();
+      const wrapped = new Error(
+        `powershell.exe ${args.join(" ")} failed (exit ${
+          err.code ?? "unknown"
+        }): ${detail || err.message}`
+      );
+      wrapped.stdout = err.stdout;
+      wrapped.stderr = err.stderr;
+      reject(wrapped);
+    });
   });
 }
 
@@ -217,24 +247,79 @@ async function installMacOSDmg() {
   await rm(mountDir, { recursive: true, force: true });
 }
 
+// Recursively looks for a file name (case-insensitive) and returns its path.
+async function findFileRecursive(dir, fileName) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const found = await findFileRecursive(fullPath, fileName);
+      if (found) return found;
+    } else if (entry.name.toLowerCase() === fileName.toLowerCase()) {
+      return fullPath;
+    }
+  }
+  return null;
+}
+
 async function installWindowsZip() {
   const zipPath = path.join(OPENSCAD_DIR, `OpenSCAD-${OPENSCAD_VERSION}.zip`);
+  const stagingDir = path.join(OPENSCAD_DIR, "_extract");
   const url = getOpenSCADDownloadUrl();
 
   await downloadFile(url, zipPath);
-  await execShell("tar", ["-xf", zipPath, "-C", OPENSCAD_DIR]);
-  await rm(zipPath, { force: true });
 
-  // The zip extracts to OpenSCAD-2021.01/; move contents up
-  const extractedDir = path.join(OPENSCAD_DIR, `OpenSCAD-${OPENSCAD_VERSION}`);
-  if (existsSync(extractedDir)) {
-    const entries = await import("node:fs/promises").then((fs) => fs.readdir(extractedDir));
-    for (const entry of entries) {
-      const src = path.join(extractedDir, entry);
-      const dst = path.join(OPENSCAD_DIR, entry);
-      await execShell("mv", [src, dst]).catch(() => {});
+  try {
+    // `unzip`, `cp` and `mv` are not shipped with Windows, so extract with
+    // PowerShell's Expand-Archive, which is always available. `-LiteralPath`
+    // disables wildcard expansion and `ErrorActionPreference=Stop` turns
+    // non-terminating cmdlet errors into a non-zero exit code instead of a
+    // silent partial extraction.
+    await rm(stagingDir, { recursive: true, force: true });
+    await mkdir(stagingDir, { recursive: true });
+    await runPowershell(
+      [
+        "$ErrorActionPreference='Stop';",
+        `Expand-Archive -LiteralPath ${psLiteral(zipPath)}`,
+        `-DestinationPath ${psLiteral(stagingDir)} -Force`,
+      ].join(" ")
+    );
+
+    // The archive wraps its payload in a single top-level directory whose name
+    // has varied in case (`OpenSCAD-2021.01` vs. the shipped `openscad-2021.01`),
+    // so locate the folder that actually contains the binary instead of
+    // assuming its name. Not finding it is a hard failure.
+    const extractedBinary = await findFileRecursive(stagingDir, "openscad.exe");
+    if (!extractedBinary) {
+      throw new Error(
+        `openscad.exe not found in the extracted archive at ${stagingDir}`
+      );
     }
-    await rm(extractedDir, { recursive: true, force: true });
+    const payloadDir = path.dirname(extractedBinary);
+
+    // Drop leftovers of an interrupted run so the move cannot collide.
+    const keep = new Set(
+      [path.basename(zipPath), path.basename(stagingDir)].map((name) =>
+        name.toLowerCase()
+      )
+    );
+    for (const entry of await readdir(OPENSCAD_DIR)) {
+      if (!keep.has(entry.toLowerCase())) {
+        await rm(path.join(OPENSCAD_DIR, entry), { recursive: true, force: true });
+      }
+    }
+
+    // Move the archive payload one level up so openscad.exe sits in .openscad/.
+    await runPowershell(
+      [
+        "$ErrorActionPreference='Stop';",
+        `Get-ChildItem -LiteralPath ${psLiteral(payloadDir)} |`,
+        `Move-Item -Destination ${psLiteral(OPENSCAD_DIR)} -Force`,
+      ].join(" ")
+    );
+  } finally {
+    await rm(stagingDir, { recursive: true, force: true }).catch(() => {});
+    await rm(zipPath, { force: true }).catch(() => {});
   }
 }
 

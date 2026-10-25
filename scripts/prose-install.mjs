@@ -53,6 +53,11 @@ function error(...args) {
   console.error("\x1b[31m✖ ", ...args, "\x1b[0m");
 }
 
+// PowerShell literal string; the escape for a single quote is '' (doubling).
+function psLiteral(value) {
+  return `'${path.resolve(value).replace(/'/g, "''")}'`;
+}
+
 // ── Argument parsing ──────────────────────────────────────────────────────────
 
 for (const arg of process.argv.slice(2)) {
@@ -67,7 +72,13 @@ function execShell(cmd, args = [], opts = {}) {
       args,
       { ...opts, timeout: 120_000 },
       (err, stdout, stderr) => {
-        if (err) return reject(err);
+        if (err) {
+          // execFile's error object does not carry the captured output here, so
+          // attach it for callers that build readable failure messages.
+          err.stdout = stdout;
+          err.stderr = stderr;
+          return reject(err);
+        }
         resolve(stdout);
       }
     );
@@ -75,6 +86,25 @@ function execShell(cmd, args = [], opts = {}) {
       proc.stdout?.pipe(process.stdout);
       proc.stderr?.pipe(process.stderr);
     }
+  });
+}
+
+// Runs a PowerShell command line and reports the exact command on failure, so
+// a missing/broken tool surfaces as a readable message instead of a bare ENOENT.
+function runPowershell(command) {
+  const args = ["-NoProfile", "-NonInteractive", "-Command", command];
+  return new Promise((resolve, reject) => {
+    execShell("powershell.exe", args).then(resolve, (err) => {
+      const detail = (err.stderr?.toString() ?? "").trim();
+      const wrapped = new Error(
+        `powershell.exe ${args.join(" ")} failed (exit ${
+          err.code ?? "unknown"
+        }): ${detail || err.message}`
+      );
+      wrapped.stdout = err.stdout;
+      wrapped.stderr = err.stderr;
+      reject(wrapped);
+    });
   });
 }
 
@@ -101,7 +131,6 @@ function getValeDownloadUrl() {
 function downloadFile(url, destPath) {
   return new Promise((resolve, reject) => {
     log(`  → ${url}`);
-    const file = createWriteStream(destPath);
     https
       .get(url, (res) => {
         if (
@@ -109,22 +138,31 @@ function downloadFile(url, destPath) {
           res.statusCode < 400 &&
           res.headers.location
         ) {
-          // Follow redirects
+          // Follow redirects. Open the destination only for the final hop: a
+          // write stream left over from a redirect keeps the file locked on
+          // Windows, which later blocks extracting it.
+          res.resume();
           return downloadFile(res.headers.location, destPath)
             .then(resolve)
             .catch(reject);
         }
         if (res.statusCode !== 200) {
+          res.resume();
           return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
         }
+        const file = createWriteStream(destPath);
         res.pipe(file);
         file.on("finish", () => {
-          file.close();
-          resolve();
+          // Resolve only once the descriptor is closed, so callers can read
+          // the archive immediately afterwards (required on Windows).
+          file.close(() => resolve());
+        });
+        file.on("error", (err) => {
+          file.destroy();
+          reject(err);
         });
       })
       .on("error", (err) => {
-        file.destroy();
         reject(err);
       });
   });
@@ -153,8 +191,17 @@ async function installValeBinary() {
   await downloadFile(url, archivePath);
 
   if (isWindows) {
-    // Extract .zip using system unzip
-    await execShell("unzip", ["-o", archivePath, "-d", VALE_DIR]);
+    // `unzip` is not shipped with Windows, so use PowerShell's Expand-Archive,
+    // which is always available. `-LiteralPath` disables wildcard expansion and
+    // `ErrorActionPreference=Stop` turns non-terminating cmdlet errors into a
+    // non-zero exit code instead of a silent partial extraction.
+    const command = [
+      "$ErrorActionPreference='Stop';",
+      `Expand-Archive -LiteralPath ${psLiteral(archivePath)}`,
+      `-DestinationPath ${psLiteral(VALE_DIR)} -Force`,
+    ].join(" ");
+
+    await runPowershell(command);
     log("  Extracted Windows archive");
   } else {
     // Extract .tar.gz using system tar
@@ -195,7 +242,18 @@ async function installStyleGuide(repo, localName) {
 
   // Copy entire style folder to target
   await rm(targetDir, { recursive: true, force: true }).catch(() => {});
-  await execShell("cp", ["-r", path.join(tmpDir, localName), targetDir]);
+  if (isWindows) {
+    // `cp` is not shipped with Windows, so copy with PowerShell's Copy-Item.
+    await runPowershell(
+      [
+        "$ErrorActionPreference='Stop';",
+        `Copy-Item -LiteralPath ${psLiteral(path.join(tmpDir, localName))}`,
+        `-Destination ${psLiteral(targetDir)} -Recurse -Force`,
+      ].join(" ")
+    );
+  } else {
+    await execShell("cp", ["-r", path.join(tmpDir, localName), targetDir]);
+  }
 
   // Clean up temp
   await rm(tmpDir, { recursive: true, force: true });
