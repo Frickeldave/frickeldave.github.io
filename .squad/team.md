@@ -13,6 +13,7 @@
 | Name | Rolle | Charter | Status |
 |------|------|---------|--------|
 | Tony | Lead & Requirement Gatekeeper | `.squad/agents/tony/charter.md` | ✅ Aktiv |
+| Pepper | Requirement Engineering / Anforderungsspezialistin | `.squad/agents/pepper/charter.md` | ✅ Aktiv |
 | Bruce | Backend / Scripts / Komponenten | `.squad/agents/bruce/charter.md` | ✅ Aktiv |
 | Natasha | Frontend-Entwickler / UI-Spezialist | `.squad/agents/natasha/charter.md` | ✅ Aktiv |
 | Clint | Tester / QA-Spezialist | `.squad/agents/clint/charter.md` | ✅ Aktiv |

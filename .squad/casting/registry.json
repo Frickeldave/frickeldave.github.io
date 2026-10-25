@@ -84,6 +84,13 @@
       "legacy_named": false,
       "status": "active"
     },
+    "pepper": {
+      "persistent_name": "Pepper",
+      "universe": "Marvel Cinematic Universe",
+      "created_at": "2026-10-25",
+      "legacy_named": false,
+      "status": "active"
+    },
     "scribe": {
       "persistent_name": "Scribe",
       "universe": "builtin",

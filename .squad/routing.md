@@ -73,6 +73,7 @@ Single-Developer-Workflow — Arbeit passiert direkt in `dev`.
 | Domain                                         | Primär   | Sekundär | Reviewer |
 | ---------------------------------------------- | -------- | -------- | -------- |
 | Anforderungen, Scope, Prioritäten              | Tony     | Maria    | Tony     |
+| Anforderungsanalyse und Spezifikation          | Pepper   | Tony     | Tony     |
 | Astro UI und Tailwind                          | Natasha  | Bruce    | Tony     |
 | Services, Scripts, Integrationen               | Bruce    | Nick     | Tony     |
 | Testing und QA                                 | Clint    | Bruce    | Tony     |
@@ -90,6 +91,7 @@ Explizites Tony-Approval-Gate gilt für jeden Work-Typ.
 | Work-Typ                                                      | Route zu | Tony-Approval-Gate                                                                            | Beispiele                                                                                           |
 | ------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Anforderungen, Scope, Ticket-Qualität                         | Tony     | Erforderlich vor Dateiveränderungen                                                           | Akzeptanzkriterien klären, Scope-Grenzen definieren                                                 |
+| Anforderungsanalyse / Spezifikation                           | Pepper   | Erforderlich vor Spezifikationsänderungen; Freigabe `go:yes` bleibt bei Tony                    | Akzeptanzkriterien formulieren, offene Fragen klären, Scope präzisieren, Risiko einschätzen          |
 | Astro-Komponenten, UI, Tailwind                               | Natasha  | Erforderlich vor Dateiveränderungen                                                           | `src/components/**` aktualisieren, `src/pages/**` anpassen, Design-System ausrichten                |
 | Services, Scripts, Integrationen                              | Bruce    | Erforderlich vor Dateiveränderungen                                                           | `src/lib/**`, `scripts/**`, Integrations-Flows aktualisieren                                        |
 | Testing und QA                                                | Clint    | Erforderlich vor Test- oder Fixture-Datei-Änderungen                                          | Regression-Checks, Randfall-Tests, Release-Bereitschaft                                             |
@@ -106,3 +108,7 @@ Harte Regel: Issues ohne Label `squad` sind außerhalb des Squad-Scopes und dür
 
 | Label | Bedeutung | Owner |
 | ----- | --------- | ----- |
+| `go:spec-finished` | Spec fertig, wartet auf Tonys Freigabe | Pepper |
+| `squad:pepper` | Zugewiesen an Pepper (Requirement Engineering) | Pepper |
+
+Grenze zwischen Spezifikation und Freigabe: Pepper setzt `go:spec-finished`, niemals `go:yes`, und schreibt `.frickeldave-active-issue` nicht — die Gate-Markierung autorisiert ausschließlich Tony.
