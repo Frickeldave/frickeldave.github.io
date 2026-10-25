@@ -1,8 +1,49 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+/**
+ * Issue branch automation.
+ *
+ * Branches follow the repository's Conventional Branch Name policy —
+ * `<type>/issue-<n>-<slug>` (e.g. `feat/issue-482-dark-software-factory`) —
+ * because `.husky/pre-push-validate.js` rejects anything that is not
+ * `<type>/<optional-id>-<description>` with a Conventional Commits type.
+ * The previous `squad/<issue>-<type>` scheme is intentionally gone.
+ */
+
 export const DEFAULT_BASE_BRANCH = 'dev';
 const ISSUE_TYPE_SLUGS = ['feature', 'bug', 'task', 'docs', 'chore', 'spike', 'epic'];
+
+/**
+ * Branch types accepted by `.husky/pre-push-validate.js`. `squad` is
+ * deliberately absent: the pre-push hook rejects `squad/<id>-<type>` branches,
+ * so issue branches must use `<type>/issue-<n>-<slug>` instead.
+ */
+export const CONVENTIONAL_BRANCH_TYPES = Object.freeze([
+  'feat',
+  'fix',
+  'docs',
+  'style',
+  'refactor',
+  'perf',
+  'test',
+  'ci',
+  'chore',
+]);
+
+export const DEFAULT_BRANCH_TYPE = 'feat';
+
+const BRANCH_DESCRIPTION_MAX_LENGTH = 48;
+
+const ISSUE_TYPE_TO_BRANCH_TYPE = Object.freeze({
+  feature: 'feat',
+  bug: 'fix',
+  docs: 'docs',
+  chore: 'chore',
+  task: 'feat',
+  spike: 'feat',
+  epic: 'feat',
+});
 
 export async function run(env = process.env) {
   const repository = env.GITHUB_REPOSITORY;
@@ -32,7 +73,11 @@ export async function run(env = process.env) {
     return;
   }
 
-  const branchName = buildIssueBranchName({ issueNumber, labels });
+  const branchName = buildIssueBranchName({
+    type: deriveBranchType(labels),
+    issueId: issueNumber,
+    slug: issue.title || deriveIssueTypeSlug(labels),
+  });
   await gh(
     [
       'issue',
@@ -71,8 +116,71 @@ export function deriveIssueTypeSlug(labels = []) {
   return 'work-item';
 }
 
-export function buildIssueBranchName({ issueNumber, labels = [] }) {
-  return `squad/${issueNumber}-${deriveIssueTypeSlug(labels)}`;
+/**
+ * Maps the issue's `type:*` label onto a Conventional Branch Name type.
+ * Unknown or missing type labels fall back to `feat`.
+ */
+export function deriveBranchType(labels = []) {
+  return ISSUE_TYPE_TO_BRANCH_TYPE[deriveIssueTypeSlug(labels)] ?? DEFAULT_BRANCH_TYPE;
+}
+
+/**
+ * Builds an issue branch name that satisfies the repository's Conventional
+ * Branch Name policy: `<type>/issue-<n>-<slug>`, e.g.
+ * `feat/issue-482-dark-software-factory`.
+ *
+ * This is the single source of truth shared with `scripts/start-work.mjs`, so
+ * the two flows cannot drift. `.husky/pre-push-validate.js` only accepts
+ * `<type>/<optional-id>-<description>` with a Conventional Commits type, hence
+ * `squad` is rejected here rather than producing a branch that cannot be pushed.
+ *
+ * @param {{ type?: string; issueId: number; slug: string }} params
+ * @returns {string}
+ */
+export function buildIssueBranchName({ type = DEFAULT_BRANCH_TYPE, issueId, slug }) {
+  const branchType = normalizeBranchType(type);
+  const numericId = Number(issueId);
+
+  if (!Number.isInteger(numericId) || numericId <= 0) {
+    throw new Error(`Invalid issue number for a branch name: ${issueId ?? '(missing)'}`);
+  }
+
+  const description = slugifyBranchDescription(slug);
+  if (!description) {
+    throw new Error(`Could not derive a branch description from "${slug ?? ''}".`);
+  }
+
+  return `${branchType}/issue-${numericId}-${description}`;
+}
+
+/**
+ * Normalizes arbitrary text (issue title or an already-slugged value) into a
+ * branch description segment: lowercase ASCII kebab-case without leading or
+ * trailing hyphens, capped at 48 characters.
+ */
+export function slugifyBranchDescription(value = '') {
+  return String(value ?? '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, BRANCH_DESCRIPTION_MAX_LENGTH)
+    .replace(/-+$/g, '');
+}
+
+function normalizeBranchType(type) {
+  const normalizedType = String(type ?? '')
+    .trim()
+    .toLowerCase();
+
+  if (!CONVENTIONAL_BRANCH_TYPES.includes(normalizedType)) {
+    throw new Error(
+      `Invalid branch type "${type ?? '(missing)'}" — expected one of: ${CONVENTIONAL_BRANCH_TYPES.join(', ')}`
+    );
+  }
+
+  return normalizedType;
 }
 
 export function collectLinkedBranchNames(issue) {

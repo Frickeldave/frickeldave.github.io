@@ -32,7 +32,10 @@ import { basename, resolve } from 'node:path';
 import { emitKeypressEvents } from 'node:readline';
 import { createInterface } from 'node:readline/promises';
 import { pathToFileURL } from 'node:url';
-import { resolveGhHost } from './ensure-issue-branch.mjs';
+import {
+  buildIssueBranchName,
+  resolveGhHost,
+} from './ensure-issue-branch.mjs';
 import { isWindows, prepareSpawn } from './platform-shared.mjs';
 import { prepareCopilotEnvironment } from './copilot-environment.mjs';
 import {
@@ -1055,7 +1058,12 @@ function resolveBranchContext(
   ensureDevBaseAvailable(repoRoot, FEATURE_BRANCH_BASE);
 
   return {
-    branchName: `feat/issue-${issueContext.issueId}-${issueContext.branchSlug}`,
+    // Shared with ensure-issue-branch.mjs so both flows emit the identical
+    // Conventional Branch Name shape required by .husky/pre-push-validate.js.
+    branchName: buildIssueBranchName({
+      issueId: issueContext.issueId,
+      slug: issueContext.branchSlug,
+    }),
     baseBranch: FEATURE_BRANCH_BASE,
     prNumber: null,
   };

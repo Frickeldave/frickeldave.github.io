@@ -1,31 +1,113 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 
 import {
   buildIssueBranchName,
   collectLinkedBranchNames,
+  deriveBranchType,
   deriveIssueTypeSlug,
   hostQualifiedRepo,
   isSquadIssue,
   resolveGhHost,
+  slugifyBranchDescription,
 } from './ensure-issue-branch.mjs';
 
-test('issue branch naming uses the canonical squad/<number>-<english-slug> convention', () => {
+const PRE_PUSH_HOOK_URL = new URL('../.husky/pre-push-validate.js', import.meta.url);
+
+/**
+ * Loads the exact branch-name rule the Husky pre-push hook enforces, so the
+ * assertions below cannot drift from the hook.
+ */
+function loadPrePushBranchRule() {
+  const source = readFileSync(PRE_PUSH_HOOK_URL, 'utf8');
+
+  const validTypesMatch = source.match(/const validTypes = \[([\s\S]*?)\];/);
+  assert.ok(validTypesMatch, 'pre-push hook should declare a validTypes list');
+  const validTypes = [...validTypesMatch[1].matchAll(/'([^']+)'/g)].map((match) => match[1]);
+
+  const patternMatch = source.match(/const branchPattern = new RegExp\(\s*([\s\S]*?)\s*\);/);
+  assert.ok(patternMatch, 'pre-push hook should declare a branchPattern');
+
+  const buildPattern = new Function('validTypes', `return new RegExp(${patternMatch[1]});`);
+
+  return { validTypes, branchPattern: buildPattern(validTypes) };
+}
+
+test('issue branch naming follows the conventional <type>/issue-<n>-<slug> convention', () => {
   assert.equal(
-    buildIssueBranchName({ issueNumber: 434, labels: ['squad', 'type:feature'] }),
-    'squad/434-feature'
+    buildIssueBranchName({ type: 'feat', issueId: 434, slug: 'feature' }),
+    'feat/issue-434-feature'
   );
   assert.equal(
-    buildIssueBranchName({ issueNumber: 52, labels: ['squad', 'type:bug'] }),
-    'squad/52-bug'
+    buildIssueBranchName({ type: 'fix', issueId: 52, slug: 'bug' }),
+    'fix/issue-52-bug'
   );
-  assert.equal(buildIssueBranchName({ issueNumber: 81, labels: ['squad'] }), 'squad/81-work-item');
+  assert.equal(
+    buildIssueBranchName({ issueId: 81, slug: 'work-item' }),
+    'feat/issue-81-work-item',
+    'a missing type falls back to feat'
+  );
+});
+
+test('issue branch naming never uses the rejected squad/ prefix', () => {
+  assert.throws(
+    () => buildIssueBranchName({ type: 'squad', issueId: 482, slug: 'feat' }),
+    /Invalid branch type "squad"/,
+    'squad is not a Conventional Branch Name type and is rejected by the pre-push hook'
+  );
+
+  const branchName = buildIssueBranchName({ issueId: 482, slug: 'dark-software-factory' });
+  assert.ok(!branchName.startsWith('squad/'), `unexpected squad/ prefix in ${branchName}`);
+});
+
+test('issue branch names satisfy the husky pre-push branch rule', () => {
+  const { validTypes, branchPattern } = loadPrePushBranchRule();
+
+  const accepted = buildIssueBranchName({ issueId: 482, slug: 'Dark Software Factory' });
+  assert.equal(accepted, 'feat/issue-482-dark-software-factory');
+  assert.ok(branchPattern.test(accepted), `hook must accept ${accepted}`);
+  assert.match(accepted, /^[a-z]+\/[a-z0-9._-]+$/);
+
+  for (const type of validTypes) {
+    const branchName = buildIssueBranchName({ type, issueId: 7, slug: 'validate-me' });
+    assert.ok(branchPattern.test(branchName), `hook must accept ${branchName}`);
+  }
+
+  assert.ok(
+    !branchPattern.test('squad/482-feat'),
+    'the legacy squad/<n>-<type> shape must stay rejected by the hook'
+  );
+});
+
+test('branch descriptions are normalized to kebab-case ASCII', () => {
+  assert.equal(slugifyBranchDescription('  Änderung der Lieferanten-Prüfung '), 'anderung-der-lieferanten-prufung');
+  assert.equal(slugifyBranchDescription('[BUG] Fix: login__validation!'), 'bug-fix-login-validation');
+  assert.equal(slugifyBranchDescription('dark-software-factory'), 'dark-software-factory');
+  assert.equal(slugifyBranchDescription('   '), '');
+});
+
+test('issue branch naming rejects unusable inputs', () => {
+  assert.throws(
+    () => buildIssueBranchName({ issueId: 482, slug: '   ' }),
+    /Could not derive a branch description/
+  );
+  assert.throws(() => buildIssueBranchName({ issueId: 0, slug: 'x' }), /Invalid issue number/);
+  assert.throws(() => buildIssueBranchName({ issueId: 'abc', slug: 'x' }), /Invalid issue number/);
 });
 
 test('type slug selection prefers known English type labels', () => {
   assert.equal(deriveIssueTypeSlug(['type:task', 'type:feature']), 'feature');
   assert.equal(deriveIssueTypeSlug(['priority:p1', 'type:docs']), 'docs');
   assert.equal(deriveIssueTypeSlug(['type:maintenance']), 'maintenance');
+});
+
+test('branch type selection maps issue type labels onto conventional branch types', () => {
+  assert.equal(deriveBranchType(['squad', 'type:bug']), 'fix');
+  assert.equal(deriveBranchType(['type:feature']), 'feat');
+  assert.equal(deriveBranchType(['type:docs']), 'docs');
+  assert.equal(deriveBranchType(['type:maintenance']), 'feat', 'unknown types fall back to feat');
+  assert.equal(deriveBranchType([]), 'feat');
 });
 
 test('squad issue detection requires squad routing labels', () => {
@@ -38,10 +120,10 @@ test('linked branch extraction ignores malformed nodes', () => {
   assert.deepEqual(
     collectLinkedBranchNames({
       linkedBranches: {
-        nodes: [{ ref: { name: 'squad/434-feature' } }, { ref: null }, null],
+        nodes: [{ ref: { name: 'feat/issue-434-feature' } }, { ref: null }, null],
       },
     }),
-    ['squad/434-feature']
+    ['feat/issue-434-feature']
   );
 });
 
@@ -92,9 +174,14 @@ describe('issue #434 regression coverage', () => {
       'area:lieferanten-prüfung-äöü',
     ];
 
-    assert.equal(buildIssueBranchName({ issueNumber: 434, labels }), 'squad/434-feature');
-    assert.ok(buildIssueBranchName({ issueNumber: 434, labels }).startsWith('squad/434-'));
-    assert.ok(!buildIssueBranchName({ issueNumber: 434, labels }).includes('ä'));
+    const branchName = buildIssueBranchName({
+      type: deriveBranchType(labels),
+      issueId: 434,
+      slug: 'feature',
+    });
+    assert.equal(branchName, 'feat/issue-434-feature');
+    assert.ok(branchName.startsWith('feat/issue-434-'));
+    assert.ok(!branchName.includes('ä'));
   });
 
   test('linked branches are surfaced for rerun no-op checks even with legacy names present', () => {
@@ -102,14 +189,14 @@ describe('issue #434 regression coverage', () => {
       collectLinkedBranchNames({
         linkedBranches: {
           nodes: [
-            { ref: { name: 'squad/434-feature' } },
+            { ref: { name: 'feat/issue-434-feature' } },
             { ref: { name: 'legacy/434-old-name' } },
             { ref: null },
             null,
           ],
         },
       }),
-      ['squad/434-feature', 'legacy/434-old-name']
+      ['feat/issue-434-feature', 'legacy/434-old-name']
     );
   });
 });
