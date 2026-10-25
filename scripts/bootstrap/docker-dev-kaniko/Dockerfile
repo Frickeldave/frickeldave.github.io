@@ -46,7 +46,7 @@ COPY --from=builder --chown=1000:1000 /out/executor /kaniko/executor
 
 USER 1000:1000
 
-# The Kaniko build Job started by a future fd-deploy.yaml sets an
+# The Kaniko build Job started by a future application deploy workflow sets an
 # explicit `command: [/kaniko/executor]`, so this idle default only applies when
 # the image is started manually for inspection.
 ENTRYPOINT ["sleep", "infinity"]

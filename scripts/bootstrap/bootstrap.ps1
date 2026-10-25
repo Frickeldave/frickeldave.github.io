@@ -17,22 +17,25 @@ namespace from `bootstrap.json` applies. Passing `-Namespace` overrides that
 value for a single run.
 
 Required/optional variables:
-- DEV_BASE_IMAGE (optional): base image to build/push in Step 1. Defaults to
-  `ghcr.io/frickeldave/fd-dev-base:latest`.
-  Linux/macOS: `export DEV_BASE_IMAGE=ghcr.io/frickeldave/fd-dev-base:latest`
-  Windows PowerShell: `$env:DEV_BASE_IMAGE = "ghcr.io/frickeldave/fd-dev-base:latest"`
-- GH_RUNNER_IMAGE (optional): runner image to build/push/deploy in Step 3/5/8.
-  Defaults to `ghcr.io/frickeldave/fd-dev-ghrunner:latest`.
-  Linux/macOS: `export GH_RUNNER_IMAGE=ghcr.io/frickeldave/fd-dev-ghrunner:latest`
-  Windows PowerShell: `$env:GH_RUNNER_IMAGE = "ghcr.io/frickeldave/fd-dev-ghrunner:latest"`
-- FD_KANIKO_IMAGE (optional): Ubuntu-based Kaniko image to build/push in
-    Step 4/5. It is built here but used by `fd-deploy.yaml`, which starts a
-    throwaway Kaniko build Job per image; it is not deployed by this script.
-    Defaults to `ghcr.io/frickeldave/fd-dev-kaniko:latest`. It is built from
+- DEV_BASE_IMAGE (required unless SKIP_IMAGE_BUILD=true): dev base image to
+  build/push in Step 2. No built-in value: set `devBaseImage` in
+  `bootstrap.json` or export DEV_BASE_IMAGE.
+  Linux/macOS: `export DEV_BASE_IMAGE=<registry>/<image>:<tag>`
+  Windows PowerShell: `$env:DEV_BASE_IMAGE = "<registry>/<image>:<tag>"`
+- GH_RUNNER_IMAGE (required on every run): runner image to build/push/deploy
+  in Step 3/5/9. No built-in value: set `ghRunnerImage` in `bootstrap.json` or
+  export GH_RUNNER_IMAGE.
+  Linux/macOS: `export GH_RUNNER_IMAGE=<registry>/<image>:<tag>`
+  Windows PowerShell: `$env:GH_RUNNER_IMAGE = "<registry>/<image>:<tag>"`
+- KANIKO_IMAGE (required unless SKIP_IMAGE_BUILD=true): Ubuntu-based Kaniko
+    image to build/push in Step 4/5. It is built here but used by the
+    application deploy workflow, which starts a throwaway Kaniko build Job per
+    image; it is not deployed by this script. No built-in value: set
+    `kanikoImage` in `bootstrap.json` or export KANIKO_IMAGE. It is built from
     `scripts/bootstrap/docker-dev-kaniko` so the cluster never runs an arbitrary Kaniko
     executor image.
-    Linux/macOS: `export FD_KANIKO_IMAGE=ghcr.io/frickeldave/fd-dev-kaniko:latest`
-    Windows PowerShell: `$env:FD_KANIKO_IMAGE = "ghcr.io/frickeldave/fd-dev-kaniko:latest"`
+    Linux/macOS: `export KANIKO_IMAGE=<registry>/<image>:<tag>`
+    Windows PowerShell: `$env:KANIKO_IMAGE = "<registry>/<image>:<tag>"`
 - SKIP_IMAGE_BUILD (optional): set to `true` to skip docker login, all three
   image builds, and all three pushes.
   Linux/macOS: `export SKIP_IMAGE_BUILD=true`
@@ -44,7 +47,7 @@ Required/optional variables:
   automatically on each run.
   Create it via GitHub -> Settings -> Developer settings -> Personal access
   tokens -> Tokens (classic) -> Generate new token (classic), with scopes:
-  `repo`, `read:packages`, and `write:packages`. If `Frickeldave`
+  `repo`, `read:packages`, and `write:packages`. If the organization
   enforces SSO, the token may also need SSO authorization after creation. If
   `GITHUB_PAT` is not set and stdin stays attached to an interactive TTY, the
   Node.js script prompts for it with masked input instead of echoing the token.
@@ -54,23 +57,27 @@ Required/optional variables:
   for `docker login ghcr.io` and for the Kubernetes GHCR image pull Secret.
   Linux/macOS: `export GITHUB_USERNAME=octocat`
   Windows PowerShell: `$env:GITHUB_USERNAME = "octocat"`
-- GITHUB_RUNNER_ORG (optional): GitHub organization login used to derive the
-  repository URL. Defaults to `Frickeldave`.
-  Linux/macOS: `export GITHUB_RUNNER_ORG=Frickeldave`
-  Windows PowerShell: `$env:GITHUB_RUNNER_ORG = "Frickeldave"`
-- GITHUB_RUNNER_REPO (optional): GitHub repository name used to derive the
-  repository URL. Defaults to `frickeldave.github.io`.
-  Linux/macOS: `export GITHUB_RUNNER_REPO=frickeldave.github.io`
-  Windows PowerShell: `$env:GITHUB_RUNNER_REPO = "frickeldave.github.io"`
-- RUNNER_NAME (optional): descriptive runner name. `bootstrap.json` ships
-  `github-actions-runner`; the built-in fallback is `github-actions-runner-<namespace>` to keep
-  runners from different namespaces unique per repository.
-  Linux/macOS: `export RUNNER_NAME=github-actions-runner`
-  Windows PowerShell: `$env:RUNNER_NAME = "github-actions-runner"`
-- RUNNER_LABELS (optional): comma-separated runner labels. Defaults to
-  `fd`.
-  Linux/macOS: `export RUNNER_LABELS=fd`
-  Windows PowerShell: `$env:RUNNER_LABELS = "fd"`
+- GITHUB_RUNNER_ORG (required): GitHub organization or user login used to
+  derive the repository URL. No built-in value: set `githubRunnerOrg` in
+  `bootstrap.json` or export GITHUB_RUNNER_ORG.
+  Linux/macOS: `export GITHUB_RUNNER_ORG=<owner>`
+  Windows PowerShell: `$env:GITHUB_RUNNER_ORG = "<owner>"`
+- GITHUB_RUNNER_REPO (required): GitHub repository name used to derive the
+  repository URL and as the fallback for the part-of label. No built-in value:
+  set `githubRunnerRepo` in `bootstrap.json` or export GITHUB_RUNNER_REPO.
+  Linux/macOS: `export GITHUB_RUNNER_REPO=<repo>`
+  Windows PowerShell: `$env:GITHUB_RUNNER_REPO = "<repo>"`
+- RUNNER_NAME (optional): descriptive runner name. Set `runnerName` in
+  `bootstrap.json` to pin it; the built-in fallback is
+  `github-actions-runner-<namespace>` to keep runners from different
+  namespaces unique per repository.
+  Linux/macOS: `export RUNNER_NAME=<runner-name>`
+  Windows PowerShell: `$env:RUNNER_NAME = "<runner-name>"`
+- RUNNER_LABELS (required): comma-separated runner labels stored in the
+  Secret. No built-in value: set `runnerLabels` in `bootstrap.json` or export
+  RUNNER_LABELS.
+  Linux/macOS: `export RUNNER_LABELS=<label>`
+  Windows PowerShell: `$env:RUNNER_LABELS = "<label>"`
 - RUNNER_SCOPE (optional): compatibility value stored in the Kubernetes Secret.
   Defaults to `repo`.
 - KUBECONFIG (optional): kubeconfig file targeted by every kubectl call. Pass
@@ -79,24 +86,24 @@ Required/optional variables:
   `-Kubeconfig` > `$env:KUBECONFIG` > `kubeconfig` key in `bootstrap.json` >
   current kubectl context.
   Windows PowerShell:
-  `.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml`
+  `.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig <path-to-kubeconfig>`
 
-The bootstrap script derives `REPO_URL=https://github.com/<org>/<repo>` and
+The bootstrap script derives `REPO_URL=https://github.com/<owner>/<repo>` and
 stores `RUNNER_SCOPE=repo` in the Secret by default. After rollout, verify
 registration with:
-`gh api repos/Frickeldave/frickeldave.github.io/actions/runners --jq '.runners[].name'`
+`gh api repos/<owner>/<repo>/actions/runners --jq '.runners[].name'`
 
 See `scripts/bootstrap/README.md` for the full bootstrap flow and Kubernetes details.
 
 .EXAMPLE
 $env:GITHUB_PAT = "ghp_xxxxx"
 $env:GITHUB_USERNAME = "octocat"
-# Namespace comes from scripts/bootstrap/bootstrap.json
-.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+# Namespace, repository and images come from scripts/bootstrap/bootstrap.json
+.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig <path-to-kubeconfig>
 
 .EXAMPLE
 # Override the configured namespace for a single run
-.\scripts\bootstrap\bootstrap.ps1 -Namespace <namespace> -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+.\scripts\bootstrap\bootstrap.ps1 -Namespace <namespace> -Kubeconfig <path-to-kubeconfig>
 #>
 
 param(

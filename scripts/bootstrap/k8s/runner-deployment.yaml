@@ -1,3 +1,7 @@
+# Template placeholders use the double-underscore NAME convention and must be
+# substituted by scripts/bootstrap/bootstrap.mjs before kubectl apply.
+# The part-of label is rendered from the optional "partOf" key in
+# bootstrap.json and falls back to the configured "githubRunnerRepo".
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,7 +9,7 @@ metadata:
   namespace: __NAMESPACE__
   labels:
     app.kubernetes.io/name: github-actions-runner
-    app.kubernetes.io/part-of: frickeldave.github.io
+    app.kubernetes.io/part-of: __PART_OF__
 spec:
   replicas: 2 # Each pod registers under a unique name (see RUNNER_NAME_PREFIX/POD_NAME below), so they run as independent parallel runners.
   selector:
@@ -15,7 +19,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-actions-runner
-        app.kubernetes.io/part-of: frickeldave.github.io
+        app.kubernetes.io/part-of: __PART_OF__
     spec:
       imagePullSecrets:
         - name: ghcr-pull-secret
@@ -66,11 +70,12 @@ spec:
                 secretKeyRef:
                   name: github-runner-registration
                   key: RUNNER_LABELS
-            # Still required: a future fd-deploy.yaml calls `crane manifest`
-            # inside this container to check whether a versioned image already
-            # exists in GHCR, and GHCR packages need pull auth for that. Kaniko
-            # itself never runs here - it runs in a throwaway Kubernetes Job
-            # started by fd-deploy.yaml. Do not remove this mount as "leftover".
+            # Still required: a future application deploy workflow calls
+            # `crane manifest` inside this container to check whether a
+            # versioned image already exists in GHCR, and GHCR packages need
+            # pull auth for that. Kaniko itself never runs here - it runs in a
+            # throwaway Kubernetes Job started by that workflow. Do not remove
+            # this mount as "leftover".
             - name: DOCKER_CONFIG
               value: /home/appuser/.registry-docker
           securityContext:

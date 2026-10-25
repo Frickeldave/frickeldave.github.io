@@ -9,15 +9,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DEPLOYMENT_NAME = 'github-actions-runner';
-const DEFAULT_ORG = 'Frickeldave';
-const DEFAULT_REPO = 'frickeldave.github.io';
-const DEFAULT_LABELS = 'fd';
 const DEFAULT_SCOPE = 'repo';
-const DEFAULT_DEV_BASE_IMAGE = 'ghcr.io/frickeldave/fd-dev-base:latest';
-const DEFAULT_GH_RUNNER_IMAGE = 'ghcr.io/frickeldave/fd-dev-ghrunner:latest';
-const DEFAULT_KANIKO_IMAGE = 'ghcr.io/frickeldave/fd-dev-kaniko:latest';
 const DEFAULT_REGISTRY = 'ghcr.io';
 const GITHUB_API_VERSION = '2022-11-28';
+const USER_AGENT = 'bootstrap-runner-setup';
 // The cluster is reached through a Rancher proxy that adds latency and
 // occasionally drops a single request. kubectl's own default is "no timeout",
 // which in practice means a hung request blocks forever, while a short timeout
@@ -30,10 +25,10 @@ const KUBECTL_RETRY_ATTEMPTS = 3;
 const KUBECTL_RETRY_BACKOFF_MS = 2000;
 const CONFIG_FILENAME = 'bootstrap.json';
 const CONFIG_PATH = `scripts/bootstrap/${CONFIG_FILENAME}`;
-const K8S_NAMESPACES_PATH = 'scripts/bootstrap/k8s/fd-k8s-namespaces.yaml';
-const K8S_RBAC_TEMPLATE_PATH = 'scripts/bootstrap/k8s/fd-k8s-rbac.yaml';
-const K8S_SECRETS_TEMPLATE_PATH = 'scripts/bootstrap/k8s/fd-k8s-ghrunner-secrets.yaml';
-const K8S_DEPLOYMENT_TEMPLATE_PATH = 'scripts/bootstrap/k8s/fd-k8s-ghrunner-deployments.yaml';
+const K8S_NAMESPACE_MANIFEST_PATH = 'scripts/bootstrap/k8s/namespace.yaml';
+const K8S_RBAC_TEMPLATE_PATH = 'scripts/bootstrap/k8s/rbac.yaml';
+const K8S_SECRETS_TEMPLATE_PATH = 'scripts/bootstrap/k8s/runner-secrets.yaml';
+const K8S_DEPLOYMENT_TEMPLATE_PATH = 'scripts/bootstrap/k8s/runner-deployment.yaml';
 const DEV_BASE_CONTEXT_PATH = 'scripts/bootstrap/docker-dev-base';
 const DEV_BASE_DOCKERFILE_PATH = 'scripts/bootstrap/docker-dev-base/Dockerfile';
 const GH_RUNNER_CONTEXT_PATH = 'scripts/bootstrap/docker-dev-ghrunner';
@@ -42,6 +37,28 @@ const KANIKO_CONTEXT_PATH = 'scripts/bootstrap/docker-dev-kaniko';
 const KANIKO_DOCKERFILE_PATH = 'scripts/bootstrap/docker-dev-kaniko/Dockerfile';
 const GITHUB_PAT_PROMPT =
   'Enter GITHUB_PAT (classic PAT, scopes: repo, read:packages, write:packages): ';
+// Every image reference is project-specific, so each one resolves from an env
+// var > bootstrap.json > fail-fast. `description` only names the setting, it is
+// never a package or image name.
+const IMAGE_SETTINGS = {
+  devBaseImage: {
+    variableName: 'DEV_BASE_IMAGE',
+    description: 'dev base image',
+    buildOnlyHint: 'Set SKIP_IMAGE_BUILD=true to reuse existing images without a local build.',
+  },
+  ghRunnerImage: {
+    variableName: 'GH_RUNNER_IMAGE',
+    description: 'GitHub runner image',
+    buildOnlyHint: null,
+  },
+  kanikoImage: {
+    variableName: 'KANIKO_IMAGE',
+    description: 'Kaniko image',
+    buildOnlyHint: 'Set SKIP_IMAGE_BUILD=true to reuse existing images without a local build.',
+  },
+};
+const KUBERNETES_LABEL_VALUE_MAX_LENGTH = 63;
+const KUBERNETES_LABEL_VALUE_PATTERN = /^[A-Za-z0-9]([-A-Za-z0-9.]*[A-Za-z0-9])?$/;
 
 function usage() {
   console.log(`Usage: ./scripts/bootstrap/bootstrap.mjs [options]
@@ -49,17 +66,23 @@ function usage() {
 Bootstrap the standalone GitHub Actions self-hosted runner in Kubernetes.
 The runner is installed into the namespace configured in ${CONFIG_PATH}
 unless one is passed with -n/--namespace. It registers itself at the GitHub
-repository level for Frickeldave/frickeldave.github.io.
+repository level for the configured <owner>/<repo>.
+
+${CONFIG_FILENAME} is the single source of truth for every project-specific
+value. This package ships no project defaults: copy scripts/bootstrap/ into
+another repository, edit ${CONFIG_FILENAME}, and run it.
 
 Configuration precedence:
-  CLI args > env vars > ${CONFIG_PATH} > built-in defaults
-  The namespace has no built-in default: it must come from the CLI or the
-  config file, otherwise bootstrap stops with an actionable error.
+  CLI args > env vars > ${CONFIG_PATH} > neutral built-in defaults
+  The namespace, the GitHub repository and every image reference have no
+  built-in default: they must come from the CLI, the environment or the config
+  file, otherwise bootstrap stops with an actionable error.
 
 Options:
   -n, --namespace <namespace>  Target namespace. Defaults to the "namespace"
-                               key in ${CONFIG_PATH}; when neither is set this
-                               script stops instead of inventing a namespace.
+                               key in ${CONFIG_FILENAME}; when neither is set
+                               this script stops instead of inventing a
+                               namespace.
   -k, --kubeconfig <path>      Kubeconfig file used for every kubectl call.
                                Without it, bootstrap falls back to
                                $KUBECONFIG, then to the "kubeconfig" key in
@@ -76,10 +99,10 @@ Execution flow:
               cluster name
             - required deployment files
             - GITHUB_USERNAME presence
-  Step 2/10 Build fd-dev-base image locally
-  Step 3/10 Build fd-dev-ghrunner image locally
-  Step 4/10 Build fd-dev-kaniko image locally
-  Step 5/10 Log into GHCR and push all three images
+  Step 2/10 Build the dev base image locally
+  Step 3/10 Build the GitHub runner image locally
+  Step 4/10 Build the Kaniko image locally
+  Step 5/10 Log into ${DEFAULT_REGISTRY} and push all three images
   Step 6/10 Render/apply the runner namespace manifest
   Step 7/10 Render/apply the runner-only RBAC manifest
   Step 8/10 Render/apply the runner Secrets manifest
@@ -87,12 +110,16 @@ Execution flow:
   Step 10/10 Wait for the Deployment rollout
 
 Required/optional variables:
-  ${CONFIG_PATH}    Committed non-secret defaults file. Supported keys:
+  ${CONFIG_PATH}
+                               Committed non-secret defaults file. Supported keys:
                                namespace (required unless passed as
-                               -n/--namespace), kubeconfig, devBaseImage, ghRunnerImage,
-                               kanikoImage, skipImageBuild, githubUsername,
-                               githubRunnerOrg, githubRunnerRepo,
-                               runnerName, runnerLabels, runnerScope.
+                               -n/--namespace), kubeconfig, devBaseImage,
+                               ghRunnerImage, kanikoImage, skipImageBuild,
+                               githubUsername, githubRunnerOrg (required),
+                               githubRunnerRepo (required), runnerName,
+                               runnerLabels (required), runnerScope,
+                               partOf (optional, defaults to
+                               githubRunnerRepo).
                                Never store GITHUB_PAT there. If the config file
                                contains any PAT-like GitHub key, this script
                                refuses to run until it is removed.
@@ -105,24 +132,30 @@ Required/optional variables:
                                Linux/macOS:
                                  export KUBECONFIG=~/.kube/config
                                Windows PS:
-                                 $env:KUBECONFIG = "C:\\Users\\dakoenig\\.kube\\dev-kw-bee23d.yaml"
+                                 $env:KUBECONFIG = "<path-to-kubeconfig>"
 
-  DEV_BASE_IMAGE               Optional base image reference to build/push in
-                               Step 2 and reuse as the Step 3 parent image.
-                               Default:
-                                 ${DEFAULT_DEV_BASE_IMAGE}
+  DEV_BASE_IMAGE               Dev base image reference to build/push in Step 2
+                               and reuse as the Step 3 parent image.
+                               Required unless SKIP_IMAGE_BUILD=true. No
+                               built-in value:
+                                 set "devBaseImage" in bootstrap.json
+                                 or export DEV_BASE_IMAGE
 
-  GH_RUNNER_IMAGE              Optional GitHub runner image reference to build,
-                               push, and deploy in Steps 3, 5, and 9.
-                               Default:
-                                 ${DEFAULT_GH_RUNNER_IMAGE}
+  GH_RUNNER_IMAGE              GitHub runner image reference to build, push,
+                               and deploy in Steps 3, 5, and 9.
+                               Required on every run, because Step 9 always
+                               deploys it. No built-in value:
+                                 set "ghRunnerImage" in bootstrap.json
+                                 or export GH_RUNNER_IMAGE
 
-  FD_KANIKO_IMAGE              Optional Kaniko image reference to build and push
-                               in Steps 4 and 5. The deploy workflow uses this
+  KANIKO_IMAGE                 Kaniko image reference to build and push in
+                               Steps 4 and 5. The deploy workflow uses this
                                image for throwaway Kaniko build Jobs; bootstrap
                                does not create those Jobs.
-                               Default:
-                                 ${DEFAULT_KANIKO_IMAGE}
+                               Required unless SKIP_IMAGE_BUILD=true. No
+                               built-in value:
+                                 set "kanikoImage" in bootstrap.json
+                                 or export KANIKO_IMAGE
 
   SKIP_IMAGE_BUILD             Optional. Set to true to skip Steps 2 through 5
                                (docker builds, login, and image pushes),
@@ -152,7 +185,7 @@ Required/optional variables:
                                   - repo
                                   - read:packages
                                   - write:packages
-                               6. If Frickeldave enforces SSO, authorize
+                               6. If the organization enforces SSO, authorize
                                   the token for SSO after creation.
                                Linux/macOS:
                                  export GITHUB_PAT=ghp_xxxxx
@@ -168,35 +201,39 @@ Required/optional variables:
                                Windows PS:
                                  $env:GITHUB_USERNAME = "octocat"
 
-  GITHUB_RUNNER_ORG            Optional GitHub organization login used to
+  GITHUB_RUNNER_ORG            GitHub organization or user login used to
                                derive REPO_URL.
-                               Default: Frickeldave.
-                               Linux/macOS: export GITHUB_RUNNER_ORG=Frickeldave
-                               Windows PS:  $env:GITHUB_RUNNER_ORG = "Frickeldave"
+                               Required. No built-in value:
+                                 set "githubRunnerOrg" in bootstrap.json
+                                 or export GITHUB_RUNNER_ORG
 
-  GITHUB_RUNNER_REPO           Optional GitHub repository name used to derive
-                               REPO_URL.
-                               Default: frickeldave.github.io.
-                               Linux/macOS: export GITHUB_RUNNER_REPO=frickeldave.github.io
-                               Windows PS:  $env:GITHUB_RUNNER_REPO = "frickeldave.github.io"
+  GITHUB_RUNNER_REPO           GitHub repository name used to derive REPO_URL
+                               and as the fallback for the part-of label.
+                               Required. No built-in value:
+                                 set "githubRunnerRepo" in bootstrap.json
+                                 or export GITHUB_RUNNER_REPO
 
   REPO_URL                     Derived runner registration target passed to the
                                container.
                                Default:
-                                 https://github.com/Frickeldave/frickeldave.github.io
+                                 https://github.com/<owner>/<repo>
 
   RUNNER_NAME                  Optional descriptive runner name.
-                               bootstrap.json ships github-actions-runner; the built-in
-                               fallback is github-actions-runner-<namespace> so that
+                               Set "runnerName" in bootstrap.json to pin it;
+                               the built-in fallback is
+                               github-actions-runner-<namespace> so that
                                runners from different namespaces registered
                                against the same repository cannot collide.
-                               Linux/macOS: export RUNNER_NAME=github-actions-runner
-                               Windows PS:  $env:RUNNER_NAME = "github-actions-runner"
+                               Linux/macOS: export RUNNER_NAME=<runner-name>
+                               Windows PS:  $env:RUNNER_NAME = "<runner-name>"
 
-  RUNNER_LABELS                Optional comma-separated runner labels.
-                               Default: fd.
-                               Linux/macOS: export RUNNER_LABELS=fd
-                               Windows PS:  $env:RUNNER_LABELS = "fd"
+  RUNNER_LABELS                Comma-separated runner labels stored in the
+                               Secret.
+                               Required. No built-in value:
+                                 set "runnerLabels" in bootstrap.json
+                                 or export RUNNER_LABELS
+                               Linux/macOS: export RUNNER_LABELS=<label>
+                               Windows PS:  $env:RUNNER_LABELS = "<label>"
 
   RUNNER_SCOPE                 Optional compatibility variable stored in the
                                Secret and passed into the runner container.
@@ -209,9 +246,9 @@ Examples:
 
   $env:GITHUB_PAT = "ghp_xxxxx"
   $env:GITHUB_USERNAME = "octocat"
-  .\\scripts\\bootstrap\\bootstrap.ps1 -Namespace <namespace> -Kubeconfig C:\\Users\\dakoenig\\.kube\\dev-kw-bee23d.yaml
+  .\\scripts\\bootstrap\\bootstrap.ps1 -Namespace <namespace> -Kubeconfig <path-to-kubeconfig>
 
-  node scripts/bootstrap/bootstrap.mjs --kubeconfig C:\\Users\\dakoenig\\.kube\\dev-kw-bee23d.yaml`);
+  node scripts/bootstrap/bootstrap.mjs --kubeconfig <path-to-kubeconfig>`);
 }
 
 function logStep(message) {
@@ -332,28 +369,112 @@ function resolveBooleanOption({ envValue, configValue, defaultValue }) {
 }
 
 export function resolveImageBuildSettings(config, environment = process.env) {
+  const skipImageBuild = resolveBooleanOption({
+    envValue: environment.SKIP_IMAGE_BUILD,
+    configValue: config.skipImageBuild,
+    defaultValue: false,
+  });
+
   return {
-    devBaseImage: resolveStringOption({
+    // The Deployment always references the runner image, so it is required on
+    // every run. The other two only feed the local build/push steps, so a run
+    // with SKIP_IMAGE_BUILD=true must not demand build-only settings.
+    devBaseImage: resolveImageReference({
+      setting: 'devBaseImage',
       envValue: environment.DEV_BASE_IMAGE,
       configValue: config.devBaseImage,
-      defaultValue: DEFAULT_DEV_BASE_IMAGE,
+      required: !skipImageBuild,
     }),
-    ghRunnerImage: resolveStringOption({
+    ghRunnerImage: resolveImageReference({
+      setting: 'ghRunnerImage',
       envValue: environment.GH_RUNNER_IMAGE,
       configValue: config.ghRunnerImage,
-      defaultValue: DEFAULT_GH_RUNNER_IMAGE,
+      required: true,
     }),
-    kanikoImage: resolveStringOption({
-      envValue: environment.FD_KANIKO_IMAGE,
+    kanikoImage: resolveImageReference({
+      setting: 'kanikoImage',
+      envValue: environment.KANIKO_IMAGE,
       configValue: config.kanikoImage,
-      defaultValue: DEFAULT_KANIKO_IMAGE,
+      required: !skipImageBuild,
     }),
-    skipImageBuild: resolveBooleanOption({
-      envValue: environment.SKIP_IMAGE_BUILD,
-      configValue: config.skipImageBuild,
-      defaultValue: false,
-    }),
+    skipImageBuild,
   };
+}
+
+function missingImageReferenceMessage(setting, { required }) {
+  const { variableName, description, buildOnlyHint } = IMAGE_SETTINGS[setting];
+
+  return [
+    `No ${description} reference resolved. Set "${setting}" in ${CONFIG_PATH} or export ${variableName}.`,
+    `${CONFIG_FILENAME} is the single source of truth for project-specific values; this script has no built-in image defaults.`,
+    required ? buildOnlyHint : 'This setting is only required when images are built locally.',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+function resolveImageReference({ setting, envValue, configValue, required }) {
+  const image = resolveStringOption({ envValue, configValue, defaultValue: undefined });
+
+  if (!image && required) {
+    fail(missingImageReferenceMessage(setting, { required }));
+  }
+
+  return image;
+}
+
+// Build-only settings are allowed to be unset when SKIP_IMAGE_BUILD=true; the
+// skip log then names the setting instead of printing "undefined".
+function describeImageForLog(image, setting) {
+  return image ?? `<not configured: ${setting}>`;
+}
+
+// A resolved value that only exists in this repository is not portable: the
+// package must work for any project, so project identity always comes from the
+// config file and never from a built-in literal.
+function resolveProjectOption({ envValue, envName, configValue, configKey }) {
+  const value = resolveStringOption({ envValue, configValue, defaultValue: undefined });
+
+  if (!value) {
+    fail(
+      [
+        `No ${configKey} resolved. Set "${configKey}" in ${CONFIG_PATH} or export ${envName}.`,
+        `${CONFIG_FILENAME} is the single source of truth for project-specific values; this script has no built-in project defaults.`,
+      ].join('\n')
+    );
+  }
+
+  return value;
+}
+
+export function isValidKubernetesLabelValue(value) {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= KUBERNETES_LABEL_VALUE_MAX_LENGTH &&
+    KUBERNETES_LABEL_VALUE_PATTERN.test(value)
+  );
+}
+
+// `app.kubernetes.io/part-of` identifies the owning application. An explicit
+// `partOf` key wins; otherwise the repository name is a sane, already-valid
+// default. Validated up front so kubectl cannot reject the apply later.
+export function resolvePartOfLabel(config, runnerRepo) {
+  const configuredPartOf =
+    typeof config.partOf === 'string' && config.partOf.length > 0 ? config.partOf : undefined;
+  const partOf = configuredPartOf ?? runnerRepo;
+
+  if (!isValidKubernetesLabelValue(partOf)) {
+    fail(
+      [
+        `Invalid app.kubernetes.io/part-of value: "${partOf}".`,
+        `Kubernetes label values must be 1-${KUBERNETES_LABEL_VALUE_MAX_LENGTH} characters of A-Z, a-z, 0-9, "-" or ".", and must start and end with an alphanumeric character.`,
+        `Fix "partOf" in ${CONFIG_PATH}, or "githubRunnerRepo" which it falls back to.`,
+      ].join('\n')
+    );
+  }
+
+  return partOf;
 }
 
 async function promptForHiddenInput(promptText) {
@@ -570,6 +691,9 @@ function runDocker(args, options = {}) {
   return runCommand('docker', args, options);
 }
 
+const MISSING_DOCKER_MESSAGE =
+  'Docker is required to build and push the bootstrap images (dev base, GitHub runner, Kaniko). Install Docker Desktop or the Docker Engine CLI and try again.';
+
 function parseArgs(argv) {
   let namespace;
   let kubeconfig;
@@ -610,10 +734,10 @@ function parseArgs(argv) {
 
 function ensureRequiredFiles(scriptDir) {
   const requiredFiles = {
-    namespacesPath: path.join(scriptDir, 'k8s', 'fd-k8s-namespaces.yaml'),
-    rbacTemplatePath: path.join(scriptDir, 'k8s', 'fd-k8s-rbac.yaml'),
-    secretsTemplatePath: path.join(scriptDir, 'k8s', 'fd-k8s-ghrunner-secrets.yaml'),
-    deploymentTemplatePath: path.join(scriptDir, 'k8s', 'fd-k8s-ghrunner-deployments.yaml'),
+    namespacesPath: path.join(scriptDir, 'k8s', 'namespace.yaml'),
+    rbacTemplatePath: path.join(scriptDir, 'k8s', 'rbac.yaml'),
+    secretsTemplatePath: path.join(scriptDir, 'k8s', 'runner-secrets.yaml'),
+    deploymentTemplatePath: path.join(scriptDir, 'k8s', 'runner-deployment.yaml'),
     devBaseContextPath: path.join(scriptDir, 'docker-dev-base'),
     devBaseDockerfilePath: path.join(scriptDir, 'docker-dev-base', 'Dockerfile'),
     ghRunnerContextPath: path.join(scriptDir, 'docker-dev-ghrunner'),
@@ -701,7 +825,7 @@ function missingGitHubPatMessage() {
     'GitHub -> Settings -> Developer settings -> Personal access tokens -> Tokens (classic).',
     'Choose "Generate new token (classic)" and grant: repo, read:packages, write:packages.',
     'Do not use a fine-grained PAT and do not use a GitHub App token here.',
-    'If Frickeldave enforces SSO, authorize the token for SSO after creation.',
+    'If your organization enforces SSO, authorize the token for SSO after creation.',
     'Linux/macOS: export GITHUB_PAT=ghp_xxxxx',
     'Windows PowerShell: $env:GITHUB_PAT = "ghp_xxxxx"',
     'Run --help for the full step-by-step instructions.',
@@ -735,8 +859,7 @@ function loginToGhcr(githubUsername, githubPat) {
   console.log(`  • docker login ${DEFAULT_REGISTRY} as ${githubUsername}`);
   runDocker(['login', DEFAULT_REGISTRY, '--username', githubUsername, '--password-stdin'], {
     input: `${githubPat}\n`,
-    missingBinaryMessage:
-      'Docker is required to build and push the fd-dev-base/fd-dev-ghrunner/fd-dev-kaniko images. Install Docker Desktop or the Docker Engine CLI and try again.',
+    missingBinaryMessage: MISSING_DOCKER_MESSAGE,
   });
 }
 
@@ -751,31 +874,22 @@ function buildDockerImage({ image, dockerfilePath, contextPath, buildArgs = [] }
       ...buildArgs.flatMap(([name, value]) => ['--build-arg', `${name}=${value}`]),
       contextPath,
     ],
-    {
-      missingBinaryMessage:
-        'Docker is required to build and push the fd-dev-base/fd-dev-ghrunner/fd-dev-kaniko images. Install Docker Desktop or the Docker Engine CLI and try again.',
-    }
+    { missingBinaryMessage: MISSING_DOCKER_MESSAGE }
   );
 }
 
 function pushDockerImage(image) {
-  runDocker(['push', image], {
-    missingBinaryMessage:
-      'Docker is required to build and push the fd-dev-base/fd-dev-ghrunner/fd-dev-kaniko images. Install Docker Desktop or the Docker Engine CLI and try again.',
-  });
+  runDocker(['push', image], { missingBinaryMessage: MISSING_DOCKER_MESSAGE });
 }
 
 function checkDockerCliAvailable() {
-  const missingDockerMessage =
-    'Docker is required to build and push the fd-dev-base/fd-dev-ghrunner/fd-dev-kaniko images. Install Docker Desktop or the Docker Engine CLI and try again.';
-
   try {
     runDocker(['--version'], {
       stdio: 'ignore',
-      missingBinaryMessage: missingDockerMessage,
+      missingBinaryMessage: MISSING_DOCKER_MESSAGE,
     });
   } catch {
-    fail(missingDockerMessage);
+    fail(MISSING_DOCKER_MESSAGE);
   }
 }
 
@@ -783,8 +897,7 @@ function checkDockerDaemonReachable() {
   try {
     runDocker(['info'], {
       stdio: 'ignore',
-      missingBinaryMessage:
-        'Docker is required to build and push the fd-dev-base/fd-dev-ghrunner/fd-dev-kaniko images. Install Docker Desktop or the Docker Engine CLI and try again.',
+      missingBinaryMessage: MISSING_DOCKER_MESSAGE,
     });
   } catch {
     fail(
@@ -932,7 +1045,7 @@ function runPrerequisiteChecks({
   if (!skipImageBuild) {
     validateGhcrImageRef('DEV_BASE_IMAGE', devBaseImage);
     validateGhcrImageRef('GH_RUNNER_IMAGE', ghRunnerImage);
-    validateGhcrImageRef('FD_KANIKO_IMAGE', kanikoImage);
+    validateGhcrImageRef('KANIKO_IMAGE', kanikoImage);
   }
 
   logSuccess('Prerequisite checks passed');
@@ -946,7 +1059,7 @@ function buildRegistrationTokenErrorMessage(status, runnerOrg, runnerRepo, detai
     status === 401
       ? 'Likely causes: GITHUB_PAT is expired, revoked, malformed, or not a classic PAT.'
       : status === 403
-        ? 'Likely causes: the classic PAT is missing the repo scope, the account lacks repo admin access, or SSO authorization is still required for Frickeldave.'
+        ? 'Likely causes: the classic PAT is missing the repo scope, the account lacks repo admin access, or SSO authorization is still required for the organization.'
         : status === 404
           ? 'Likely causes: GITHUB_RUNNER_ORG / GITHUB_RUNNER_REPO is wrong, or the PAT cannot see this repository.'
           : 'Likely causes: invalid PAT, missing repo scope, wrong owner/repo, or missing SSO authorization.';
@@ -975,7 +1088,7 @@ async function fetchRunnerRegistrationToken(runnerOrg, runnerRepo, githubPat) {
       headers: {
         Accept: 'application/vnd.github+json',
         Authorization: `Bearer ${githubPat}`,
-        'User-Agent': 'frickeldave.github.io-bootstrap',
+        'User-Agent': USER_AGENT,
         'X-GitHub-Api-Version': GITHUB_API_VERSION,
       },
     });
@@ -1046,22 +1159,26 @@ async function main() {
     // repository, so an unconfigured second namespace must not collide.
     defaultValue: `github-actions-runner-${namespace}`,
   });
-  const runnerOrg = resolveStringOption({
+  const runnerOrg = resolveProjectOption({
     envValue: process.env.GITHUB_RUNNER_ORG,
     configValue: config.githubRunnerOrg,
-    defaultValue: DEFAULT_ORG,
+    configKey: 'githubRunnerOrg',
+    envName: 'GITHUB_RUNNER_ORG',
   });
-  const runnerRepo = resolveStringOption({
+  const runnerRepo = resolveProjectOption({
     envValue: process.env.GITHUB_RUNNER_REPO,
     configValue: config.githubRunnerRepo,
-    defaultValue: DEFAULT_REPO,
+    configKey: 'githubRunnerRepo',
+    envName: 'GITHUB_RUNNER_REPO',
   });
   const repoUrl = buildRepoUrl(runnerOrg, runnerRepo);
-  const runnerLabels = resolveStringOption({
+  const runnerLabels = resolveProjectOption({
     envValue: process.env.RUNNER_LABELS,
     configValue: config.runnerLabels,
-    defaultValue: DEFAULT_LABELS,
+    configKey: 'runnerLabels',
+    envName: 'RUNNER_LABELS',
   });
+  const partOfLabel = resolvePartOfLabel(config, runnerRepo);
   const runnerScope = resolveStringOption({
     envValue: process.env.RUNNER_SCOPE,
     configValue: config.runnerScope,
@@ -1093,24 +1210,26 @@ async function main() {
 
   if (skipImageBuild) {
     logStep(
-      `Step 2/10: Building fd-dev-base image locally (skipped because SKIP_IMAGE_BUILD=true).`
+      'Step 2/10: Building the dev base image locally (skipped because SKIP_IMAGE_BUILD=true).'
     );
-    logSuccess(`Skipped local build for ${devBaseImage}`);
+    logSuccess(`Skipped local build for ${describeImageForLog(devBaseImage, 'devBaseImage')}`);
 
     logStep(
-      'Step 3/10: Building fd-dev-ghrunner image locally (skipped because SKIP_IMAGE_BUILD=true).'
+      'Step 3/10: Building the GitHub runner image locally (skipped because SKIP_IMAGE_BUILD=true).'
     );
-    logSuccess(`Skipped local build for ${ghRunnerImage}`);
+    logSuccess(`Skipped local build for ${describeImageForLog(ghRunnerImage, 'ghRunnerImage')}`);
 
     logStep(
-      'Step 4/10: Building fd-dev-kaniko image locally (skipped because SKIP_IMAGE_BUILD=true).'
+      'Step 4/10: Building the Kaniko image locally (skipped because SKIP_IMAGE_BUILD=true).'
     );
-    logSuccess(`Skipped local build for ${kanikoImage}`);
+    logSuccess(`Skipped local build for ${describeImageForLog(kanikoImage, 'kanikoImage')}`);
 
-    logStep('Step 5/10: Pushing images to GHCR (skipped because SKIP_IMAGE_BUILD=true).');
+    logStep(
+      `Step 5/10: Pushing images to ${DEFAULT_REGISTRY} (skipped because SKIP_IMAGE_BUILD=true).`
+    );
     logSuccess('Skipped docker login and image pushes');
   } else {
-    logStep(`Step 2/10: Building fd-dev-base image locally (${devBaseImage})...`);
+    logStep(`Step 2/10: Building the dev base image locally (${devBaseImage})...`);
     buildDockerImage({
       image: devBaseImage,
       dockerfilePath: requiredFiles.devBaseDockerfilePath,
@@ -1119,7 +1238,7 @@ async function main() {
     logSuccess(`Built ${devBaseImage}`);
 
     logStep(
-      `Step 3/10: Building fd-dev-ghrunner image locally (${ghRunnerImage}) on top of ${devBaseImage}...`
+      `Step 3/10: Building the GitHub runner image locally (${ghRunnerImage}) on top of ${devBaseImage}...`
     );
     buildDockerImage({
       image: ghRunnerImage,
@@ -1129,7 +1248,7 @@ async function main() {
     });
     logSuccess(`Built ${ghRunnerImage}`);
 
-    logStep(`Step 4/10: Building fd-dev-kaniko image locally (${kanikoImage})...`);
+    logStep(`Step 4/10: Building the Kaniko image locally (${kanikoImage})...`);
     buildDockerImage({
       image: kanikoImage,
       dockerfilePath: requiredFiles.kanikoDockerfilePath,
@@ -1137,7 +1256,7 @@ async function main() {
     });
     logSuccess(`Built ${kanikoImage}`);
 
-    logStep('Step 5/10: Pushing images to GHCR...');
+    logStep(`Step 5/10: Pushing images to ${DEFAULT_REGISTRY}...`);
     const githubPat = await getGitHubPat();
     loginToGhcr(githubUsername, githubPat);
     console.log(`  • docker push ${devBaseImage}`);
@@ -1149,11 +1268,13 @@ async function main() {
     logSuccess(`Pushed ${devBaseImage}, ${ghRunnerImage}, and ${kanikoImage}`);
   }
 
-  logStep(`Step 6/10: Rendering and applying the runner namespace from ${K8S_NAMESPACES_PATH}...`);
-  const renderedNamespacesYaml = renderTemplate(requiredFiles.namespacesPath, {
+  logStep(
+    `Step 6/10: Rendering and applying the runner namespace from ${K8S_NAMESPACE_MANIFEST_PATH}...`
+  );
+  const renderedNamespaceYaml = renderTemplate(requiredFiles.namespacesPath, {
     __NAMESPACE__: namespace,
   });
-  applyYaml(renderedNamespacesYaml);
+  applyYaml(renderedNamespaceYaml);
   logSuccess('Runner namespace ready');
 
   logStep(`Step 7/10: Rendering and applying runner RBAC from ${K8S_RBAC_TEMPLATE_PATH}...`);
@@ -1184,6 +1305,7 @@ async function main() {
   const renderedDeploymentYaml = renderTemplate(requiredFiles.deploymentTemplatePath, {
     __NAMESPACE__: namespace,
     __RUNNER_IMAGE__: ghRunnerImage,
+    __PART_OF__: partOfLabel,
   });
   applyYaml(renderedDeploymentYaml);
   logSuccess('Deployment template rendered and applied');

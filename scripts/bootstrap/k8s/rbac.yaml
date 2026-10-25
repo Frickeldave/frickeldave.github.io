@@ -4,8 +4,8 @@
 #
 # Scope: the runner only needs the capability to start, observe and delete
 # throwaway Kaniko build Jobs (and the short-lived build secrets those Jobs
-# read) in its own namespace. A future fd-deploy.yaml reuses exactly this
-# capability, so the objects below stay.
+# read) in its own namespace. A future application deploy workflow reuses
+# exactly this capability, so the objects below stay.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:

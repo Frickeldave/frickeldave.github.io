@@ -1,20 +1,22 @@
 # Runner-Bootstrap: Betrieb und Konfiguration
 
-Dieses Dokument beschreibt nur den Betrieb des Self-hosted GitHub-Actions-Runners für
-`Frickeldave/frickeldave.github.io`. Ein Anwendungs-Deployment (`fd-deploy.yaml`) existiert in
-diesem Repository noch nicht; die Kaniko-Bausteine sind vorbereitet, aber nicht verdrahtet.
+Dieses Dokument beschreibt den Betrieb des Self-hosted GitHub-Actions-Runners. Es gilt für jedes
+Repository, in das `scripts/bootstrap/` kopiert wird: alle projektspezifischen Werte kommen aus
+[`bootstrap.json`](bootstrap.json). Ein Anwendungs-Deployment gibt es in diesem Paket bewusst nicht;
+die Kaniko-Bausteine sind vorbereitet, aber nicht verdrahtet.
 
 ## Zielbild
 
-| Element              | Wert                                         |
-| -------------------- | -------------------------------------------- |
-| GitHub-Repository    | `Frickeldave/frickeldave.github.io`          |
-| Runner-Scope         | `repo`                                       |
-| Kubernetes-Namespace | aus `bootstrap.json` (`namespace`)           |
-| Deployment           | `github-actions-runner`                      |
-| Replicas             | `2`                                          |
-| Runner-Label         | `fd`                                         |
-| Kubeconfig           | `C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml` |
+| Element                                  | Quelle in `bootstrap.json`                       |
+| ---------------------------------------- | ------------------------------------------------ |
+| GitHub-Repository (`REPO_URL`)           | `githubRunnerOrg` + `githubRunnerRepo`           |
+| Runner-Scope                             | `runnerScope` (Default `repo`)                   |
+| Kubernetes-Namespace                     | `namespace` (Pflicht)                            |
+| Deployment                               | `github-actions-runner`                          |
+| Replicas                                 | `2` (im Deployment-Template)                     |
+| Runner-Label                             | `runnerLabels`                                   |
+| Kubeconfig                               | `kubeconfig` (optional)                          |
+| Runner-Image                             | `ghRunnerImage`                                  |
 
 Die Runner registrieren sich unter ihrem eigenen Pod-Namen (`github-actions-runner-<hash>-<suffix>`);
 der Entrypoint stellt `RUNNER_NAME_PREFIX` nur voran, wenn der Pod-Name das Präfix noch nicht enthält.
@@ -30,17 +32,16 @@ Damit können beide Replicas gleichzeitig Jobs annehmen.
 ## Ablauf auf Windows
 
 ```powershell
-# 1. Token und GHCR-Benutzer bereitstellen (nicht committen, nicht in Issues posten)
+# 1. Token und Registry-Benutzer bereitstellen (nicht committen, nicht in Issues posten)
 $env:GITHUB_PAT = "ghp_xxxxx"
-$env:GITHUB_USERNAME = "Frickeldave"
+$env:GITHUB_USERNAME = "<github-username>"
 
-# 2. Bootstrap gegen den dev-Cluster ausführen
-#    (Namespace kommt aus scripts/bootstrap/bootstrap.json)
-.\scripts\bootstrap\bootstrap.ps1 `
-  -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+# 2. Bootstrap gegen den Ziel-Cluster ausführen
+#    (Namespace, Repository und Images kommen aus scripts/bootstrap/bootstrap.json)
+.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig <path-to-kubeconfig>
 
 # 3. Registrierung prüfen
-gh api repos/Frickeldave/frickeldave.github.io/actions/runners --jq '.runners[].name'
+gh api repos/<owner>/<repo>/actions/runners --jq '.runners[].name'
 ```
 
 `-Kubeconfig` exportiert `KUBECONFIG` für die Dauer des Laufs (und stellt den vorherigen Wert danach
@@ -50,13 +51,14 @@ der aktuelle kubectl-Kontext.
 
 ## Was das Bootstrap anwendet
 
-1. `k8s/fd-k8s-namespaces.yaml` — rendert den konfigurierten Namespace und legt ihn an
-2. `k8s/fd-k8s-rbac.yaml` — Kaniko-Builder-Role und -RoleBinding im gewählten Namespace
+1. `k8s/namespace.yaml` — rendert den konfigurierten Namespace und legt ihn an
+2. `k8s/rbac.yaml` — Kaniko-Builder-Role und -RoleBinding im gewählten Namespace
    (der `namespace`-Wert aus `bootstrap.json`)
-3. `k8s/fd-k8s-ghrunner-secrets.yaml` — `github-runner-registration` (frischer Registration-Token
-   pro Lauf) und `ghcr-pull-secret`
-4. `k8s/fd-k8s-ghrunner-deployments.yaml` — das Runner-Deployment, gefolgt von
-   `kubectl rollout restart` und `kubectl rollout status`
+3. `k8s/runner-secrets.yaml` — `github-runner-registration` (frischer Registration-Token pro Lauf)
+   und `ghcr-pull-secret`
+4. `k8s/runner-deployment.yaml` — das Runner-Deployment (inklusive `app.kubernetes.io/part-of` aus
+   `partOf` bzw. `githubRunnerRepo`), gefolgt von `kubectl rollout restart` und
+   `kubectl rollout status`
 
 Alle Schritte sind idempotent; ein erneuter Lauf rotiert den Registration-Token und rollt die Pods
 neu aus.
@@ -78,31 +80,37 @@ Cluster getroffen wird.
 
 ## Images ohne Rebuild wiederverwenden
 
-Existieren die drei Images bereits in GHCR und müssen nur Secrets und Deployment aktualisiert
+Existieren die drei Images bereits in der Registry und müssen nur Secrets und Deployment aktualisiert
 werden:
 
 ```powershell
 $env:SKIP_IMAGE_BUILD = "true"
-.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig <path-to-kubeconfig>
 ```
 
-Steps 2 bis 5 werden dann explizit übersprungen, Steps 6 bis 10 laufen weiter.
+Steps 2 bis 5 werden dann explizit übersprungen, Steps 6 bis 10 laufen weiter. In diesem Modus
+werden `devBaseImage` und `kanikoImage` **nicht** benötigt; nur `ghRunnerImage` ist Pflicht, weil das
+Deployment es immer referenziert.
 
 ## Runner-only: was hier bewusst fehlt
 
 - Keine Anwendungs-Secrets, keine App-Manifeste, keine App-RBAC. Das Bootstrap kennt nur den
   konfigurierten Namespace und den Runner.
-- Kein `fd-deploy.yaml`. Bis dieses Workflow existiert, baut das Bootstrap nur die drei Images; das
+- Kein Anwendungs-Deploy-Workflow. Bis dieser existiert, baut das Bootstrap nur die drei Images; das
   Kaniko-Image wird gebaut und gepusht, aber nicht eingesetzt.
 - Keine Repository-Secrets. `GITHUB_PAT` kommt ausschließlich aus der Umgebung oder aus dem
   maskierten Prompt.
 
 ## Fehlerbehebung
 
-| Symptom                                                                | Ursache / Lösung                                                                                            |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `Kubeconfig not found: ...`                                            | Pfad in `-Kubeconfig`, `KUBECONFIG` oder `bootstrap.json` prüfen; es wurde nichts angewendet                |
-| `kubectl could not reach the target cluster after 3 attempts`          | Rancher-Proxy/VPN nicht erreichbar; der Fehler listet alle drei Versuche und den benutzten Kubeconfig-Pfad  |
-| `Docker CLI found, but the Docker daemon is not reachable`             | Docker Desktop starten und erneut ausführen                                                                 |
-| `GitHub API returned 403 while requesting a runner registration token` | PAT ohne `repo`-Scope, fehlende Admin-Rechte am Repository oder offene SSO-Autorisierung                    |
-| Rollout bleibt in `ImagePullBackOff`                                   | `ghcr-pull-secret` prüfen: der PAT muss `read:packages` besitzen und für das Repository freigeschaltet sein |
+| Symptom                                                                   | Ursache / Lösung                                                                                                          |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `No namespace resolved. Set "namespace" in ...`                           | `namespace` in `bootstrap.json` setzen oder `-n/--namespace` übergeben; es wurde nichts angewendet                          |
+| `No dev base image reference resolved. Set "devBaseImage" in ...`         | `devBaseImage` in `bootstrap.json` setzen, `DEV_BASE_IMAGE` exportieren oder `SKIP_IMAGE_BUILD=true` verwenden              |
+| `No GitHub runner image reference resolved. Set "ghRunnerImage" in ...`   | `ghRunnerImage` in `bootstrap.json` setzen oder `GH_RUNNER_IMAGE` exportieren; das Deployment braucht es immer              |
+| `Invalid app.kubernetes.io/part-of value: "<value>"`                      | `partOf` (bzw. `githubRunnerRepo`) auf einen gültigen Label-Wert korrigieren: 1-63 Zeichen, `[A-Za-z0-9-.]`, alphanumerisch an Anfang und Ende |
+| `Kubeconfig not found: ...`                                               | Pfad in `-Kubeconfig`, `KUBECONFIG` oder `bootstrap.json` prüfen; es wurde nichts angewendet                               |
+| `kubectl could not reach the target cluster after 3 attempts`             | Rancher-Proxy/VPN nicht erreichbar; der Fehler listet alle drei Versuche und den benutzten Kubeconfig-Pfad                |
+| `Docker CLI found, but the Docker daemon is not reachable`                | Docker Desktop starten und erneut ausführen                                                                               |
+| `GitHub API returned 403 while requesting a runner registration token`     | PAT ohne `repo`-Scope, fehlende Admin-Rechte am Repository oder offene SSO-Autorisierung                                  |
+| Rollout bleibt in `ImagePullBackOff`                                      | `ghcr-pull-secret` prüfen: der PAT muss `read:packages` besitzen und für das Paket freigeschaltet sein                    |

@@ -168,13 +168,17 @@ Das Script wird automatisch nach `npm ci` / `npm install` aufgerufen:
 
 **Zweck:** Bootstrapped den self-hosted GitHub-Actions-Runner für dieses Repository
 im Kubernetes-Namespace aus `scripts/bootstrap/bootstrap.json` (Images bauen/pushen, Namespace,
-RBAC, Secrets und Deployment anwenden).
+RBAC, Secrets und Deployment anwenden). Das Paket ist projektneutral: `bootstrap.json` ist die
+einzige Quelle für projektspezifische Werte (Namespace, Repository, Images, Labels).
 
 **Beschreibung:**
-- Baut die drei Images `fd-dev-base`, `fd-dev-ghrunner` und `fd-dev-kaniko` lokal
-  und pusht sie nach GHCR
+- Baut die drei Images (`devBaseImage`, `ghRunnerImage`, `kanikoImage`) lokal
+  und pusht sie in die Registry; die Referenzen kommen ausschließlich aus
+  `scripts/bootstrap/bootstrap.json`
 - Erzeugt pro Lauf einen frischen Runner-Registration-Token über die GitHub-API
-- Rendert die `fd-k8s-*.yaml`-Templates und wendet sie per `kubectl apply` an
+- Rendert die Templates unter `scripts/bootstrap/k8s/` (`namespace.yaml`,
+  `rbac.yaml`, `runner-secrets.yaml`, `runner-deployment.yaml`) und wendet sie
+  per `kubectl apply` an
 - Zielt mit `-k` / `--kubeconfig` auf einen expliziten Cluster, statt den
   aktuellen kubectl-Kontext des Rechners zu verwenden
 - Idempotent: ein erneuter Lauf rotiert Token und Secrets und rollt die Pods neu aus

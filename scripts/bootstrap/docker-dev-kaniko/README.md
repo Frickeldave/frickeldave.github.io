@@ -1,13 +1,17 @@
-# fd-dev-kaniko
+# Kaniko-Image (`kanikoImage`)
 
-`fd-dev-kaniko` ist das projekteigene Kaniko-Executor-Image für Wegwerf-Build-Jobs im Runner-Namespace. Es
-wird heute nur gebaut und gepusht; ein künftiges `fd-deploy.yaml` startet daraus pro Image-Build
-einen Kubernetes-Job.
+Das projekteigene Kaniko-Executor-Image für Wegwerf-Build-Jobs im Runner-Namespace. Es wird heute
+nur gebaut und gepusht; ein künftiger Anwendungs-Deploy-Workflow startet daraus pro Image-Build einen
+Kubernetes-Job.
+
+Die Image-Referenz ist projektabhängig und steht ausschließlich in
+[`../bootstrap.json`](../bootstrap.json) unter `kanikoImage` (überschreibbar per `KANIKO_IMAGE`).
+`bootstrap.mjs` hat keinen eingebauten Image-Namen.
 
 ## Quelle und Build
 
 Das Laufzeit-Image startet von `ubuntu:24.04`. Es erbt nicht von `gcr.io/kaniko-project/executor`
-oder einem anderen vorgebauten Kaniko-Image. Seine Builder- Stage klont das offizielle
+oder einem anderen vorgebauten Kaniko-Image. Seine Builder-Stage klont das offizielle
 [Kaniko-Repository](https://github.com/GoogleContainerTools/kaniko), checkt den Commit
 `1ae9a8416c14418625de90c1115052c0a6ebee07` aus und verifiziert, dass es der offizielle Tag `v1.23.2`
 ist, bevor `./cmd/executor` mit der Go-1.22-Toolchain von Ubuntu kompiliert wird.
@@ -19,9 +23,9 @@ bei Bedarf als Idle-Container genutzt werden kann.
 ## Kubernetes-Integration
 
 Das Image wird als eigenständiges Build-Image verwendet, nicht als `initContainer` des Runner-Pods.
-Das Runner-Deployment referenziert es nicht. Ein künftiges `fd-deploy.yaml` rendert einen
-`batch/v1`-Job im konfigurierten Runner-Namespace, wartet darauf, gibt dessen Logs aus und löscht ihn wieder. Das
-RBAC-Template `scripts/bootstrap/k8s/fd-k8s-rbac.yaml` enthält dafür bereits die
+Das Runner-Deployment referenziert es nicht. Ein künftiger Anwendungs-Deploy-Workflow rendert einen
+`batch/v1`-Job im konfigurierten Runner-Namespace, wartet darauf, gibt dessen Logs aus und löscht ihn
+wieder. Das RBAC-Template `scripts/bootstrap/k8s/rbac.yaml` enthält dafür bereits die
 `kaniko-builder`-Role und das RoleBinding.
 
 Innerhalb dieses Jobs läuft der Executor als **root** (`runAsUser: 0`, `runAsGroup: 0`). Kaniko
@@ -50,23 +54,27 @@ Kubernetes-Event-Logs erscheint.
 
 ```yaml
 args:
-  - --context=git://github.com/frickeldave/frickeldave.github.io.git#refs/heads/dev#<commit-sha>
+  - --context=git://github.com/<owner>/<repo>.git#refs/heads/<branch>#<commit-sha>
   # Paths are relative to the root of the cloned repository.
   - --dockerfile=<path/to/Dockerfile>
-  - --destination=ghcr.io/frickeldave/<image>:<version>
-  - --destination=ghcr.io/frickeldave/<image>:<commit-sha>
+  - --destination=<registry>/<image>:<version>
+  - --destination=<registry>/<image>:<commit-sha>
 ```
 
 Die Branch-Referenz wird nur für den Clone verwendet; die explizite Commit-ID wird tatsächlich
-ausgecheckt und gebaut, was Builds reproduzierbar hält.
+ausgecheckt und gebaut, was Builds reproduzierbar hält. Die Image-Referenzen stammen aus
+`bootstrap.json` (`kanikoImage`, `devBaseImage`) bzw. aus dem jeweiligen Build-Ziel.
 
 ## Build
 
-`scripts/bootstrap/bootstrap.mjs` baut und pusht dieses Image automatisch. So baust du es manuell:
+`scripts/bootstrap/bootstrap.mjs` baut und pusht dieses Image automatisch mit dem Tag aus
+`bootstrap.json`. So baust du es manuell:
 
 ```bash
+KANIKO_IMAGE="<registry>/<kaniko-image>:<tag>"
+
 docker build \
   -f scripts/bootstrap/docker-dev-kaniko/Dockerfile \
-  -t ghcr.io/frickeldave/fd-dev-kaniko:latest \
+  -t "$KANIKO_IMAGE" \
   scripts/bootstrap/docker-dev-kaniko
 ```

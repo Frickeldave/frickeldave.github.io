@@ -1,14 +1,18 @@
-ARG DEV_BASE_IMAGE=ghcr.io/frickeldave/fd-dev-base:latest
+# No default on purpose: bootstrap.mjs always supplies this value via
+# `--build-arg DEV_BASE_IMAGE=<tag from bootstrap.json>`; a standalone
+# `docker build` must pass DEV_BASE_IMAGE explicitly as well.
+ARG DEV_BASE_IMAGE
 FROM ${DEV_BASE_IMAGE}
 
 ARG RUNNER_VERSION=2.337.0
 ARG GO_CONTAINERREGISTRY_VERSION=v0.22.1
 ARG GO_CONTAINERREGISTRY_TARBALL_SHA256=0ab7a1d6932a213aed964ce97666c3077fe691c8606413674a8b3e0b9ec4cda0
-# A future fd-deploy.yaml runs `kubectl apply/create/wait/logs/delete` directly
-# on this runner container: applying manifests, refreshing the
-# ghcr-pull-secret and managing the throwaway Kaniko build Jobs. This image
-# never shipped a kubectl binary before, so every kubectl call would have
-# failed with "command not found" the first time any of these steps actually ran.
+# A future application deploy workflow runs
+# `kubectl apply/create/wait/logs/delete` directly on this runner container:
+# applying manifests, refreshing the ghcr-pull-secret and managing the
+# throwaway Kaniko build Jobs. This image never shipped a kubectl binary
+# before, so every kubectl call would have failed with "command not found" the
+# first time any of these steps actually ran.
 ARG KUBECTL_VERSION=v1.33.0
 ARG KUBECTL_SHA256=9efe8d3facb23e1618cba36fb1c4e15ac9dc3ed5a2c2e18109e4a66b2bac12dc
 

@@ -1,13 +1,25 @@
 # Kubernetes-Runner-Bootstrap
 
-Dieser Ordner enthält die eigenständigen Bootstrap-Assets, um den GitHub-Actions-Self-hosted-Runner
-für `Frickeldave/frickeldave.github.io` in Kubernetes zu betreiben. Das Bootstrap besitzt
-ausschließlich den Runner und dessen Infrastruktur (Namespace, Images, Secrets, Deployment). Ein
-Anwendungs-Deployment (`fd-deploy.yaml`) gibt es in diesem Repository noch nicht; die
-Kaniko-Bausteine werden bereits mitgeliefert, damit dieses Deployment später darauf aufsetzen kann.
+Dieses Paket bootstrappt den GitHub-Actions-Self-hosted-Runner in Kubernetes: Namespace, Images,
+Secrets, RBAC und das Runner-Deployment. Es ist eigenständig und projektneutral — **jeder
+projektspezifische Wert steht in [`bootstrap.json`](bootstrap.json)**. Skripte, Templates und
+Dokumentation enthalten keine Projekt-Literale.
 
-Es ist bewusst **nicht** das vollständige Actions-Runner-Controller-(ARC)-Design. Dies ist die
-einfachere Bootstrap-Schicht für Namespaces, Images, Secrets und das erste Runner-Deployment.
+## In ein anderes Projekt übernehmen
+
+1. `scripts/bootstrap/` in das Ziel-Repository kopieren.
+2. `scripts/bootstrap/bootstrap.json` anpassen (Namespace, Repository, Image-Referenzen, Labels).
+3. Bootstrap ausführen:
+
+   ```powershell
+   $env:GITHUB_PAT = "ghp_xxxxx"
+   $env:GITHUB_USERNAME = "<github-username>"
+   .\scripts\bootstrap\bootstrap.ps1
+   ```
+
+Mehr ist nicht nötig: `bootstrap.json` ist die einzige Quelle für projektspezifische Werte. Für den
+Ziel-Namespace gibt es keinen Built-in-Default — fehlt er, bricht das Skript mit einer klaren
+Meldung ab, statt einen Namen zu erfinden.
 
 ## Layout
 
@@ -31,10 +43,10 @@ scripts/bootstrap/
 │   ├── Dockerfile
 │   └── README.md
 └── k8s/
-    ├── fd-k8s-ghrunner-deployments.yaml
-    ├── fd-k8s-ghrunner-secrets.yaml
-    ├── fd-k8s-namespaces.yaml
-    └── fd-k8s-rbac.yaml
+    ├── namespace.yaml
+    ├── rbac.yaml
+    ├── runner-deployment.yaml
+    └── runner-secrets.yaml
 ```
 
 Weiterführende Dokumente: [`bootstrap.md`](bootstrap.md) (Runner-only-Betrieb),
@@ -45,37 +57,46 @@ Weiterführende Dokumente: [`bootstrap.md`](bootstrap.md) (Runner-only-Betrieb),
 Tests: `npm run test:bootstrap` (eingebauter `node --test`-Runner, keine zusätzliche
 Test-Dependency).
 
-## Zielwerte
+## Zielwerte und ihre Quelle
 
-| Element              | Wert                                         |
-| -------------------- | -------------------------------------------- |
-| GitHub-Repository    | `Frickeldave/frickeldave.github.io`          |
-| Runner-Scope         | `repo`                                       |
-| Kubernetes-Namespace | aus `bootstrap.json` (`namespace`)           |
-| Kubeconfig           | `C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml` |
-| Replicas             | `2` (`github-actions-runner-<pod-name>`)     |
-| Runner-Label         | `fd`                                         |
-| Runner-Image         | `ghcr.io/frickeldave/fd-dev-ghrunner:latest` |
+| Element                                    | Quelle in `bootstrap.json`                            |
+| ------------------------------------------ | ----------------------------------------------------- |
+| GitHub-Repository (`REPO_URL`)             | `githubRunnerOrg` + `githubRunnerRepo`                |
+| Runner-Scope                               | `runnerScope` (Default `repo`)                        |
+| Kubernetes-Namespace                       | `namespace` (Pflicht, kein Built-in-Default)          |
+| Kubeconfig                                 | `kubeconfig` (optional)                               |
+| Replicas                                   | fest `2` im Deployment-Template                       |
+| Runner-Label                               | `runnerLabels` (Pflicht)                              |
+| Label `app.kubernetes.io/part-of`          | `partOf`, Fallback `githubRunnerRepo`                 |
+| Runner-Image                               | `ghRunnerImage` (Pflicht bei jedem Lauf)              |
+| Dev-Base-Image                             | `devBaseImage` (Pflicht, außer `SKIP_IMAGE_BUILD`)    |
+| Kaniko-Image                               | `kanikoImage` (Pflicht, außer `SKIP_IMAGE_BUILD`)     |
+| Images bauen/pushen überspringen           | `skipImageBuild`                                      |
+| GHCR-Benutzer                              | `githubUsername`                                      |
+
+Ein anderer Projektkontext setzt einfach andere Werte in diese Datei; an Skripten und Templates ist
+nichts zu ändern.
 
 ## Images
 
-### `fd-dev-base`
+Alle drei Image-Referenzen kommen ausschließlich aus der Konfiguration (Reihenfolge:
+Umgebungsvariable > `bootstrap.json` > Fail-fast). Es gibt **keine** eingebauten Image-Namen.
+
+### Dev-Base-Image (`devBaseImage`)
 
 - Dockerfile: `scripts/bootstrap/docker-dev-base/Dockerfile`
-- Standard-Tag: `ghcr.io/frickeldave/fd-dev-base:latest`
 - Zweck: wiederverwendbares Ubuntu-24.04-Entwicklungs-Basisimage
 - Enthält Node.js 24, GitHub CLI, GitHub Copilot CLI, Squad CLI, Playwright 1.63.0 mit
-  vorinstalliertem Chromium/Firefox/WebKit, Playwright- Systemabhängigkeiten, `kubectl` und das
+  vorinstalliertem Chromium/Firefox/WebKit, Playwright-Systemabhängigkeiten, `kubectl` und das
   allgemeine CLI-Tooling (`git`, `jq`, `rg`, `build-essential`, Python 3 samt `python`-Kommando und
   Pillow, `curl`, `ca-certificates`, `locales`, Archiv-/Prozess-Tools usw.)
 - Finaler Laufzeit-Nutzer: `appuser`
 - Enthält **nicht** die GitHub-Actions-Runner-Binary
 
-### `fd-dev-ghrunner`
+### Runner-Image (`ghRunnerImage`)
 
 - Dockerfile: `scripts/bootstrap/docker-dev-ghrunner/Dockerfile`
-- Standard-Tag: `ghcr.io/frickeldave/fd-dev-ghrunner:latest`
-- Zweck: GitHub-Actions-Runner-Image auf Basis von `fd-dev-base`
+- Zweck: GitHub-Actions-Runner-Image auf Basis des Dev-Base-Images
 - Ergänzt die gepinnte GitHub-Runner-Binary (`RUNNER_VERSION=2.337.0`), den gepinnten `crane`-Client
   (`v0.22.1`) und die Logik des Registrierungs-Entrypoints
 - Finaler Laufzeit-Nutzer: `appuser`
@@ -83,10 +104,9 @@ Test-Dependency).
   (Standard `github-actions-runner`) nur voran, wenn der Pod-Name es nicht schon enthält, damit beide
   Replicas unter unterschiedlichen, nicht doppelt präfigierten Runner-Identitäten registriert werden
 
-### `fd-dev-kaniko`
+### Kaniko-Image (`kanikoImage`)
 
 - Dockerfile: `scripts/bootstrap/docker-dev-kaniko/Dockerfile`
-- Standard-Tag: `ghcr.io/frickeldave/fd-dev-kaniko:latest`
 - Zweck: projekteigener Kaniko-Executor für Build-Jobs aus dem Cluster
 - Gebaut aus `ubuntu:24.04`, nicht aus `gcr.io/kaniko-project/executor` oder einem anderen
   vorgebauten Kaniko-Image
@@ -94,36 +114,46 @@ Test-Dependency).
   `1ae9a8416c14418625de90c1115052c0a6ebee07` und verifiziert die Herkunft vor dem Kompilieren
 - Finaler Laufzeit-Nutzer: numerisch `1000:1000`; Standardbefehl: `sleep infinity`
 - Wird von `scripts/bootstrap/bootstrap.mjs` gebaut und gepusht, aber vom Runner-Deployment
-  **nicht** referenziert. Ein künftiges `fd-deploy.yaml` startet daraus Wegwerf-Jobs; deshalb
-  bleiben Image, Build-Steps und RBAC erhalten
+  **nicht** referenziert. Ein künftiger Anwendungs-Deploy-Workflow startet daraus Wegwerf-Jobs;
+  deshalb bleiben Image, Build-Steps und RBAC erhalten
 
 ## Kubernetes-Manifeste
 
 Die Manifest-Templates sind zur besseren Reviewbarkeit als einfaches YAML committet:
 
-- `scripts/bootstrap/k8s/fd-k8s-namespaces.yaml` — Namespace-Erstellung (Template mit
-  `__NAMESPACE__`)
-- `scripts/bootstrap/k8s/fd-k8s-ghrunner-secrets.yaml` — Template mit beiden Secrets
+- `scripts/bootstrap/k8s/namespace.yaml` — Namespace-Erstellung (Template mit `__NAMESPACE__`)
+- `scripts/bootstrap/k8s/runner-secrets.yaml` — Template mit beiden Secrets
   (`github-runner-registration` und `ghcr-pull-secret`)
-- `scripts/bootstrap/k8s/fd-k8s-ghrunner-deployments.yaml` — Template für das Runner-Deployment (2
-  Replicas)
-- `scripts/bootstrap/k8s/fd-k8s-rbac.yaml` — Template für die Kaniko-Builder-Role und das
-  RoleBinding des Runners
+- `scripts/bootstrap/k8s/runner-deployment.yaml` — Template für das Runner-Deployment (2 Replicas)
+- `scripts/bootstrap/k8s/rbac.yaml` — Template für die Kaniko-Builder-Role und das RoleBinding des
+  Runners
 
 Platzhalter-Konvention: Jeder zur Laufzeit ersetzte Wert verwendet `__NAME__`-Token. `bootstrap.mjs`
 ersetzt diese Platzhalter im Speicher unmittelbar vor `kubectl apply`. Echte Secrets werden nie
 committet.
 
+| Platzhalter     | Template               | Quelle                                                                 |
+| --------------- | ---------------------- | ---------------------------------------------------------------------- |
+| `__NAMESPACE__` | alle vier              | `namespace` (oder `-n/--namespace`)                                    |
+| `__PART_OF__`   | `runner-deployment`    | `partOf`, Fallback `githubRunnerRepo`; muss ein valider Label-Wert sein |
+| `__RUNNER_IMAGE__` | `runner-deployment` | `ghRunnerImage`                                                        |
+| `__REPO_URL__`  | `runner-secrets`       | abgeleitet aus `githubRunnerOrg`/`githubRunnerRepo`                    |
+| `__RUNNER_TOKEN__` | `runner-secrets`    | frischer Registration-Token pro Lauf (GitHub-API)                      |
+| `__RUNNER_NAME__` | `runner-secrets`     | `runnerName` (Fallback `github-actions-runner-<namespace>`)            |
+| `__RUNNER_SCOPE__` | `runner-secrets`    | `runnerScope`                                                          |
+| `__RUNNER_LABELS__` | `runner-secrets`   | `runnerLabels`                                                         |
+| `__DOCKERCONFIGJSON__` | `runner-secrets` | `githubUsername` + `GITHUB_PAT`                                        |
+
 ## Runner-Build-Architektur
 
-Image-Builds finden **nicht** im Runner-Pod statt. Ein künftiges `fd-deploy.yaml` soll
-`fd-dev-kaniko` als `batch/v1`-Job im konfigurierten Runner-Namespace starten, auf den Job warten, dessen Logs ins
-Actions-Log ausgeben und ihn wieder löschen. Bis dieses Workflow existiert, baut das Bootstrap nur
-die drei Images.
+Image-Builds finden **nicht** im Runner-Pod statt. Ein künftiger Anwendungs-Deploy-Workflow soll das
+Kaniko-Image als `batch/v1`-Job im konfigurierten Runner-Namespace starten, auf den Job warten,
+dessen Logs ins Actions-Log ausgeben und ihn wieder löschen. Bis dieser Workflow existiert, baut das
+Bootstrap nur die drei Images.
 
 Kaniko läuft **als root in diesem Job** (`runAsUser: 0`, `runAsGroup: 0`). Es extrahiert das
 Base-Image-Dateisystem direkt nach `/` seines eigenen Containers und benötigt dort uneingeschränkten
-`chown`-/Schreibzugriff; als Nicht-Root- Subprozess des Runner-Containers schlägt es mit
+`chown`-/Schreibzugriff; als Nicht-Root-Subprozess des Runner-Containers schlägt es mit
 `permission denied` auf `/bin` und `chown /kaniko/Dockerfile: operation not permitted` fehl, und als
 root im Runner würde es das eigene `/bin` und `/usr` des Runners überschreiben. Root in einem
 Wegwerf-Build-Pod ist nur Prozessisolation: Der Job hat kein `privileged: true`, keine zusätzlichen
@@ -132,24 +162,23 @@ entfernt.
 
 Der Runner-Pod behält einen schreibgeschützten `ghcr-pull-secret`-Mount unter
 `/home/appuser/.registry-docker`, auf den `DOCKER_CONFIG` zeigt. Das ist **kein** Überbleibsel: Ein
-künftiges `fd-deploy.yaml` führt `crane manifest` im Runner-Container aus, um zu entscheiden, ob ein
-versioniertes Image bereits in GHCR existiert, und diese Abfrage benötigt
-Registry-Authentifizierung. Der Runner-Pod nutzt UID/GID 1001, `RuntimeDefault`-Seccomp und
+künftiger Anwendungs-Deploy-Workflow führt `crane manifest` im Runner-Container aus, um zu
+entscheiden, ob ein versioniertes Image bereits in der Registry existiert, und diese Abfrage
+benötigt Registry-Authentifizierung. Der Runner-Pod nutzt UID/GID 1001, `RuntimeDefault`-Seccomp und
 entzogene Linux-Capabilities und hat keinen Docker-Socket, keinen privilegierten Container, keinen
 Host-Pfad, kein Host-Netzwerk und keine Host-PID/IPC.
 
 ## Erforderliche Berechtigungen des Runner-ServiceAccounts
 
-`scripts/bootstrap/k8s/fd-k8s-rbac.yaml` ist das sichtbare RBAC-Template zum Review. In Step 7
-rendert `bootstrap.mjs` es mit dem gewählten Runner-Namespace und wendet die resultierenden Roles
-und RoleBindings an.
+`scripts/bootstrap/k8s/rbac.yaml` ist das sichtbare RBAC-Template zum Review. In Step 7 rendert
+`bootstrap.mjs` es mit dem gewählten Runner-Namespace und wendet die resultierenden Roles und
+RoleBindings an.
 
 Die generierten Berechtigungen sind auf die Kaniko-Baufähigkeit beschränkt:
 
 - `kaniko-builder`-Role und -RoleBinding im gewählten Runner-Namespace (dem `namespace`-Wert aus
-  `bootstrap.json`), die
-  dem Runner-ServiceAccount `<namespace>:default` erlauben, Kaniko-Jobs zu erstellen, zu beobachten
-  und zu löschen.
+  `bootstrap.json`), die dem Runner-ServiceAccount `<namespace>:default` erlauben, Kaniko-Jobs zu
+  erstellen, zu beobachten und zu löschen.
 
 Die Role gewährt `jobs.batch`: `create`, `get`, `list`, `watch`, `delete`; `pods` und `pods/log`:
 `get`, `list`; sowie `secrets`: `create`, `update`, `get`, `delete` (für die kurzlebigen
@@ -164,68 +193,47 @@ per-Developer-Dev-Machines). Beide werden von einem Kaniko-Build-Job nicht benö
 und rendert und wendet schließlich die Runner-Secrets und das Deployment im gewählten Namespace an
 (der `namespace`-Wert aus `bootstrap.json`). Die Kubernetes-Operationen sind idempotent.
 
-Platzhalter der Bootstrap-Templates:
+## Konfigurationsdatei
 
-- Namespace-Template: `__NAMESPACE__`
-- Secrets-Template: `__NAMESPACE__`, `__REPO_URL__`, `__RUNNER_TOKEN__`, `__RUNNER_NAME__`,
-  `__RUNNER_SCOPE__`, `__RUNNER_LABELS__`, `__DOCKERCONFIGJSON__`
-- Runner-Deployment-Template: `__NAMESPACE__`, `__RUNNER_IMAGE__`
-- RBAC-Template: `__NAMESPACE__`
+`scripts/bootstrap/bootstrap.json` ist die einzige Quelle für projektspezifische Werte. Sie enthält
+bewusst **keine** Secrets. Beispielform:
 
-## Hinweis zur Namespace-Benennung
+| JSON key           | Purpose                                                                 | Beispielwert                            |
+| ------------------ | ----------------------------------------------------------------------- | --------------------------------------- |
+| `namespace`        | Standard-Ziel-Namespace (Pflicht, kein Built-in-Default).                | `<namespace>`                           |
+| `kubeconfig`       | Kubeconfig für alle kubectl-Aufrufe (optional).                          | `<path-to-kubeconfig>`                  |
+| `devBaseImage`     | In Step 2 gebauter/gepushter Image-Tag, genutzt als Parent in Step 3.    | `<registry>/<dev-base-image>:<tag>`     |
+| `ghRunnerImage`    | In Steps 3/5 gebauter/gepushter und in Step 9 deployter Image-Tag.       | `<registry>/<runner-image>:<tag>`       |
+| `kanikoImage`      | In Step 4 gebauter Image-Tag, für künftige Build-Jobs.                   | `<registry>/<kaniko-image>:<tag>`       |
+| `skipImageBuild`   | Überspringt alle drei lokalen Builds, den Login und alle drei Pushes.    | `false`                                 |
+| `githubUsername`   | GitHub-Username für Registry-Auth und Pull-Secret-Daten.                 | `<github-username>`                     |
+| `githubRunnerOrg`  | GitHub-Owner zur Ableitung von `REPO_URL` (Pflicht).                     | `<owner>`                               |
+| `githubRunnerRepo` | GitHub-Repository für `REPO_URL` und Fallback für `partOf` (Pflicht).   | `<repo>`                                |
+| `runnerName`       | Runner-Namenspräfix, im Secret gespeichert.                             | `github-actions-runner`                 |
+| `runnerLabels`     | Kommagetrennte Runner-Labels (Pflicht).                                  | `<label>`                               |
+| `runnerScope`      | Kompatibilitätswert, im Secret gespeichert.                              | `repo`                                  |
+| `partOf`           | Wert für `app.kubernetes.io/part-of` (optional, Fallback Repo-Name).     | `<app-name>`                            |
 
-Kubernetes-Namespace-Namen müssen den RFC-1123-DNS-Label-Regeln folgen. Der Name steht
-ausschließlich in `scripts/bootstrap/bootstrap.json` (`namespace`); Skripte und Templates enthalten
-kein Literal. Für ein anderes Zielprojekt reicht es, diese eine Zeile zu ändern.
-
-## Rangfolge der Konfiguration
-
-`bootstrap.mjs` löst Einstellungen in dieser Reihenfolge auf:
-
-1. CLI-Argumente (`-n` / `--namespace`, `-k` / `--kubeconfig`)
-2. Umgebungsvariablen
-3. `scripts/bootstrap/bootstrap.json`
-4. eingebaute Defaults im Skript — **nicht** für den Namespace: fehlt er in CLI und Config, bricht
-   `bootstrap.mjs` mit einer klaren Meldung ab, statt einen Namen zu erfinden
-
-Die committete JSON-Konfigurationsdatei ist bewusst nur für **nicht geheime** Defaults gedacht. Sie
-unterstützt diese Schlüssel:
-
-| JSON key           | Purpose                                                     | Wert in diesem Repo                          |
-| ------------------ | ----------------------------------------------------------- | -------------------------------------------- |
-| `namespace`        | Standard-Ziel-Namespace (Pflicht, kein Built-in-Default).   | aus `bootstrap.json`                         |
-| `kubeconfig`       | Kubeconfig für alle kubectl-Aufrufe.                        | `C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml` |
-| `devBaseImage`     | In Step 2 gebauter/gepushter Image-Tag, genutzt als Parent. | `ghcr.io/frickeldave/fd-dev-base:latest`     |
-| `ghRunnerImage`    | In Steps 3/5 gebauter/gepushter und deployter Image-Tag.    | `ghcr.io/frickeldave/fd-dev-ghrunner:latest` |
-| `kanikoImage`      | In Step 4 gebauter Image-Tag, für künftige Build-Jobs.      | `ghcr.io/frickeldave/fd-dev-kaniko:latest`   |
-| `skipImageBuild`   | Überspringt alle drei lokalen Builds und alle drei Pushes.  | `false`                                      |
-| `githubUsername`   | GitHub-Username für GHCR-Auth und Pull-Secret-Daten.        | `Frickeldave`                                |
-| `githubRunnerOrg`  | GitHub-Owner zur Ableitung von `REPO_URL`.                  | `Frickeldave`                                |
-| `githubRunnerRepo` | GitHub-Repository zur Ableitung von `REPO_URL`.             | `frickeldave.github.io`                      |
-| `runnerName`       | Runner-Namenspräfix, im Secret gespeichert.                 | `github-actions-runner`                      |
-| `runnerLabels`     | Standardmäßige kommagetrennte Runner-Labels.                | `fd`                                         |
-| `runnerScope`      | Kompatibilitätswert, im Secret gespeichert.                 | `repo`                                       |
-
-`GITHUB_PAT` wird **nie** aus dieser JSON-Datei gelesen. Als Defense-in-Depth- Sicherheitsprüfung
+`GITHUB_PAT` wird **nie** aus dieser JSON-Datei gelesen. Als Defense-in-Depth-Sicherheitsprüfung
 verweigert das Skript die Ausführung, wenn die Konfigurationsdatei einen PAT-ähnlichen
 GitHub-Schlüssel wie `githubPat`, `github_pat` oder Ähnliches enthält.
 
 ## Umgebungsvariablen
 
-| Variable             | Required | Purpose                                                                                                                                                                                                                                                                                        |
-| -------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_PAT`         | Ja       | Klassischer PAT für `docker login ghcr.io`, das gerenderte GHCR-Pull-Secret und den GitHub-Runner-Registration-Token-API-Aufruf                                                                                                                                                                |
-| `GITHUB_USERNAME`    | Ja       | GitHub-Username, gepaart mit `GITHUB_PAT` für GHCR-Auth und das GHCR-Pull-Secret                                                                                                                                                                                                               |
-| `KUBECONFIG`         | Nein     | Kubeconfig für alle kubectl-Aufrufe. Wird von `-k` / `--kubeconfig` und vom `kubeconfig`-Schlüssel in `bootstrap.json` überstimmt                                                                                                                                                              |
-| `DEV_BASE_IMAGE`     | Nein     | Überschreibt den in Step 2 gebauten Base-Image-Tag                                                                                                                                                                                                                                             |
-| `GH_RUNNER_IMAGE`    | Nein     | Überschreibt den in Steps 3/5/9 gebauten/gepushten/deployten Runner-Image-Tag                                                                                                                                                                                                                  |
-| `FD_KANIKO_IMAGE`    | Nein     | Überschreibt den in Steps 4/5 gebauten/gepushten Ubuntu-basierten Kaniko-Image-Tag, das künftige Build-Jobs verwenden                                                                                                                                                                          |
-| `SKIP_IMAGE_BUILD`   | Nein     | Bei `true` werden alle drei Image-Builds und alle drei Pushes übersprungen                                                                                                                                                                                                                     |
-| `GITHUB_RUNNER_ORG`  | Nein     | Überschreibt den GitHub-Owner zur Ableitung von `REPO_URL`                                                                                                                                                                                                                                     |
-| `GITHUB_RUNNER_REPO` | Nein     | Überschreibt das GitHub-Repository zur Ableitung von `REPO_URL`                                                                                                                                                                                                                                |
-| `RUNNER_NAME`        | Nein     | Überschreibt das **Präfix** des im Secret gespeicherten Runner-Namens (Config-Wert `github-actions-runner`; eingebauter Fallback `github-actions-runner-<namespace>`). Jeder Pod hängt seinen eigenen Pod-Namen an, sodass Replicas unter verschiedenen Runner-Identitäten registriert werden. |
-| `RUNNER_LABELS`      | Nein     | Überschreibt die im Secret gespeicherten Runner-Labels                                                                                                                                                                                                                                         |
-| `RUNNER_SCOPE`       | Nein     | Überschreibt den im Secret gespeicherten Kompatibilitäts-Scope-Wert                                                                                                                                                                                                                            |
+| Variable             | Required                         | Purpose                                                                                                                    |
+| -------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_PAT`         | Ja                               | Klassischer PAT für `docker login`, das gerenderte Registry-Pull-Secret und den Registration-Token-Aufruf                   |
+| `GITHUB_USERNAME`    | Ja                               | GitHub-Username, gepaart mit `GITHUB_PAT` für Registry-Auth und Pull-Secret                                                |
+| `KUBECONFIG`         | Nein                             | Kubeconfig für alle kubectl-Aufrufe; wird von `-k` / `--kubeconfig` und vom `kubeconfig`-Schlüssel überstimmt               |
+| `DEV_BASE_IMAGE`     | Nein, außer `SKIP_IMAGE_BUILD=true` | Überschreibt `devBaseImage`                                                                                              |
+| `GH_RUNNER_IMAGE`    | Ja (jeder Lauf)                  | Überschreibt `ghRunnerImage`; das Deployment referenziert es immer                                                         |
+| `KANIKO_IMAGE`       | Nein, außer `SKIP_IMAGE_BUILD=true` | Überschreibt `kanikoImage`                                                                                              |
+| `SKIP_IMAGE_BUILD`   | Nein                             | Bei `true` werden alle drei Image-Builds, der Login und alle drei Pushes übersprungen                                      |
+| `GITHUB_RUNNER_ORG`  | Ja, wenn nicht in der Config     | Überschreibt `githubRunnerOrg`                                                                                             |
+| `GITHUB_RUNNER_REPO` | Ja, wenn nicht in der Config     | Überschreibt `githubRunnerRepo`                                                                                            |
+| `RUNNER_NAME`        | Nein                             | Überschreibt das Präfix des Runner-Namens (Fallback `github-actions-runner-<namespace>`); jeder Pod hängt seinen Pod-Namen an |
+| `RUNNER_LABELS`      | Ja, wenn nicht in der Config     | Überschreibt `runnerLabels`                                                                                                |
+| `RUNNER_SCOPE`       | Nein                             | Überschreibt den Kompatibilitäts-Scope-Wert (Default `repo`)                                                               |
 
 ### Scope-Anforderungen für `GITHUB_PAT`
 
@@ -243,15 +251,15 @@ Erstelle ihn über:
    - `repo`
    - `read:packages`
    - `write:packages`
-7. Erzwingt der Account SSO, autorisiere den Token nach der Erstellung für SSO
+7. Erzwingt die Organisation SSO, autorisiere den Token nach der Erstellung für SSO
 
 Fehlt `GITHUB_PAT` und das Skript hat ein interaktives TTY, fragt `bootstrap.mjs` danach mit
 maskierter Eingabe, statt den Token auszugeben.
 
 ## Kubernetes-Kontext auswählen
 
-Ohne weitere Angabe nutzt das Bootstrap den aktuellen kubectl-Kontext des Rechners. Für diesen
-Cluster ist das nicht gewünscht, deshalb kennt das Skript einen expliziten Kubeconfig-Pfad:
+Ohne weitere Angabe nutzt das Bootstrap den aktuellen kubectl-Kontext des Rechners. Für Cluster, bei
+denen das nicht gewünscht ist, kennt das Skript einen expliziten Kubeconfig-Pfad:
 
 ```text
 -k, --kubeconfig <path>
@@ -268,13 +276,13 @@ ersten `kubectl apply` sieht, welcher Cluster getroffen wird.
 
 ## Bootstrap-Ablauf
 
-Normale Verwendung (Windows-Operator auf diesem Rechner):
+Normale Verwendung (Windows-Operator):
 
 ```powershell
 $env:GITHUB_PAT = "ghp_xxxxx"
-$env:GITHUB_USERNAME = "Frickeldave"
-# Namespace kommt aus scripts/bootstrap/bootstrap.json
-.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+$env:GITHUB_USERNAME = "<github-username>"
+# Namespace, Repository und Images kommen aus scripts/bootstrap/bootstrap.json
+.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig <path-to-kubeconfig>
 ```
 
 `-Namespace <namespace>` überschreibt den konfigurierten Wert für einen einzelnen Lauf.
@@ -283,19 +291,19 @@ Direkt mit dem Node-Skript, ohne PowerShell-Wrapper:
 
 ```bash
 export GITHUB_PAT=ghp_xxxxx
-export GITHUB_USERNAME=Frickeldave
-node scripts/bootstrap/bootstrap.mjs --kubeconfig /path/to/dev-kw-bee23d.yaml
+export GITHUB_USERNAME=<github-username>
+node scripts/bootstrap/bootstrap.mjs --kubeconfig <path-to-kubeconfig>
 ```
 
 Alternativ über npm:
 
 ```powershell
-npm run bootstrap -- --kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+npm run bootstrap -- --kubeconfig <path-to-kubeconfig>
 ```
 
 Das Node-Bootstrap-Skript führt diese sichtbaren Schritte der Reihe nach aus:
 
-1. Voraussetzungsprüfungen vor jeder langsamen Arbeit:
+1. Voraussetzungsprüfungen
    - Existenz der aufgelösten Kubeconfig (bei konfiguriertem Pfad)
    - Verfügbarkeit der Docker-CLI und Erreichbarkeit des Docker-Daemons (beides übersprungen bei
      `SKIP_IMAGE_BUILD=true`)
@@ -305,28 +313,29 @@ Das Node-Bootstrap-Skript führt diese sichtbaren Schritte der Reihe nach aus:
    - Ausgabe von Kontext, Cluster und Server-Version des Zielclusters
    - erforderliche Deployment-Dateien auf dem Datenträger
    - Vorhandensein von `GITHUB_USERNAME`
-2. `fd-dev-base` lokal aus `scripts/bootstrap/docker-dev-base/Dockerfile` bauen
-3. `fd-dev-ghrunner` lokal aus `scripts/bootstrap/docker-dev-ghrunner/Dockerfile` bauen, wobei das
-   soeben gebaute Base-Image als `DEV_BASE_IMAGE` dient
-4. `fd-dev-kaniko` lokal aus `scripts/bootstrap/docker-dev-kaniko/Dockerfile` bauen
-5. Bei GHCR anmelden und **alle drei** Images pushen
-6. `scripts/bootstrap/k8s/fd-k8s-namespaces.yaml` mit dem konfigurierten Namespace rendern und
-   anwenden
-7. Das RBAC-Template `scripts/bootstrap/k8s/fd-k8s-rbac.yaml` rendern und anwenden
+2. Dev-Base-Image lokal aus `scripts/bootstrap/docker-dev-base/Dockerfile` bauen
+3. Runner-Image lokal aus `scripts/bootstrap/docker-dev-ghrunner/Dockerfile` bauen, wobei das soeben
+   gebaute Base-Image als `DEV_BASE_IMAGE` dient
+4. Kaniko-Image lokal aus `scripts/bootstrap/docker-dev-kaniko/Dockerfile` bauen
+5. Bei der Registry anmelden und **alle drei** Images pushen
+6. `scripts/bootstrap/k8s/namespace.yaml` mit dem konfigurierten Namespace rendern und anwenden
+7. Das RBAC-Template `scripts/bootstrap/k8s/rbac.yaml` rendern und anwenden
 8. Einen frischen Repository-Runner-Registration-Token holen, die Platzhalter in
-   `scripts/bootstrap/k8s/fd-k8s-ghrunner-secrets.yaml` ersetzen und die gerenderten
-   Secret-Manifeste per `kubectl apply` anwenden
-9. `__RUNNER_IMAGE__` in `scripts/bootstrap/k8s/fd-k8s-ghrunner-deployments.yaml` ersetzen, das
-   gerenderte Deployment anwenden und einen Rollout-Restart auslösen
+   `scripts/bootstrap/k8s/runner-secrets.yaml` ersetzen und die gerenderten Secret-Manifeste per
+   `kubectl apply` anwenden
+9. `__NAMESPACE__`, `__RUNNER_IMAGE__` und `__PART_OF__` in
+   `scripts/bootstrap/k8s/runner-deployment.yaml` ersetzen, das gerenderte Deployment anwenden und
+   einen Rollout-Restart auslösen
 10. Auf den Abschluss des Deployment-Rollouts warten
 
 Bei `SKIP_IMAGE_BUILD=true` läuft Step 1 weiterhin (inklusive der Kubeconfig-Prüfung), überspringt
-aber die Docker-spezifischen Prüfungen, und Steps 2-5 werden geloggt und explizit übersprungen,
-während Steps 6-10 weiterlaufen.
+aber die Docker-spezifischen Prüfungen und die Anforderung der Build-only-Images, und Steps 2-5
+werden geloggt und explizit übersprungen, während Steps 6-10 weiterlaufen.
 
-Das Kaniko-Image wird bewusst hier gebaut und nicht in einem Workflow: Ein künftiges
-`fd-deploy.yaml` benötigt ein einsatzbereites Executor-Image, bevor es irgendeinen Build-Job starten
-kann. Es wird hier gebaut, aber dort verwendet — das Runner-Deployment selbst referenziert es nicht.
+Das Kaniko-Image wird bewusst hier gebaut und nicht in einem Workflow: Ein künftiger
+Anwendungs-Deploy-Workflow benötigt ein einsatzbereites Executor-Image, bevor er irgendeinen
+Build-Job starten kann. Es wird hier gebaut, aber dort verwendet — das Runner-Deployment selbst
+referenziert es nicht.
 
 ## Runner-Replicas
 
@@ -338,41 +347,53 @@ Pod-Name das Präfix nicht schon enthält, sonst entstünden doppelt präfigiert
 ## Registrierung prüfen
 
 ```powershell
-gh api repos/Frickeldave/frickeldave.github.io/actions/runners --jq '.runners[].name'
+gh api repos/<owner>/<repo>/actions/runners --jq '.runners[].name'
 ```
 
 ## Referenz für manuellen Image-Build
 
+Die Image-Referenzen kommen aus `bootstrap.json`; für einen manuellen Lauf setzt man dieselben Werte
+als Umgebungsvariablen:
+
 ```bash
-echo "$GITHUB_PAT" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
+DEV_BASE_IMAGE="<registry>/<dev-base-image>:<tag>"
+GH_RUNNER_IMAGE="<registry>/<runner-image>:<tag>"
+KANIKO_IMAGE="<registry>/<kaniko-image>:<tag>"
+
+echo "$GITHUB_PAT" | docker login <registry> -u "$GITHUB_USERNAME" --password-stdin
 
 docker build \
   -f scripts/bootstrap/docker-dev-base/Dockerfile \
-  -t ghcr.io/frickeldave/fd-dev-base:latest \
+  -t "$DEV_BASE_IMAGE" \
   scripts/bootstrap/docker-dev-base
 
 docker build \
-  --build-arg DEV_BASE_IMAGE=ghcr.io/frickeldave/fd-dev-base:latest \
+  --build-arg DEV_BASE_IMAGE="$DEV_BASE_IMAGE" \
   -f scripts/bootstrap/docker-dev-ghrunner/Dockerfile \
-  -t ghcr.io/frickeldave/fd-dev-ghrunner:latest \
+  -t "$GH_RUNNER_IMAGE" \
   scripts/bootstrap/docker-dev-ghrunner
 
 docker build \
   -f scripts/bootstrap/docker-dev-kaniko/Dockerfile \
-  -t ghcr.io/frickeldave/fd-dev-kaniko:latest \
+  -t "$KANIKO_IMAGE" \
   scripts/bootstrap/docker-dev-kaniko
 
-docker push ghcr.io/frickeldave/fd-dev-base:latest
-docker push ghcr.io/frickeldave/fd-dev-ghrunner:latest
-docker push ghcr.io/frickeldave/fd-dev-kaniko:latest
+docker push "$DEV_BASE_IMAGE"
+docker push "$GH_RUNNER_IMAGE"
+docker push "$KANIKO_IMAGE"
 ```
 
 ## Tests
 
-`scripts/bootstrap/bootstrap.test.mjs` prüft die committeten Zielwerte (Namespace aus
-`bootstrap.json`, `ghcr.io/frickeldave/fd-dev-*`, 2 Replicas, Label `fd`), dass Skripte und
-Templates kein Namespace-Literal enthalten, und dass in diesem Paket keine Literale des
-Ursprungsprojekts mehr stehen:
+`scripts/bootstrap/bootstrap.test.mjs` leitet alle Erwartungen aus `bootstrap.json` ab und prüft:
+
+- dass die Manifest-Dateinamen, die `bootstrap.mjs` referenziert, existieren (`namespace.yaml`,
+  `rbac.yaml`, `runner-secrets.yaml`, `runner-deployment.yaml`)
+- dass die Fail-fast-Meldungen für fehlenden Namespace, fehlende Image-Referenzen und ein ungültiges
+  `partOf`-Label vorhanden sind
+- dass `__PART_OF__` aus der Konfiguration bzw. dem Repository-Namen gerendert wird
+- dass das gesamte Paket (inklusive Markdown) außerhalb von `bootstrap.json` kein Projekt-Literal
+  enthält — der Portabilitäts-Guard
 
 ```bash
 npm run test:bootstrap
