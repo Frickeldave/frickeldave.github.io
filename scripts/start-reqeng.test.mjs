@@ -10,9 +10,31 @@ import {
   buildCanonicalResourceName,
   buildCopilotArgs,
   parseIssueRefToken,
+  resolveBranchContext,
   runReqEng,
   syncReusedWorktreeWithDev,
 } from './start-reqeng.mjs';
+
+const PRE_PUSH_HOOK_URL = new URL('../.husky/pre-push-validate.js', import.meta.url);
+
+/**
+ * Loads the exact branch-name rule the Husky pre-push hook enforces, so the
+ * assertions below cannot drift from the hook.
+ */
+function loadPrePushBranchRule() {
+  const source = readFileSync(PRE_PUSH_HOOK_URL, 'utf8');
+
+  const validTypesMatch = source.match(/const validTypes = \[([\s\S]*?)\];/);
+  assert.ok(validTypesMatch, 'pre-push hook should declare a validTypes list');
+  const validTypes = [...validTypesMatch[1].matchAll(/'([^']+)'/g)].map((match) => match[1]);
+
+  const patternMatch = source.match(/const branchPattern = new RegExp\(\s*([\s\S]*?)\s*\);/);
+  assert.ok(patternMatch, 'pre-push hook should declare a branchPattern');
+
+  const buildPattern = new Function('validTypes', `return new RegExp(${patternMatch[1]});`);
+
+  return { validTypes, branchPattern: buildPattern(validTypes) };
+}
 
 test('parseIssueRefToken accepts canonical issue tokens case-insensitively', () => {
   assert.equal(parseIssueRefToken('IS_480'), 480);
@@ -65,6 +87,7 @@ test('runReqEng resolves the issue, prepares the worktree, and launches the prep
         canonicalRefName: 'IS_621',
         issueTitle: 'Local guard',
         branchSlug: 'local-guard',
+        labels: ['squad', 'type:feature'],
       };
     },
     promptAdditionalPromptFn: async () => {
@@ -122,4 +145,50 @@ test('syncReusedWorktreeWithDev merges origin/dev into a clean, outdated worktre
   syncReusedWorktreeWithDev(clone);
 
   assert.equal(readFileSync(join(clone, 'b.txt'), 'utf8'), 'new');
+});
+
+test('resolveBranchContext emits branch names the pre-push hook accepts', () => {
+  const { validTypes, branchPattern } = loadPrePushBranchRule();
+  const repoRoot = mkdtempSync(join(tmpdir(), 'reqeng-branch-'));
+
+  const cases = [
+    { labels: ['squad', 'type:bug'], branchType: 'fix' },
+    { labels: ['type:feature'], branchType: 'feat' },
+    { labels: ['type:docs'], branchType: 'docs' },
+    { labels: ['type:maintenance'], branchType: 'feat' },
+    { labels: [], branchType: 'feat' },
+    { branchType: 'feat' },
+  ];
+
+  for (const { labels, branchType } of cases) {
+    const issueContext = {
+      issueId: 282,
+      branchSlug: 'Gate__Active!!',
+      ...(labels === undefined ? {} : { labels }),
+    };
+
+    const { branchName, baseBranch } = resolveBranchContext(issueContext, repoRoot);
+
+    assert.equal(
+      branchName,
+      `${branchType}/issue-282-gate-active`,
+      `labels ${JSON.stringify(labels ?? null)} should produce a ${branchType} branch`
+    );
+    assert.equal(branchName.startsWith('squad/'), false, 'squad/ is rejected by the hook');
+    assert.ok(validTypes.includes(branchName.split('/')[0]), `${branchName} uses a valid type`);
+    assert.ok(branchPattern.test(branchName), `pre-push hook must accept "${branchName}"`);
+    assert.equal(typeof baseBranch, 'string');
+  }
+});
+
+test('resolveBranchContext replaces legacy squad/ branch names for existing issues', () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'reqeng-branch-legacy-'));
+
+  const { branchName } = resolveBranchContext(
+    { issueId: 52, branchSlug: 'pagination-bug', labels: ['type:bug'] },
+    repoRoot
+  );
+
+  assert.notEqual(branchName, 'squad/52-pagination-bug');
+  assert.equal(branchName, 'fix/issue-52-pagination-bug');
 });

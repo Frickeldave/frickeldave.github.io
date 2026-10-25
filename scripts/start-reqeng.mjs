@@ -26,6 +26,7 @@ import { basename, resolve } from 'node:path';
 import { emitKeypressEvents } from 'node:readline';
 import { createInterface } from 'node:readline/promises';
 import { pathToFileURL } from 'node:url';
+import { buildIssueBranchName, deriveBranchType } from './ensure-issue-branch.mjs';
 import { isWindows, prepareSpawn } from './platform-shared.mjs';
 import { prepareCopilotEnvironment } from './copilot-environment.mjs';
 import {
@@ -482,8 +483,11 @@ function selectMenuOptionInteractive(message, options) {
  * @param {number} requestedId
  */
 function resolveIssueContext(requestedId) {
-  const issue = readGhJson(['issue', 'view', String(requestedId), '--json', 'title']);
+  const issue = readGhJson(['issue', 'view', String(requestedId), '--json', 'title,labels']);
   const slug = slugifyTitle(issue.title);
+  const labels = Array.isArray(issue.labels)
+    ? issue.labels.map((label) => label?.name).filter(Boolean)
+    : [];
 
   return {
     requestedId,
@@ -491,6 +495,7 @@ function resolveIssueContext(requestedId) {
     issueId: requestedId,
     issueTitle: issue.title,
     branchSlug: slug,
+    labels,
   };
 }
 
@@ -585,12 +590,23 @@ function resolveCurrentTmuxContext(tmuxAvailable, sessionName) {
  * @param {{
  *   issueId: number;
  *   branchSlug: string;
+ *   labels?: string[];
  * }} issueContext
  * @param {string} repoRoot
  */
-function resolveBranchContext(issueContext, repoRoot) {
+export function resolveBranchContext(issueContext, repoRoot) {
   return {
-    branchName: `squad/${issueContext.issueId}-${issueContext.branchSlug}`,
+    // Shared with ensure-issue-branch.mjs and start-work.mjs so every flow
+    // emits the Conventional Branch Name shape required by
+    // .husky/pre-push-validate.js. The type comes from the issue's `type:*`
+    // labels via deriveBranchType and falls back to `feat`, matching
+    // start-work's default; `squad` is not an accepted type and would be
+    // rejected on push.
+    branchName: buildIssueBranchName({
+      type: deriveBranchType(issueContext.labels ?? []),
+      issueId: issueContext.issueId,
+      slug: issueContext.branchSlug,
+    }),
     baseBranch: resolveDefaultBranch(repoRoot).replace(/^origin\//, ''),
   };
 }
