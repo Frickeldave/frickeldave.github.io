@@ -1,0 +1,6 @@
+# Single infrastructure namespace for the self-hosted GitHub Actions runner and
+# the throwaway Kaniko build Jobs a future fd-deploy.yaml will start in it.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fd-infra

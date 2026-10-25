@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Runner-Bootstrap unter `scripts/bootstrap/` (Images, Kubernetes-Namespace, RBAC, Secrets, Deployment) inklusive `--kubeconfig`-Unterstützung für einen expliziten Ziel-Cluster (#282).
+- npm-Scripts `bootstrap` und `test:bootstrap` (#282).
+
+### Changed
+
+- Bootstrap-Zielwerte auf dieses Repository umgestellt: Namespace `fd-infra`, Label `fd`, 2 Runner-Replicas, Images `ghcr.io/frickeldave/fd-dev-*` (#282).
+- Kaniko-Bausteine (Image, Build-/Push-Steps, RBAC) bleiben für ein künftiges `fd-deploy.yaml` erhalten; nicht mehr benötigte App-Deploy-RBAC-Objekte wurden entfernt (#282).
+
 ## [1.0.3] - 2026-09-14
 
 ### Added

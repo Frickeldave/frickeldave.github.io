@@ -8,6 +8,8 @@
 - [Installation Scripts](#installation-scripts)
   - [install-gh-copilot.mjs](#install-gh-copilotmjs)
   - [prose-install.mjs](#prose-installmjs)
+- [Infrastructure Scripts](#infrastructure-scripts)
+  - [bootstrap.mjs](#bootstrapmjs)
 - [Development Scripts](#development-scripts)
   - [merge-branches.mjs](#merge-branchesmjs)
   - [prose-check.mjs](#prose-checkmjs)
@@ -30,6 +32,9 @@ npm run prose-install       # Vale Prose Checker installieren
 
 # Entwicklung
 npm run prose               # Inhalte mit Vale überprüfen
+
+# Infrastruktur
+npm run bootstrap           # Self-hosted Runner bootstrappen (siehe Infrastructure Scripts)
 ```
 
 ---
@@ -154,6 +159,62 @@ Das Script wird automatisch nach `npm ci` / `npm install` aufgerufen:
 - `.github/workflows/pull-request-checks.yml` — Vale Installation vor Prose Checks
 - Stille Installation (`--quiet` Flag) wird in CI empfohlen
 - Force-Reinstall wird nicht benötigt (wird bei jedem Run frisch installiert)
+
+---
+
+## Infrastructure Scripts
+
+### bootstrap.mjs
+
+**Zweck:** Bootstrapped den self-hosted GitHub-Actions-Runner für dieses Repository
+im Kubernetes-Namespace `fd-infra` (Images bauen/pushen, Namespace, RBAC, Secrets
+und Deployment anwenden).
+
+**Beschreibung:**
+- Baut die drei Images `fd-dev-base`, `fd-dev-ghrunner` und `fd-dev-kaniko` lokal
+  und pusht sie nach GHCR
+- Erzeugt pro Lauf einen frischen Runner-Registration-Token über die GitHub-API
+- Rendert die `fd-k8s-*.yaml`-Templates und wendet sie per `kubectl apply` an
+- Zielt mit `-k` / `--kubeconfig` auf einen expliziten Cluster, statt den
+  aktuellen kubectl-Kontext des Rechners zu verwenden
+- Idempotent: ein erneuter Lauf rotiert Token und Secrets und rollt die Pods neu aus
+
+**Voraussetzungen:**
+- Docker-CLI mit laufendem Daemon (bzw. `SKIP_IMAGE_BUILD=true`)
+- `kubectl` im `PATH`
+- Node.js 24 oder neuer
+- `GITHUB_PAT` (classic, Scopes `repo`, `read:packages`, `write:packages`) und
+  `GITHUB_USERNAME` in der Umgebung
+
+**Usage:**
+```powershell
+# Runner-Bootstrap gegen den dev-Cluster
+node scripts/bootstrap/bootstrap.mjs --kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+
+# über npm
+npm run bootstrap -- --kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+
+# Windows-Wrapper (installiert Node.js bei Bedarf)
+.\scripts\bootstrap\bootstrap.ps1 -Namespace fd-infra -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+
+# nur Secrets/Deployment aktualisieren, vorhandene Images wiederverwenden
+$env:SKIP_IMAGE_BUILD = "true"
+```
+
+**Tests:**
+```bash
+npm run test:bootstrap  # node --test scripts/bootstrap/bootstrap.test.mjs
+```
+
+#### Verwendung im GitHub Workflow
+
+**Nicht in CI Workflows verwendet.**
+
+Der Bootstrap ist ein manueller Operator-Schritt und benötigt `GITHUB_PAT`,
+Docker und Zugriff auf einen Kubernetes-Cluster. Alle Workflows unter
+`.github/workflows/` laufen weiterhin auf `ubuntu-latest`.
+
+Vollständige Dokumentation: [`bootstrap/README.md`](bootstrap/README.md).
 
 ---
 

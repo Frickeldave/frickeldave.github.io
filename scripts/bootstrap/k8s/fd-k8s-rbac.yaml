@@ -1,0 +1,37 @@
+# Kubernetes RBAC for the GitHub Actions runner.
+# Template placeholders use the double-underscore NAME convention and must be
+# substituted by scripts/bootstrap/bootstrap.mjs before kubectl apply.
+#
+# Scope: the runner only needs the capability to start, observe and delete
+# throwaway Kaniko build Jobs (and the short-lived build secrets those Jobs
+# read) in its own namespace. A future fd-deploy.yaml reuses exactly this
+# capability, so the objects below stay.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kaniko-builder
+  namespace: fd-infra
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create", "update", "get", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kaniko-builder
+  namespace: fd-infra
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: __NAMESPACE__
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kaniko-builder

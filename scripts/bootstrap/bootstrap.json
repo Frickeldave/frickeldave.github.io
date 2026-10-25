@@ -1,0 +1,14 @@
+{
+  "namespace": "fd-infra",
+  "kubeconfig": "C:\\Users\\dakoenig\\.kube\\dev-kw-bee23d.yaml",
+  "devBaseImage": "ghcr.io/frickeldave/fd-dev-base:latest",
+  "ghRunnerImage": "ghcr.io/frickeldave/fd-dev-ghrunner:latest",
+  "kanikoImage": "ghcr.io/frickeldave/fd-dev-kaniko:latest",
+  "skipImageBuild": false,
+  "githubUsername": "Frickeldave",
+  "githubRunnerOrg": "Frickeldave",
+  "githubRunnerRepo": "frickeldave.github.io",
+  "runnerName": "github-actions-runner",
+  "runnerLabels": "fd",
+  "runnerScope": "repo"
+}

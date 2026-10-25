@@ -21,7 +21,9 @@
     "lint": "eslint ./src --fix",
     "lint:check": "eslint ./src",
     "prose-install": "node scripts/prose-install.mjs",
-    "prose": "node scripts/prose-check.mjs"
+    "prose": "node scripts/prose-check.mjs",
+    "bootstrap": "node scripts/bootstrap/bootstrap.mjs",
+    "test:bootstrap": "node --test scripts/bootstrap/bootstrap.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
