@@ -85,12 +85,19 @@ spec:
                 - ALL
             readOnlyRootFilesystem: false
           resources:
+            # Measured on the `fd` cluster (issue #282, step 10): the Playwright
+            # e2e job's `npm run build` peaks at ~8 GiB of page cache in the
+            # container cgroup and needs ~3 vCPU to finish in ~6 min. Requests
+            # stay small on purpose - the worker nodes are shared, so a runner
+            # must not reserve a large slice of the node and block its own
+            # rolling update. Limits are the actual capacity the runner may
+            # burst into.
             requests:
               cpu: 100m
               memory: 512Mi
             limits:
-              cpu: 1000m
-              memory: 2Gi
+              cpu: "3"
+              memory: 8Gi
           volumeMounts:
             - name: ghcr-registry-config
               mountPath: /home/appuser/.registry-docker

@@ -61,13 +61,15 @@ jobs:
         run: node --test test/scad/scad-build.test.cjs
 
   e2e-test:
-    # Deliberately still GitHub-hosted: the Playwright webServer runs
-    # `npm run build`, which measured ~4.0 GiB peak RSS and ~256 s on 3 vCPU.
-    # The `fd` runner is limited to 2 GiB / 1 CPU, so that build is OOM-killed
-    # (exit 137) and would blow the 300 s webServer timeout even with enough
-    # memory. Switch to `[self-hosted, fd]` once the runner deployment is
-    # resized (>= 6 GiB memory, >= 2 vCPU) — see issue #282, step 9.
-    runs-on: ubuntu-latest
+    # Self-hosted runner (label: fd) — 2 replicas, see scripts/bootstrap/README.md
+    # The Playwright browsers are baked into the `fd-dev-base` runner image
+    # (`PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright`, chromium revision matches
+    # `@playwright/test` 1.63.0), so nothing is downloaded at job time. The OS
+    # libraries are baked in too and `appuser` has no sudo, so an
+    # `--with-deps` install is neither needed nor possible.
+    # The runner limits were raised for this job: the webServer build needs
+    # ~8 GiB and ~6 min at 3 vCPU (issue #282, step 10).
+    runs-on: [self-hosted, fd]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -83,11 +85,6 @@ jobs:
       # webServer always finds a renderer.
       - name: Install OpenSCAD
         run: node scripts/install-openscad.mjs --quiet
-
-      # GitHub-hosted runners have no preinstalled browsers, so the OS-side
-      # dependencies are installed here as well (`--with-deps`).
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
 
       - name: Run e2e tests
         run: npx playwright test
