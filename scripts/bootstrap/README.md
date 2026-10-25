@@ -51,7 +51,7 @@ Test-Dependency).
 | -------------------- | -------------------------------------------- |
 | GitHub-Repository    | `Frickeldave/frickeldave.github.io`          |
 | Runner-Scope         | `repo`                                       |
-| Kubernetes-Namespace | `fd-infra`                                   |
+| Kubernetes-Namespace | aus `bootstrap.json` (`namespace`)           |
 | Kubeconfig           | `C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml` |
 | Replicas             | `2` (`github-actions-runner-<pod-name>`)     |
 | Runner-Label         | `fd`                                         |
@@ -101,7 +101,8 @@ Test-Dependency).
 
 Die Manifest-Templates sind zur besseren Reviewbarkeit als einfaches YAML committet:
 
-- `scripts/bootstrap/k8s/fd-k8s-namespaces.yaml` — statische Namespace-Erstellung (nur `fd-infra`)
+- `scripts/bootstrap/k8s/fd-k8s-namespaces.yaml` — Namespace-Erstellung (Template mit
+  `__NAMESPACE__`)
 - `scripts/bootstrap/k8s/fd-k8s-ghrunner-secrets.yaml` — Template mit beiden Secrets
   (`github-runner-registration` und `ghcr-pull-secret`)
 - `scripts/bootstrap/k8s/fd-k8s-ghrunner-deployments.yaml` — Template für das Runner-Deployment (2
@@ -116,7 +117,7 @@ committet.
 ## Runner-Build-Architektur
 
 Image-Builds finden **nicht** im Runner-Pod statt. Ein künftiges `fd-deploy.yaml` soll
-`fd-dev-kaniko` als `batch/v1`-Job in `fd-infra` starten, auf den Job warten, dessen Logs ins
+`fd-dev-kaniko` als `batch/v1`-Job im konfigurierten Runner-Namespace starten, auf den Job warten, dessen Logs ins
 Actions-Log ausgeben und ihn wieder löschen. Bis dieses Workflow existiert, baut das Bootstrap nur
 die drei Images.
 
@@ -145,7 +146,8 @@ und RoleBindings an.
 
 Die generierten Berechtigungen sind auf die Kaniko-Baufähigkeit beschränkt:
 
-- `kaniko-builder`-Role und -RoleBinding im gewählten Runner-Namespace (Standard `fd-infra`), die
+- `kaniko-builder`-Role und -RoleBinding im gewählten Runner-Namespace (dem `namespace`-Wert aus
+  `bootstrap.json`), die
   dem Runner-ServiceAccount `<namespace>:default` erlauben, Kaniko-Jobs zu erstellen, zu beobachten
   und zu löschen.
 
@@ -158,12 +160,13 @@ Zwei Objekte aus dem ursprünglichen App-Deploy-Modell wurden bewusst entfernt: 
 (verwaltete die Deployer-Role eines Deployment-Workflows) und ein Machine-Manager (StatefulSets für
 per-Developer-Dev-Machines). Beide werden von einem Kaniko-Build-Job nicht benötigt.
 
-`bootstrap.mjs` wendet zuerst das Namespace-Manifest an, dann diese Namespace-Roles und RoleBindings
+`bootstrap.mjs` rendert zuerst das Namespace-Manifest, dann diese Namespace-Roles und RoleBindings
 und rendert und wendet schließlich die Runner-Secrets und das Deployment im gewählten Namespace an
-(Standard: `fd-infra`). Die Kubernetes-Operationen sind idempotent.
+(der `namespace`-Wert aus `bootstrap.json`). Die Kubernetes-Operationen sind idempotent.
 
 Platzhalter der Bootstrap-Templates:
 
+- Namespace-Template: `__NAMESPACE__`
 - Secrets-Template: `__NAMESPACE__`, `__REPO_URL__`, `__RUNNER_TOKEN__`, `__RUNNER_NAME__`,
   `__RUNNER_SCOPE__`, `__RUNNER_LABELS__`, `__DOCKERCONFIGJSON__`
 - Runner-Deployment-Template: `__NAMESPACE__`, `__RUNNER_IMAGE__`
@@ -171,8 +174,9 @@ Platzhalter der Bootstrap-Templates:
 
 ## Hinweis zur Namespace-Benennung
 
-Kubernetes-Namespace-Namen müssen den RFC-1123-DNS-Label-Regeln folgen. Das Bootstrap verwendet
-ausschließlich `fd-infra`.
+Kubernetes-Namespace-Namen müssen den RFC-1123-DNS-Label-Regeln folgen. Der Name steht
+ausschließlich in `scripts/bootstrap/bootstrap.json` (`namespace`); Skripte und Templates enthalten
+kein Literal. Für ein anderes Zielprojekt reicht es, diese eine Zeile zu ändern.
 
 ## Rangfolge der Konfiguration
 
@@ -181,14 +185,15 @@ ausschließlich `fd-infra`.
 1. CLI-Argumente (`-n` / `--namespace`, `-k` / `--kubeconfig`)
 2. Umgebungsvariablen
 3. `scripts/bootstrap/bootstrap.json`
-4. eingebaute Defaults im Skript
+4. eingebaute Defaults im Skript — **nicht** für den Namespace: fehlt er in CLI und Config, bricht
+   `bootstrap.mjs` mit einer klaren Meldung ab, statt einen Namen zu erfinden
 
 Die committete JSON-Konfigurationsdatei ist bewusst nur für **nicht geheime** Defaults gedacht. Sie
 unterstützt diese Schlüssel:
 
 | JSON key           | Purpose                                                     | Wert in diesem Repo                          |
 | ------------------ | ----------------------------------------------------------- | -------------------------------------------- |
-| `namespace`        | Standard-Ziel-Namespace.                                    | `fd-infra`                                   |
+| `namespace`        | Standard-Ziel-Namespace (Pflicht, kein Built-in-Default).   | aus `bootstrap.json`                         |
 | `kubeconfig`       | Kubeconfig für alle kubectl-Aufrufe.                        | `C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml` |
 | `devBaseImage`     | In Step 2 gebauter/gepushter Image-Tag, genutzt als Parent. | `ghcr.io/frickeldave/fd-dev-base:latest`     |
 | `ghRunnerImage`    | In Steps 3/5 gebauter/gepushter und deployter Image-Tag.    | `ghcr.io/frickeldave/fd-dev-ghrunner:latest` |
@@ -268,8 +273,11 @@ Normale Verwendung (Windows-Operator auf diesem Rechner):
 ```powershell
 $env:GITHUB_PAT = "ghp_xxxxx"
 $env:GITHUB_USERNAME = "Frickeldave"
-.\scripts\bootstrap\bootstrap.ps1 -Namespace fd-infra -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+# Namespace kommt aus scripts/bootstrap/bootstrap.json
+.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
 ```
+
+`-Namespace <namespace>` überschreibt den konfigurierten Wert für einen einzelnen Lauf.
 
 Direkt mit dem Node-Skript, ohne PowerShell-Wrapper:
 
@@ -302,7 +310,8 @@ Das Node-Bootstrap-Skript führt diese sichtbaren Schritte der Reihe nach aus:
    soeben gebaute Base-Image als `DEV_BASE_IMAGE` dient
 4. `fd-dev-kaniko` lokal aus `scripts/bootstrap/docker-dev-kaniko/Dockerfile` bauen
 5. Bei GHCR anmelden und **alle drei** Images pushen
-6. `scripts/bootstrap/k8s/fd-k8s-namespaces.yaml` anwenden
+6. `scripts/bootstrap/k8s/fd-k8s-namespaces.yaml` mit dem konfigurierten Namespace rendern und
+   anwenden
 7. Das RBAC-Template `scripts/bootstrap/k8s/fd-k8s-rbac.yaml` rendern und anwenden
 8. Einen frischen Repository-Runner-Registration-Token holen, die Platzhalter in
    `scripts/bootstrap/k8s/fd-k8s-ghrunner-secrets.yaml` ersetzen und die gerenderten
@@ -359,8 +368,9 @@ docker push ghcr.io/frickeldave/fd-dev-kaniko:latest
 
 ## Tests
 
-`scripts/bootstrap/bootstrap.test.mjs` prüft die committeten Zielwerte (`fd-infra`,
-`ghcr.io/frickeldave/fd-dev-*`, 2 Replicas, Label `fd`) und dass in diesem Paket keine Literale des
+`scripts/bootstrap/bootstrap.test.mjs` prüft die committeten Zielwerte (Namespace aus
+`bootstrap.json`, `ghcr.io/frickeldave/fd-dev-*`, 2 Replicas, Label `fd`), dass Skripte und
+Templates kein Namespace-Literal enthalten, und dass in diesem Paket keine Literale des
 Ursprungsprojekts mehr stehen:
 
 ```bash

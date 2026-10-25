@@ -167,8 +167,8 @@ Das Script wird automatisch nach `npm ci` / `npm install` aufgerufen:
 ### bootstrap.mjs
 
 **Zweck:** Bootstrapped den self-hosted GitHub-Actions-Runner für dieses Repository
-im Kubernetes-Namespace `fd-infra` (Images bauen/pushen, Namespace, RBAC, Secrets
-und Deployment anwenden).
+im Kubernetes-Namespace aus `scripts/bootstrap/bootstrap.json` (Images bauen/pushen, Namespace,
+RBAC, Secrets und Deployment anwenden).
 
 **Beschreibung:**
 - Baut die drei Images `fd-dev-base`, `fd-dev-ghrunner` und `fd-dev-kaniko` lokal
@@ -195,7 +195,7 @@ node scripts/bootstrap/bootstrap.mjs --kubeconfig C:\Users\dakoenig\.kube\dev-kw
 npm run bootstrap -- --kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
 
 # Windows-Wrapper (installiert Node.js bei Bedarf)
-.\scripts\bootstrap\bootstrap.ps1 -Namespace fd-infra -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
 
 # nur Secrets/Deployment aktualisieren, vorhandene Images wiederverwenden
 $env:SKIP_IMAGE_BUILD = "true"

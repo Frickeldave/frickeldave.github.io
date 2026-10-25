@@ -9,7 +9,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DEPLOYMENT_NAME = 'github-actions-runner';
-const DEFAULT_NAMESPACE = 'fd-infra';
 const DEFAULT_ORG = 'Frickeldave';
 const DEFAULT_REPO = 'frickeldave.github.io';
 const DEFAULT_LABELS = 'fd';
@@ -48,15 +47,19 @@ function usage() {
   console.log(`Usage: ./scripts/bootstrap/bootstrap.mjs [options]
 
 Bootstrap the standalone GitHub Actions self-hosted runner in Kubernetes.
-By default, the runner is installed into the dedicated infra namespace and
-registers itself at the GitHub repository level for Frickeldave/frickeldave.github.io.
+The runner is installed into the namespace configured in ${CONFIG_PATH}
+unless one is passed with -n/--namespace. It registers itself at the GitHub
+repository level for Frickeldave/frickeldave.github.io.
 
 Configuration precedence:
   CLI args > env vars > ${CONFIG_PATH} > built-in defaults
+  The namespace has no built-in default: it must come from the CLI or the
+  config file, otherwise bootstrap stops with an actionable error.
 
 Options:
-  -n, --namespace <namespace>  Target namespace (default from config/defaults:
-                               fd-infra)
+  -n, --namespace <namespace>  Target namespace. Defaults to the "namespace"
+                               key in ${CONFIG_PATH}; when neither is set this
+                               script stops instead of inventing a namespace.
   -k, --kubeconfig <path>      Kubeconfig file used for every kubectl call.
                                Without it, bootstrap falls back to
                                $KUBECONFIG, then to the "kubeconfig" key in
@@ -77,7 +80,7 @@ Execution flow:
   Step 3/10 Build fd-dev-ghrunner image locally
   Step 4/10 Build fd-dev-kaniko image locally
   Step 5/10 Log into GHCR and push all three images
-  Step 6/10 Apply the runner namespace manifest
+  Step 6/10 Render/apply the runner namespace manifest
   Step 7/10 Render/apply the runner-only RBAC manifest
   Step 8/10 Render/apply the runner Secrets manifest
   Step 9/10 Render/apply the runner Deployment manifest
@@ -85,7 +88,8 @@ Execution flow:
 
 Required/optional variables:
   ${CONFIG_PATH}    Committed non-secret defaults file. Supported keys:
-                               namespace, kubeconfig, devBaseImage, ghRunnerImage,
+                               namespace (required unless passed as
+                               -n/--namespace), kubeconfig, devBaseImage, ghRunnerImage,
                                kanikoImage, skipImageBuild, githubUsername,
                                githubRunnerOrg, githubRunnerRepo,
                                runnerName, runnerLabels, runnerScope.
@@ -201,11 +205,11 @@ Required/optional variables:
 Examples:
   export GITHUB_PAT=ghp_xxxxx
   export GITHUB_USERNAME=octocat
-  node scripts/bootstrap/bootstrap.mjs --namespace fd-infra
+  node scripts/bootstrap/bootstrap.mjs --namespace <namespace>
 
   $env:GITHUB_PAT = "ghp_xxxxx"
   $env:GITHUB_USERNAME = "octocat"
-  .\\scripts\\bootstrap\\bootstrap.ps1 -Namespace fd-infra -Kubeconfig C:\\Users\\dakoenig\\.kube\\dev-kw-bee23d.yaml
+  .\\scripts\\bootstrap\\bootstrap.ps1 -Namespace <namespace> -Kubeconfig C:\\Users\\dakoenig\\.kube\\dev-kw-bee23d.yaml
 
   node scripts/bootstrap/bootstrap.mjs --kubeconfig C:\\Users\\dakoenig\\.kube\\dev-kw-bee23d.yaml`);
 }
@@ -1027,8 +1031,14 @@ async function main() {
   const namespace = resolveStringOption({
     cliValue: namespaceArg,
     configValue: config.namespace,
-    defaultValue: DEFAULT_NAMESPACE,
+    defaultValue: undefined,
   });
+  if (!namespace) {
+    fail(
+      `No namespace resolved. Set "namespace" in ${CONFIG_PATH} or pass -n/--namespace <namespace>.`
+    );
+  }
+
   const runnerName = resolveStringOption({
     envValue: process.env.RUNNER_NAME,
     configValue: config.runnerName,
@@ -1139,8 +1149,11 @@ async function main() {
     logSuccess(`Pushed ${devBaseImage}, ${ghRunnerImage}, and ${kanikoImage}`);
   }
 
-  logStep(`Step 6/10: Applying runner namespace from ${K8S_NAMESPACES_PATH}...`);
-  runKubectl(['apply', '-f', requiredFiles.namespacesPath]);
+  logStep(`Step 6/10: Rendering and applying the runner namespace from ${K8S_NAMESPACES_PATH}...`);
+  const renderedNamespacesYaml = renderTemplate(requiredFiles.namespacesPath, {
+    __NAMESPACE__: namespace,
+  });
+  applyYaml(renderedNamespacesYaml);
   logSuccess('Runner namespace ready');
 
   logStep(`Step 7/10: Rendering and applying runner RBAC from ${K8S_RBAC_TEMPLATE_PATH}...`);

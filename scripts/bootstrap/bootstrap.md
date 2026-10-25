@@ -10,7 +10,7 @@ diesem Repository noch nicht; die Kaniko-Bausteine sind vorbereitet, aber nicht 
 | -------------------- | -------------------------------------------- |
 | GitHub-Repository    | `Frickeldave/frickeldave.github.io`          |
 | Runner-Scope         | `repo`                                       |
-| Kubernetes-Namespace | `fd-infra`                                   |
+| Kubernetes-Namespace | aus `bootstrap.json` (`namespace`)           |
 | Deployment           | `github-actions-runner`                      |
 | Replicas             | `2`                                          |
 | Runner-Label         | `fd`                                         |
@@ -34,8 +34,8 @@ $env:GITHUB_PAT = "ghp_xxxxx"
 $env:GITHUB_USERNAME = "Frickeldave"
 
 # 2. Bootstrap gegen den dev-Cluster ausführen
+#    (Namespace kommt aus scripts/bootstrap/bootstrap.json)
 .\scripts\bootstrap\bootstrap.ps1 `
-  -Namespace fd-infra `
   -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
 
 # 3. Registrierung prüfen
@@ -49,9 +49,9 @@ der aktuelle kubectl-Kontext.
 
 ## Was das Bootstrap anwendet
 
-1. `k8s/fd-k8s-namespaces.yaml` — legt `fd-infra` an
+1. `k8s/fd-k8s-namespaces.yaml` — rendert den konfigurierten Namespace und legt ihn an
 2. `k8s/fd-k8s-rbac.yaml` — Kaniko-Builder-Role und -RoleBinding im gewählten Namespace
-   (Standard `fd-infra`)
+   (der `namespace`-Wert aus `bootstrap.json`)
 3. `k8s/fd-k8s-ghrunner-secrets.yaml` — `github-runner-registration` (frischer Registration-Token
    pro Lauf) und `ghcr-pull-secret`
 4. `k8s/fd-k8s-ghrunner-deployments.yaml` — das Runner-Deployment, gefolgt von
@@ -82,15 +82,15 @@ werden:
 
 ```powershell
 $env:SKIP_IMAGE_BUILD = "true"
-.\scripts\bootstrap\bootstrap.ps1 -Namespace fd-infra -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
 ```
 
 Steps 2 bis 5 werden dann explizit übersprungen, Steps 6 bis 10 laufen weiter.
 
 ## Runner-only: was hier bewusst fehlt
 
-- Keine Anwendungs-Secrets, keine App-Manifeste, keine App-RBAC. Das Bootstrap kennt nur `fd-infra`
-  und den Runner.
+- Keine Anwendungs-Secrets, keine App-Manifeste, keine App-RBAC. Das Bootstrap kennt nur den
+  konfigurierten Namespace und den Runner.
 - Kein `fd-deploy.yaml`. Bis dieses Workflow existiert, baut das Bootstrap nur die drei Images; das
   Kaniko-Image wird gebaut und gepusht, aber nicht eingesetzt.
 - Keine Repository-Secrets. `GITHUB_PAT` kommt ausschließlich aus der Umgebung oder aus dem

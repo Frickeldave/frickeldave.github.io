@@ -1,6 +1,9 @@
 # Single infrastructure namespace for the self-hosted GitHub Actions runner and
 # the throwaway Kaniko build Jobs a future fd-deploy.yaml will start in it.
+# The namespace name is a template placeholder in the double-underscore NAME
+# convention and is substituted by scripts/bootstrap/bootstrap.mjs before
+# kubectl apply.
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: fd-infra
+  name: __NAMESPACE__

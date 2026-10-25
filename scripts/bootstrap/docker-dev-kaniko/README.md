@@ -1,6 +1,6 @@
 # fd-dev-kaniko
 
-`fd-dev-kaniko` ist das projekteigene Kaniko-Executor-Image für Wegwerf-Build-Jobs in `fd-infra`. Es
+`fd-dev-kaniko` ist das projekteigene Kaniko-Executor-Image für Wegwerf-Build-Jobs im Runner-Namespace. Es
 wird heute nur gebaut und gepusht; ein künftiges `fd-deploy.yaml` startet daraus pro Image-Build
 einen Kubernetes-Job.
 
@@ -20,7 +20,7 @@ bei Bedarf als Idle-Container genutzt werden kann.
 
 Das Image wird als eigenständiges Build-Image verwendet, nicht als `initContainer` des Runner-Pods.
 Das Runner-Deployment referenziert es nicht. Ein künftiges `fd-deploy.yaml` rendert einen
-`batch/v1`-Job in `fd-infra`, wartet darauf, gibt dessen Logs aus und löscht ihn wieder. Das
+`batch/v1`-Job im konfigurierten Runner-Namespace, wartet darauf, gibt dessen Logs aus und löscht ihn wieder. Das
 RBAC-Template `scripts/bootstrap/k8s/fd-k8s-rbac.yaml` enthält dafür bereits die
 `kaniko-builder`-Role und das RoleBinding.
 

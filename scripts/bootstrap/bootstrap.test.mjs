@@ -47,7 +47,8 @@ function listPackageFiles(directory) {
 }
 
 test("bootstrap.json carries the fd target values", () => {
-  assert.equal(config.namespace, "fd-infra");
+  assert.equal(typeof config.namespace, "string");
+  assert.ok(config.namespace.length > 0, "namespace must be configured");
   assert.equal(config.githubRunnerOrg, "Frickeldave");
   assert.equal(config.githubRunnerRepo, "frickeldave.github.io");
   assert.equal(config.runnerScope, "repo");
@@ -73,7 +74,6 @@ test("bootstrap.json never carries a personal access token", () => {
 });
 
 test("bootstrap.mjs resolves the same defaults as bootstrap.json", () => {
-  assert.match(bootstrapScript, /const DEFAULT_NAMESPACE = 'fd-infra';/);
   assert.match(bootstrapScript, /const DEFAULT_ORG = 'Frickeldave';/);
   assert.match(
     bootstrapScript,
@@ -96,6 +96,32 @@ test("bootstrap.mjs resolves the same defaults as bootstrap.json", () => {
     bootstrapScript,
     /defaultValue: `github-actions-runner-\$\{namespace\}`/
   );
+  assert.doesNotMatch(bootstrapScript, /DEFAULT_NAMESPACE/);
+  assert.match(
+    bootstrapScript,
+    /No namespace resolved\. Set "namespace" in \$\{CONFIG_PATH\} or pass -n\/--namespace <namespace>\./
+  );
+  assert.match(bootstrapScript, /cliValue: namespaceArg,\n\s+configValue: config\.namespace,/);
+});
+
+test("the namespace manifest is rendered like every other template", () => {
+  assert.match(
+    bootstrapScript,
+    /renderTemplate\(requiredFiles\.namespacesPath, \{\n\s+__NAMESPACE__: namespace,/
+  );
+  assert.match(bootstrapScript, /applyYaml\(renderedNamespacesYaml\)/);
+  assert.doesNotMatch(
+    bootstrapScript,
+    /runKubectl\(\['apply', '-f', requiredFiles\.namespacesPath\]\)/
+  );
+  assert.match(bootstrapScript, /-n, --namespace <namespace>\s+Target namespace\./);
+  assert.match(bootstrapScript, /node scripts\/bootstrap\/bootstrap\.mjs --namespace <namespace>/);
+});
+
+test("the PowerShell wrapper leaves the namespace default to bootstrap.json", () => {
+  assert.match(powershellWrapper, /\[string\]\$Namespace,/);
+  assert.doesNotMatch(powershellWrapper, /\$Namespace\s*=\s*["']/);
+  assert.match(powershellWrapper, /if \(\$Namespace\) \{\r?\n\s+\$nodeArgs \+= @\("--namespace", \$Namespace\)/);
 });
 
 test("kaniko stays part of the bootstrap flow", () => {
@@ -150,12 +176,20 @@ test("the k8s manifests named in bootstrap.mjs exist", () => {
   );
 });
 
-test("the namespace manifest declares only fd-infra", () => {
+test("the namespace manifest declares exactly one namespace from a placeholder", () => {
   assert.equal(namespacesManifest.match(/kind: Namespace/g)?.length, 1);
-  assert.match(namespacesManifest, /name: fd-infra/);
+  assert.match(namespacesManifest, /name: __NAMESPACE__/);
+
+  const rendered = namespacesManifest.replaceAll("__NAMESPACE__", config.namespace);
+
+  assert.doesNotMatch(rendered, /__[A-Z0-9_]+__/);
+  assert.match(
+    rendered,
+    new RegExp(`kind: Namespace\\nmetadata:\\n {2}name: ${config.namespace}\\n`)
+  );
 });
 
-test("the runner deployment runs two replicas in the fd namespace", () => {
+test("the runner deployment runs two replicas in the configured namespace", () => {
   assert.match(deploymentTemplate, /namespace: __NAMESPACE__/);
   assert.match(
     deploymentTemplate,
@@ -165,14 +199,14 @@ test("the runner deployment runs two replicas in the fd namespace", () => {
   assert.match(deploymentTemplate, /imagePullPolicy: Always/);
 
   const rendered = deploymentTemplate
-    .replaceAll("__NAMESPACE__", "fd-infra")
+    .replaceAll("__NAMESPACE__", config.namespace)
     .replaceAll(
       "__RUNNER_IMAGE__",
       "ghcr.io/frickeldave/fd-dev-ghrunner:latest"
     );
 
   assert.doesNotMatch(rendered, /__[A-Z0-9_]+__/);
-  assert.match(rendered, /namespace: fd-infra/);
+  assert.match(rendered, new RegExp(`namespace: ${config.namespace}`));
 });
 
 test("runner RBAC renders into the target namespace and keeps the kaniko capability", () => {
@@ -186,32 +220,61 @@ test("runner RBAC renders into the target namespace and keeps the kaniko capabil
   for (const object of rbacObjects) {
     assert.match(object, /name: kaniko-builder/);
     assert.match(object, /namespace: __NAMESPACE__/);
-    assert.doesNotMatch(
-      object,
-      /fd-infra/,
+    assert.ok(
+      !object.includes(config.namespace),
       "RBAC objects must not hardcode a namespace"
     );
   }
 
-  const rendered = rbacTemplate.replaceAll("__NAMESPACE__", "demo-ns");
+  const namespace = config.namespace;
+  const rendered = rbacTemplate.replaceAll("__NAMESPACE__", namespace);
 
   assert.doesNotMatch(rendered, /__[A-Z0-9_]+__/);
-  assert.match(
-    rendered,
-    /kind: Role\nmetadata:\n {2}name: kaniko-builder\n {2}namespace: demo-ns\n/
+  assert.ok(
+    rendered.includes(
+      `kind: Role\nmetadata:\n  name: kaniko-builder\n  namespace: ${namespace}\n`
+    )
   );
-  assert.match(
-    rendered,
-    /kind: RoleBinding\nmetadata:\n {2}name: kaniko-builder\n {2}namespace: demo-ns\n/
+  assert.ok(
+    rendered.includes(
+      `kind: RoleBinding\nmetadata:\n  name: kaniko-builder\n  namespace: ${namespace}\n`
+    )
   );
-  assert.match(
-    rendered,
-    /subjects:\n {2}- kind: ServiceAccount\n {4}name: default\n {4}namespace: demo-ns\n/
+  assert.ok(
+    rendered.includes(
+      `subjects:\n  - kind: ServiceAccount\n    name: default\n    namespace: ${namespace}\n`
+    )
   );
   assert.match(rendered, /resources: \["jobs"\]/);
   assert.match(rendered, /resources: \["pods", "pods\/log"\]/);
   assert.match(rendered, /resources: \["secrets"\]/);
   assert.match(rendered, /verbs: \["create", "update", "get", "delete"\]/);
+});
+
+test("the namespace name lives only in bootstrap.json", () => {
+  assert.ok(config.namespace, "bootstrap.json must configure a namespace");
+
+  // Built from character codes so this guard cannot match its own source.
+  const namespaceLiteral = new RegExp(
+    config.namespace
+      .split("")
+      .map((character) => String.fromCharCode(character.charCodeAt(0)))
+      .join("")
+  );
+
+  for (const filePath of listPackageFiles(packageDirectory)) {
+    const relativePath = path.relative(packageDirectory, filePath);
+
+    if (relativePath === "bootstrap.json") {
+      continue;
+    }
+
+    assert.doesNotMatch(
+      readFileSync(filePath, "utf8"),
+      namespaceLiteral,
+      `${relativePath} hardcodes the configured namespace; it must come from bootstrap.json`
+    );
+  }
 });
 
 test("the package contains no leftover upstream naming", () => {

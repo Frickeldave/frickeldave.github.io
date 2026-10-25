@@ -12,6 +12,10 @@ The Node.js script reads committed non-secret defaults from
 `scripts/bootstrap/bootstrap.json` and resolves settings in this order:
 CLI args -> env vars -> JSON config -> built-in defaults.
 
+`-Namespace` is optional and has no default here: when it is omitted, the
+namespace from `bootstrap.json` applies. Passing `-Namespace` overrides that
+value for a single run.
+
 Required/optional variables:
 - DEV_BASE_IMAGE (optional): base image to build/push in Step 1. Defaults to
   `ghcr.io/frickeldave/fd-dev-base:latest`.
@@ -87,11 +91,16 @@ See `scripts/bootstrap/README.md` for the full bootstrap flow and Kubernetes det
 .EXAMPLE
 $env:GITHUB_PAT = "ghp_xxxxx"
 $env:GITHUB_USERNAME = "octocat"
-.\scripts\bootstrap\bootstrap.ps1 -Namespace fd-infra -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+# Namespace comes from scripts/bootstrap/bootstrap.json
+.\scripts\bootstrap\bootstrap.ps1 -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
+
+.EXAMPLE
+# Override the configured namespace for a single run
+.\scripts\bootstrap\bootstrap.ps1 -Namespace <namespace> -Kubeconfig C:\Users\dakoenig\.kube\dev-kw-bee23d.yaml
 #>
 
 param(
-    [string]$Namespace = "fd-infra",
+    [string]$Namespace,
     [string]$Kubeconfig,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$ForwardedArgs
@@ -229,7 +238,11 @@ if (-not (Test-Path $nodeScriptPath)) {
 
 Ensure-Node24
 
-$nodeArgs = @("scripts/bootstrap/bootstrap.mjs", "--namespace", $Namespace)
+$nodeArgs = @("scripts/bootstrap/bootstrap.mjs")
+
+if ($Namespace) {
+    $nodeArgs += @("--namespace", $Namespace)
+}
 
 if ($Kubeconfig) {
     if (-not (Test-Path -LiteralPath $Kubeconfig)) {
