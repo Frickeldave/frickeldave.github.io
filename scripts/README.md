@@ -14,6 +14,10 @@
   - [merge-branches.mjs](#merge-branchesmjs)
   - [prose-check.mjs](#prose-checkmjs)
   - [translate.mjs](#translatemjs)
+- [Workflow Start Scripts](#workflow-start-scripts)
+  - [start-work.mjs](#start-workmjs)
+  - [start-reqeng.mjs](#start-reqengmjs)
+  - [start-review.mjs](#start-reviewmjs)
 - [Podcast Update Scripts](#podcast-update-scripts)
   - [compare-episodes.mjs](#compare-episodesmjs)
   - [generate-metadata.mjs](#generate-metadatamjs)
@@ -461,6 +465,108 @@ git commit -m "docs: translate file to German"
 git push
 # → Danach: GitHub Workflows überprüfen Inhalte mit prose-check und triggern Deployment automatisch
 ```
+
+---
+
+## Workflow Start Scripts
+
+Die drei Start-Scripts bereiten den lokalen Arbeitskontext für ein Issue oder einen Pull Request vor und starten danach GitHub Copilot CLI. Sie werden **vor** einer Copilot-Session im Terminal aus dem Repo-Root aufgerufen und dispatchen keinen eigenen Agenten.
+
+**Gemeinsame Grundlagen:**
+
+- **Repo-Root:** Der Hauptcheckout wird über `git worktree list --porcelain` bestimmt. Die Scripts werden aus dem Repo-Root gestartet (`node scripts/start-work.mjs`).
+- **Worktree & Ports:** Namensschema, Worktree-Ablage und Port-Berechnung stehen in `.github/skills/worktree-naming-conventions/SKILL.md`.
+- **tmux:** Session-Gates und Fensterregeln stehen in `.github/skills/tmux-session-management/SKILL.md`.
+- **Flow-Flags** (alle drei Scripts):
+
+| Flag | Wirkung |
+|------|---------|
+| `--notmux` | Kein tmux prüfen/nutzen, Copilot läuft im Vordergrund |
+| `--prompt "<text>"` | Startet direkt mit diesem Zusatz-Prompt (überspringt die Frage) |
+| `--noprompt` | Überspringt die Frage nach einem Zusatz-Prompt |
+
+`--prompt` und `--noprompt` schließen sich gegenseitig aus.
+
+**Windows:** tmux hat keinen nativen Windows-Build. `--notmux` ist der dokumentierte Pfad; ohne das Flag erkennen die Scripts die fehlende tmux-Verfügbarkeit selbst und laufen im Vordergrund (`Starting Copilot in <worktree> (tmux unavailable)...`). Ein fehlendes tmux führt nie zu einem Stacktrace. Einen Windows-Multiplexer-Ersatz gibt es bewusst nicht.
+
+**Readiness-Check:** `node scripts/copilot-environment.mjs status` zeigt Repo-Root, Git-Work-Tree, Toolchain (`node`, `npm`, `gh`, `git`, `copilot`), `.env.local`-Existenz (wird nicht gelesen), tmux und Copilot-Login. Mit `FLOW_REPO_ROOT` lässt sich ein anderer Checkout prüfen.
+
+### start-work.mjs
+
+**Zweck:** Bereitet Implementierungsarbeit für ein Issue vor und startet Copilot mit dem Implementierungs-Prompt.
+
+**Beschreibung:**
+- Löst den kanonischen Issue-Kontext (`<ProjectName>_IS_<n>`, Session `IS<n>`)
+- Prüft Issue-Gates und GitHub-Projects-Zugriff, bevor Branch/Worktree verändert werden
+- Weist das Issue dem aktuellen GitHub-Nutzer zu und pflegt Reviewer-Anfragen für den Draft-PR
+- Verwendet den kanonischen Worktree wieder oder legt ihn an (Basis-Branch `dev`)
+- Stellt sicher, dass `.github/prompts/startwork.prompt.md` im Worktree vorhanden ist (sonst Einzeldatei-Checkout aus einem lokalen Branch)
+- Gleicht die laufende tmux-Session ab und benennt sie nach Bestätigung auf `IS<n>` um
+- Startet `copilot --agent Squad --yolo -i "<prompt>"`
+
+**Gelesener Prompt:** `.github/prompts/startwork.prompt.md`
+
+**Verwandte Prompts:** `.github/prompts/startreqeng.prompt.md`, `.github/prompts/startreview.prompt.md`
+
+**Usage:**
+```bash
+# Interaktiv (fragt nach der Issue-ID)
+npm run start-work
+
+# Direkt mit kanonischem Ref
+npm run start-work -- IS_480
+
+# Ohne tmux, mit Zusatz-Prompt
+npm run start-work -- --notmux --prompt "Bitte mit den Tests beginnen"
+```
+
+### start-reqeng.mjs
+
+**Zweck:** Bereitet Requirements-Engineering-Arbeit für ein Issue in einem isolierten Worktree vor.
+
+**Beschreibung:**
+- Nutzt denselben kanonischen Issue-Kontext und Worktree wie `start-work.mjs`
+- Stellt nur den isolierten Worktree und optional ein tmux-Fenster bereit
+- Provisioniert **keine** Datenbanken, Ports, Runtime-Dependencies oder App-Services
+- Weist das Issue dem aktuellen GitHub-Nutzer zu
+- Startet `copilot --agent Squad --yolo -i "<prompt>"`
+
+**Gelesener Prompt:** `.github/prompts/startreqeng.prompt.md`
+
+**Usage:**
+```bash
+npm run start-reqeng
+npm run start-reqeng -- IS_480
+npm run start-reqeng -- --noprompt
+```
+
+### start-review.mjs
+
+**Zweck:** Startet die Review-Arbeit für einen bereits review-bereiten Pull Request.
+
+**Beschreibung:**
+- Arbeitet im kanonischen PR-Kontext (`<ProjectName>_PR_<n>`, Session `PR<n>`)
+- Verwendet den Head-Branch des PRs wieder; ein verlinktes Issue ist optional
+- Kennt **keine** Issue-Implementierungs-Gates, keine Issue-Zuweisung, keine Draft-Erstellung und keine Reviewer-Anfragen
+- Lehnt Draft-PRs mit klarer Meldung ab
+- Holt den Review-Prompt bevorzugt aus `origin/dev` und legt ihn als temporäre Datei ab
+- Startet `copilot --agent Squad --yolo -i "<prompt>"`
+
+**Gelesener Prompt:** `.github/prompts/startreview.prompt.md` (aus `origin/dev`, Fallback: Worktree-Kopie)
+
+**Usage:**
+```bash
+npm run start-review -- PR_107
+npm run start-review -- 107 --notmux
+```
+
+### Tests
+
+```bash
+npm run test:scripts
+```
+
+Die Suite deckt die drei Start-Scripts, `flow-shared.mjs`, `platform-shared.mjs`, `copilot-environment.mjs` und `ensure-issue-branch.mjs` ab. Sie nutzt den Node-Testrunner inklusive Modul-Mocking (`--experimental-test-module-mocks`); die gemeinsamen Mock-Helfer liegen in `scripts/test-mock-support.mjs`.
 
 ---
 
