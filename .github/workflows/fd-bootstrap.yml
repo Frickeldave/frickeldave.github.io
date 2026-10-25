@@ -40,10 +40,10 @@ on:
         type: boolean
         default: false
       image:
-        description: Dev machine image (default fd-dev-full:latest)
+        description: Dev machine image (empty = ghcr.io/<owner-lowercase>/fd-dev-full:latest)
         required: false
         type: string
-        default: ghcr.io/frickeldave/fd-dev-full:latest
+        default: ""
   push:
     branches:
       - dev
@@ -75,18 +75,47 @@ jobs:
       packages: write
     outputs:
       built: ${{ steps.plan.outputs.built }}
+      image_ref: ${{ steps.images.outputs.image_ref }}
     env:
-      DEV_BASE_IMAGE: ghcr.io/${{ github.repository_owner }}/fd-dev-base:latest
-      KANIKO_IMAGE: ghcr.io/${{ github.repository_owner }}/fd-dev-kaniko:latest
       KANIKO_NAMESPACE: fd-infra
       KANIKO_JOB_TEMPLATE: .github/workflows/fd-bootstrap/k8s/fd-k8s-kaniko-build-job.yaml
       KANIKO_JOB_TIMEOUT_SECONDS: "600"
       DOCKERFILE_PATH: .github/workflows/fd-bootstrap/docker-dev-full/Dockerfile
-      IMAGE_REF: ${{ inputs.image || 'ghcr.io/frickeldave/fd-dev-full:latest' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
+
+      # OCI image references allow lowercase only in the registry/repository part.
+      # GitHub context values are not normalised ("Frickeldave"), and a mixed-case
+      # reference makes the kubelet reject the Kaniko pod with InvalidImageName, so
+      # every image reference is derived from a lowercased owner here.
+      - id: images
+        name: Resolve image references
+        env:
+          INPUT_IMAGE: ${{ inputs.image }}
+        run: |
+          set -euo pipefail
+          owner_lc="$(printf '%s' "${GITHUB_REPOSITORY_OWNER:?}" | tr '[:upper:]' '[:lower:]')"
+          dev_base_image="ghcr.io/${owner_lc}/fd-dev-base:latest"
+          kaniko_image="ghcr.io/${owner_lc}/fd-dev-kaniko:latest"
+          image_ref="${INPUT_IMAGE:-ghcr.io/${owner_lc}/fd-dev-full:latest}"
+
+          for ref in "${image_ref}" "${dev_base_image}" "${kaniko_image}"; do
+            case "${ref}" in
+              *[A-Z]*)
+                echo "::error::Image reference must be lowercase to be pullable: ${ref}" >&2
+                exit 1
+                ;;
+            esac
+          done
+
+          {
+            echo "DEV_BASE_IMAGE=${dev_base_image}"
+            echo "KANIKO_IMAGE=${kaniko_image}"
+            echo "IMAGE_REF=${image_ref}"
+          } >> "${GITHUB_ENV}"
+          echo "image_ref=${image_ref}" >> "${GITHUB_OUTPUT}"
 
       - id: plan
         name: Decide whether the image must be rebuilt
@@ -108,9 +137,11 @@ jobs:
           echo "built=${build}" >> "${GITHUB_OUTPUT}"
 
           # DNS-1123 compliant and <= 63 characters, unique per run attempt.
+          # All trailing dashes are trimmed: a truncation could otherwise leave the
+          # name ending in "-", which Kubernetes rejects.
           job_name="kaniko-fd-dev-full-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          job_name="$(printf '%s' "${job_name}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c1-63)"
-          echo "job_name=${job_name%%-}" >> "${GITHUB_OUTPUT}"
+          job_name="$(printf '%s' "${job_name}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c1-63 | sed 's/-\+$//')"
+          echo "job_name=${job_name}" >> "${GITHUB_OUTPUT}"
 
       - name: Build and push fd-dev-full in a throwaway Kaniko Job
         if: steps.plan.outputs.built == 'true'
@@ -183,7 +214,7 @@ jobs:
 
       - name: Render dev machine manifests
         env:
-          IMAGE: ${{ inputs.image || 'ghcr.io/frickeldave/fd-dev-full:latest' }}
+          IMAGE: ${{ needs.build-image.outputs.image_ref }}
         run: |
           set -euo pipefail
           node "${BOOTSTRAP_DIR}/dev-machines.mjs" render \
