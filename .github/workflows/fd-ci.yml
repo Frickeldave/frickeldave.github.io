@@ -18,11 +18,14 @@ permissions:
 
 jobs:
   lint-checks:
-    runs-on: ubuntu-latest
+    # Self-hosted runner (label: fd) — 2 replicas, see scripts/bootstrap/README.md
+    # `npm ci` also runs the `postinstall` hook, which fetches Vale and OpenSCAD
+    # into the workspace; the runner image carries the compilers those need.
+    runs-on: [self-hosted, fd]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
 
@@ -39,11 +42,15 @@ jobs:
         run: npm run prose
 
   scad-smoke-test:
-    runs-on: ubuntu-latest
+    # Self-hosted runner (label: fd) — 2 replicas, see scripts/bootstrap/README.md
+    # `install-openscad.mjs` unpacks the Linux AppImage via
+    # `--appimage-extract`, so the renderer runs without FUSE and without sudo.
+    # The STL export itself is headless: no X server or xvfb is involved.
+    runs-on: [self-hosted, fd]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
 
@@ -54,11 +61,17 @@ jobs:
         run: node --test test/scad/scad-build.test.cjs
 
   e2e-test:
+    # Deliberately still GitHub-hosted: the Playwright webServer runs
+    # `npm run build`, which measured ~4.0 GiB peak RSS and ~256 s on 3 vCPU.
+    # The `fd` runner is limited to 2 GiB / 1 CPU, so that build is OOM-killed
+    # (exit 137) and would blow the 300 s webServer timeout even with enough
+    # memory. Switch to `[self-hosted, fd]` once the runner deployment is
+    # resized (>= 6 GiB memory, >= 2 vCPU) — see issue #282, step 9.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
 
@@ -71,6 +84,8 @@ jobs:
       - name: Install OpenSCAD
         run: node scripts/install-openscad.mjs --quiet
 
+      # GitHub-hosted runners have no preinstalled browsers, so the OS-side
+      # dependencies are installed here as well (`--with-deps`).
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
