@@ -1,0 +1,292 @@
+name: fd-promote-prd (Promote dev → main, then trigger fd-deploy-prd)
+
+# Purpose
+#   Promotes `dev` into `main` — the only sanctioned way to update `main` in this
+#   repo — and then dispatches `fd-deploy-prd.yml`, which owns the production
+#   path (its own CI gate → merge no-op → Pages build/deploy → tag + release).
+#   This workflow intentionally stops at "main is current": it does not build,
+#   deploy, tag or release anything itself.
+#
+# Phases
+#   Phase 1 (this file): manual only. `workflow_dispatch` with `dry_run`, because
+#   promoting to production is a deliberate human decision, and because the
+#   version gate below means a promote usually follows a version bump.
+#   Phase 2 (not enabled): the same promote logic can be triggered
+#   automatically, without touching the merge code, via
+#     on:
+#       workflow_run:
+#         workflows: ["fd-ci (Lint, Format, Vale, e2e checks)"]
+#         types: [completed]
+#         branches: [dev]
+#   plus a job-level `if: github.event.workflow_run.conclusion == 'success'`.
+#   That would promote on every green dev push — exactly why it is not on yet.
+#
+# Chicken-and-egg (deliberately documented, not a bug)
+#   `workflow_dispatch` only works for workflow files that already exist on the
+#   DEFAULT branch (`main`). This file therefore cannot be started by hand
+#   before it has been promoted to `main` once; until then
+#   `gh workflow run fd-promote-prd.yml` answers with HTTP 404. The first
+#   promote that ships it has to come from a path that exists on `main` today
+#   (`fd-deploy-prd.yml`) — after that this workflow is dispatchable and can
+#   take over.
+#
+# Gates (duplicated from `fd-deploy-prd.yml` on purpose)
+#   Before merging, the two `main` rules are re-checked: `package.json` version
+#   must be greater than the latest GitHub release and must have its own
+#   `## [x.y.z]` section in CHANGELOG.md. They are duplicated instead of shared
+#   because GitHub has no mechanism to reuse steps between workflows; making
+#   them reusable would mean a new composite action plus edits to the production
+#   deploy workflow, which is the higher risk here. Both copies stay identical.
+#   Additional gate that `fd-deploy-prd.yml` does not need (it runs *after* the
+#   merge): the `dev` tip must already have a green `fd-ci` run, so no
+#   unverified commit can reach `main`.
+#
+# Duplicate fd-ci run: accepted
+#   `fd-deploy-prd.yml`'s `ci-gate` dispatches `fd-ci` on `dev` and waits for it
+#   (~6 min). After a promote, `main` equals the `dev` tip, so that run
+#   re-verifies the same tree. Accepted instead of removed: `fd-deploy-prd.yml`
+#   is the production path and gets no risky rewrite, and this workflow already
+#   refuses an unverified `dev` tip, so the second run costs time but no
+#   correctness — and it doubles as the retry path when only the deploy failed.
+#   A promote of an unchanged `dev` is a no-op: `git merge` reports
+#   "Already up to date." and no push happens.
+#
+# Runner: self-hosted, label `fd` (see scripts/bootstrap/README.md) for BOTH
+# jobs. The image carries Node 24, git, gh and jq, so neither `setup-node` nor
+# `npm ci` is needed; third-party actions are pinned to full commit SHAs with a
+# `# vN` comment, like fd-ci.yml / fd-configure.yml / fd-podcast-update.yml.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — run all checks and print the plan, merge/push/deploy nothing"
+        required: false
+        default: false
+        type: boolean
+      wait_for_deploy:
+        description: "Wait for the triggered fd-deploy-prd run and report its result"
+        required: false
+        default: true
+        type: boolean
+
+# contents: write for the merge push, actions: write to dispatch fd-deploy-prd
+# and to read the fd-ci / fd-deploy-prd runs.
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: fd-promote-prd
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: Promote dev → main
+    # Self-hosted runner (label: fd).
+    runs-on: [self-hosted, fd]
+    env:
+      # `gh` in the deploy job (and in any step without a checkout) cannot infer
+      # the repository from a git remote; pin it for all jobs.
+      GH_REPO: ${{ github.repository }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      pushed: ${{ steps.merge.outputs.pushed }}
+      commit: ${{ steps.merge.outputs.commit }}
+    steps:
+      - name: Checkout dev
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: dev
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch all branches
+        run: git fetch --all
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Version: $VERSION (tag: v$VERSION)"
+
+      - name: Validate version consistency with CHANGELOG
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
+            echo "::error::Version $VERSION not found in CHANGELOG.md — update CHANGELOG.md before promoting."
+            exit 1
+          fi
+          echo "✅ Version $VERSION has a CHANGELOG entry"
+
+      - name: Determine latest GitHub release
+        id: latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // empty' 2>/dev/null || true)
+          if [ -z "$LATEST" ]; then
+            echo "ℹ️ No existing GitHub release found — version check passes."
+          else
+            echo "🔎 Latest GitHub release: $LATEST"
+          fi
+          echo "tag=$LATEST" >> "$GITHUB_OUTPUT"
+
+      - name: Verify version is greater than latest release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST_TAG: ${{ steps.latest.outputs.tag }}
+        run: |
+          node -e '
+            const v = process.env.VERSION;
+            const latestRaw = process.env.LATEST_TAG;
+            if (!latestRaw) {
+              console.log("ℹ️ No existing release — version check passes.");
+              process.exit(0);
+            }
+            const latest = latestRaw.replace(/^v/, "");
+            const pa = v.split(".").map(Number);
+            const pb = latest.split(".").map(Number);
+            for (let i = 0; i < 3; i++) {
+              const a = pa[i] || 0;
+              const b = pb[i] || 0;
+              if (a > b) { console.log(`✅ ${v} > ${latest}`); process.exit(0); }
+              if (a < b) break;
+            }
+            console.error(`❌ Version ${v} is not greater than the latest release ${latest}. Bump the version in package.json.`);
+            process.exit(1);
+          '
+
+      # fd-deploy-prd.yml gates *after* the merge; this workflow must not put an
+      # unverified commit on `main` in the first place. Read-only: it reuses the
+      # existing fd-ci result for the exact dev tip instead of dispatching a new
+      # run (no extra ~6 min).
+      - name: Verify dev tip passed fd-ci
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # origin/dev, not HEAD: the branch may have moved between checkout and
+          # `git fetch --all`, and origin/dev is exactly what gets merged below.
+          SHA=$(git rev-parse origin/dev)
+          echo "🔎 dev tip: $SHA"
+          RUNS=$(gh run list --workflow=fd-ci.yml --branch dev --commit "$SHA" --limit 20 --json databaseId,status,conclusion)
+          GREEN=$(echo "$RUNS" | jq -r '[.[] | select(.conclusion == "success")] | length')
+          if [ "$GREEN" -eq 0 ]; then
+            echo "::error::No successful fd-ci run found for $SHA on dev. Wait for fd-ci on dev (or dispatch it) before promoting."
+            echo "$RUNS" | jq -r '.[] | "  - run \(.databaseId): \(.status)/\(.conclusion)"' || true
+            exit 1
+          fi
+          echo "✅ fd-ci is green for $SHA"
+
+      - name: Dry run — show plan
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 DRY RUN — no merge, no push, no deployment dispatch."
+          echo "Would merge origin/dev into main with message:"
+          echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
+          echo "Would then dispatch fd-deploy-prd.yml on main (CI gate → Pages deploy → tag ${{ steps.version.outputs.tag }} + release)."
+
+      # `git checkout -B main origin/main` instead of `git checkout main`: the
+      # self-hosted workspace persists between runs, so a stale local `main`
+      # branch could otherwise be reused and produce a non-fast-forward push.
+      - name: Merge dev → main
+        if: ${{ !inputs.dry_run }}
+        id: merge
+        run: |
+          git checkout -B main origin/main
+          BEFORE=$(git rev-parse HEAD)
+          git merge origin/dev --no-ff -m "chore(release): promote dev to main v${{ steps.version.outputs.version }}"
+          AFTER=$(git rev-parse HEAD)
+          echo "commit=$AFTER" >> "$GITHUB_OUTPUT"
+          if [ "$BEFORE" = "$AFTER" ]; then
+            # Idempotent re-promote: "Already up to date." leaves HEAD untouched.
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ main already contained dev (Already up to date) — nothing to push."
+          else
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+            git push origin main
+            echo "✅ Pushed main: $AFTER"
+          fi
+
+  deploy-prd:
+    name: Trigger fd-deploy-prd
+    needs: promote
+    if: ${{ !inputs.dry_run }}
+    # Self-hosted runner (label: fd); no checkout needed, `gh` only.
+    runs-on: [self-hosted, fd]
+    env:
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Dispatch fd-deploy-prd on main
+        id: dispatch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run fd-deploy-prd.yml --ref main
+          echo "✅ Dispatched fd-deploy-prd.yml on main (started-at: $STARTED_AT)"
+          RUN_ID=""
+          for i in $(seq 1 30); do
+            RUN_ID=$(gh run list --workflow=fd-deploy-prd.yml --branch main --created ">$STARTED_AT" --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$RUN_ID" ]; then
+              break
+            fi
+            echo "⏳ Waiting for the fd-deploy-prd run to appear (attempt $i)..."
+            sleep 10
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::Timed out waiting for the fd-deploy-prd run to appear."
+            exit 1
+          fi
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "🔎 fd-deploy-prd run: $RUN_ID"
+
+      - name: Wait for fd-deploy-prd
+        if: ${{ inputs.wait_for_deploy }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ steps.dispatch.outputs.run_id }}
+        run: gh run watch "$RUN_ID" --exit-status --interval 20
+
+      - name: Step summary
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ steps.dispatch.outputs.run_id }}
+          WAITED: ${{ inputs.wait_for_deploy }}
+          VERSION: ${{ needs.promote.outputs.version }}
+          TAG: ${{ needs.promote.outputs.tag }}
+          PUSHED: ${{ needs.promote.outputs.pushed }}
+          COMMIT: ${{ needs.promote.outputs.commit }}
+        run: |
+          RUN_CELL="not dispatched"
+          CONCLUSION="not awaited"
+          if [ -n "${RUN_ID:-}" ]; then
+            RUN_CELL="[\`$RUN_ID\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/$RUN_ID)"
+            if [ "$WAITED" = "true" ]; then
+              CONCLUSION=$(gh run view "$RUN_ID" --json status,conclusion --jq '"\(.status)/\(.conclusion)"' 2>/dev/null || echo "unknown")
+            fi
+          else
+            CONCLUSION="dispatch failed — see step log"
+          fi
+          {
+            echo "### Promote dev → main"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Version | \`$VERSION\` (tag \`$TAG\`) |"
+            echo "| main updated | \`$PUSHED\` |"
+            echo "| main commit | \`$COMMIT\` |"
+            echo "| fd-deploy-prd run | $RUN_CELL |"
+            echo "| Result | \`$CONCLUSION\` |"
+            echo ""
+            echo "The deployment, the tag and the GitHub release are owned by \`fd-deploy-prd.yml\`; a failed deploy leaves \`main\` promoted and can be retried by dispatching that workflow again."
+          } >> "$GITHUB_STEP_SUMMARY"
