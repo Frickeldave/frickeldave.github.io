@@ -310,7 +310,11 @@ describe('add / remove / idempotency', () => {
     );
     assert.equal(developers[0].name, 'David Koenig');
     assert.equal(developers[0].github, 'Frickeldave');
-    assert.equal(developers[0].sshPublicKey, null);
+    assert.match(
+      developers[0].sshPublicKey,
+      /^ssh-ed25519 [A-Za-z0-9+/]+={0,3} dave@frickeldave\.de$/,
+      'the roster must expose the public key that is registered for the handle'
+    );
     assert.deepEqual(skipped, []);
   });
 });
