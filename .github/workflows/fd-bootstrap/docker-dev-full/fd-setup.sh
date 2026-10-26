@@ -102,10 +102,12 @@ provider_report() {
             ;;
         invalid-permissions)
             echo "  provider files found but rejected (expected: directory 0700, files 0600," >&2
-            echo "  one sk-... key). Run 'fd-status' and re-run 'fd-setup --reset-provider'." >&2
+            echo "  one sk-... key). Run 'node ${fd_runtime:-/usr/local/lib/fd-dev/copilot-environment.mjs} provider'" >&2
+            echo "  and re-run 'fd-setup --reset-provider'." >&2
             ;;
         *)
-            echo "  provider check failed (${state}); run 'fd-status' for details." >&2
+            echo "  provider check failed (${state}); run" >&2
+            echo "  'node ${fd_runtime:-/usr/local/lib/fd-dev/copilot-environment.mjs} provider' for details." >&2
             ;;
     esac
 }

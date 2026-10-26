@@ -160,11 +160,15 @@ Copilot-Start mit Exit ≠ 0 ab. Eine bewusste Nutzereingabe wird nicht still um
 | `--no-provider` am Start-Flow             | nur dieser Lauf nutzt GitHub-Copilot-Modelle            |
 | `FD_COPILOT_PROVIDER=github` in der Datei | dauerhaft aus, Datei und Key bleiben liegen             |
 | `FD_COPILOT_PROVIDER=github` in der Shell | dauerhaft aus, solange die Variable exportiert ist      |
-| Konfigurationsdatei löschen               | Opt-out ohne Warnung, Verhalten wie vor der Aktivierung |
+| Konfigurationsdatei löschen               | zurück zum Default: keine Warnung, Verhalten wie zuvor   |
 
-Ein ausgesprochenes Opt-out gewinnt immer. Ohne Konfigurationsdatei und ohne
-`FD_COPILOT_PROVIDER=deepseek` fasst der Start weder die Prozessumgebung an noch gibt er eine
-Provider-Zeile aus.
+Ein ausgesprochenes Opt-out gewinnt immer. Es entfernt die Provider-Variablen aus dem Kind-Env
+(`env -u …`) und gibt genau eine Warnzeile aus — unabhängig davon, ob eine Konfigurationsdatei
+existiert, und auch dann, wenn die Shell noch ein exportiertes `COPILOT_PROVIDER_BASE_URL` oder
+`COPILOT_PROVIDER_API_KEY_COMMAND` enthält. Nur der unveränderte Default bleibt still: ohne
+Konfigurationsdatei, ohne `FD_COPILOT_PROVIDER` und ohne Flag fasst der Start weder die
+Prozessumgebung an noch gibt er eine Provider-Zeile aus. Eine gelöschte Konfigurationsdatei ist
+dieser Default, kein ausgesprochenes Opt-out.
 
 ## Fallback-Verhalten
 
@@ -211,10 +215,13 @@ Provider : deepseek (api.deepseek.com) | Modell: deepseek-v4-flash
 Ohne Opt-in steht dort `Provider : GitHub Copilot (Standard)`. Bei ungesicherten Rechten meldet der
 Status `Provider : invalid-permissions (GitHub Copilot in use)` und die Start-Flows fallen zurück.
 
-`fd-status` und das Login-Banner `fd-welcome` zeigen genau eine Zeile — je nach Zustand exemplarisch
+Das Login-Banner `fd-welcome` zeigt genau eine Zeile — je nach Zustand exemplarisch
 `Provider : deepseek (api.deepseek.com) | Modell: deepseek-v4-flash` oder
-`Provider : GitHub Copilot (Standard)`. Die Statusfunktion gibt dafür nur `set`, `unset` oder
-`invalid-permissions` aus; Key, Länge und Präfix bleiben außen vor.
+`Provider : GitHub Copilot (Standard)`. Dieselbe Zeile liefert
+`node scripts/copilot-environment.mjs provider --line` im Checkout bzw.
+`node /usr/local/lib/fd-dev/copilot-environment.mjs provider --line` im Dev-Container. Die
+Statusfunktion gibt dafür nur `set`, `unset` oder `invalid-permissions` aus; Key, Länge und Präfix
+bleiben außen vor.
 
 Ist BYOK aktiv, meldet der Auth-Status nicht mehr „nicht eingeloggt“: BYOK braucht laut
 `copilot help providers` keine GitHub-Authentifizierung.
@@ -224,8 +231,8 @@ Ist BYOK aktiv, meldet der Auth-Status nicht mehr „nicht eingeloggt“: BYOK b
 Erster Schritt ist immer der Offline-Status:
 
 ```bash
-node scripts/copilot-environment.mjs provider
-fd-status
+node scripts/copilot-environment.mjs provider                    # im Repo-Checkout
+node /usr/local/lib/fd-dev/copilot-environment.mjs provider      # im Dev-Container
 ```
 
 Die Meldungen nennen Pfad, Schlüssel oder Lösung, aber nie den Key-Inhalt.

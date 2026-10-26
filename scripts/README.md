@@ -206,7 +206,7 @@ Diese Dateien werden von den Start-Flow-Skripten importiert und haben keinen eig
   ```
 
   Die `provider`-Aufrufe arbeiten offline: kein API-Call, kein Key-Inhalt. `--line` liefert genau
-  eine Zeile für `fd-status`/`fd-welcome`, `--state` nur `set`, `unset` oder `invalid-permissions`.
+  eine Zeile für das Login-Banner `fd-welcome`, `--state` nur `set`, `unset` oder `invalid-permissions`.
 - `copilot-provider.mjs` — löst den Start-Plan der Copilot CLI auf und liest dafür die
   fd-Konfiguration unter `~/.config/fd/`. Exportiert `resolveCopilotLaunchPlan()` (Ergebnis
   `{ mode, model, envDelta, envUnset, warnings }`), `copilotProviderStatus()`,

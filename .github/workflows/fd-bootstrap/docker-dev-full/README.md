@@ -33,10 +33,12 @@ Playwright) bleibt im Basis-Image (siehe [`../../../../scripts/bootstrap/docker-
 - `fd-setup --reset-provider` löscht Konfigurations- und Key-Datei, stellt den GitHub-Default wieder
   her und gibt den Widerrufshinweis aus. `$HOME` ist im Dev-Pod bewusst flüchtig (kein Volume); nach
   einem Pod- oder Image-Neustart muss der Key neu gesetzt werden.
-- `fd-status` und `fd-welcome` zeigen genau eine Provider-Zeile, exemplarisch
+- `fd-welcome` zeigt genau eine Provider-Zeile, exemplarisch
   `Provider : deepseek (api.deepseek.com) | Modell: deepseek-v4-flash` bzw.
-  `Provider : GitHub Copilot (Standard)`. Die gemeinsame Statusfunktion gibt dafür nur `set`,
-  `unset` oder `invalid-permissions` aus — keinen Key, keine Länge, kein Präfix. Details stehen in
+  `Provider : GitHub Copilot (Standard)`; dieselbe Zeile liefert im Container
+  `node /usr/local/lib/fd-dev/copilot-environment.mjs provider --line`. Die gemeinsame
+  Statusfunktion gibt dafür nur `set`, `unset` oder `invalid-permissions` aus — keinen Key,
+  keine Länge, kein Präfix. Details stehen in
   [Copilot-Provider (DeepSeek)](../../../../docs/17-dev-copilot-provider.md).
 - Hilfsskripte im Image: `fd-setup` (geführtes Onboarding, idempotent), `fd-clone-repo`,
   `fd-welcome` (Login-Banner, nur interaktive Shells, ohne Netzwerkzugriff) und die gemeinsame
