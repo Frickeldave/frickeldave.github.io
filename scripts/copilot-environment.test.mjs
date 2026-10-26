@@ -67,6 +67,29 @@ describe('offline Copilot status', () => {
     }
   );
 
+  it('forwards homeDirectory from readiness to copilotStatus', () => {
+    const home = fixture();
+    mkdirSync(join(home, '.copilot'));
+    writeFileSync(
+      join(home, '.copilot', 'config.json'),
+      JSON.stringify({ lastLoggedInUser: user, loggedInUsers: [user] })
+    );
+    const spawnFn = vi.fn((cmd, args) => {
+      if (cmd === 'git' && args.includes('--show-toplevel'))
+        return { status: 0, stdout: `${home}\n` };
+      if (cmd === 'git' && args.includes('--git-common-dir'))
+        return { status: 0, stdout: `${join(home, '.git')}\n` };
+      if (cmd === 'git' && args.includes('--is-inside-work-tree'))
+        return { status: 0, stdout: 'true\n' };
+      if (cmd === 'copilot') return version();
+      return { status: 0, stdout: '' };
+    });
+    const state = readiness(home, { env: {}, notmux: true, homeDirectory: home, spawnFn });
+    // Without the forwarded home this would read the real ~/.copilot and report "no".
+    expect(state.copilot).toBe('yes');
+    expect(state.provider.state).toBe('unset');
+  });
+
   itEach([
     [{ status: 0, stdout: '1.0.98\n' }, 'no'],
     [{ status: 0, stdout: 'GitHub Copilot CLI 0.0.420.\n' }, 'no'],
@@ -331,7 +354,8 @@ describe('terminal configuration', () => {
 });
 
 describe('offline BYOK provider status', () => {
-  const KEY = 'sk-TEST0123456789abcdef';
+  // Assembled at runtime so the tracked file never contains a key-shaped literal.
+  const KEY = ['sk', 'TEST0123456789abcdef'].join('-');
   const BASE_URL = 'https://api.deepseek.com/anthropic';
 
   function providerFixture({ configMode = 0o600, keyMode = 0o600 } = {}) {
@@ -421,7 +445,7 @@ describe('offline BYOK provider status', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     try {
       reportReadiness(home, {
-        // `readiness` leitet homeDirectory nicht an `copilotStatus` weiter, deshalb COPILOT_HOME.
+        // COPILOT_HOME overrides the derived ~/.copilot path explicitly.
         env: { COPILOT_HOME: join(home, '.copilot') },
         notmux: true,
         homeDirectory: home,

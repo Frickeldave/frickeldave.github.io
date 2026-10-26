@@ -21,7 +21,8 @@ const DIR = '/home/tester/.config/fd';
 const CONFIG_PATH = `${DIR}/copilot-provider.env`;
 const KEY_PATH = `${DIR}/copilot-provider.key`;
 const BASE_URL = 'https://api.deepseek.com/anthropic';
-const SENTINEL_KEY = 'sk-SENTINEL0123456789abcdef';
+// Assembled at runtime so the tracked file never contains a key-shaped literal.
+const SENTINEL_KEY = ['sk', 'SENTINEL0123456789abcdef'].join('-');
 const SENTINEL_VALUE = 'sentinel-value-must-never-be-printed';
 
 function fakeStats({ mode = 0o600, uid = UID, type = 'file', symlink = false } = {}) {
@@ -232,6 +233,42 @@ describe('resolveCopilotLaunchPlan provider selection', () => {
     assert.equal(plan.warnings.length, 1);
     assert.match(warningsOf(plan), /provider disabled by --no-provider/);
     assert.match(warningsOf(plan), /api\.deepseek\.com/);
+  });
+
+  test('--no-provider needs no configuration file and still unsets every managed key', () => {
+    const plan = resolvePlan({ entries: {}, noProvider: true });
+    assert.equal(plan.mode, 'github');
+    assert.deepEqual(plan.envDelta, {});
+    assert.deepEqual(plan.envUnset, [...COPILOT_MANAGED_ENV_KEYS]);
+    assert.equal(plan.warnings.length, 1);
+    assert.match(warningsOf(plan), /provider disabled by --no-provider/);
+    assert.match(warningsOf(plan), /api\.deepseek\.com/);
+  });
+
+  test('a shell opt-out needs no configuration file and still unsets every managed key', () => {
+    const plan = resolvePlan({ entries: {}, env: { FD_COPILOT_PROVIDER: 'github' } });
+    assert.equal(plan.mode, 'github');
+    assert.deepEqual(plan.envDelta, {});
+    assert.deepEqual(plan.envUnset, [...COPILOT_MANAGED_ENV_KEYS]);
+    assert.equal(plan.warnings.length, 1);
+    assert.match(warningsOf(plan), /provider disabled by FD_COPILOT_PROVIDER=github/);
+    assert.match(warningsOf(plan), /api\.deepseek\.com/);
+  });
+
+  test('a configuration-file opt-out wins before the key file is checked', () => {
+    const plan = resolvePlan({
+      entries: entriesFor({
+        config: configText('FD_COPILOT_PROVIDER=github'),
+        overrides: { [KEY_PATH]: undefined },
+      }),
+    });
+    assert.equal(plan.mode, 'github');
+    assert.deepEqual(plan.envDelta, {});
+    assert.deepEqual(plan.envUnset, [...COPILOT_MANAGED_ENV_KEYS]);
+    assert.equal(plan.warnings.length, 1);
+    assert.match(warningsOf(plan), /provider disabled by FD_COPILOT_PROVIDER=github/);
+    assert.match(warningsOf(plan), /api\.deepseek\.com/);
+    assert.ok(!warningsOf(plan).includes('missing key file'));
   });
 
   testEach([
