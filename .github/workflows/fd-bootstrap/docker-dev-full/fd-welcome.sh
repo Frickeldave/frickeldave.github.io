@@ -19,6 +19,7 @@ cat <<BANNER
   Repository cloned    : $(fd_yes_no fd_repo_cloned) (${repo_dir})
   tmux installed       : $(fd_yes_no fd_tmux_installed)
   Copilot CLI logged in: $(fd_copilot_status)
+  $(fd_copilot_provider_line)
 
   Run 'fd-setup' to log in and clone the repository (guided).
   Also in VS Code Remote-SSH: open a new terminal (Terminal > New Terminal) to see this banner.

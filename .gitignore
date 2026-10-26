@@ -33,6 +33,7 @@ jspm_packages
 .yarn-integrity
 
 # Environment variables
+.env
 .env.*
 !.env.example
 

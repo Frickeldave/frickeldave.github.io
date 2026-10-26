@@ -8,17 +8,22 @@ import { pathToFileURL } from 'node:url';
 import { isWindows } from './platform-shared.mjs';
 import { prepareCopilotEnvironment } from './copilot-environment.mjs';
 import {
+  buildCopilotArgs,
+  buildCopilotChildEnv,
+  buildCopilotShellCommand,
+  COPILOT_COMMAND,
   detectIdFromTmuxSession,
   ensureProjectPropertyAccess,
   ensureTmuxSessionAvailable,
   launchInNewTmuxSession,
   parseFlowFlags,
+  reportCopilotLaunchPlan,
   resolveAdditionalPrompt,
   trustWorktreeFolder,
 } from './flow-shared.mjs';
+import { resolveCopilotLaunchPlan } from './copilot-provider.mjs';
 import {
   attachCanonicalNames,
-  buildCopilotShellCommand,
   createCopilotWindow,
   createPortEnvironment,
   ensureBranchReadyForWorktree,
@@ -35,8 +40,6 @@ import {
 } from './start-work.mjs';
 
 const WORKFLOW_PROMPT_RELATIVE_PATH = '.github/prompts/startreview.prompt.md';
-const COPILOT_COMMAND = 'copilot';
-const COPILOT_ARGS = ['--agent', 'Squad', '--yolo'];
 const HELP_TEXT = `Usage:
   node scripts/start-review.mjs <pr-id>
   node scripts/start-review.mjs PR_107
@@ -52,6 +55,8 @@ Flow flags:
   --prompt "<text>"   Start directly with this additional prompt (skips the question).
   --noprompt          Skip the question for an additional prompt.
   --prompt and --noprompt are mutually exclusive.
+  --model <id>        Copilot provider model for this run (deepseek-v4-flash|deepseek-v4-pro).
+  --no-provider       Ignore the DeepSeek provider configuration for this run.
 
 Outside tmux, the script creates the session PR<n> (aborts if it already exists,
 e.g. attach with: tmux attach -t PR107) and continues there. Created sessions use
@@ -98,6 +103,11 @@ async function runStartReview(options = {}) {
   }
 
   const flowFlags = parseFlowFlags(argv);
+  // Der Plan wird genau einmal pro Lauf aufgelöst; ein ungültiges --model bricht hier ab.
+  const copilotPlan = resolveCopilotLaunchPlan({
+    modelFlag: flowFlags.model,
+    noProvider: flowFlags.noProvider,
+  });
   const cliSelection = parseCliSelection(flowFlags.rest);
   ensureProjectPropertyAccessFn(runCommand);
 
@@ -139,7 +149,7 @@ async function runStartReview(options = {}) {
     prompt.close();
   }
 
-  await launchPreparedReviewFn(preparedWorkContext, issueContext, additionalPrompt);
+  await launchPreparedReviewFn(preparedWorkContext, issueContext, additionalPrompt, copilotPlan);
 }
 
 export async function main() {
@@ -337,9 +347,15 @@ async function prepareReviewWorkContext(issueContext, repoRoot, prompt, { notmux
   };
 }
 
-async function launchPreparedReview(preparedWorkContext, issueContext, additionalPrompt) {
+async function launchPreparedReview(
+  preparedWorkContext,
+  issueContext,
+  additionalPrompt,
+  copilotPlan = null
+) {
   const { tmuxAvailable, tmuxContext, worktreeContext, portEnv } = preparedWorkContext;
   const copilotPrompt = buildInitialCopilotPrompt(issueContext, additionalPrompt);
+  reportCopilotLaunchPlan(copilotPlan);
   trustWorktreeFolder(worktreeContext.worktreePath);
   prepareCopilotEnvironment(worktreeContext.worktreePath, {
     tmuxAvailable,
@@ -349,10 +365,10 @@ async function launchPreparedReview(preparedWorkContext, issueContext, additiona
   if (!tmuxAvailable) {
     const exitCode = await runForegroundCommand(
       COPILOT_COMMAND,
-      [...COPILOT_ARGS, '-i', copilotPrompt],
+      buildCopilotArgs(copilotPrompt, copilotPlan),
       {
         cwd: worktreeContext.worktreePath,
-        env: { ...process.env, ...portEnv },
+        env: buildCopilotChildEnv(process.env, copilotPlan, portEnv),
       }
     );
     process.exitCode = exitCode;
@@ -364,7 +380,8 @@ async function launchPreparedReview(preparedWorkContext, issueContext, additiona
       issueContext.tmuxSessionName,
       worktreeContext.worktreePath,
       portEnv,
-      copilotPrompt
+      copilotPrompt,
+      copilotPlan
     );
     selectTmuxWindow(issueContext.tmuxSessionName, windowId);
     return;
@@ -373,7 +390,7 @@ async function launchPreparedReview(preparedWorkContext, issueContext, additiona
   process.exitCode = launchInNewTmuxSession(
     issueContext.tmuxSessionName,
     worktreeContext.worktreePath,
-    buildCopilotShellCommand(portEnv, copilotPrompt)
+    buildCopilotShellCommand(portEnv, copilotPrompt, copilotPlan)
   );
 }
 

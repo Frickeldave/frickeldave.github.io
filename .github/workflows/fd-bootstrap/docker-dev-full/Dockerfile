@@ -17,6 +17,7 @@ COPY --chmod=755 .github/workflows/fd-bootstrap/docker-dev-full/fd-welcome.sh /u
 RUN mkdir -p /usr/local/lib/fd-dev
 COPY --chmod=644 .github/workflows/fd-bootstrap/docker-dev-full/fd-status.sh /usr/local/lib/fd-dev/fd-status.sh
 COPY --chmod=644 scripts/copilot-environment.mjs /usr/local/lib/fd-dev/copilot-environment.mjs
+COPY --chmod=644 scripts/copilot-provider.mjs /usr/local/lib/fd-dev/copilot-provider.mjs
 COPY --chmod=644 scripts/platform-shared.mjs /usr/local/lib/fd-dev/platform-shared.mjs
 
 # CRLF entfernen: Ein Windows-Checkout ließe den Kernel nach `/usr/bin/env bash\r` suchen.

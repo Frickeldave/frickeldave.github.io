@@ -120,8 +120,16 @@ Issue-Gates, legt den Issue-Branch nach Conventional Branch Names an
 wieder. Danach öffnet das Skript den Draft-PR gegen `dev` und startet Copilot im Worktree mit dem
 Hinweis, `.github/prompts/startwork.prompt.md` zu lesen.
 
-Flags: `--notmux` (ohne tmux-Session, auf Windows der Standardweg), `--prompt <text>` und
-`--noprompt`.
+Flags: `--notmux` (ohne tmux-Session, auf Windows der Standardweg), `--prompt <text>`,
+`--noprompt`, `--model <id>` und `--no-provider`. Die beiden letzten steuern den optionalen
+DeepSeek-Provider; Details stehen in [Copilot-Provider (DeepSeek)](../docs/17-dev-copilot-provider.md).
+
+Die Flags `--model` und `--no-provider` gelten für alle drei Start-Flows:
+
+- `--model deepseek-v4-flash|deepseek-v4-pro` wählt das Modell für genau diesen Lauf und
+  überschreibt die Konfigurationsdatei. Ein anderes Modell bricht den Flow mit Exit ≠ 0 ab.
+- `--no-provider` ignoriert eine vorhandene Provider-Konfiguration für diesen Lauf und startet mit
+  den GitHub-Copilot-Modellen.
 
 ### `start-reqeng.mjs`
 
@@ -131,7 +139,7 @@ npm run start-reqeng -- IS_480
 
 Gleicher Ablauf wie `start-work`, aber für Requirement Engineering: eigener Worktree und eine Session,
 die mit `.github/prompts/startreqeng.prompt.md` arbeitet. Das Issue-Ref-Format `IS_480` und `is480`
-werden beide akzeptiert.
+werden beide akzeptiert. `--model` und `--no-provider` verhalten sich wie bei `start-work`.
 
 ### `start-review.mjs`
 
@@ -141,7 +149,8 @@ npm run start-review -- PR_480
 
 Legt einen Review-Worktree auf dem Head-Branch eines bestehenden Pull Requests an und startet die
 Session mit `.github/prompts/startreview.prompt.md`. Der Review endet mit einem Verdict; gemergt wird
-erst nach ausdrücklicher menschlicher Freigabe.
+erst nach ausdrücklicher menschlicher Freigabe. `--model` und `--no-provider` verhalten sich wie bei
+`start-work`.
 
 ### `ensure-issue-branch.mjs`
 
@@ -185,13 +194,27 @@ Diese Dateien werden von den Start-Flow-Skripten importiert und haben keinen eig
 - `platform-shared.mjs` — plattformabhängiges Starten von Prozessen. Auf Windows sind `npm`, `npx`
   und `copilot` `.cmd`-Shims, die seit Node 20.12 `shell: true` und korrektes Quoting brauchen.
 - `copilot-environment.mjs` — prüft und richtet die Copilot-CLI-Umgebung ein (Auth, Terminal,
-  VS-Code-Settings). Auch direkt aufrufbar:
+  VS-Code-Settings) und meldet den Provider-Status. Auch direkt aufrufbar:
 
   ```bash
   node scripts/copilot-environment.mjs auth
   node scripts/copilot-environment.mjs terminal
   node scripts/copilot-environment.mjs status
+  node scripts/copilot-environment.mjs provider
+  node scripts/copilot-environment.mjs provider --line
+  node scripts/copilot-environment.mjs provider --state
   ```
+
+  Die `provider`-Aufrufe arbeiten offline: kein API-Call, kein Key-Inhalt. `--line` liefert genau
+  eine Zeile für das Login-Banner `fd-welcome`, `--state` nur `set`, `unset` oder `invalid-permissions`.
+- `copilot-provider.mjs` — löst den Start-Plan der Copilot CLI auf und liest dafür die
+  fd-Konfiguration unter `~/.config/fd/`. Exportiert `resolveCopilotLaunchPlan()` (Ergebnis
+  `{ mode, model, envDelta, envUnset, warnings }`), `copilotProviderStatus()`,
+  `describeCopilotProviderStatus()` sowie `resolveCopilotConfigPath()` und `resolveCopilotKeyPath()`.
+  Der Plan ist im Provider-Modus autoritativ: Was er nicht setzt, wird über `envUnset` aus dem
+  Kind-Env entfernt. Den Key reicht ausschließlich
+  `COPILOT_PROVIDER_API_KEY_COMMAND="cat '<pfad>'"` weiter. Aktivierung, Variablen, Rechte und
+  Fehlersuche beschreibt [Copilot-Provider (DeepSeek)](../docs/17-dev-copilot-provider.md).
 
 ## Projekt-Board synchronisieren
 
@@ -309,8 +332,11 @@ Playwright-e2e-Tests und der 3D-Build-Test liegen außerhalb von `scripts/` unte
 
 ## Hinweise
 
-- **Keine Secrets im Repository.** `.env` bleibt lokal (siehe `.env.example`); Tokens kommen in
-  Workflows aus Repository-Secrets.
+- **Keine Secrets im Repository — mit einer bewusst begrenzten Ausnahme.** `.env` bleibt lokal (siehe
+  `.env.example`); Tokens kommen in Workflows aus Repository-Secrets. Einzige Ausnahme ist der
+  optionale DeepSeek-Key: Er liegt als Datei mit `0600` unter `~/.config/fd/` außerhalb des
+  Repositories und wird nie getrackt, geloggt oder als Docker-`ARG`/`ENV` gesetzt. Siehe
+  [Copilot-Provider (DeepSeek)](../docs/17-dev-copilot-provider.md).
 - **Skripte statt Ad-hoc-Shell.** Automatisierung, Validierung und Hilfswerkzeuge gehören nach
   `scripts/`, nicht in einmalige Befehlszeilen.
 - **Branch- und Commit-Konventionen** für Skript-Änderungen stehen in

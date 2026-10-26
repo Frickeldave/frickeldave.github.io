@@ -101,14 +101,43 @@ describe('docker-dev-full image', () => {
 
   test('rebuilds the image when the shared startup runtime changes', () => {
     const workflow = readFileSync(path.resolve('.github/workflows/fd-bootstrap.yml'), 'utf8');
-    assert.ok(workflow.includes('"scripts/copilot-environment.mjs"'));
-    assert.ok(workflow.includes('"scripts/platform-shared.mjs"'));
+    for (const runtime of [
+      'copilot-environment.mjs',
+      'copilot-provider.mjs',
+      'platform-shared.mjs',
+    ]) {
+      assert.ok(workflow.includes(`"scripts/${runtime}"`), `paths must trigger on ${runtime}`);
+      assert.ok(
+        dockerfile.includes(`COPY --chmod=644 scripts/${runtime}`),
+        `the image must ship ${runtime}`
+      );
+    }
     assert.match(
       workflow,
       /git diff --quiet[^\n]+docker-dev-full"[^\n]+scripts\/copilot-environment\.mjs/
     );
-    assert.ok(dockerfile.includes('COPY --chmod=644 scripts/copilot-environment.mjs'));
-    assert.ok(dockerfile.includes('COPY --chmod=644 scripts/platform-shared.mjs'));
+    // Keep this on one line: the assertion is about the exact `git diff -- ...` line.
+    assert.match(
+      workflow,
+      /git diff --quiet[^\n]+docker-dev-full"[^\n]+scripts\/copilot-provider\.mjs/
+    );
+  });
+
+  test('ships the provider runtime without key material or key build arguments', () => {
+    // Key-shaped literals must never be baked into the image (no `sk-` sentinel).
+    assert.doesNotMatch(dockerfile, /sk-[A-Za-z0-9]{20,}/);
+    // The key belongs in $HOME at runtime, never in a build argument or ENV.
+    assert.doesNotMatch(
+      dockerfile,
+      /^\s*(?:ARG|ENV)\b[^\n]*(?:API_KEY|DEEPSEEK_KEY|SECRET|TOKEN)/im
+    );
+    for (const runtime of ['copilot-environment.mjs', 'copilot-provider.mjs', 'platform-shared.mjs']) {
+      assert.doesNotMatch(
+        readFileSync(path.join(root, 'scripts', runtime), 'utf8'),
+        /sk-[A-Za-z0-9]{20,}/,
+        `${runtime} must not embed a key-shaped literal`
+      );
+    }
   });
 
   test('contains no secrets or tokens for authentication', () => {

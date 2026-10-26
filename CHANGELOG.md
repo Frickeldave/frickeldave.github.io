@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-10-26
+
+### Added
+
+- Optionale DeepSeek-Anbindung der Copilot CLI (BYOK über die Anthropic-kompatible API) mit Opt-in über den optionalen Schritt `7/7` von `fd-setup` oder eine Konfigurationsdatei unter `${XDG_CONFIG_HOME:-$HOME/.config}/fd/`; ohne Aktivierung bleibt das Verhalten unverändert (#285).
+- `scripts/copilot-provider.mjs`: löst den Launch-Plan (`provider`/`github`) auf, prüft Konfiguration und Key-Datei fail-closed und liefert den Offline-Status für `fd-welcome` und die Start-Flows (#285).
+- `--model <id>` und `--no-provider` in `start-work`, `start-reqeng` und `start-review`; `--model` gewinnt gegen Konfiguration und Shell-Env, ein unbekanntes Modell bricht den Flow mit Exit ≠ 0 ab (#285).
+- Provider-Zeile im Login-Banner `fd-welcome` und im Offline-Status (`node scripts/copilot-environment.mjs provider`, im Container `node /usr/local/lib/fd-dev/copilot-environment.mjs provider`) sowie `fd-setup --reset-provider` zum Entfernen der Konfiguration inklusive Widerrufshinweis (#285).
+- Neue Seite `docs/17-dev-copilot-provider.md` mit Aktivierung, Dateien und Rechten, Variablentabelle, Modellwahl, Fallback, Fehlersuche und Drittanbieter-Hinweis; verlinkt aus `scripts/README.md`, `docker-dev-full/README.md` und `docs/11-dev-usage.md` (#285).
+
+### Changed
+
+- Ein Provider-Fallback startet mit den GitHub-Copilot-Modellen, entfernt die Provider-Variablen aus dem Kind-Env, übergibt kein `--model` und gibt genau eine Warnzeile mit Grund und Host aus — ohne Key-Material (#285).
+- Die Aussagen „Maschine enthält keine Secrets“ bzw. „Keine Secrets im Repository“ sind auf eine bewusst begrenzte Ausnahme umformuliert: Der optionale Key liegt als `0600`-Datei außerhalb des Repos (#285).
+
 ## [1.0.5] - 2026-10-26
 
 ### Fixed

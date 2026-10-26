@@ -4,7 +4,12 @@ import { homedir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { parseJsonc } from './copilot-environment.mjs';
+import { describeCopilotProviderPlan, quoteShellArgument } from './copilot-provider.mjs';
 import { prepareSpawn } from './platform-shared.mjs';
+
+/** Copilot-CLI-Aufruf aller drei Start-Flows; `--model` ergänzt der Launch-Plan. */
+export const COPILOT_COMMAND = 'copilot';
+export const COPILOT_ARGS = ['--agent', 'Squad', '--yolo'];
 
 // Das Board dieses Repositories ist ein benutzereigenes GitHub Project V2; dieselben
 // Defaults nutzt `scripts/sync-project-board.mjs`. Beide Werte lassen sich für Forks
@@ -77,16 +82,18 @@ export function detectIdFromTmuxSession(kind, { env = process.env, spawnFn = spa
 }
 
 /**
- * Extrahiert die gemeinsamen Flow-Flags (`--notmux`, `--prompt <message>`, `--noprompt`)
- * aus argv und gibt die übrigen Argumente unverändert zurück.
+ * Extrahiert die gemeinsamen Flow-Flags (`--notmux`, `--prompt <message>`, `--noprompt`,
+ * `--model <id>`, `--no-provider`) aus argv und gibt die übrigen Argumente unverändert zurück.
  * @param {string[]} argv
- * @returns {{ notmux: boolean, prompt: string | null, noprompt: boolean, rest: string[] }}
+ * @returns {{ notmux: boolean, prompt: string | null, noprompt: boolean, model: string | null, noProvider: boolean, rest: string[] }}
  */
 export function parseFlowFlags(argv) {
   const rest = [];
   let notmux = false;
   let noprompt = false;
   let prompt = null;
+  let model = null;
+  let noProvider = false;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -94,6 +101,16 @@ export function parseFlowFlags(argv) {
       notmux = true;
     } else if (arg === '--noprompt') {
       noprompt = true;
+    } else if (arg === '--no-provider') {
+      noProvider = true;
+    } else if (arg === '--model' || arg.startsWith('--model=')) {
+      const value = arg === '--model' ? argv[(index += 1)] : arg.slice('--model='.length);
+      if (typeof value !== 'string' || !value.trim()) {
+        throw new Error(
+          '--model requires a model id, e.g. --model deepseek-v4-pro (see --help).'
+        );
+      }
+      model = value.trim();
     } else if (arg === '--prompt' || arg.startsWith('--prompt=')) {
       const value = arg === '--prompt' ? argv[(index += 1)] : arg.slice('--prompt='.length);
       if (typeof value !== 'string' || !value.trim()) {
@@ -109,7 +126,90 @@ export function parseFlowFlags(argv) {
     throw new Error('--prompt and --noprompt are mutually exclusive.');
   }
 
-  return { notmux, prompt, noprompt, rest };
+  return { notmux, prompt, noprompt, model, noProvider, rest };
+}
+
+/**
+ * Kopiert die Umgebung für den Copilot-Kindprozess: erst die Port-Variablen, dann
+ * `envUnset` entfernen, zuletzt das Env-Delta des Plans. Immer ein frisches Objekt,
+ * damit kein Aufrufer `process.env` als lebendes Objekt weiterreicht.
+ * @param {NodeJS.ProcessEnv} baseEnv
+ * @param {{ envDelta?: Record<string, string>, envUnset?: string[] } | null} plan
+ * @param {Record<string, string>} [extraEnv]
+ * @returns {NodeJS.ProcessEnv}
+ */
+export function buildCopilotChildEnv(baseEnv = {}, plan = null, extraEnv = {}) {
+  const childEnv = { ...baseEnv, ...extraEnv };
+  for (const name of plan?.envUnset ?? []) {
+    delete childEnv[name];
+  }
+  for (const [name, value] of Object.entries(plan?.envDelta ?? {})) {
+    childEnv[name] = value;
+  }
+  return childEnv;
+}
+
+/**
+ * Baut das argv der Copilot-CLI. Im Provider-Modus kommt `--model` aus demselben Plan,
+ * der auch `COPILOT_MODEL` setzt; im GitHub-Modus bleibt das argv unverändert.
+ * @param {string} initialCopilotPrompt
+ * @param {{ mode?: string, model?: string | null, envDelta?: Record<string, string> } | null} [plan]
+ * @returns {string[]}
+ */
+export function buildCopilotArgs(initialCopilotPrompt, plan = null) {
+  const model = plan?.envDelta?.COPILOT_MODEL ?? null;
+  return [...COPILOT_ARGS, ...(model ? ['--model', model] : []), '-i', initialCopilotPrompt];
+}
+
+/**
+ * Baut das Shell-Kommando für das tmux-Fenster. Port- und Provider-Variablen laufen
+ * ausschließlich über das `exec env …`-Präfix des Fensters (wird pro Fenster
+ * ausgewertet); `envUnset` wird zu `env -u …`. Ohne Port- und Provider-Variablen
+ * entsteht exakt `exec '<cmd>' …` wie bisher.
+ * @param {Record<string, string>} portEnv
+ * @param {string} initialCopilotPrompt
+ * @param {{ envDelta?: Record<string, string>, envUnset?: string[] } | null} [plan]
+ * @param {{ copilotCommand?: string }} [options]
+ * @returns {string}
+ */
+export function buildCopilotShellCommand(
+  portEnv,
+  initialCopilotPrompt,
+  plan = null,
+  { copilotCommand = COPILOT_COMMAND } = {}
+) {
+  const unsetFlags = (plan?.envUnset ?? []).map((name) => `-u ${quoteShellArgument(name)}`);
+  const assignments = [
+    ...Object.entries(portEnv ?? {}),
+    ...Object.entries(plan?.envDelta ?? {}),
+  ].map(([name, value]) => `${name}=${quoteShellArgument(value)}`);
+  const command = [copilotCommand, ...buildCopilotArgs(initialCopilotPrompt, plan)]
+    .map(quoteShellArgument)
+    .join(' ');
+  const envPrefix = [...unsetFlags, ...assignments].join(' ');
+  return envPrefix ? `exec env ${envPrefix} ${command}` : `exec ${command}`;
+}
+
+/**
+ * Meldet den Launch-Plan genau einmal pro Lauf: im Provider-Modus eine Startzeile mit
+ * Provider und Modell, im Fallback genau die eine Warnzeile des Plans. Ohne
+ * Konfiguration passiert nichts.
+ * @param {{ mode?: string, warnings?: string[] } | null} plan
+ * @param {{ log?: (line: string) => void, warn?: (line: string) => void, describe?: (plan: object) => string }} [options]
+ */
+export function reportCopilotLaunchPlan(
+  plan,
+  { log = console.log, warn = console.warn, describe = describeCopilotProviderPlan } = {}
+) {
+  if (!plan) {
+    return;
+  }
+  for (const warning of plan.warnings ?? []) {
+    warn(warning);
+  }
+  if (plan.mode === 'provider') {
+    log(describe(plan));
+  }
 }
 
 /**
