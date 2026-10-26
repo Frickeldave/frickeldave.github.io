@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run — print what would happen without merging or pushing'
+        description: "Dry run — print what would happen without merging or pushing"
         required: false
         default: false
         type: boolean
@@ -13,6 +13,29 @@ on:
 # dev into main (contents: write); deploy-pages builds + publishes the site
 # (pages + id-token); release tags + releases only AFTER a successful Pages
 # deploy (contents: write) so a failed deploy does not consume a version.
+#
+# Release model and state logic:
+#   dev releases  = pre-releases `dev-v<version>` (fd-deploy-dev), never deployed
+#                   to production and never used as the comparison baseline.
+#   stable releases = `v<version>`, `isPrerelease == false`, no `dev-v` tag.
+#                   `promote` compares against the newest of these only, so a
+#                   dev pre-release can never block a promotion.
+#
+#   promote (outputs: dev_version, latest_stable, main_version, should_deploy)
+#     dev_version <= latest_stable → no merge (nothing new to promote) and
+#                                    should_deploy=false.
+#     dev_version  > latest_stable → merge dev→main (a second run is a no-op:
+#                                    "Already up to date"/"Everything up-to-date"),
+#                                    then read the version from main.
+#     main_version  > latest_stable → should_deploy=true  → deploy-pages + release.
+#     main_version <= latest_stable → should_deploy=false → both are skipped and
+#                                    the run stays green with a ::notice::
+#                                    ("nichts zu deployen, main ist bereits
+#                                    veröffentlicht"). Retrying after a failed
+#                                    deploy therefore needs no version bump.
+#
+#   dry_run: nothing is merged, dispatched, tagged, released or deployed; the
+#            promotion decision is still computed and printed.
 permissions:
   contents: write
   actions: write
@@ -75,6 +98,12 @@ jobs:
     name: Promote dev → main
     needs: ci-gate
     runs-on: ubuntu-latest
+    outputs:
+      dev_version: ${{ steps.version.outputs.version }}
+      latest_stable: ${{ steps.latest.outputs.tag }}
+      main_version: ${{ steps.decide.outputs.main_version }}
+      should_deploy: ${{ steps.decide.outputs.should_deploy }}
+      tag: ${{ steps.decide.outputs.tag }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
         with:
@@ -111,69 +140,140 @@ jobs:
           fi
           echo "✅ Version $VERSION has a CHANGELOG entry"
 
-      - name: Determine latest GitHub release
+      # Only stable releases count as the baseline. `gh release list` is ordered
+      # newest first; drafts never block, and `dev-v*` pre-releases are excluded
+      # twice (isPrerelease and tag prefix) so they can never block or delay a
+      # production promotion.
+      - name: Determine latest stable GitHub release
         id: latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // empty' 2>/dev/null || true)
+          LATEST=$(gh release list --limit 100 --exclude-drafts --json tagName,isPrerelease \
+            --jq '[.[] | select((.isPrerelease == false) and ((.tagName | startswith("dev-v")) | not))][0].tagName // empty' \
+            2>/dev/null || true)
           if [ -z "$LATEST" ]; then
-            echo "ℹ️ No existing GitHub release found — version check passes."
+            echo "ℹ️ No stable GitHub release yet — every version is an upgrade."
           else
-            echo "🔎 Latest GitHub release: $LATEST"
+            echo "🔎 Latest stable GitHub release: $LATEST"
           fi
           echo "tag=$LATEST" >> "$GITHUB_OUTPUT"
 
-      - name: Verify version is greater than latest release
+      - name: Decide whether dev is ahead of the latest stable release
+        id: dev_gate
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          DEV_VERSION: ${{ steps.version.outputs.version }}
           LATEST_TAG: ${{ steps.latest.outputs.tag }}
         run: |
-          node -e '
-            const v = process.env.VERSION;
-            const latestRaw = process.env.LATEST_TAG;
-            if (!latestRaw) {
-              console.log("ℹ️ No existing release — version check passes.");
-              process.exit(0);
-            }
-            const latest = latestRaw.replace(/^v/, "");
-            const pa = v.split(".").map(Number);
-            const pb = latest.split(".").map(Number);
+          if [ -z "$LATEST_TAG" ]; then
+            echo "newer=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::No stable release yet — dev $DEV_VERSION will be promoted."
+            exit 0
+          fi
+          if DEV="$DEV_VERSION" BASE="$LATEST_TAG" node -e '
+            const parse = (v) => String(v).replace(/^v/, "").split(".").map(Number);
+            const a = parse(process.env.DEV);
+            const b = parse(process.env.BASE);
             for (let i = 0; i < 3; i++) {
-              const a = pa[i] || 0;
-              const b = pb[i] || 0;
-              if (a > b) { console.log(`✅ ${v} > ${latest}`); process.exit(0); }
-              if (a < b) break;
+              const x = a[i] || 0;
+              const y = b[i] || 0;
+              if (x !== y) process.exit(x > y ? 0 : 1);
             }
-            console.error(`❌ Version ${v} is not greater than the latest release ${latest}. Bump the version in package.json.`);
             process.exit(1);
-          '
+          '; then
+            echo "newer=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::dev $DEV_VERSION > latest stable release $LATEST_TAG — dev is promoted to main."
+          else
+            echo "newer=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Nothing to promote: dev $DEV_VERSION is not higher than the latest stable release $LATEST_TAG."
+          fi
 
       - name: Dry run — show plan
         if: ${{ inputs.dry_run }}
         run: |
           echo "🔍 DRY RUN — no changes will be made."
+          echo "dev version      : ${{ steps.version.outputs.version }}"
+          echo "latest stable rel: ${{ steps.latest.outputs.tag }}"
+          echo "dev is ahead     : ${{ steps.dev_gate.outputs.newer }}"
           echo "Would merge origin/dev into main with message:"
           echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
-          echo "Would build and deploy the site to GitHub Pages."
-          echo "Then (only if deploy succeeds) tag and release: ${{ steps.version.outputs.tag }}"
+          echo "Then: build + deploy the site to GitHub Pages."
+          echo "Then (only if deploy succeeds): tag and release: ${{ steps.version.outputs.tag }}"
 
       - name: Merge dev → main
-        if: ${{ !inputs.dry_run }}
+        # Only when dev actually carries a newer version; otherwise the merge
+        # would move main without a deploy. A repeated run merges nothing.
+        if: ${{ !inputs.dry_run && steps.dev_gate.outputs.newer == 'true' }}
         run: |
           git checkout main
           git merge origin/dev --no-ff -m "chore(release): promote dev to main v${{ steps.version.outputs.version }}"
           git push origin main
           echo "✅ Pushed main"
 
-      # NOTE: Tag + release are intentionally NOT created here anymore.
+      # The deployed state is defined by main, not by dev: after the merge the
+      # version of main decides whether Pages + the stable release run at all.
+      - name: Read version from main and decide
+        id: decide
+        env:
+          LATEST_TAG: ${{ steps.latest.outputs.tag }}
+        run: |
+          MAIN_VERSION=$(git show origin/main:package.json | node -e '
+            let data = "";
+            process.stdin.on("data", (chunk) => (data += chunk));
+            process.stdin.on("end", () => console.log(JSON.parse(data).version));
+          ')
+          echo "main_version=$MAIN_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$MAIN_VERSION" >> "$GITHUB_OUTPUT"
+          echo "🔎 Version on main: $MAIN_VERSION"
+
+          if [ -z "$LATEST_TAG" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::No stable release yet — main $MAIN_VERSION is deployed."
+          elif MAIN="$MAIN_VERSION" BASE="$LATEST_TAG" node -e '
+            const parse = (v) => String(v).replace(/^v/, "").split(".").map(Number);
+            const a = parse(process.env.MAIN);
+            const b = parse(process.env.BASE);
+            for (let i = 0; i < 3; i++) {
+              const x = a[i] || 0;
+              const y = b[i] || 0;
+              if (x !== y) process.exit(x > y ? 0 : 1);
+            }
+            process.exit(1);
+          '; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::main $MAIN_VERSION > latest stable release $LATEST_TAG — deploying."
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Nichts zu deployen: main $MAIN_VERSION ist nicht höher als das letzte stabile Release $LATEST_TAG. deploy-pages und release werden übersprungen."
+          fi
+
+      - name: Write promotion summary
+        if: ${{ always() }}
+        run: |
+          {
+            echo "### fd-deploy-prd promotion"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| dev version | \`${{ steps.version.outputs.version }}\` |"
+            echo "| latest stable release | \`${{ steps.latest.outputs.tag }}\` |"
+            echo "| dev ahead of stable | \`${{ steps.dev_gate.outputs.newer }}\` |"
+            echo "| version on main | \`${{ steps.decide.outputs.main_version }}\` |"
+            echo "| deploy + release | \`${{ steps.decide.outputs.should_deploy }}\` |"
+            echo "| dry run | \`${{ inputs.dry_run }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # NOTE: Tag + release are intentionally NOT created here.
       # They are deferred to the `release` job, which runs only after the
       # Pages deploy succeeded — so a failed deploy does not consume a version.
 
   deploy-pages:
     name: Build & deploy to GitHub Pages
     needs: promote
-    if: ${{ !inputs.dry_run }}
+    # Runs only when main really carries a version above the latest stable
+    # release (see the state logic in the header); otherwise the run stays green
+    # without deploying.
+    if: ${{ !inputs.dry_run && needs.promote.outputs.should_deploy == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -200,7 +300,7 @@ jobs:
   release:
     name: Tag & release (after Pages deploy)
     needs: deploy-pages
-    if: ${{ !inputs.dry_run }}
+    if: ${{ !inputs.dry_run && needs.promote.outputs.should_deploy == 'true' }}
     runs-on: ubuntu-latest
     steps:
       # Deferred tag + release: only runs after deploy-pages succeeded, so a
