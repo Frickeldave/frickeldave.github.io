@@ -14,7 +14,8 @@
  *   - `.github/skills/tmux-session-management/SKILL.md`
  *
  * Das Skript ermittelt den kanonischen Issue-Kontext, prüft bei Bedarf die
- * Issue-Gates, verwendet den kanonischen Worktree wieder oder legt ihn an,
+ * Issue-Gates, aktiviert danach den lokalen Marker `.frickeldave-active-issue`
+ * im Ziel-Worktree, verwendet den kanonischen Worktree wieder oder legt ihn an,
  * prüft, ob `.github/prompts/startwork.prompt.md` dort existiert (und holt die
  * Datei per Single-File-Checkout nach, falls nicht), legt bei Bedarf vor dem
  * eigentlichen Copilot-Dispatch einen Draft-PR an, richtet sich in einer
@@ -25,9 +26,9 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { platform } from 'node:os';
-import { basename, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { emitKeypressEvents } from 'node:readline';
 import { createInterface } from 'node:readline/promises';
 import { pathToFileURL } from 'node:url';
@@ -128,6 +129,7 @@ export async function main() {
   let preparedWorkContext;
   let branchContext;
   let dispatchContext;
+  let gateResult;
 
   try {
     if (cliSelection) {
@@ -145,7 +147,11 @@ export async function main() {
     console.log(`Selected issue #${requestedId}: ${issueContext.issueTitle}`);
     issueContext = attachCanonicalNames(issueContext, repoRoot);
     issueContext = preflightStartWorkTarget(issueContext, repoRoot);
-    branchContext = await runGateThenAssignAndResolveBranch(issueContext, repoRoot, prompt);
+    branchContext = await runGateThenAssignAndResolveBranch(issueContext, repoRoot, prompt, {
+      onGatePassed: (result) => {
+        gateResult = result;
+      },
+    });
     const tmuxAvailable = !flowFlags.notmux && isTmuxAvailable();
     ensureTmuxSessionAvailable(issueContext.tmuxSessionName, {
       tmuxAvailable,
@@ -168,6 +174,20 @@ export async function main() {
       tmuxAvailable,
       tmuxContext,
     });
+    // Erst nach dem Gate und im fertig aufgelösten Ziel-Worktree: der Marker ist
+    // worktree-lokal, die Copilot-Session liest ihn gleich in genau diesem Ordner.
+    activateActiveIssueMarker(
+      {
+        worktreePath: preparedWorkContext.worktreeContext.worktreePath,
+        issueId: issueContext.issueId,
+        issueTitle: issueContext.issueTitle,
+        projectStatus: gateResult?.projectStatus ?? null,
+        sessionId: preparedWorkContext.tmuxAvailable
+          ? issueContext.tmuxSessionName
+          : `${issueContext.canonicalName}-notmux`,
+        tonyApproved: gateResult?.tonyApproved === true,
+      }
+    );
   } finally {
     prompt.close();
   }
@@ -273,12 +293,154 @@ async function runGateThenAssignAndResolveBranch(
     validateGate = validateIssueStartGate,
     assign = assignIssueToCurrentHuman,
     resolveBranch = resolveBranchContext,
+    onGatePassed = () => {},
   } = {}
 ) {
-  await validateGate(issueContext, prompt);
+  const gateResult = await validateGate(issueContext, prompt);
+  onGatePassed(gateResult);
   const branchContext = resolveBranch(issueContext, repoRoot);
   assign(issueContext);
   return branchContext;
+}
+
+const ACTIVE_ISSUE_MARKER_FILENAME = '.frickeldave-active-issue';
+const FALLBACK_MARKER_STATUS = 'Ready to implement';
+
+/**
+ * Schreibt den Inhalt des Aktivierungsmarkers im dokumentierten YAML-Format
+ * aus `.squad/routing.md`.
+ */
+function buildActiveIssueMarkerContent({
+  issueId,
+  issueTitle,
+  status,
+  sessionId,
+  approvedAt,
+}) {
+  const quote = (value) => `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  return [
+    `issue: ${issueId}`,
+    `title: ${quote(issueTitle)}`,
+    `status: ${quote(status)}`,
+    'tony_approved: true',
+    `tony_approved_at: ${quote(approvedAt)}`,
+    `session_id: ${quote(sessionId)}`,
+    '',
+  ].join('\n');
+}
+
+/**
+ * Zeitstempel im Doku-Format `2026-06-30T15:41:12+0200` (lokale Zeit mit
+ * Offset, ohne Doppelpunkt im Offset).
+ */
+function formatActiveIssueTimestamp(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, '0');
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const hours = pad(Math.floor(Math.abs(offsetMinutes) / 60));
+  const minutes = pad(Math.abs(offsetMinutes) % 60);
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${sign}${hours}${minutes}`;
+}
+
+/**
+ * Aktiviert den lokalen Marker `.frickeldave-active-issue` im Ziel-Worktree.
+ *
+ * Der Marker ist gitignored und damit maschinen- und worktree-lokal: ein frisch
+ * angelegter Worktree hat ihn nie. `npm run start-work` ist die ausdrückliche
+ * menschliche Bestätigungshandlung (Gate „Nutzerbestätigung“), und Tony hat über
+ * `go:yes` autorisiert; deshalb schreibt ausschließlich der Launcher den Marker,
+ * und zwar erst auf dem bereits gate-geprüften Pfad. Agenten lesen ihn nur.
+ *
+ * Der Aufruf ist idempotent: bei unverändertem Issue, Titel, Status und
+ * Session-Kontext bleibt die Datei samt ursprünglichem `tony_approved_at`
+ * unberührt. Erst abweichender Inhalt führt zu einem sichtbaren Überschreiben.
+ */
+function activateActiveIssueMarker(
+  {
+    worktreePath,
+    issueId,
+    issueTitle,
+    projectStatus,
+    sessionId,
+    tonyApproved = false,
+  },
+  {
+    readFile = (path) => readFileSync(path, 'utf8'),
+    writeFile = (path, content) => writeFileSync(path, content, 'utf8'),
+    fileExists = existsSync,
+    now = new Date(),
+    log = console.log,
+  } = {}
+) {
+  if (tonyApproved !== true) {
+    throw new Error(
+      `Aktivierungsmarker ${ACTIVE_ISSUE_MARKER_FILENAME} darf ohne bestätigte Tony-Freigabe (go:yes, kein Konflikt-Label) nicht geschrieben werden.`
+    );
+  }
+
+  const markerPath = join(worktreePath, ACTIVE_ISSUE_MARKER_FILENAME);
+  const markerContext = {
+    issueId,
+    issueTitle,
+    status: projectStatus || FALLBACK_MARKER_STATUS,
+    sessionId,
+    approvedAt: formatActiveIssueTimestamp(now),
+  };
+  const content = buildActiveIssueMarkerContent(markerContext);
+
+  if (fileExists(markerPath)) {
+    let existing;
+    try {
+      existing = readFile(markerPath);
+    } catch (error) {
+      throw new Error(
+        `Aktivierungsmarker ${markerPath} ist vorhanden, aber nicht lesbar: ${error?.message ?? error}. Bitte den Marker im Ziel-Worktree prüfen.`
+      );
+    }
+
+    const existingApprovedAt = existing.match(/^tony_approved_at: "([^"]*)"$/m)?.[1];
+    if (existing === content) {
+      log(`Aktivierungsmarker ${ACTIVE_ISSUE_MARKER_FILENAME} für #${issueId} ist bereits aktuell.`);
+      return markerPath;
+    }
+    if (
+      existingApprovedAt &&
+      buildActiveIssueMarkerContent({ ...markerContext, approvedAt: existingApprovedAt }) ===
+        existing
+    ) {
+      log(
+        `Aktivierungsmarker ${ACTIVE_ISSUE_MARKER_FILENAME} für #${issueId} ist bereits aktuell (tony_approved_at bleibt ${existingApprovedAt}).`
+      );
+      return markerPath;
+    }
+
+    const previousIssue = existing.match(/^issue: (\d+)$/m)?.[1];
+    try {
+      writeFile(markerPath, content);
+    } catch (error) {
+      throw new Error(
+        `Aktivierungsmarker ${markerPath} konnte nicht geschrieben werden: ${error?.message ?? error}. Ohne Marker darf die Copilot-Session nicht starten.`
+      );
+    }
+    log(
+      previousIssue && previousIssue !== String(issueId)
+        ? `Aktivierungsmarker ${ACTIVE_ISSUE_MARKER_FILENAME} für #${issueId} aktiviert (vorher #${previousIssue}).`
+        : `Aktivierungsmarker ${ACTIVE_ISSUE_MARKER_FILENAME} für #${issueId} aktualisiert.`
+    );
+    return markerPath;
+  }
+
+  try {
+    writeFile(markerPath, content);
+  } catch (error) {
+    throw new Error(
+      `Aktivierungsmarker ${markerPath} konnte nicht geschrieben werden: ${error?.message ?? error}. Ohne Marker darf die Copilot-Session nicht starten.`
+    );
+  }
+  log(`Aktivierungsmarker ${ACTIVE_ISSUE_MARKER_FILENAME} für #${issueId} aktiviert.`);
+  return markerPath;
 }
 
 async function prepareWorkContext(issueContext, repoRoot, prompt, options = {}) {
@@ -746,7 +908,7 @@ async function validateIssueStartGate(issueContext, prompt, options = {}) {
   const log = options.log ?? console.log;
   if (issueContext.requestedType !== 'issue') {
     log('Skipping issue-start gates for the existing PR context.');
-    return;
+    return { tonyApproved: false, projectStatus: null };
   }
 
   const readGhJsonImpl = options.readGhJson ?? readGhJson;
@@ -799,7 +961,7 @@ async function validateIssueStartGate(issueContext, prompt, options = {}) {
       );
     }
     log(`Issue #${issueContext.issueId}: start gates passed.`);
-    return;
+    return { tonyApproved: true, projectStatus };
   }
 
   // Auch die GraphQL-Auflösung ist fehlgeschlagen (z. B. kein Projekt-Zugriff
@@ -826,6 +988,7 @@ async function validateIssueStartGate(issueContext, prompt, options = {}) {
     );
   }
   log(`Issue #${issueContext.issueId}: start gates passed with human project-status confirmation.`);
+  return { tonyApproved: true, projectStatus: null };
 }
 
 /**
@@ -2016,7 +2179,9 @@ if (isDirectRun) {
 }
 
 export {
+  activateActiveIssueMarker,
   attachCanonicalNames,
+  buildActiveIssueMarkerContent,
   buildCopilotShellCommand,
   createPortEnvironment,
   createCopilotWindow,
@@ -2024,6 +2189,7 @@ export {
   ensureDevBaseBranchAvailable,
   ensureDispatchPrContext,
   ensureWorkflowPromptAvailable,
+  formatActiveIssueTimestamp,
   getMainCheckoutPath,
   loadProjectItemsViaGraphql,
   logPortEnvironment,

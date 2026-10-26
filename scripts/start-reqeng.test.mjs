@@ -192,3 +192,10 @@ test('resolveBranchContext replaces legacy squad/ branch names for existing issu
   assert.notEqual(branchName, 'squad/52-pagination-bug');
   assert.equal(branchName, 'fix/issue-52-pagination-bug');
 });
+
+test('start-reqeng never reads or writes the activation marker (Pepper only authorizes specs)', () => {
+  const source = readFileSync(new URL('./start-reqeng.mjs', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(source, /frickeldave-active-issue/);
+  assert.doesNotMatch(source, /writeFileSync/);
+});
