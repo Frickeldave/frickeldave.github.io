@@ -1,14 +1,14 @@
 /**
- * Small cross-platform helpers shared by the dev/flow scripts.
+ * Kleine plattformübergreifende Helfer, die sich die Dev-/Flow-Skripte teilen.
  *
- * On Windows `npm`, `npx` and often `copilot` are `.cmd` shims. Since Node
- * 20.12 (CVE-2024-27980) spawning a `.cmd`/`.bat` file requires `shell: true`,
- * and then every argument has to be quoted for cmd.exe by the caller.
+ * Unter Windows sind `npm`, `npx` und oft `copilot` `.cmd`-Shims. Seit Node
+ * 20.12 (CVE-2024-27980) verlangt das Starten einer `.cmd`/`.bat`-Datei `shell: true`,
+ * und dann muss der Aufrufer jedes Argument für cmd.exe quoten.
  */
 import { existsSync } from 'node:fs';
 import { win32 } from 'node:path';
 
-// These helpers only model Windows launch semantics, so path handling must not depend on the host OS.
+// Diese Helfer bilden nur die Windows-Start-Semantik ab, deshalb darf die Pfadbehandlung nicht vom Host-OS abhängen.
 const { delimiter, extname, join } = win32;
 
 const DIRECT_EXTENSIONS = ['.exe', '.com'];
@@ -20,11 +20,11 @@ export function isWindows(platform = process.platform) {
 }
 
 /**
- * Quotes one argument for cmd.exe when a command is spawned with `shell: true`.
- * Line breaks are flattened to spaces because cmd.exe ends a command at a
- * newline. `%` cannot be escaped on a cmd.exe command line, so `%NAME%` that
- * names a defined environment variable would still be expanded. Arguments
- * without special characters are passed through unchanged.
+ * Quotet ein Argument für cmd.exe, wenn ein Kommando mit `shell: true` gestartet wird.
+ * Zeilenumbrüche werden zu Leerzeichen, weil cmd.exe ein Kommando am Zeilenende
+ * beendet. `%` lässt sich auf einer cmd.exe-Kommandozeile nicht escapen, deshalb
+ * würde `%NAME%` für eine definierte Umgebungsvariable weiterhin expandiert.
+ * Argumente ohne Sonderzeichen werden unverändert durchgereicht.
  *
  * @param {string} value
  */
@@ -34,14 +34,14 @@ export function quoteCmdArg(value) {
     return flat;
   }
 
-  // Trailing backslashes would otherwise escape the closing quote.
+  // Nachgestellte Backslashes würden sonst das schließende Anführungszeichen escapen.
   const escaped = flat.replaceAll('"', '""').replace(/(\\+)$/u, '$1$1');
   return `"${escaped}"`;
 }
 
 /**
- * Finds out how a command has to be launched on Windows. Real executables
- * (`.exe`/`.com`) are spawned directly; `.cmd`/`.bat` shims need a shell.
+ * Findet heraus, wie ein Kommando unter Windows gestartet werden muss. Echte
+ * Executables (`.exe`/`.com`) werden direkt gestartet; `.cmd`/`.bat`-Shims brauchen eine Shell.
  *
  * @param {string} command
  * @param {{ env?: NodeJS.ProcessEnv; existsFn?: (path: string) => boolean }} [options]
@@ -66,7 +66,7 @@ export function resolveWindowsLaunchKind(command, options = {}) {
 
   for (const directory of directories) {
     const base = directory === '' ? command : join(directory, command);
-    // Same precedence CreateProcess applies: a real executable wins over a shim.
+    // Dieselbe Priorität, die CreateProcess anwendet: ein echtes Executable gewinnt gegen einen Shim.
     for (const extension of [...DIRECT_EXTENSIONS, ...SHELL_EXTENSIONS]) {
       if (existsFn(`${base}${extension}`)) {
         return DIRECT_EXTENSIONS.includes(extension) ? 'direct' : 'shell';
@@ -78,7 +78,7 @@ export function resolveWindowsLaunchKind(command, options = {}) {
 }
 
 /**
- * Full path of a real `.exe` for a bare command name anywhere on the PATH, or null.
+ * Vollständiger Pfad eines echten `.exe` für einen bloßen Kommandonamen irgendwo im PATH, sonst null.
  *
  * @param {string} command
  * @param {{ env?: NodeJS.ProcessEnv; existsFn?: (path: string) => boolean }} options
@@ -100,8 +100,8 @@ function findExecutableOnPath(command, options) {
 }
 
 /**
- * Returns the command, arguments and spawn options needed to launch `command`
- * on the current platform. On POSIX and for real executables nothing changes.
+ * Liefert Kommando, Argumente und Spawn-Optionen, die zum Start von `command` auf
+ * der aktuellen Plattform nötig sind. Auf POSIX und für echte Executables ändert sich nichts.
  *
  * @param {string} command
  * @param {string[]} args
@@ -114,14 +114,14 @@ export function prepareSpawn(command, args, options = {}) {
     return { command, args, options: {} };
   }
 
-  // A shim earlier on the PATH (e.g. VS Code's copilot.bat) may start powershell with the user profile.
+  // Ein Shim weiter vorne im PATH (z. B. VS Codes copilot.bat) startet powershell evtl. mit dem Benutzerprofil.
   const executable = findExecutableOnPath(command, options);
   if (executable !== null) {
     return { command: executable, args, options: {} };
   }
 
-  // One pre-quoted command line: with `shell: true` Node only concatenates args anyway
-  // (and warns, DEP0190), so we do the quoting ourselves and pass no args.
+  // Eine vorab gequotete Kommandozeile: mit `shell: true` verkettet Node die Argumente
+  // ohnehin nur (und warnt, DEP0190), deshalb quoten wir selbst und übergeben keine Argumente.
   const quotedCommand = /\s/u.test(command) ? `"${command}"` : command;
   return {
     command: [quotedCommand, ...args.map((arg) => quoteCmdArg(arg))].join(' '),

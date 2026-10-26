@@ -2,10 +2,10 @@
 import { CART_PAGE_PATH } from "../../lib/cart";
 
 /**
- * "Zum Warenkorb" entry for the product detail page.
+ * „Zum Warenkorb“-Einstieg für die Produktdetailseite.
  *
- * The Handmade sidebar deliberately has no cart box — the global header icon
- * (see `Header.astro`) is the site-wide entry point.
+ * Die Handmade-Sidebar hat bewusst keine Warenkorb-Box — das globale Header-Icon
+ * (siehe `Header.astro`) ist der seitenweite Einstiegspunkt.
  */
 const isCurrentPage = Astro.url.pathname.replace(/\/$/, "") === CART_PAGE_PATH;
 

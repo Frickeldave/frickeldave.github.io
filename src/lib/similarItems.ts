@@ -8,39 +8,39 @@ const similerItems = (
   let categories: string[] = [];
   let tags: string[] = [];
 
-  // set categories
+  // Kategorien setzen
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((currentItem.data as any)?.categories?.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     categories = (currentItem.data as any).categories;
   }
 
-  // set tags
+  // Tags setzen
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((currentItem.data as any)?.tags?.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tags = (currentItem.data as any).tags;
   }
 
-  // filter by categories
+  // Nach Kategorien filtern
   const filterByCategories = allItems.filter((item: GenericEntry) =>
     categories.find((category) =>
       (item.data as { categories?: string[] }).categories?.includes(category)
     )
   );
 
-  // filter by tags
+  // Nach Tags filtern
   const filterByTags = allItems.filter((item: GenericEntry) =>
     tags.find((tag) => (item.data as { tags?: string[] }).tags?.includes(tag))
   );
 
-  // merged after filter
+  // nach dem Filtern zusammengeführt
   const mergedItems = [...filterByCategories, ...filterByTags];
 
-  // Remove self from list
+  // Sich selbst aus der Liste entfernen
   const filterByID = mergedItems.filter((item) => item.id !== id);
 
-  // count instances of each item
+  // Vorkommen jedes Items zählen
   const itemCount = filterByID.reduce(
     (accumulator: Record<string, number>, currentItem: GenericEntry) => {
       accumulator[currentItem.id] = (accumulator[currentItem.id] || 0) + 1;
@@ -49,17 +49,17 @@ const similerItems = (
     {}
   );
 
-  // sort items by number of instances
+  // Items nach Anzahl der Vorkommen sortieren
   const sortedItems = filterByID.sort(
     (a: GenericEntry, b: GenericEntry) => itemCount[b.id] - itemCount[a.id]
   );
 
-  // remove items with fewer than 2 instances
+  // Items mit weniger als 2 Vorkommen entfernen
   const filteredItems = sortedItems.filter(
     (item: GenericEntry) => itemCount[item.id] > 1
   );
 
-  // remove duplicates
+  // Duplikate entfernen
   const uniqueItems = [
     ...new Set(filteredItems.map((item: GenericEntry) => item.id)),
   ].map((id: string) => {

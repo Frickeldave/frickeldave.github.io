@@ -10,7 +10,7 @@ const toc: { text: string; slug: string; depth: number }[] = [];
 if (skills) toc.push({ text: "Skills", slug: "skills", depth: 2 });
 if (experience) {
   experience.forEach((job, index) => {
-    // Creating slug from position + company
+    // Slug aus Position + Firma erzeugen
     const slug = `job-${index}`;
     toc.push({ text: `${job.position} @ ${job.company}`, slug, depth: 2 });
   });

@@ -1,19 +1,19 @@
 /**
- * Small shared adapter that lets the start-flow tests run on `node --test`.
+ * Kleiner gemeinsamer Adapter, der die Start-Flow-Tests unter `node --test` lauffähig macht.
  *
- * The start-flow tests were written for vitest. Node's test runner has no
- * `expect`, no call-array mock semantics and no environment stubbing, so this
- * module provides exactly the subset those tests use:
+ * Die Start-Flow-Tests waren für vitest geschrieben. Nodes Test-Runner kennt kein
+ * `expect`, keine Call-Array-Mock-Semantik und kein Umgebungs-Stubbing, deshalb
+ * stellt dieses Modul genau die Teilmenge bereit, die diese Tests nutzen:
  *
- *   - `vi.fn()` mocks whose `mock.calls` entries are plain argument arrays
- *   - `vi.spyOn()` spies with `mockRestore()`
- *   - `vi.stubEnv()` / `vi.unstubAllEnvs()` for `process.env`
+ *   - `vi.fn()`-Mocks, deren `mock.calls`-Einträge schlichte Argument-Arrays sind
+ *   - `vi.spyOn()`-Spies mit `mockRestore()`
+ *   - `vi.stubEnv()` / `vi.unstubAllEnvs()` für `process.env`
  *   - `vi.resetAllMocks()`
- *   - `expect()` with `toBe`, `toEqual`, `toContain`, `toHaveLength`, `toMatch`
- *   - `testEach()` / `itEach()` as the `test.each()` / `it.each()` replacement
+ *   - `expect()` mit `toBe`, `toEqual`, `toContain`, `toHaveLength`, `toMatch`
+ *   - `testEach()` / `itEach()` als Ersatz für `test.each()` / `it.each()`
  *
- * Module mocking itself is done by the test files through `mock.module()` from
- * `node:test` (run the suite with `--experimental-test-module-mocks`).
+ * Das Modul-Mocking selbst erledigen die Testdateien über `mock.module()` aus
+ * `node:test` (Suite mit `--experimental-test-module-mocks` starten).
  */
 import nodeAssert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -157,16 +157,17 @@ export function resetAllMocks() {
 }
 
 /**
- * Replaces a module for the rest of this test process, like `vi.mock()` with
- * `importOriginal`: the real exports stay available and the overrides are
- * applied on top.
+ * Ersetzt ein Modul für den Rest dieses Testprozesses, wie `vi.mock()` mit
+ * `importOriginal`: die echten Exporte bleiben verfügbar und die Overrides werden
+ * darübergelegt.
  *
- * Non-configurable builtin exports (e.g. `fs.constants`) are copied with their
- * original property descriptor, because that is the only way Node's module
- * mock can redefine them; such exports cannot be overridden.
+ * Nicht konfigurierbare Builtin-Exporte (z. B. `fs.constants`) werden mit ihrem
+ * ursprünglichen Property-Descriptor kopiert, weil das die einzige Möglichkeit ist,
+ * wie Nodes Modul-Mock sie neu definieren kann; solche Exporte lassen sich nicht
+ * überschreiben.
  *
- * Must run before the module under test is imported, therefore the dynamic
- * `await import(...)` in the test files.
+ * Muss laufen, bevor das getestete Modul importiert wird, daher das dynamische
+ * `await import(...)` in den Testdateien.
  */
 export async function mockModule(specifier, overrides = {}) {
   const real = specifier.startsWith('node:') ? requireModule(specifier) : await import(specifier);

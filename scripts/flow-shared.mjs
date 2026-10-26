@@ -6,9 +6,9 @@ import { dirname, resolve } from 'node:path';
 import { parseJsonc } from './copilot-environment.mjs';
 import { prepareSpawn } from './platform-shared.mjs';
 
-// The board of this repository is a user-owned GitHub Project V2; the same
-// defaults are used by `scripts/sync-project-board.mjs`. Both values can be
-// overridden for forks via PROJECT_OWNER / PROJECT_NUMBER.
+// Das Board dieses Repositories ist ein benutzereigenes GitHub Project V2; dieselben
+// Defaults nutzt `scripts/sync-project-board.mjs`. Beide Werte lassen sich für Forks
+// über PROJECT_OWNER / PROJECT_NUMBER überschreiben.
 export const DEFAULT_PROJECT_OWNER = process.env.PROJECT_OWNER || 'Frickeldave';
 export const DEFAULT_PROJECT_NUMBER = Number(process.env.PROJECT_NUMBER || 2);
 const TEAM_FILE = '.squad/team.md';
@@ -53,8 +53,8 @@ export function buildTmuxSessionName(canonicalRefName) {
 }
 
 /**
- * Reads the numeric ID from the current tmux session when its name is exactly
- * canonical (`IS<n>` for issues, `PR<n>` for pull requests); otherwise null.
+ * Liest die numerische ID aus der aktuellen tmux-Session, wenn ihr Name exakt
+ * kanonisch ist (`IS<n>` für Issues, `PR<n>` für Pull Requests); sonst null.
  * @param {'issue' | 'pr'} kind
  * @param {{ env?: NodeJS.ProcessEnv, spawnFn?: typeof spawnSync }} [options]
  * @returns {{ id: number, sessionName: string } | null}
@@ -77,8 +77,8 @@ export function detectIdFromTmuxSession(kind, { env = process.env, spawnFn = spa
 }
 
 /**
- * Extracts the shared flow flags (`--notmux`, `--prompt <message>`, `--noprompt`)
- * from argv and returns the remaining arguments untouched.
+ * Extrahiert die gemeinsamen Flow-Flags (`--notmux`, `--prompt <message>`, `--noprompt`)
+ * aus argv und gibt die übrigen Argumente unverändert zurück.
  * @param {string[]} argv
  * @returns {{ notmux: boolean, prompt: string | null, noprompt: boolean, rest: string[] }}
  */
@@ -113,8 +113,8 @@ export function parseFlowFlags(argv) {
 }
 
 /**
- * Resolves the additional prompt: `--prompt` wins, `--noprompt` skips the
- * question, otherwise the interactive question is asked.
+ * Löst den zusätzlichen Prompt auf: `--prompt` gewinnt, `--noprompt` überspringt die
+ * Frage, sonst wird interaktiv gefragt.
  */
 export async function resolveAdditionalPrompt(flags, askFn) {
   if (flags.prompt !== null) {
@@ -127,9 +127,9 @@ export async function resolveAdditionalPrompt(flags, askFn) {
 }
 
 /**
- * Aborts when the canonical tmux session already exists while the flow runs
- * outside tmux. Does nothing without tmux, with `--notmux`, or inside tmux
- * (the current session is validated elsewhere).
+ * Bricht ab, wenn die kanonische tmux-Session bereits existiert, der Flow aber
+ * außerhalb von tmux läuft. Tut nichts ohne tmux, mit `--notmux` oder innerhalb von
+ * tmux (die aktuelle Session wird anderswo validiert).
  */
 export function ensureTmuxSessionAvailable(
   sessionName,
@@ -147,7 +147,7 @@ export function ensureTmuxSessionAvailable(
 }
 
 /**
- * Adds the folder to `trusted_folders` of the Copilot configuration.
+ * Trägt den Ordner in `trusted_folders` der Copilot-Konfiguration ein.
  * @returns {boolean} true when the file was changed
  */
 export function trustCopilotFolder(
@@ -191,7 +191,7 @@ export function trustCopilotFolder(
   return true;
 }
 
-/** Trusts the worktree; a failure only warns because Copilot then asks itself. */
+/** Trägt den Worktree als vertrauenswürdig ein; ein Fehler warnt nur, weil Copilot sonst selbst nachfragt. */
 export function trustWorktreeFolder(worktreePath, options = {}) {
   try {
     const spawnFn = options.spawnFn || spawnSync;
@@ -204,8 +204,8 @@ export function trustWorktreeFolder(worktreePath, options = {}) {
       env: commandOptions.env,
     });
     const help = spawnFn(launch.command, launch.args, { ...commandOptions, ...launch.options });
-    // 1.0.98 advertises trustedFolders, but `config trustedFolders` rejects it:
-    // it is global state in config.json, not a user setting in settings.json.
+    // 1.0.98 wirbt mit trustedFolders, aber `config trustedFolders` lehnt es ab:
+    // es ist globaler Zustand in config.json, keine Benutzereinstellung in settings.json.
     const currentSchema = help.status === 0 && help.stdout?.includes('`trustedFolders`');
     if (trustCopilotFolder(worktreePath, { ...options, currentSchema })) {
       console.log(`Added ${worktreePath} to Copilot trusted folders.`);
@@ -216,8 +216,8 @@ export function trustWorktreeFolder(worktreePath, options = {}) {
 }
 
 /**
- * Creates the detached tmux session running `shellCommand` and attaches to it.
- * Copilot's own mouse capture must also be disabled before launching.
+ * Legt die abgekoppelte tmux-Session mit `shellCommand` an und hängt sich an.
+ * Copilots eigene Maus-Erfassung muss vor dem Start ebenfalls abgeschaltet werden.
  * @returns {number} exit code of the attach
  */
 export function launchInNewTmuxSession(
@@ -320,10 +320,11 @@ export function assignIssueToUser(runCommand, issueNumber, login) {
   }
 }
 
-// Heading aliases: this repository writes German team files, imported Squad team
-// files use English. Both spellings must yield the same roster. The agent roster
-// headings (`## Mitglieder` / `## Members`) are *not* human members; they end the
-// human section like any other heading.
+// Überschriften-Aliase: dieses Repository schreibt deutsche Team-Dateien, importierte
+// Squad-Team-Dateien nutzen Englisch. Beide Schreibweisen müssen dasselbe Roster
+// ergeben. Die Agent-Roster-Überschriften (`## Mitglieder` / `## Members`) sind
+// *keine* menschlichen Mitglieder; sie beenden den menschlichen Abschnitt wie jede
+// andere Überschrift.
 export const HUMAN_MEMBERS_HEADING = /^##\s+(?:Human\s+Members|Menschliche\s+Mitglieder)\s*$/i;
 
 const HUMAN_MEMBER_COLUMNS = {
@@ -352,9 +353,9 @@ function resolveColumnIndex(header, names) {
 }
 
 /**
- * Reads the human roster table (`## Human Members` / `## Menschliche Mitglieder`).
- * Columns are resolved from the header row, so the column order may differ
- * between team files; unknown columns are ignored.
+ * Liest die Tabelle der menschlichen Mitglieder (`## Human Members` / `## Menschliche Mitglieder`).
+ * Die Spalten werden aus der Kopfzeile aufgelöst, die Reihenfolge darf also zwischen
+ * Team-Dateien abweichen; unbekannte Spalten werden ignoriert.
  */
 export function parseHumanMembers(teamMarkdown) {
   const lines = String(teamMarkdown ?? '').split('\n');
@@ -459,9 +460,9 @@ export function resolveHumanReviewerLogins(runCommand, repoRoot, options = {}) {
 }
 
 /**
- * Only Developer-role humans (including combined roles such as
- * "Techlead / Developer") are eligible reviewers. Manager/PM-only roles
- * (e.g. "Projektleiter ...") are excluded.
+ * Nur Menschen mit Developer-Rolle (auch kombinierte Rollen wie
+ * „Techlead / Developer“) sind als Reviewer zulässig. Reine Manager-/PM-Rollen
+ * (z. B. „Projektleiter ...“) sind ausgeschlossen.
  */
 function isDeveloperRole(role) {
   return /(?:^|[\s/(),;])Developer(?=$|[\s/(),;])/i.test(String(role ?? ''));

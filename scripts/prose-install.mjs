@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Cross-platform Vale installer
+ * Plattformübergreifender Vale-Installer
  *
- * Downloads the Vale binary and style guides (Microsoft, write-good)
- * for the current platform automatically.
+ * Lädt die Vale-Binary und die Style-Guides (Microsoft, write-good) automatisch
+ * für die aktuelle Plattform herunter.
  *
- * Usage:
- *   node scripts/prose-install.mjs           # interactive
- *   node scripts/prose-install.mjs --quiet   # silent mode
- *   node scripts/prose-install.mjs --force   # reinstall even if already installed
+ * Aufruf:
+ *   node scripts/prose-install.mjs           # interaktiv
+ *   node scripts/prose-install.mjs --quiet   # stiller Modus
+ *   node scripts/prose-install.mjs --force   # auch bei vorhandener Installation neu installieren
  */
 
 import { execFile } from "node:child_process";
@@ -18,13 +18,13 @@ import https from "node:https";
 import path from "node:path";
 import process from "node:process";
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// ── Konfiguration ─────────────────────────────────────────────────────────────
 
 const VALE_VERSION = "3.7.1";
 const GITHUB_BASE = "https://github.com";
 const REPO_MIRROR = "https://github.com";
 
-// Detect platform and architecture
+// Plattform und Architektur erkennen
 const isWindows = process.platform === "win32";
 const isMacOS = process.platform === "darwin";
 const isLinux = process.platform === "linux";
@@ -36,7 +36,7 @@ const VALE_BINARY = isWindows
   ? path.join(VALE_DIR, "vale.exe")
   : path.join(VALE_DIR, "vale");
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Hilfsfunktionen ───────────────────────────────────────────────────────────
 
 let quiet = false;
 let force = false;
@@ -53,12 +53,12 @@ function error(...args) {
   console.error("\x1b[31m✖ ", ...args, "\x1b[0m");
 }
 
-// PowerShell literal string; the escape for a single quote is '' (doubling).
+// Literal-String in PowerShell; das Escape für ein einfaches Anführungszeichen ist '' (Verdopplung).
 function psLiteral(value) {
   return `'${path.resolve(value).replace(/'/g, "''")}'`;
 }
 
-// ── Argument parsing ──────────────────────────────────────────────────────────
+// ── Argument-Parsing ──────────────────────────────────────────────────────────
 
 for (const arg of process.argv.slice(2)) {
   if (arg === "--quiet" || arg === "-q") quiet = true;
@@ -73,8 +73,8 @@ function execShell(cmd, args = [], opts = {}) {
       { ...opts, timeout: 120_000 },
       (err, stdout, stderr) => {
         if (err) {
-          // execFile's error object does not carry the captured output here, so
-          // attach it for callers that build readable failure messages.
+          // Das Fehlerobjekt von execFile trägt die mitgeschnittene Ausgabe hier nicht,
+          // deshalb hängen wir sie für Aufrufer an, die lesbare Fehlermeldungen bauen.
           err.stdout = stdout;
           err.stderr = stderr;
           return reject(err);
@@ -89,8 +89,8 @@ function execShell(cmd, args = [], opts = {}) {
   });
 }
 
-// Runs a PowerShell command line and reports the exact command on failure, so
-// a missing/broken tool surfaces as a readable message instead of a bare ENOENT.
+// Führt eine PowerShell-Kommandozeile aus und meldet bei Fehlschlag das exakte
+// Kommando, damit ein fehlendes oder kaputtes Tool als lesbare Meldung statt als nacktes ENOENT auftaucht.
 function runPowershell(command) {
   const args = ["-NoProfile", "-NonInteractive", "-Command", command];
   return new Promise((resolve, reject) => {
@@ -108,7 +108,7 @@ function runPowershell(command) {
   });
 }
 
-// ── Platform detection ────────────────────────────────────────────────────────
+// ── Plattform-Erkennung ───────────────────────────────────────────────────────
 
 function getValeDownloadUrl() {
   if (isWindows) {
@@ -126,7 +126,7 @@ function getValeDownloadUrl() {
   throw new Error(`Unsupported platform: ${process.platform} ${process.arch}`);
 }
 
-// ── Download utilities ────────────────────────────────────────────────────────
+// ── Download-Hilfen ───────────────────────────────────────────────────────────
 
 function downloadFile(url, destPath) {
   return new Promise((resolve, reject) => {
@@ -138,9 +138,9 @@ function downloadFile(url, destPath) {
           res.statusCode < 400 &&
           res.headers.location
         ) {
-          // Follow redirects. Open the destination only for the final hop: a
-          // write stream left over from a redirect keeps the file locked on
-          // Windows, which later blocks extracting it.
+          // Redirects folgen. Das Ziel erst für den letzten Hop öffnen: ein aus einem
+          // Redirect übrig gebliebener Write-Stream hält die Datei unter Windows
+          // gesperrt, was das spätere Entpacken blockiert.
           res.resume();
           return downloadFile(res.headers.location, destPath)
             .then(resolve)
@@ -153,8 +153,8 @@ function downloadFile(url, destPath) {
         const file = createWriteStream(destPath);
         res.pipe(file);
         file.on("finish", () => {
-          // Resolve only once the descriptor is closed, so callers can read
-          // the archive immediately afterwards (required on Windows).
+          // Erst auflösen, wenn der Deskriptor geschlossen ist, damit Aufrufer das
+          // Archiv direkt danach lesen können (unter Windows erforderlich).
           file.close(() => resolve());
         });
         file.on("error", (err) => {
@@ -168,7 +168,7 @@ function downloadFile(url, destPath) {
   });
 }
 
-// ── Step 1: Download Vale binary ─────────────────────────────────────────────
+// ── Schritt 1: Vale-Binary herunterladen ──────────────────────────────────────
 
 async function installValeBinary() {
   const valePath = isWindows
@@ -191,10 +191,10 @@ async function installValeBinary() {
   await downloadFile(url, archivePath);
 
   if (isWindows) {
-    // `unzip` is not shipped with Windows, so use PowerShell's Expand-Archive,
-    // which is always available. `-LiteralPath` disables wildcard expansion and
-    // `ErrorActionPreference=Stop` turns non-terminating cmdlet errors into a
-    // non-zero exit code instead of a silent partial extraction.
+    // `unzip` gibt es unter Windows nicht, deshalb PowerShells Expand-Archive nutzen,
+    // das immer vorhanden ist. `-LiteralPath` schaltet die Wildcard-Expansion ab und
+    // `ErrorActionPreference=Stop` macht aus nicht-terminierenden Cmdlet-Fehlern einen
+    // Exit-Code ungleich Null statt einer stillen Teilentpackung.
     const command = [
       "$ErrorActionPreference='Stop';",
       `Expand-Archive -LiteralPath ${psLiteral(archivePath)}`,
@@ -204,14 +204,14 @@ async function installValeBinary() {
     await runPowershell(command);
     log("  Extracted Windows archive");
   } else {
-    // Extract .tar.gz using system tar
+    // .tar.gz mit dem System-tar entpacken
     await execShell("tar", ["xzf", archivePath, "-C", VALE_DIR]);
     log("  Extracted Unix archive");
   }
 
   await rm(archivePath);
 
-  // Make executable (no-op on Windows)
+  // Ausführbar machen (unter Windows ein No-op)
   if (!isWindows) {
     await chmod(valePath, 0o755);
   }
@@ -219,7 +219,7 @@ async function installValeBinary() {
   log("✓ Vale binary installed");
 }
 
-// ── Step 2: Download style guides ─────────────────────────────────────────────
+// ── Schritt 2: Style-Guides herunterladen ─────────────────────────────────────
 
 async function installStyleGuide(repo, localName) {
   const targetDir = path.join(STYLES_DIR, localName);
@@ -237,13 +237,13 @@ async function installStyleGuide(repo, localName) {
   const tmpDir = path.join(VALE_DIR, "_tmp-" + localName);
   const url = `${REPO_MIRROR}/${repo}.git`;
 
-  // Clone into temp directory
+  // In ein temporäres Verzeichnis klonen
   await execShell("git", ["clone", "--depth", "1", url, tmpDir]);
 
-  // Copy entire style folder to target
+  // Kompletten Style-Ordner ins Ziel kopieren
   await rm(targetDir, { recursive: true, force: true }).catch(() => {});
   if (isWindows) {
-    // `cp` is not shipped with Windows, so copy with PowerShell's Copy-Item.
+    // `cp` gibt es unter Windows nicht, deshalb mit PowerShells Copy-Item kopieren.
     await runPowershell(
       [
         "$ErrorActionPreference='Stop';",
@@ -255,13 +255,13 @@ async function installStyleGuide(repo, localName) {
     await execShell("cp", ["-r", path.join(tmpDir, localName), targetDir]);
   }
 
-  // Clean up temp
+  // Temp aufräumen
   await rm(tmpDir, { recursive: true, force: true });
 
   log('✓ Style guide "%s" installed', localName);
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Hauptablauf ───────────────────────────────────────────────────────────────
 
 async function main() {
   log("");
@@ -276,19 +276,19 @@ async function main() {
     isWindows ? "Windows" : isMacOS ? "macOS" : isLinux ? "Linux" : "Unknown"
   );
 
-  // Ensure directories exist
+  // Sicherstellen, dass die Verzeichnisse existieren
   await mkdir(VALE_DIR, { recursive: true });
   await mkdir(STYLES_DIR, { recursive: true });
 
   try {
-    // Install Vale binary
+    // Vale-Binary installieren
     await installValeBinary();
 
-    // Install style guides
+    // Style-Guides installieren
     await installStyleGuide("errata-ai/Microsoft", "Microsoft");
     await installStyleGuide("errata-ai/write-good", "write-good");
 
-    // Verify installation
+    // Installation prüfen
     const versionOutput = await execShell(VALE_BINARY, ["--version"]);
 
     log("");

@@ -23,7 +23,7 @@ let model: ScadModel | undefined;
 let scadSource = "";
 let loadError = "";
 
-// Load model metadata from the generated JSON file.
+// Modell-Metadaten aus der generierten JSON-Datei laden.
 try {
   if (fs.existsSync(MODELS_JSON_PATH)) {
     const raw = fs.readFileSync(MODELS_JSON_PATH, "utf-8");
@@ -34,17 +34,17 @@ try {
   loadError = err instanceof Error ? err.message : String(err);
 }
 
-// Load the SCAD source file for the collapsible code view.
+// SCAD-Quelldatei für die aufklappbare Code-Ansicht laden.
 try {
   const scadPath = path.join(SCAD_DIR, `${id}.scad`);
   if (fs.existsSync(scadPath)) {
     scadSource = fs.readFileSync(scadPath, "utf-8");
   }
 } catch {
-  // Source display is optional; ignore read errors gracefully.
+  // Quelltextanzeige ist optional; Lesefehler bewusst ignorieren.
 }
 
-// Resolve asset paths to site-root absolute URLs.
+// Asset-Pfade in absolute URLs relativ zum Site-Root auflösen.
 const resolveAssetUrl = (relPath: string): string => {
   if (!relPath) return "";
   if (/^https?:\/\//i.test(relPath)) return relPath;

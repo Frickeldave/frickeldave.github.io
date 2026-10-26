@@ -23,7 +23,7 @@ const projectsByCategory = categories.reduce(
   {} as Record<string, typeof handmadeProjects>
 );
 
-// Select one random project from each category
+// Ein zufälliges Projekt je Kategorie auswählen
 const selectedProjects = categories
   .map((category) => {
     const categoryProjects = projectsByCategory[category];

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Resolves the OpenSCAD binary path.
+ * Ermittelt den Pfad der OpenSCAD-Binary.
  *
- * Priority:
- *   1. `openscad` found in PATH
- *   2. Project-local OpenSCAD installed by `scripts/install-openscad.mjs`
- *   3. null if not found
+ * Priorität:
+ *   1. `openscad` im PATH gefunden
+ *   2. projektlokal installiertes OpenSCAD aus `scripts/install-openscad.mjs`
+ *   3. null, wenn nichts gefunden wurde
  *
- * Usage:
+ * Aufruf:
  *   import { getOpenSCADPath } from "./scripts/get-openscad-path.mjs";
  *   const openscad = getOpenSCADPath();
  */
@@ -63,7 +63,7 @@ export function getOpenSCADPath() {
   return null;
 }
 
-// CLI usage: prints the resolved path
+// CLI-Aufruf: gibt den ermittelten Pfad aus
 if (import.meta.url === `file://${process.argv[1]}`) {
   const p = getOpenSCADPath();
   if (p) {

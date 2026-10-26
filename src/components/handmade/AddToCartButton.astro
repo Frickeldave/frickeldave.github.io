@@ -3,7 +3,7 @@ import type { HandmadeItem } from "@/types";
 
 interface Props {
   item: Pick<HandmadeItem, "articleNumber" | "name">;
-  /** `card` renders a compact button for product grids, `detail` a larger CTA. */
+  /** `card` rendert einen kompakten Button für Produktraster, `detail` ein größeres CTA. */
   variant?: "card" | "detail";
 }
 
@@ -11,10 +11,10 @@ const { item, variant = "detail" } = Astro.props;
 
 const isCard = variant === "card";
 
-// The card button shares its row with the price inside the narrow `xl` grid
-// columns (~213px of room), so it carries the shorter label. The label never
-// changes: the confirmation swaps the icon instead, which keeps the width
-// stable and the row from reflowing.
+// Der Karten-Button teilt sich die Zeile mit dem Preis in den schmalen
+// `xl`-Rasterspalten (~213px Platz), deshalb trägt er das kürzere Label. Das Label
+// ändert sich nie: die Bestätigung tauscht stattdessen das Icon, was die Breite
+// stabil hält und ein Umbrechen der Zeile verhindert.
 const label = isCard ? "Hinzufügen" : "In den Warenkorb";
 
 const buttonClasses = [
@@ -75,9 +75,9 @@ const buttonClasses = [
 
 <style>
   /*
-   * Confirmation state, driven by `data-state` rather than swapped Tailwind
-   * classes: competing `from-*`/`to-*` utilities would resolve by stylesheet
-   * order, not by the order they appear in the class attribute.
+   * Bestätigungszustand, gesteuert über `data-state` statt über getauschte
+   * Tailwind-Klassen: konkurrierende `from-*`/`to-*`-Utilities würden über die
+   * Stylesheet-Reihenfolge aufgelöst, nicht über ihre Reihenfolge im class-Attribut.
    */
   .add-to-cart button[data-state="added"] {
     background-image: linear-gradient(

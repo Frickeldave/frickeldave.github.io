@@ -6,26 +6,26 @@ import type { HandmadeData } from "@/types";
 import type { ImageMetadata } from "astro";
 import { getHandmadeCategoryLabel } from "@/lib/handmadeCategoryLabels";
 
-// Import placeholder image
+// Platzhalterbild importieren
 import placeholderImage from "@/assets/placeholder-product-notfound.png";
 
-// Import handmade data directly
+// Handmade-Daten direkt importieren
 import handmadeDataRaw from "../../../public/data/handmade.json";
 const handmadeData = handmadeDataRaw as HandmadeData;
 
-// Filter only visible products
+// Nur sichtbare Produkte filtern
 const products = handmadeData.products.filter((p) => p.visible);
 
-// Automatically import all images from handmade folder using Vite's glob import
+// Alle Bilder aus dem handmade-Ordner automatisch per Vite-Glob-Import laden
 const images = import.meta.glob<{ default: ImageMetadata }>(
   "/src/assets/handmade/**/*.{png,jpg,jpeg,webp}",
   { eager: true }
 );
 
-// Create a map of relative path to image
+// Zuordnung relativer Pfad → Bild anlegen
 const imageMap = Object.entries(images).reduce(
   (acc, [path, image]) => {
-    // Extract relative path from the full path (remove /src/assets/handmade/)
+    // Relativen Pfad aus dem vollständigen Pfad extrahieren (/src/assets/handmade/ entfernen)
     const relativePath = path.replace("/src/assets/handmade/", "");
     acc[relativePath] = image.default;
     return acc;
@@ -34,22 +34,22 @@ const imageMap = Object.entries(images).reduce(
   {} as Record<string, any>
 );
 
-// Helper function to get image for product
-// Helper function to get image for product
+// Hilfsfunktion: Bild für ein Produkt ermitteln
+// Hilfsfunktion: Bild für ein Produkt ermitteln
 const getProductImage = (category: string, articleNumber: string) => {
-  // Use category directly as folder name
+  // Kategorie direkt als Ordnernamen nutzen
   const categoryFolder = category;
-  // Dynamic lookup: find any image that belongs to this product
+  // Dynamischer Lookup: jedes Bild finden, das zu diesem Produkt gehört
   const prefix = `${categoryFolder}/${articleNumber}/`;
   const matchingPath = Object.keys(imageMap).find((path) =>
     path.startsWith(prefix)
   );
 
-  // Return the product image if it exists, otherwise return placeholder
+  // Produktbild zurückgeben, falls vorhanden, sonst Platzhalter
   return matchingPath ? imageMap[matchingPath] : placeholderImage;
 };
 
-// Get unique categories and tags
+// Eindeutige Kategorien und Tags ermitteln
 const categories = [...new Set(products.map((p) => p.category))];
 const categoryLabels = categories.map(getHandmadeCategoryLabel);
 const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
@@ -243,9 +243,9 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
   </section>
 
   <script>
-    // Force script re-execution on each page load
+    // Skript bei jedem Seitenaufruf erneut ausführen
     (() => {
-      // Client-side filtering and sorting logic
+      // Clientseitige Filter- und Sortierlogik
       let selectedCategories: string[] = [];
       let selectedTags: string[] = [];
       let searchQuery = "";
@@ -255,7 +255,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
       function initializeFilters() {
         console.log("Initializing handmade filters...");
 
-        // Desktop elements
+        // Desktop-Elemente
         const searchInput = document.getElementById(
           "search-input"
         ) as HTMLInputElement;
@@ -272,7 +272,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         const categoryButtons = document.querySelectorAll(".category-filter");
         const tagButtons = document.querySelectorAll(".tag-filter");
 
-        // Mobile elements
+        // Mobile Elemente
         const mobileSearchInput = document.getElementById(
           "mobile-search-input"
         ) as HTMLInputElement;
@@ -294,7 +294,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         const mobileTagButtons =
           document.querySelectorAll(".mobile-tag-filter");
 
-        // Mobile toggle elements
+        // Mobile Toggle-Elemente
         const mobileCategoriesToggle = document.getElementById(
           "mobile-categories-toggle"
         );
@@ -310,7 +310,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         );
         const mobileTagsArrow = document.getElementById("mobile-tags-arrow");
 
-        // Early return if essential elements don't exist
+        // Früh zurückkehren, wenn wesentliche Elemente fehlen
         if (!productsGrid || !noResults) {
           console.warn(
             "Essential handmade filter elements not found, retrying in 100ms..."
@@ -344,7 +344,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             }
           });
 
-          // Filter and sort cards WITHOUT DOM manipulation to preserve event listeners
+          // Karten filtern und sortieren OHNE DOM-Manipulation, um Event-Listener zu erhalten
           sortedCards.forEach((card, index) => {
             const category = card.getAttribute("data-category") || "";
             const tags = JSON.parse(card.getAttribute("data-tags") || "[]");
@@ -357,7 +357,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
 
             let visible = true;
 
-            // Filter by categories (if any selected)
+            // Nach Kategorien filtern (falls welche gewählt)
             if (
               selectedCategories.length > 0 &&
               !selectedCategories.includes(category)
@@ -365,7 +365,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               visible = false;
             }
 
-            // Filter by tags (if any selected)
+            // Nach Tags filtern (falls welche gewählt)
             if (
               selectedTags.length > 0 &&
               !selectedTags.every((tag) => tags.includes(tag))
@@ -373,12 +373,12 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               visible = false;
             }
 
-            // Filter by customizable
+            // Nach „anpassbar“ filtern
             if (filterCustomizable && !customizable) {
               visible = false;
             }
 
-            // Filter by search
+            // Nach Suche filtern
             if (searchQuery) {
               const query = searchQuery.toLowerCase();
               if (
@@ -398,11 +398,11 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               card.classList.add("hidden");
             }
 
-            // Apply sorting with CSS order instead of DOM manipulation
+            // Sortierung über CSS-order statt DOM-Manipulation anwenden
             (card as HTMLElement).style.order = index.toString();
           });
 
-          // Update results count (both desktop and mobile)
+          // Ergebniszähler aktualisieren (Desktop und Mobil)
           const totalCount = productCards.length;
           const resultsText = `${visibleCount} von ${totalCount} Produkten`;
 
@@ -413,7 +413,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             mobileResultsCount.textContent = resultsText;
           }
 
-          // Show/hide no results message
+          // „Keine Ergebnisse“-Meldung ein- bzw. ausblenden
           if (noResults) {
             if (visibleCount === 0) {
               noResults.classList.remove("hidden");
@@ -423,21 +423,21 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           }
         }
 
-        // Clean up existing event listeners by cloning elements
+        // Bestehende Event-Listener durch Klonen der Elemente entfernen
         const cleanupAndReattachEvents = () => {
-          // Clone category buttons to remove all event listeners
+          // Kategorie-Buttons klonen, um alle Event-Listener zu entfernen
           categoryButtons.forEach((button) => {
             const newButton = button.cloneNode(true);
             button.parentNode?.replaceChild(newButton, button);
           });
 
-          // Clone tag buttons to remove all event listeners
+          // Tag-Buttons klonen, um alle Event-Listener zu entfernen
           tagButtons.forEach((button) => {
             const newButton = button.cloneNode(true);
             button.parentNode?.replaceChild(newButton, button);
           });
 
-          // Clone mobile buttons too
+          // Auch die mobilen Buttons klonen
           mobileCategoryButtons.forEach((button) => {
             const newButton = button.cloneNode(true);
             button.parentNode?.replaceChild(newButton, button);
@@ -448,7 +448,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
             button.parentNode?.replaceChild(newButton, button);
           });
 
-          // Clone mobile toggle buttons to remove all event listeners
+          // Mobile Toggle-Buttons klonen, um alle Event-Listener zu entfernen
           if (mobileCategoriesToggle) {
             const newToggle = mobileCategoriesToggle.cloneNode(true);
             mobileCategoriesToggle.parentNode?.replaceChild(
@@ -466,10 +466,10 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           }
         };
 
-        // Clean up existing listeners
+        // Bestehende Listener entfernen
         cleanupAndReattachEvents();
 
-        // Re-query all buttons after cleanup
+        // Nach dem Aufräumen alle Buttons neu abfragen
         const freshCategoryButtons =
           document.querySelectorAll(".category-filter");
         const freshTagButtons = document.querySelectorAll(".tag-filter");
@@ -479,31 +479,31 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         const freshMobileTagButtons =
           document.querySelectorAll(".mobile-tag-filter");
 
-        // Re-query mobile toggle elements after cleanup
+        // Mobile Toggle-Elemente nach dem Aufräumen neu abfragen
         const freshMobileCategoriesToggle = document.getElementById(
           "mobile-categories-toggle"
         );
         const freshMobileTagsToggle =
           document.getElementById("mobile-tags-toggle");
 
-        // Category filter buttons with toggle functionality (with mobile sync)
+        // Kategorie-Filterbuttons mit Toggle-Funktion (inkl. mobilem Sync)
         freshCategoryButtons.forEach((button) => {
           button.addEventListener("click", () => {
             const category = button.getAttribute("data-category") || "";
 
             if (selectedCategories.includes(category)) {
-              // Deselect category
+              // Kategorie abwählen
               selectedCategories = selectedCategories.filter(
                 (c) => c !== category
               );
               button.classList.remove("!bg-blue-500/30", "!border-blue-400");
             } else {
-              // Select category
+              // Kategorie auswählen
               selectedCategories.push(category);
               button.classList.add("!bg-blue-500/30", "!border-blue-400");
             }
 
-            // Sync with mobile buttons using fresh query
+            // Mit den mobilen Buttons über eine frische Query synchronisieren
             freshMobileCategoryButtons.forEach((mobileBtn) => {
               if (mobileBtn.getAttribute("data-category") === category) {
                 if (selectedCategories.includes(category)) {
@@ -524,7 +524,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           });
         });
 
-        // Tag filter buttons with toggle functionality (with mobile sync)
+        // Tag-Filterbuttons mit Toggle-Funktion (inkl. mobilem Sync)
         freshTagButtons.forEach((button) => {
           button.addEventListener("click", () => {
             const tag = button.getAttribute("data-tag") || "";
@@ -537,7 +537,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               button.classList.add("!bg-blue-500/30", "!border-blue-400");
             }
 
-            // Sync with mobile buttons using fresh query
+            // Mit den mobilen Buttons über eine frische Query synchronisieren
             freshMobileTagButtons.forEach((mobileBtn) => {
               if (mobileBtn.getAttribute("data-tag") === tag) {
                 if (selectedTags.includes(tag)) {
@@ -558,21 +558,21 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           });
         });
 
-        // Search input (with mobile sync)
+        // Suchfeld (inkl. mobilem Sync)
         searchInput?.addEventListener("input", (e) => {
           searchQuery = (e.target as HTMLInputElement).value;
           if (mobileSearchInput) mobileSearchInput.value = searchQuery;
           updateDisplay();
         });
 
-        // Sort select (with mobile sync)
+        // Sortier-Auswahl (inkl. mobilem Sync)
         sortSelect?.addEventListener("change", (e) => {
           sortBy = (e.target as HTMLSelectElement).value;
           if (mobileSortSelect) mobileSortSelect.value = sortBy;
           updateDisplay();
         });
 
-        // Customizable filter (with mobile sync)
+        // „Anpassbar“-Filter (inkl. mobilem Sync)
         customizableCheckbox?.addEventListener("change", (e) => {
           filterCustomizable = (e.target as HTMLInputElement).checked;
           if (mobileCustomizableCheckbox)
@@ -580,7 +580,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           updateDisplay();
         });
 
-        // Clear filters button
+        // Button „Filter zurücksetzen“
         clearButton?.addEventListener("click", () => {
           selectedCategories = [];
           selectedTags = [];
@@ -592,12 +592,12 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           if (sortSelect) sortSelect.value = "name-asc";
           if (customizableCheckbox) customizableCheckbox.checked = false;
 
-          // Reset category buttons
+          // Kategorie-Buttons zurücksetzen
           document.querySelectorAll(".category-filter").forEach((btn) => {
             btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
           });
 
-          // Reset tag buttons
+          // Tag-Buttons zurücksetzen
           document.querySelectorAll(".tag-filter").forEach((btn) => {
             btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
           });
@@ -606,10 +606,10 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         });
 
         // ===============================
-        // MOBILE FILTER EVENT LISTENERS
+        // MOBILE FILTER-EVENT-LISTENER
         // ===============================
 
-        // Mobile toggle functionality (using fresh references)
+        // Mobile Toggle-Funktion (mit frischen Referenzen)
         freshMobileCategoriesToggle?.addEventListener("click", () => {
           console.log("Mobile categories toggle clicked");
           const isOpen =
@@ -635,7 +635,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           }
         });
 
-        // Mobile category filters
+        // Mobile Kategorie-Filter
         freshMobileCategoryButtons.forEach((button) => {
           button.addEventListener("click", () => {
             const category = button.getAttribute("data-category") || "";
@@ -650,7 +650,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               button.classList.add("!bg-blue-500/30", "!border-blue-400");
             }
 
-            // Sync with desktop buttons using fresh query
+            // Mit den Desktop-Buttons über eine frische Query synchronisieren
             freshCategoryButtons.forEach((desktopBtn) => {
               if (desktopBtn.getAttribute("data-category") === category) {
                 if (selectedCategories.includes(category)) {
@@ -671,7 +671,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           });
         });
 
-        // Mobile tag filters
+        // Mobile Tag-Filter
         freshMobileTagButtons.forEach((button) => {
           button.addEventListener("click", () => {
             const tag = button.getAttribute("data-tag") || "";
@@ -684,7 +684,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               button.classList.add("!bg-blue-500/30", "!border-blue-400");
             }
 
-            // Sync with desktop buttons using fresh query
+            // Mit den Desktop-Buttons über eine frische Query synchronisieren
             freshTagButtons.forEach((desktopBtn) => {
               if (desktopBtn.getAttribute("data-tag") === tag) {
                 if (selectedTags.includes(tag)) {
@@ -705,21 +705,21 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           });
         });
 
-        // Mobile search input
+        // Mobiles Suchfeld
         mobileSearchInput?.addEventListener("input", (e) => {
           searchQuery = (e.target as HTMLInputElement).value;
           if (searchInput) searchInput.value = searchQuery; // Sync with desktop
           updateDisplay();
         });
 
-        // Mobile sort select
+        // Mobile Sortier-Auswahl
         mobileSortSelect?.addEventListener("change", (e) => {
           sortBy = (e.target as HTMLSelectElement).value;
           if (sortSelect) sortSelect.value = sortBy; // Sync with desktop
           updateDisplay();
         });
 
-        // Mobile customizable filter
+        // Mobiler „Anpassbar“-Filter
         mobileCustomizableCheckbox?.addEventListener("change", (e) => {
           filterCustomizable = (e.target as HTMLInputElement).checked;
           if (customizableCheckbox)
@@ -727,7 +727,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           updateDisplay();
         });
 
-        // Mobile clear filters button
+        // Mobiler Button „Filter zurücksetzen“
         mobileClearButton?.addEventListener("click", () => {
           selectedCategories = [];
           selectedTags = [];
@@ -735,18 +735,18 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           sortBy = "name-asc";
           filterCustomizable = false;
 
-          // Reset mobile inputs
+          // Mobile Eingaben zurücksetzen
           if (mobileSearchInput) mobileSearchInput.value = "";
           if (mobileSortSelect) mobileSortSelect.value = "name-asc";
           if (mobileCustomizableCheckbox)
             mobileCustomizableCheckbox.checked = false;
 
-          // Reset desktop inputs
+          // Desktop-Eingaben zurücksetzen
           if (searchInput) searchInput.value = "";
           if (sortSelect) sortSelect.value = "name-asc";
           if (customizableCheckbox) customizableCheckbox.checked = false;
 
-          // Reset all filter buttons
+          // Alle Filter-Buttons zurücksetzen
           document
             .querySelectorAll(".category-filter, .mobile-category-filter")
             .forEach((btn) => {
@@ -759,7 +759,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
               btn.classList.remove("!bg-blue-500/30", "!border-blue-400");
             });
 
-          // Close mobile dropdowns
+          // Mobile Dropdowns schließen
           mobileCategoriesDropdown?.classList.add("hidden");
           mobileTagsDropdown?.classList.add("hidden");
           mobileCategoriesArrow?.classList.remove("rotate-180");
@@ -768,19 +768,19 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
           updateDisplay();
         });
 
-        // Initial display update
+        // Erste Anzeige aktualisieren
         updateDisplay();
       }
 
-      // Initialize immediately if DOM is ready
+      // Sofort initialisieren, wenn das DOM bereit ist
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initializeFilters);
       } else {
-        // DOM is already loaded
+        // DOM ist bereits geladen
         setTimeout(initializeFilters, 0);
       }
 
-      // Re-initialize on Astro page events
+      // Bei Astro-Seitenereignissen neu initialisieren
       document.addEventListener("astro:page-load", () => {
         console.log(
           "Astro page load event detected, reinitializing handmade filters..."
@@ -795,7 +795,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         setTimeout(initializeFilters, 100);
       });
 
-      // Fallback for navigation events
+      // Fallback für Navigationsereignisse
       window.addEventListener("popstate", () => {
         console.log(
           "Popstate event detected, reinitializing handmade filters..."
@@ -803,7 +803,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         setTimeout(initializeFilters, 100);
       });
 
-      // Backup periodic check (every 2 seconds for the first 10 seconds)
+      // Ergänzende periodische Prüfung (alle 2 Sekunden, in den ersten 10 Sekunden)
       let checkCount = 0;
       const maxChecks = 5;
       const checkInterval = setInterval(() => {
@@ -823,7 +823,7 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
         }
       }, 2000);
 
-      // Initial call
+      // Erster Aufruf
       initializeFilters();
     })();
   </script>
@@ -831,13 +831,13 @@ const allTags = [...new Set(products.flatMap((p) => p.tags))].sort();
 
 <style>
   /*
-   * The product grid has to line up with the first box of the Handmade sidebar
-   * ("Bereiche"), but `.section` adds 3-4rem of top padding.
+   * Das Produktraster muss mit der ersten Box der Handmade-Sidebar („Bereiche“)
+   * fluchten, aber `.section` fügt 3-4rem Top-Padding hinzu.
    *
-   * A Tailwind utility cannot cancel it: `utilities.scss` is loaded into
-   * Tailwind's `utilities` layer *after* the generated utilities, so `.section`
-   * wins against `pt-0` (verified — adding `pt-0` leaves the padding at 64px).
-   * The extra class raises the specificity instead.
+   * Eine Tailwind-Utility kann das nicht aufheben: `utilities.scss` wird in
+   * Tailwinds `utilities`-Layer *nach* den generierten Utilities geladen, damit
+   * gewinnt `.section` gegen `pt-0` (verifiziert — `pt-0` lässt das Padding bei 64px).
+   * Die zusätzliche Klasse erhöht stattdessen die Spezifität.
    */
   section.shop-products {
     padding-top: 0;

@@ -17,7 +17,7 @@ await mockModule('node:fs', { existsSync, mkdirSync, writeFileSync });
 const createInterface = vi.fn();
 await mockModule('node:readline/promises', { createInterface });
 
-// Pin the platform so the tmux flows behave identically on every host OS.
+// Plattform festnageln, damit sich die tmux-Flows auf jedem Host-OS identisch verhalten.
 const platformState = { windows: false };
 await mockModule('./platform-shared.mjs', {
   isWindows: () => platformState.windows,

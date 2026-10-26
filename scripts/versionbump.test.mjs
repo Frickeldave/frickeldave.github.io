@@ -64,7 +64,7 @@ All notable changes to this project will be documented in this file.
 - Older release (#3).
 `;
 
-/** Waits until `predicate()` is true so stream-driven prompt tests stay deterministic. */
+/** Wartet, bis `predicate()` wahr ist, damit stream-getriebene Prompt-Tests deterministisch bleiben. */
 async function waitFor(predicate, description) {
   const deadline = Date.now() + 2000;
   while (!predicate()) {

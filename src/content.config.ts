@@ -1,8 +1,8 @@
 import { defineCollection, reference, z } from "astro:content";
 import { glob } from "astro/loaders";
 
-// May also need to update /src/types/index.d.ts when updating this file
-// When updating the set of searchable collections, update collectionList in /src/pages/search.astro
+// Beim Ändern dieser Datei ggf. auch /src/types/index.d.ts anpassen
+// Beim Ändern der durchsuchbaren Collections auch collectionList in /src/pages/search.astro anpassen
 
 const searchable = z.object({
   title: z.string(),
@@ -117,7 +117,7 @@ const aboutme = defineCollection({
       autodescription: z.boolean().default(true),
       draft: z.boolean().default(false),
       visible: z.boolean().default(false),
-      // Main about me fields
+      // Hauptfelder „Über mich“
       name: z.string().optional(),
       jobTitle: z.string().optional(),
       tagline: z.string().optional(),
@@ -301,7 +301,7 @@ const downloads = defineCollection({
   }),
 });
 
-// Export collections
+// Collections exportieren
 export const collections = {
   authors,
   blog,

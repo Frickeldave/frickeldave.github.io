@@ -74,9 +74,9 @@ function findPosixShell() {
   return null;
 }
 
-// Every project-specific value lives in bootstrap.json; the executable
-// fail-fast checks below run a scratch copy of the script with a doctored
-// config, so they never touch the committed file and never need a cluster.
+// Jeder projektspezifische Wert steht in bootstrap.json; die Fail-fast-Prüfungen
+// unten führen eine Scratch-Kopie des Skripts mit manipulierter Konfiguration aus,
+// sodass sie nie die committete Datei anfassen und nie einen Cluster brauchen.
 const SCRUBBED_VARIABLES = [
   "DEV_BASE_IMAGE",
   "GH_RUNNER_IMAGE",
@@ -228,8 +228,8 @@ test("the build-only images are not required when SKIP_IMAGE_BUILD=true", () => 
   const scratchConfig = {
     ...withoutKeys(config, buildOnlyKeys),
     skipImageBuild: true,
-    // A deliberately missing kubeconfig stops the scratch run immediately after
-    // the image resolution, so the test never reaches docker or kubectl.
+    // Eine absichtlich fehlende kubeconfig stoppt den Scratch-Lauf direkt nach der
+    // Image-Auflösung, damit der Test nie docker oder kubectl erreicht.
     kubeconfig: path.join(tmpdir(), "bootstrap-missing-kubeconfig.yaml"),
   };
   const result = runScratchBootstrap(scratchConfig);
@@ -430,7 +430,7 @@ test("runner RBAC renders into the target namespace and keeps the kaniko capabil
   assert.match(rendered, /resources: \["pods", "pods\/log"\]/);
   assert.match(rendered, /resources: \["secrets"\]/);
   assert.match(rendered, /verbs: \["create", "update", "get", "delete"\]/);
-  // The dev-machine bootstrap workflow creates, applies and deletes machines and probes them via exec.
+  // Der Dev-Machine-Bootstrap-Workflow legt Maschinen an, wendet sie an, löscht sie und prüft sie per exec.
   assert.match(rendered, /resources: \["statefulsets"\]/);
   assert.match(rendered, /resources: \["services"\]/);
   assert.match(rendered, /resources: \["pods\/exec"\]/);
@@ -477,9 +477,9 @@ test("the namespace name lives only in bootstrap.json", () => {
 });
 
 test("no project literal survives outside bootstrap.json (portability guard)", () => {
-  // Built from character codes so the guard cannot match its own source. These
-  // are the identifiers of this repository and of the upstream project the
-  // package was extracted from; a portable copy must not contain any of them.
+  // Aus Zeichencodes gebaut, damit der Guard nicht seinen eigenen Quelltext trifft. Das
+  // sind die Identifier dieses Repositories und des Upstream-Projekts, aus dem das
+  // Paket extrahiert wurde; eine portable Kopie darf keinen davon enthalten.
   const forbidden = new RegExp(
     [
       [102, 100, 45], // the repository prefix used by the image and namespace names

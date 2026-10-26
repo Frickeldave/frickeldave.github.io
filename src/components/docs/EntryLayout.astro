@@ -30,22 +30,22 @@ let navClass;
 let tocClass;
 
 if (actuallyHideNav && actuallyHideToc) {
-  // Both nav and toc are hidden
+  // Nav und ToC sind ausgeblendet
   navClass = "hidden";
   articleClass = "w-full";
   tocClass = "hidden";
 } else if (!actuallyHideNav && actuallyHideToc) {
-  // Nav is visible, toc is hidden
+  // Nav sichtbar, ToC ausgeblendet
   navClass = "hidden md:flex md:w-1/4 lg:w-1/5";
   articleClass = "w-full md:w-3/4 lg:w-4/5";
   tocClass = "hidden";
 } else if (actuallyHideNav && !actuallyHideToc) {
-  // Nav is hidden, toc is visible
+  // Nav ausgeblendet, ToC sichtbar
   navClass = "hidden";
   articleClass = "w-full md:w-3/4 lg:w-4/5";
   tocClass = "hidden md:flex md:w-1/4 lg:w-1/5";
 } else {
-  // Both nav and toc are visble
+  // Nav und ToC sind sichtbar
   navClass = "hidden md:flex md:w-1/4 lg:w-1/5";
   articleClass = "w-full md:w-3/4 lg:w-3/5";
   tocClass = "hidden lg:flex lg:w-1/5";

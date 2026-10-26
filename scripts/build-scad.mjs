@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * OpenSCAD Build Pipeline
+ * OpenSCAD-Build-Pipeline
  *
- * Discovers SCAD files, renders STL outputs, generates metadata JSON,
- * and caches by file hash.
+ * Findet SCAD-Dateien, rendert STL-Ausgaben, erzeugt die Metadaten-JSON
+ * und cached über den Datei-Hash.
  *
- * Usage:
- *   node scripts/build-scad.mjs          # Standalone
- *   npm run scad:render                  # Via npm
+ * Aufruf:
+ *   node scripts/build-scad.mjs          # alleinstehend
+ *   npm run scad:render                  # über npm
  */
 
 import fs from 'fs';
@@ -20,7 +20,7 @@ import { execSync } from 'child_process';
 import { getOpenSCADPath } from './get-openscad-path.mjs';
 
 // ============================================================================
-// Configuration
+// Konfiguration
 // ============================================================================
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,11 +31,11 @@ const OUTPUT_DIR = path.join(PROJECT_ROOT, 'public/3dmodels');
 const CACHE_FILE = path.join(OUTPUT_DIR, '.build-cache.json');
 
 // ============================================================================
-// Utilities
+// Hilfsfunktionen
 // ============================================================================
 
 /**
- * Compute SHA-256 hash of a file and all its includes
+ * Berechnet den SHA-256-Hash einer Datei samt aller eingebundenen Dateien
  * @param {string} filePath - Path to SCAD file
  * @param {Set<string>} visited - Track visited files to avoid cycles
  * @returns {string} - Combined hash
@@ -53,7 +53,7 @@ function computeFileHash(filePath, visited = new Set()) {
     const content = fs.readFileSync(filePath, 'utf-8');
     let hash = createHash('sha256').update(content).digest('hex');
 
-    // Include hashes of any files referenced by use <...>
+    // Hashes aller über use <...> referenzierten Dateien einbeziehen
     const includes = parseIncludes(filePath);
     for (const incPath of includes) {
       const resolved = resolveIncludePath(incPath, path.dirname(filePath));
@@ -70,7 +70,7 @@ function computeFileHash(filePath, visited = new Set()) {
 }
 
 /**
- * Parse use <...> statements from SCAD file
+ * Liest use <...>-Anweisungen aus einer SCAD-Datei
  * @param {string} filePath - Path to SCAD file
  * @returns {string[]} - Array of include paths
  */
@@ -93,21 +93,21 @@ function parseIncludes(filePath) {
 }
 
 /**
- * Resolve include path relative to the SCAD file location
- * Handles both explicit paths and module lookups
+ * Löst den Include-Pfad relativ zum Ort der SCAD-Datei auf.
+ * Behandelt sowohl explizite Pfade als auch Modul-Lookups
  * @param {string} includePath - Path from use <...> statement
  * @param {string} baseDir - Directory containing the SCAD file
  * @returns {string|null} - Resolved filesystem path or null
  */
 function resolveIncludePath(includePath, baseDir) {
-  // Try direct relative resolution first
+  // Zuerst die direkte relative Auflösung versuchen
   const relativePath = path.resolve(baseDir, includePath);
   if (fs.existsSync(relativePath)) {
     return relativePath;
   }
 
-  // Handle incorrect module paths: ./../modules/scad/roundedcube.scad
-  // → resolve to includes/roundedcube.scad
+  // Falsche Modulpfade behandeln: ./../modules/scad/roundedcube.scad
+  // → auf includes/roundedcube.scad auflösen
   if (includePath.includes('modules/scad/')) {
     const filename = path.basename(includePath);
     const includesPath = path.resolve(INCLUDES_SRC, filename);
@@ -116,7 +116,7 @@ function resolveIncludePath(includePath, baseDir) {
     }
   }
 
-  // Try looking in includes directory directly
+  // Alternativ direkt im includes-Verzeichnis suchen
   const inIncludesDir = path.resolve(INCLUDES_SRC, path.basename(includePath));
   if (fs.existsSync(inIncludesDir)) {
     return inIncludesDir;
@@ -126,7 +126,7 @@ function resolveIncludePath(includePath, baseDir) {
 }
 
 /**
- * Resolve OpenSCAD binary (PATH or project-local install)
+ * Ermittelt das OpenSCAD-Binary (PATH oder projektlokale Installation)
  * @returns {string} - Path to OpenSCAD binary
  */
 function resolveOpenSCADBinary() {
@@ -140,9 +140,9 @@ function resolveOpenSCADBinary() {
 }
 
 /**
- * Create a temporary working copy of a SCAD file with absolute include paths.
- * OpenSCAD 2021.01 does not support the -L library path flag, so we rewrite
- * `use <...>` statements to point to the resolved include files directly.
+ * Legt eine temporäre Arbeitskopie einer SCAD-Datei mit absoluten Include-Pfaden an.
+ * OpenSCAD 2021.01 unterstützt das Flag -L für Bibliothekspfade nicht, deshalb
+ * schreiben wir `use <...>`-Anweisungen direkt auf die aufgelösten Includes um.
  *
  * @param {string} scadFile - Path to original SCAD file
  * @param {string} tempDir - Temporary directory for the working copy
@@ -155,7 +155,7 @@ function prepareTemporaryScadFile(scadFile, tempDir) {
 
   let content = fs.readFileSync(scadFile, 'utf-8');
 
-  // Replace each use <...> with the absolute path to the resolved include
+  // Jedes use <...> durch den absoluten Pfad des aufgelösten Includes ersetzen
   content = content.replace(/use\s*<([^>]+)>/g, (match, includePath) => {
     const resolved = resolveIncludePath(includePath, baseDir);
     if (resolved) {
@@ -172,7 +172,7 @@ function prepareTemporaryScadFile(scadFile, tempDir) {
 }
 
 /**
- * Build OpenSCAD command for STL export
+ * Baut das OpenSCAD-Kommando für den STL-Export
  * @param {string} scadFile - Path to SCAD file
  * @param {string} outputFile - Path to output STL
  * @returns {string} - Command to execute
@@ -183,7 +183,7 @@ function buildOpenSCADCommand(scadFile, outputFile) {
 }
 
 /**
- * Execute OpenSCAD command
+ * Führt das OpenSCAD-Kommando aus
  * @param {string} command - Command to execute
  * @param {string} scadFile - SCAD filename (for logging)
  * @returns {boolean} - Success flag
@@ -205,7 +205,7 @@ function executeCommand(command, scadFile) {
 }
 
 /**
- * Derive human-readable title from filename
+ * Leitet einen lesbaren Titel aus dem Dateinamen ab
  * Format: CamelCase → Camel Case
  * @param {string} filename - Filename without extension
  * @returns {string} - Title
@@ -218,7 +218,7 @@ function deriveTitle(filename) {
 }
 
 /**
- * Load cache from previous build
+ * Lädt den Cache des vorherigen Builds
  * @returns {object} - Cache object {filename: hash}
  */
 function loadCache() {
@@ -233,7 +233,7 @@ function loadCache() {
 }
 
 /**
- * Save cache for next build
+ * Schreibt den Cache für den nächsten Build
  * @param {object} cache - Cache object
  */
 function saveCache(cache) {
@@ -245,19 +245,19 @@ function saveCache(cache) {
 }
 
 // ============================================================================
-// Main Build Process
+// Haupt-Build-Ablauf
 // ============================================================================
 
 async function buildSCADModels() {
   console.log('🏗️  Building OpenSCAD models...\n');
 
-  // Create output directory
+  // Zielverzeichnis anlegen
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     console.log(`📁 Created output directory: ${OUTPUT_DIR}`);
   }
 
-  // Discover SCAD files
+  // SCAD-Dateien finden
   if (!fs.existsSync(MODELS_SRC)) {
     console.error(`❌ Models directory not found: ${MODELS_SRC}`);
     process.exit(1);
@@ -272,7 +272,7 @@ async function buildSCADModels() {
 
   console.log(`📋 Found ${scadFiles.length} SCAD file(s):\n`);
 
-  // Load cache
+  // Cache laden
   const cache = loadCache();
   const newCache = {};
   const models = [];
@@ -280,23 +280,23 @@ async function buildSCADModels() {
   let skipCount = 0;
   let failCount = 0;
 
-  // Process each SCAD file
+  // Jede SCAD-Datei verarbeiten
   for (const scadFile of scadFiles) {
     const modelName = path.basename(scadFile, '.scad');
     const scadPath = path.join(MODELS_SRC, scadFile);
     const stlPath = path.join(OUTPUT_DIR, `${modelName}.stl`);
     let tempDir = null;
 
-    // Compute hash
+    // Hash berechnen
     const hash = computeFileHash(scadPath);
     newCache[scadFile] = hash;
 
-    // Check if cached and unchanged
+    // Prüfen, ob gecached und unverändert
     if (cache[scadFile] === hash && fs.existsSync(stlPath)) {
       console.log(`⏭️  ${scadFile} (cached, unchanged)`);
       skipCount++;
 
-      // Still add to models even if cached
+      // Auch gecached ins Model-Verzeichnis aufnehmen
       models.push({
         id: modelName,
         title: deriveTitle(modelName),
@@ -308,12 +308,12 @@ async function buildSCADModels() {
     }
 
     try {
-      // OpenSCAD 2021.01 does not support -L; create a temporary SCAD file
-      // with absolute include paths so includes can still be resolved.
+      // OpenSCAD 2021.01 kennt kein -L; deshalb eine temporäre SCAD-Datei
+      // mit absoluten Include-Pfaden erzeugen, damit Includes auflösbar bleiben.
       tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'build-scad-'));
       const tempScadPath = prepareTemporaryScadFile(scadPath, tempDir);
 
-      // Render STL
+      // STL rendern
       const stlCmd = buildOpenSCADCommand(tempScadPath, stlPath);
       const stlOk = executeCommand(stlCmd, scadFile);
 
@@ -342,10 +342,10 @@ async function buildSCADModels() {
     }
   }
 
-  // Save cache
+  // Cache speichern
   saveCache(newCache);
 
-  // Generate models.json
+  // models.json erzeugen
   const modelsJsonPath = path.join(OUTPUT_DIR, 'models.json');
   try {
     fs.writeFileSync(modelsJsonPath, JSON.stringify(models, null, 2));
@@ -354,7 +354,7 @@ async function buildSCADModels() {
     console.error(`❌ Failed to write models.json: ${err.message}`);
   }
 
-  // Summary
+  // Zusammenfassung
   console.log(`\n📊 Build Summary:`);
   console.log(`   ✅ Rendered: ${successCount}`);
   console.log(`   ⏭️  Cached:   ${skipCount}`);
@@ -369,7 +369,7 @@ async function buildSCADModels() {
 }
 
 // ============================================================================
-// Entry Point
+// Einstiegspunkt
 // ============================================================================
 
 buildSCADModels().catch((err) => {

@@ -1,8 +1,8 @@
 /**
- * Copilot CLI environment checks shared by the start flow scripts.
+ * Prüfungen der Copilot-CLI-Umgebung, die sich die Start-Flow-Skripte teilen.
  *
- * `node scripts/copilot-environment.mjs auth|terminal|status` can be run on its
- * own; `status` reports on FLOW_REPO_ROOT (default: the current directory).
+ * `node scripts/copilot-environment.mjs auth|terminal|status` lässt sich auch
+ * allein ausführen; `status` berichtet über FLOW_REPO_ROOT (Default: aktuelles Verzeichnis).
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -14,7 +14,7 @@ import { prepareSpawn } from './platform-shared.mjs';
 export const COPY_HINT =
   'Kopieren (VS Code/tmux): markieren → Rechtsklick; falls die TUI die Maus abfängt: Alt+Ziehen, dann Strg+Umschalt+C (macOS: Option+Ziehen mit macOptionClickForcesSelection, dann ⌘C).';
 
-// Preserve offsets so callers can insert into JSONC without rewriting existing settings.
+// Offsets beibehalten, damit Aufrufer in JSONC einfügen können, ohne bestehende Einstellungen neu zu schreiben.
 export function parseJsonc(text) {
   let clean = '';
   let quoted = false;
@@ -135,11 +135,8 @@ function toolStatus(spawnFn, commandName, env) {
 }
 
 /**
- * Resolves the repository this flow runs in. The start scripts also run inside
- * worktrees, so the main checkout is derived from the shared git directory.
- *
- * @param {string} repoPath
- * @param {{ spawnFn?: typeof command }} [options]
+ * Ermittelt das Repository, in dem dieser Flow läuft. Die Start-Skripte laufen auch
+ * in Worktrees, deshalb wird der Haupt-Checkout aus dem gemeinsamen Git-Verzeichnis abgeleitet.
  */
 export function resolveRepositoryRoots(repoPath, { spawnFn = command } = {}) {
   const checkoutPath = resolve(repoPath);
@@ -228,8 +225,8 @@ export function reportReadiness(repoPath, options = {}) {
 }
 
 /**
- * Equivalent to Copilot 1.0.98 /terminal-setup's VS Code binding.
- * Remote-SSH cannot change the local VS Code client's keybindings.
+ * Entspricht der VS-Code-Bindung von Copilot 1.0.98 /terminal-setup.
+ * Remote-SSH kann die Keybindings des lokalen VS-Code-Clients nicht ändern.
  */
 export function configureMultiline({
   env = process.env,
@@ -304,7 +301,7 @@ export function prepareCopilotEnvironment(
 }
 
 export function configureCopilotMouse({ env = process.env, spawnFn = command } = {}) {
-  // mouse=off alone does not stop a TUI from enabling mouse reporting.
+  // mouse=off allein hält eine TUI nicht davon ab, Mouse-Reporting einzuschalten.
   const help = spawnFn('copilot', ['--help'], { env });
   if (help.status === 0 && help.stdout?.includes('--no-mouse')) {
     const result = spawnFn('copilot', ['config', 'mouse', 'false'], { env });
@@ -328,7 +325,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     configureCopilotMouse();
     console.log(COPY_HINT);
   } else if (action === 'status') {
-    // FLOW_REPO_ROOT lets you report on another checkout; defaults to the current directory.
+    // FLOW_REPO_ROOT erlaubt Berichte über einen anderen Checkout; Default ist das aktuelle Verzeichnis.
     reportReadiness(process.env.FLOW_REPO_ROOT || process.cwd());
   } else {
     console.error('Usage: copilot-environment.mjs auth|terminal|status');

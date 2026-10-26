@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 
-// for shadcn components
+// für shadcn-Komponenten
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 function cn(...inputs: ClassValue[]) {

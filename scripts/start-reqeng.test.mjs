@@ -18,8 +18,8 @@ import {
 const PRE_PUSH_HOOK_URL = new URL('../.husky/pre-push-validate.js', import.meta.url);
 
 /**
- * Loads the exact branch-name rule the Husky pre-push hook enforces, so the
- * assertions below cannot drift from the hook.
+ * Lädt genau die Branch-Namen-Regel, die der Husky-Pre-Push-Hook erzwingt, damit die
+ * Assertions unten nicht vom Hook abweichen können.
  */
 function loadPrePushBranchRule() {
   const source = readFileSync(PRE_PUSH_HOOK_URL, 'utf8');

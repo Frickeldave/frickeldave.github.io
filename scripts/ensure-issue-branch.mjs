@@ -2,22 +2,22 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Issue branch automation.
+ * Automatisierung der Issue-Branches.
  *
- * Branches follow the repository's Conventional Branch Name policy —
- * `<type>/issue-<n>-<slug>` (e.g. `feat/issue-482-dark-software-factory`) —
- * because `.husky/pre-push-validate.js` rejects anything that is not
- * `<type>/<optional-id>-<description>` with a Conventional Commits type.
- * The previous `squad/<issue>-<type>` scheme is intentionally gone.
+ * Branches folgen der Conventional-Branch-Name-Policy des Repositories —
+ * `<type>/issue-<n>-<slug>` (z. B. `feat/issue-482-dark-software-factory`) —
+ * weil `.husky/pre-push-validate.js` alles ablehnt, was nicht
+ * `<type>/<optional-id>-<description>` mit einem Conventional-Commits-Typ ist.
+ * Das frühere Schema `squad/<issue>-<type>` ist bewusst entfallen.
  */
 
 export const DEFAULT_BASE_BRANCH = 'dev';
 const ISSUE_TYPE_SLUGS = ['feature', 'bug', 'task', 'docs', 'chore', 'spike', 'epic'];
 
 /**
- * Branch types accepted by `.husky/pre-push-validate.js`. `squad` is
- * deliberately absent: the pre-push hook rejects `squad/<id>-<type>` branches,
- * so issue branches must use `<type>/issue-<n>-<slug>` instead.
+ * Branch-Typen, die `.husky/pre-push-validate.js` akzeptiert. `squad` fehlt
+ * bewusst: der Pre-Push-Hook lehnt `squad/<id>-<type>`-Branches ab, Issue-Branches
+ * müssen deshalb `<type>/issue-<n>-<slug>` nutzen.
  */
 export const CONVENTIONAL_BRANCH_TYPES = Object.freeze([
   'feat',
@@ -117,25 +117,23 @@ export function deriveIssueTypeSlug(labels = []) {
 }
 
 /**
- * Maps the issue's `type:*` label onto a Conventional Branch Name type.
- * Unknown or missing type labels fall back to `feat`.
+ * Bildet das `type:*`-Label des Issues auf einen Conventional-Branch-Name-Typ ab.
+ * Unbekannte oder fehlende Typ-Labels fallen auf `feat` zurück.
  */
 export function deriveBranchType(labels = []) {
   return ISSUE_TYPE_TO_BRANCH_TYPE[deriveIssueTypeSlug(labels)] ?? DEFAULT_BRANCH_TYPE;
 }
 
 /**
- * Builds an issue branch name that satisfies the repository's Conventional
- * Branch Name policy: `<type>/issue-<n>-<slug>`, e.g.
+ * Baut einen Issue-Branch-Namen, der die Conventional-Branch-Name-Policy des
+ * Repositories erfüllt: `<type>/issue-<n>-<slug>`, z. B.
  * `feat/issue-482-dark-software-factory`.
  *
- * This is the single source of truth shared with `scripts/start-work.mjs`, so
- * the two flows cannot drift. `.husky/pre-push-validate.js` only accepts
- * `<type>/<optional-id>-<description>` with a Conventional Commits type, hence
- * `squad` is rejected here rather than producing a branch that cannot be pushed.
- *
- * @param {{ type?: string; issueId: number; slug: string }} params
- * @returns {string}
+ * Das ist die eine gemeinsame Quelle mit `scripts/start-work.mjs`, damit die beiden
+ * Abläufe nicht auseinanderlaufen. `.husky/pre-push-validate.js` akzeptiert nur
+ * `<type>/<optional-id>-<description>` mit einem Conventional-Commits-Typ; `squad`
+ * wird deshalb hier abgelehnt, statt einen Branch zu erzeugen, der sich nicht
+ * pushen lässt.
  */
 export function buildIssueBranchName({ type = DEFAULT_BRANCH_TYPE, issueId, slug }) {
   const branchType = normalizeBranchType(type);
@@ -154,9 +152,9 @@ export function buildIssueBranchName({ type = DEFAULT_BRANCH_TYPE, issueId, slug
 }
 
 /**
- * Normalizes arbitrary text (issue title or an already-slugged value) into a
- * branch description segment: lowercase ASCII kebab-case without leading or
- * trailing hyphens, capped at 48 characters.
+ * Normalisiert beliebigen Text (Issue-Titel oder bereits geslugten Wert) zu einem
+ * Branch-Beschreibungssegment: ASCII-Kebap-Schreibweise in Kleinbuchstaben ohne
+ * führende oder nachgestellte Bindestriche, auf 48 Zeichen begrenzt.
  */
 export function slugifyBranchDescription(value = '') {
   return String(value ?? '')
@@ -230,14 +228,14 @@ async function loadIssueContext({ owner, repo, issueNumber, env, host }) {
   return issue;
 }
 
-// The `gh` CLI only auto-targets github.com when explicitly given a `--repo`
-// (or `--hostname`) that lacks a host. On GitHub Enterprise Server / GHEC
-// hosts (e.g. *.ghe.com) this silently sends the (host-scoped) token to
-// github.com and fails with "Bad credentials (HTTP 401)" — the same failure
-// mode fixed for the promote workflows in #575/#577. Actions always injects
-// `GITHUB_SERVER_URL` for the real host, so derive it from there and pass it
-// explicitly to each `gh` invocation (`--repo host/owner/repo`, `--hostname
-// host`) rather than relying on ambient `GH_HOST`/env-var resolution.
+// Die `gh`-CLI zielt nur dann automatisch auf github.com, wenn explizit ein
+// `--repo` (oder `--hostname`) ohne Host angegeben wird. Auf GitHub-Enterprise-
+// Server- / GHEC-Hosts (z. B. *.ghe.com) schickt sie das host-gebundene Token
+// still an github.com und scheitert mit „Bad credentials (HTTP 401)“ — derselbe
+// Fehlermodus, der für die Promote-Workflows in #575/#577 behoben wurde. Actions
+// injiziert `GITHUB_SERVER_URL` immer mit dem echten Host, deshalb leiten wir ihn
+// daraus ab und geben ihn bei jedem `gh`-Aufruf explizit mit (`--repo host/owner/repo`,
+// `--hostname host`), statt uns auf `GH_HOST`/Env-Variablen zu verlassen.
 export function resolveGhHost(env = process.env) {
   if (!env.GITHUB_SERVER_URL) return undefined;
   try {

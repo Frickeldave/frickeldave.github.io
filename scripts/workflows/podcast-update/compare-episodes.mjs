@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Compare Acast RSS feed with existing episodes in doag.md
- * Outputs the oldest missing episode as JSON if found
+ * Vergleicht den Acast-RSS-Feed mit den vorhandenen Episoden in doag.md
+ * Gibt die älteste fehlende Episode als JSON aus, wenn eine gefunden wird
  */
 
 import { readFileSync, writeFileSync } from "fs";
@@ -25,7 +25,7 @@ const DOAG_MD_PATH = join(
 );
 
 /**
- * Fetch RSS feed from Acast
+ * Lädt den RSS-Feed von Acast
  */
 async function fetchAcastRSS() {
   return new Promise((resolve, reject) => {
@@ -48,19 +48,19 @@ async function fetchAcastRSS() {
 }
 
 /**
- * Extract text content from XML tag
+ * Extrahiert den Textinhalt eines XML-Tags
  */
 function extractTag(text, tagName) {
   const regex = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i");
   const match = text.match(regex);
   let result = match ? match[1].trim() : "";
-  // Remove CDATA wrapper if present
+  // CDATA-Wrapper entfernen, falls vorhanden
   result = result.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "");
   return result;
 }
 
 /**
- * Extract attribute from XML tag
+ * Extrahiert ein Attribut eines XML-Tags
  */
 function extractAttribute(text, tagName, attrName) {
   const regex = new RegExp(`<${tagName}[^>]*${attrName}="([^"]*)"`, "i");
@@ -69,15 +69,15 @@ function extractAttribute(text, tagName, attrName) {
 }
 
 /**
- * Strip HTML tags and decode entities
+ * Entfernt HTML-Tags und dekodiert Entities
  */
 function cleanHtml(html) {
   if (!html) return "";
 
-  // Remove HTML tags
+  // HTML-Tags entfernen
   let text = html.replace(/<[^>]*>/g, "");
 
-  // Decode common HTML entities
+  // Gängige HTML-Entities dekodieren
   text = text
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
@@ -89,10 +89,10 @@ function cleanHtml(html) {
 }
 
 /**
- * Parse RSS XML to episodes array (using simple string parsing)
+ * Parst das RSS-XML in ein Episoden-Array (über einfaches String-Parsing)
  */
 async function parseRSSFeed(xmlData) {
-  // Split into individual items
+  // In einzelne Items aufteilen
   const itemMatches = xmlData.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi);
   const episodes = [];
 
@@ -129,12 +129,12 @@ async function parseRSSFeed(xmlData) {
 }
 
 /**
- * Extract episodes from doag.md frontmatter - robust parser
+ * Extrahiert die Episoden aus dem Frontmatter von doag.md - robuster Parser
  */
 function getExistingEpisodes() {
   const content = readFileSync(DOAG_MD_PATH, "utf-8");
 
-  // Extract frontmatter
+  // Frontmatter extrahieren
   const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (!frontmatterMatch) {
     throw new Error("Could not parse frontmatter from doag.md");
@@ -150,13 +150,13 @@ function getExistingEpisodes() {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Detect episodes section start
+    // Beginn des Episoden-Abschnitts erkennen
     if (line.match(/^episodes:\s*$/)) {
       inEpisodesSection = true;
       continue;
     }
 
-    // Detect end of episodes section (new top-level field)
+    // Ende des Episoden-Abschnitts erkennen (neues Top-Level-Feld)
     if (inEpisodesSection && line.match(/^[a-z_]+:/) && !line.match(/^\s/)) {
       inEpisodesSection = false;
       if (
@@ -173,7 +173,7 @@ function getExistingEpisodes() {
 
     if (!inEpisodesSection) continue;
 
-    // Detect new episode (- id: pattern with 2-space indent)
+    // Neue Episode erkennen (- id:-Muster mit 2 Leerzeichen Einrückung)
     if (line.match(/^ {2}- id:\s*(\S+)/)) {
       if (
         currentEpisode &&
@@ -196,7 +196,7 @@ function getExistingEpisodes() {
 
     if (!currentEpisode) continue;
 
-    // Extract fields with 4-space indent
+    // Felder mit 4 Leerzeichen Einrückung extrahieren
     if (line.match(/^ {4}title:\s*(.+)$/)) {
       const titleMatch = line.match(/^ {4}title:\s*(.+)$/);
       currentEpisode.title = titleMatch[1].trim();
@@ -204,21 +204,21 @@ function getExistingEpisodes() {
       const dateMatch = line.match(/^ {4}date:\s*(.+)$/);
       currentEpisode.date = dateMatch[1].trim();
     } else if (line.match(/^ {4}audioUrl:\s*[>|]?\s*$/)) {
-      // audioUrl is multiline, get next non-empty line
+      // audioUrl ist mehrzeilig, die nächste nicht-leere Zeile nehmen
       for (let j = i + 1; j < lines.length; j++) {
         if (lines[j].match(/^ {6}\S/)) {
           currentEpisode.audioUrl = lines[j].trim();
           i = j;
           break;
         } else if (lines[j].match(/^ {4}[a-z]/)) {
-          // Hit next field
+          // Nächstes Feld erreicht
           break;
         }
       }
     }
   }
 
-  // Don't forget the last episode
+  // Die letzte Episode nicht vergessen
   if (
     currentEpisode &&
     currentEpisode.id &&
@@ -230,7 +230,7 @@ function getExistingEpisodes() {
 
   console.log(`📖 Parsing ${episodes.length} episodes from doag.md`);
   episodes.forEach((ep) => {
-    // Strip quotes if present
+    // Anführungszeichen entfernen, falls vorhanden
     if (ep.title) ep.title = ep.title.replace(/^["'](.*)["']$/, "$1");
     if (ep.date) ep.date = ep.date.replace(/^["'](.*)["']$/, "$1");
     if (ep.audioUrl) ep.audioUrl = ep.audioUrl.replace(/^["'](.*)["']$/, "$1");
@@ -242,7 +242,7 @@ function getExistingEpisodes() {
 }
 
 /**
- * Normalize title for comparison (remove special chars, lowercase, trim)
+ * Normalisiert den Titel für den Vergleich (Sonderzeichen entfernen, Kleinschreibung, trimmen)
  */
 function normalizeTitle(title) {
   return title
@@ -253,7 +253,7 @@ function normalizeTitle(title) {
 }
 
 /**
- * Check if episode already exists by comparing normalized titles and dates
+ * Prüft, ob eine Episode bereits existiert, indem normalisierte Titel und Daten verglichen werden
  */
 function episodeExists(rssEpisode, existingEpisodes) {
   const normalizedRssTitle = normalizeTitle(rssEpisode.title);
@@ -261,7 +261,7 @@ function episodeExists(rssEpisode, existingEpisodes) {
   for (const existing of existingEpisodes) {
     const normalizedExistingTitle = normalizeTitle(existing.title);
 
-    // Check if audio URL matches (most reliable)
+    // Prüfen, ob die Audio-URL passt (am verlässlichsten)
     if (
       existing.audioUrl &&
       rssEpisode.audioUrl &&
@@ -271,7 +271,7 @@ function episodeExists(rssEpisode, existingEpisodes) {
       return true;
     }
 
-    // Check if titles match (fuzzy)
+    // Prüfen, ob die Titel passen (unscharf)
     if (
       normalizedRssTitle.includes(normalizedExistingTitle) ||
       normalizedExistingTitle.includes(normalizedRssTitle)
@@ -280,8 +280,8 @@ function episodeExists(rssEpisode, existingEpisodes) {
       return true;
     }
 
-    // Also check if the formatted date matches (with some tolerance for format differences)
-    // Normalize dates for comparison (remove locale-specific markers)
+    // Zusätzlich prüfen, ob das formatierte Datum passt (mit Toleranz für
+    // Formatunterschiede); Daten für den Vergleich normalisieren (locale-spezifische Marker entfernen)
     const normalizedRssDate = rssEpisode.pubDateFormatted
       .toLowerCase()
       .replace(/\.?\s*/g, " ")
@@ -296,7 +296,7 @@ function episodeExists(rssEpisode, existingEpisodes) {
       return true;
     }
 
-    // Debug: Log comparison details
+    // Debug: Details des Vergleichs ausgeben
     if (process.env.DEBUG_EPISODES === "true") {
       console.log(`   📋 Comparing "${rssEpisode.title}"`);
       console.log(`      RSS normalized: "${normalizedRssTitle}"`);
@@ -311,7 +311,7 @@ function episodeExists(rssEpisode, existingEpisodes) {
 }
 
 /**
- * Main function
+ * Hauptfunktion
  */
 async function main() {
   try {
@@ -333,7 +333,7 @@ async function main() {
 
     if (missingEpisodes.length === 0) {
       console.log("✅ No new episodes found. All episodes are up to date.");
-      // Set empty output for GitHub Actions
+      // Leere Ausgabe für GitHub Actions setzen
       if (process.env.GITHUB_OUTPUT) {
         writeFileSync(process.env.GITHUB_OUTPUT, "missing_episode=\n", {
           flag: "a",
@@ -347,19 +347,19 @@ async function main() {
       console.log(`   ${idx + 1}. "${ep.title}" (${ep.pubDateFormatted})`);
     });
 
-    // Sort by publication date (oldest first)
+    // Nach Veröffentlichungsdatum sortieren (älteste zuerst)
     missingEpisodes.sort((a, b) => new Date(a.pubDate) - new Date(b.pubDate));
 
     const oldestMissing = missingEpisodes[0];
     console.log(`\n📌 Oldest missing episode: "${oldestMissing.title}"`);
     console.log(`   Published: ${oldestMissing.pubDateFormatted}`);
 
-    // Write missing episode to file for next step
+    // Fehlende Episode für den nächsten Step in eine Datei schreiben
     const outputPath = join(WORKSPACE_ROOT, "missing-episode.json");
     writeFileSync(outputPath, JSON.stringify(oldestMissing, null, 2));
     console.log(`\n✅ Missing episode details written to: ${outputPath}`);
 
-    // Set output for GitHub Actions
+    // Ausgabe für GitHub Actions setzen
     if (process.env.GITHUB_OUTPUT) {
       writeFileSync(
         process.env.GITHUB_OUTPUT,

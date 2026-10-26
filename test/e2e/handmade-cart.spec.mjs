@@ -2,12 +2,12 @@ import { test, expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
 /**
- * End-to-end coverage for the client-side Handmade cart.
+ * End-to-End-Abdeckung für den clientseitigen Handmade-Warenkorb.
  *
- * Exercises the real built site: adding from the product grid, the header
- * counter, the view-transition navigation to the cart page, quantity changes,
- * and the generated `mailto:` link. The link is asserted via its `href` so the
- * test never has to actually hand off to a mail client.
+ * Übt die echte gebaute Seite: Hinzufügen aus dem Produktraster, den Zähler im
+ * Header, die View-Transition-Navigation zur Warenkorbseite, Mengenänderungen und
+ * den erzeugten `mailto:`-Link. Der Link wird über sein `href` geprüft, damit der
+ * Test nie wirklich an einen Mail-Client übergeben muss.
  */
 
 const catalog = JSON.parse(
@@ -19,27 +19,27 @@ const catalog = JSON.parse(
 
 const CART_STORAGE_KEY = "frickeldave:handmade-cart";
 
-// The header carries the site-wide cart shortcut with a counter. The product
-// detail page renders its own "Zum Warenkorb" entry; the Handmade sidebar has
-// none by design.
+// Der Header trägt die seitenweite Warenkorb-Verknüpfung mit Zähler. Die
+// Produktdetailseite rendert ihren eigenen „Zum Warenkorb“-Einstieg; die
+// Handmade-Sidebar hat bewusst keinen.
 const HEADER_CART = "header [data-cart-hide-when-empty]";
 const HEADER_BADGE = "header [data-cart-count]";
 const DETAIL_CART = "[data-cart-nav-link]";
 const DETAIL_BADGE = "[data-cart-nav-link] [data-cart-count]";
 
-/** Same formatting the cart page uses, so expectations stay in sync. */
+/** Dieselbe Formatierung wie auf der Warenkorbseite, damit die Erwartungen synchron bleiben. */
 const formatPrice = (value) =>
   new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(
     value
   );
 
-/** The cart formats prices with a non-breaking space; compare on plain spaces. */
+/** Der Warenkorb formatiert Preise mit geschütztem Leerzeichen; verglichen wird über normale Leerzeichen. */
 const normalize = (value) => value.replace(/\u00a0/g, " ");
 
 const findProduct = (articleNumber) =>
   catalog.products.find((product) => product.articleNumber === articleNumber);
 
-/** Decode the body of a `mailto:` link built by the cart. */
+/** Dekodiert den Body eines vom Warenkorb gebauten `mailto:`-Links. */
 const mailBodyOf = (href) => {
   const body = href.split("&body=")[1];
   return body ? decodeURIComponent(body) : "";
@@ -52,7 +52,7 @@ test.describe("handmade cart", () => {
     await expect(page.locator("[data-cart-empty]")).toBeVisible();
     await expect(page.locator("[data-cart-list]")).toBeHidden();
     await expect(page.locator("[data-cart-summary]")).toBeHidden();
-    // The header shortcut only appears once the cart holds something.
+    // Die Header-Verknüpfung erscheint erst, wenn der Warenkorb etwas enthält.
     await expect(page.locator(HEADER_CART)).toBeHidden();
   });
 
@@ -72,23 +72,23 @@ test.describe("handmade cart", () => {
 
     await addButton.click();
 
-    // The header shortcut appears for the first time and shows the count.
+    // Die Header-Verknüpfung erscheint zum ersten Mal und zeigt den Zähler.
     await expect(page.locator(HEADER_CART)).toBeVisible();
     await expect(page.locator(HEADER_BADGE)).toHaveText("1");
 
-    // Only the article number and quantity are persisted — never the price.
+    // Nur Artikelnummer und Menge werden gespeichert — nie der Preis.
     const stored = await page.evaluate(
       (key) => window.localStorage.getItem(key),
       CART_STORAGE_KEY
     );
     expect(JSON.parse(stored)).toEqual([{ articleNumber, quantity: 1 }]);
 
-    // Navigate through the header shortcut so the view transition path is
-    // covered too.
+    // Über die Header-Verknüpfung navigieren, damit auch der View-Transition-Pfad
+    // abgedeckt ist.
     await page.locator(HEADER_CART).click();
     await expect(page).toHaveURL(/\/handmade\/warenkorb\/?$/);
 
-    // The header shortcut survives the client-side navigation.
+    // Die Header-Verknüpfung übersteht die clientseitige Navigation.
     await expect(page.locator(HEADER_CART)).toBeVisible();
 
     const line = page.locator("[data-cart-line]");
@@ -101,7 +101,7 @@ test.describe("handmade cart", () => {
       formatPrice(product.price)
     );
 
-    // Raise the quantity and confirm both the line and the total follow.
+    // Menge erhöhen und prüfen, dass Zeile und Summe folgen.
     await page.locator("[data-cart-increase]").first().click();
     await expect(quantity).toHaveValue("2");
     await expect(page.locator("[data-cart-total]")).toHaveText(
@@ -118,12 +118,12 @@ test.describe("handmade cart", () => {
       `Gesamtsumme: ${normalize(formatPrice(product.price * 2))}`
     );
 
-    // Contact details are folded into the link as they are typed.
+    // Kontaktdaten fließen beim Tippen in den Link ein.
     await page.locator('[data-cart-field="name"]').fill("Testkunde");
     const hrefWithName = await mailto.getAttribute("href");
     expect(normalize(mailBodyOf(hrefWithName))).toContain("Name: Testkunde");
 
-    // Removing the last position falls back to the empty state.
+    // Das Entfernen der letzten Position fällt auf den leeren Zustand zurück.
     page.on("dialog", (dialog) => dialog.accept());
     await page.locator("[data-cart-clear]").click();
     await expect(page.locator("[data-cart-empty]")).toBeVisible();
@@ -136,7 +136,7 @@ test.describe("handmade cart", () => {
     await page.goto(`/handmade/${product.articleNumber}`);
     await page.locator("[data-add-to-cart]").first().click();
 
-    // The detail page keeps its own entry next to the add-to-cart button.
+    // Die Detailseite behält ihren eigenen Einstieg neben dem Add-to-Cart-Button.
     await expect(page.locator(DETAIL_BADGE)).toHaveText("1");
     await expect(page.locator(DETAIL_CART)).toBeVisible();
     await expect(page.locator(HEADER_CART)).toBeVisible();
@@ -149,7 +149,7 @@ test.describe("handmade cart", () => {
     await page.locator("[data-add-to-cart]").first().click();
     await expect(page.locator(HEADER_CART)).toBeVisible();
 
-    // A section without any cart UI of its own still shows the header entry.
+    // Ein Abschnitt ohne eigene Warenkorb-UI zeigt trotzdem den Header-Einstieg.
     await page.goto("/news");
     await expect(page.locator(HEADER_CART)).toBeVisible();
     await expect(page.locator(HEADER_BADGE)).toHaveText("1");

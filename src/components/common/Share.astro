@@ -16,9 +16,9 @@ interface Props {
 
 const { title, description, folder, id }: Props = Astro.props;
 
-// Use the origin the visitor is currently on, so sharing links to the actual
-// article URL in dev (e.g. http://100.104.38.118:4321) and in production
-// (https://frickeldave.github.io).
+// Den Origin nutzen, auf dem der Besucher gerade ist, damit Shares auf die
+// tatsächliche Artikel-URL zeigen — im Dev (z. B. http://100.104.38.118:4321)
+// und in Produktion (https://frickeldave.github.io).
 const origin = Astro.url.origin;
 const shareURL = folder && id ? `${origin}/${folder}/${id}` : origin;
 

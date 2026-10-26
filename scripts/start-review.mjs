@@ -74,9 +74,9 @@ foreground automatically when tmux is missing.
  *   ensureProjectPropertyAccessFn?: typeof ensureProjectPropertyAccess;
  * }} [options]
  *
- * StartReview intentionally does not assign/reassign the linked issue (#116):
- * this supersedes assignment in all three launcher flows, and review may run
- * with an optional issue context with no assignment side effects.
+ * StartReview weist das verknüpfte Issue bewusst nicht zu bzw. um (#116):
+ * Das ersetzt die Zuweisung in allen drei Launcher-Abläufen, und ein Review darf
+ * mit optionalem Issue-Kontext ohne Zuweisungs-Seiteneffekte laufen.
  */
 async function runStartReview(options = {}) {
   const {
@@ -258,7 +258,7 @@ function resolveReviewBranchContext(issueContext, repoRoot) {
   };
 }
 
-/** In an IS<n> tmux session, picks the single open ready PR linked to issue n. */
+/** Wählt in einer IS<n>-tmux-Session den einen offenen, fertigen PR zum Issue n. */
 function findReadyPrForIssueSession(detected, { readJson = readGhJson } = {}) {
   if (!detected) {
     return null;
@@ -284,9 +284,9 @@ function findReadyPrForIssueSession(detected, { readJson = readGhJson } = {}) {
 }
 
 /**
- * A PR review may run inside the tmux session of its linked issue (IS<n>).
- * The session is adopted only when the linked issue exists, so the session is
- * neither renamed nor rejected.
+ * Ein PR-Review darf in der tmux-Session seines verknüpften Issues (IS<n>)
+ * laufen. Die Session wird nur übernommen, wenn das verknüpfte Issue existiert,
+ * damit sie weder umbenannt noch abgelehnt wird.
  */
 function adoptLinkedIssueSession(
   issueContext,
@@ -396,7 +396,7 @@ function buildInitialCopilotPrompt(issueContext, additionalPrompt) {
 }
 
 function isTmuxAvailable() {
-  // tmux has no native Windows build; the flow then runs Copilot in the foreground.
+  // tmux gibt es nicht nativ für Windows; der Ablauf startet Copilot dann im Vordergrund.
   if (isWindows()) {
     return false;
   }
@@ -409,8 +409,9 @@ function isTmuxAvailable() {
 }
 
 /**
- * The review prompt comes from origin/dev, not from the PR branch: the PR may
- * be older than the current prompt (or modify it). Falls back to the worktree copy.
+ * Der Review-Prompt kommt von origin/dev, nicht vom PR-Branch: der PR kann
+ * älter sein als der aktuelle Prompt (oder ihn ändern). Fällt auf die
+ * Worktree-Kopie zurück.
  */
 function exportTrustedReviewPrompt(issueContext, repoRoot, { run = runCommand } = {}) {
   run('git', ['fetch', 'origin', 'dev'], {

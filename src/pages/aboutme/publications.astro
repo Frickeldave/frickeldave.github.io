@@ -12,7 +12,7 @@ const publications = (pubEntry?.data.publications || []).sort((a, b) => {
   return yearB - yearA;
 });
 
-// Get unique publishers and years for filters
+// Eindeutige Verlage und Jahre für die Filter ermitteln
 const publishers = [...new Set(publications.map((p) => p.publisher || ""))]
   .filter(Boolean)
   .sort();
@@ -254,17 +254,17 @@ const toc = publications.map((pub, index) => ({
 
           let visible = true;
 
-          // Filter by publisher
+          // Nach Verlag filtern
           if (selectedPublisher !== "all" && publisher !== selectedPublisher) {
             visible = false;
           }
 
-          // Filter by year
+          // Nach Jahr filtern
           if (selectedYear !== "all" && year !== selectedYear) {
             visible = false;
           }
 
-          // Filter by search (title or description)
+          // Nach Suche filtern (Titel oder Beschreibung)
           if (searchQuery) {
             const query = searchQuery.toLowerCase();
             if (!title.includes(query) && !description.includes(query)) {
@@ -281,7 +281,7 @@ const toc = publications.map((pub, index) => ({
           }
         });
 
-        // Update results count
+        // Ergebniszähler aktualisieren
         const totalCount = publicationCards.length;
         const resultsText = `${visibleCount} von ${totalCount} Publikationen`;
 
@@ -289,7 +289,7 @@ const toc = publications.map((pub, index) => ({
           resultsCount.textContent = resultsText;
         }
 
-        // Show/hide no results message
+        // „Keine Ergebnisse“-Meldung ein- bzw. ausblenden
         if (noResults) {
           if (visibleCount === 0) {
             noResults.classList.remove("hidden");
@@ -298,7 +298,7 @@ const toc = publications.map((pub, index) => ({
           }
         }
 
-        // Update TOC (Table of Contents)
+        // ToC (Inhaltsverzeichnis) aktualisieren
         const tocLinks = document.querySelectorAll('a[href^="#pub-"]');
         tocLinks.forEach((link) => {
           const href = link.getAttribute("href") || "";
@@ -315,25 +315,25 @@ const toc = publications.map((pub, index) => ({
         });
       }
 
-      // Search input
+      // Suchfeld
       searchInput?.addEventListener("input", (e) => {
         searchQuery = (e.target as HTMLInputElement).value;
         updateDisplay();
       });
 
-      // Publisher filter
+      // Verlags-Filter
       publisherFilter?.addEventListener("change", (e) => {
         selectedPublisher = (e.target as HTMLSelectElement).value;
         updateDisplay();
       });
 
-      // Year filter
+      // Jahres-Filter
       yearFilter?.addEventListener("change", (e) => {
         selectedYear = (e.target as HTMLSelectElement).value;
         updateDisplay();
       });
 
-      // Clear filters button
+      // Button „Filter zurücksetzen“
       clearButton?.addEventListener("click", () => {
         selectedPublisher = "all";
         selectedYear = "all";
@@ -346,18 +346,18 @@ const toc = publications.map((pub, index) => ({
         updateDisplay();
       });
 
-      // Initial display update
+      // Erste Anzeige aktualisieren
       updateDisplay();
     }
 
-    // Initialize immediately if DOM is ready
+    // Sofort initialisieren, wenn das DOM bereit ist
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", initializeFilters);
     } else {
       setTimeout(initializeFilters, 0);
     }
 
-    // Re-initialize on Astro page events
+    // Bei Astro-Seitenereignissen neu initialisieren
     document.addEventListener("astro:page-load", () => {
       console.log(
         "Astro page load event detected, reinitializing publication filters..."

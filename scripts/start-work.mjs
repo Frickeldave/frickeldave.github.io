@@ -1,27 +1,26 @@
 #!/usr/bin/env node
 
 /**
- * Start issue implementation from a plain terminal before launching Copilot CLI.
+ * Startet die Issue-Umsetzung in einem normalen Terminal, bevor die Copilot-CLI startet.
  *
- * Usage:
+ * Aufruf:
  *   node scripts/start-work.mjs
  *   node scripts/start-work.mjs IS_480
  *   ./scripts/start-work.mjs
  *
- * Run this before starting a Copilot CLI session. Canonical naming, port,
- * worktree-reuse and tmux-gate conventions are documented in:
+ * Vor einer Copilot-CLI-Session ausführen. Die verbindlichen Konventionen zu
+ * Benennung, Port, Worktree-Wiederverwendung und tmux-Gate stehen in:
  *   - `.github/skills/worktree-naming-conventions/SKILL.md`
  *   - `.github/skills/tmux-session-management/SKILL.md`
  *
- * The script resolves the canonical issue context, verifies issue gates
- * when required, reuses or creates the canonical worktree, verifies that
- * `.github/prompts/startwork.prompt.md` exists there (with a single-file
- * checkout prompt if it does not), prepares a draft PR before the actual
- * Copilot implementation dispatch when required, aligns with the current tmux
- * session when already inside tmux, and then launches
- * `copilot --agent Squad --yolo -i "<prompt>"` with an instruction
- * telling Copilot to read `.github/prompts/startwork.prompt.md` itself inside
- * the prepared worktree.
+ * Das Skript ermittelt den kanonischen Issue-Kontext, prüft bei Bedarf die
+ * Issue-Gates, verwendet den kanonischen Worktree wieder oder legt ihn an,
+ * prüft, ob `.github/prompts/startwork.prompt.md` dort existiert (und holt die
+ * Datei per Single-File-Checkout nach, falls nicht), legt bei Bedarf vor dem
+ * eigentlichen Copilot-Dispatch einen Draft-PR an, richtet sich in einer
+ * bestehenden tmux-Session an dieser aus und startet anschließend
+ * `copilot --agent Squad --yolo -i "<prompt>"` mit der Anweisung, dass Copilot
+ * `.github/prompts/startwork.prompt.md` selbst im vorbereiteten Worktree liest.
  */
 
 import { spawn, spawnSync } from 'node:child_process';
@@ -178,7 +177,7 @@ export async function main() {
 }
 
 /**
- * Get the main Git checkout path by inspecting the registered worktrees.
+ * Ermittelt den Pfad des Haupt-Checkouts, indem die registrierten Worktrees geprüft werden.
  */
 function getMainCheckoutPath() {
   const result = spawnSync('git', ['worktree', 'list', '--porcelain'], { encoding: 'utf8' });
@@ -261,9 +260,10 @@ function ensurePullRequestReviewers(issueContext, dispatchContext, repoRoot) {
 }
 
 /**
- * Enforces the gate-before-assignment ordering required by #116: gates must
- * precede assignment and any branch/PR/worktree/runtime side effects. A
- * failed gate throws before `assign` or `resolveBranch` ever run.
+ * Erzwingt die von #116 geforderte Reihenfolge „erst Gates, dann Zuweisung“:
+ * Gates müssen vor jeder Zuweisung und vor Seiteneffekten an Branch, PR,
+ * Worktree oder Laufzeit kommen. Ein fehlgeschlagenes Gate wirft, bevor
+ * `assign` oder `resolveBranch` überhaupt laufen.
  */
 async function runGateThenAssignAndResolveBranch(
   issueContext,
@@ -642,11 +642,11 @@ function resolveIssueContext(workType, requestedId) {
 const ACCEPTED_PROJECT_STATUSES = ['Ready to Implement', 'In Progress'];
 
 /**
- * Resolves the GitHub Projects v2 "Status" field for an issue via GraphQL,
- * bypassing `gh issue view --json projectItems`, which older `gh` CLI
- * versions (e.g. 2.23.0) reject with "Unknown JSON field". This is more
- * robust than a labels-only fallback because it still verifies status
- * automatically instead of requiring a manual user confirmation.
+ * Ermittelt das Feld „Status“ eines Issues in GitHub Projects v2 per GraphQL
+ * und umgeht damit `gh issue view --json projectItems`, das ältere
+ * `gh`-CLI-Versionen (z. B. 2.23.0) mit „Unknown JSON field“ ablehnen. Das ist
+ * robuster als ein Fallback nur über Labels, weil der Status weiterhin
+ * automatisch geprüft wird, statt eine manuelle Bestätigung zu verlangen.
  *
  * @param {{ issueId: number }} issueContext
  * @param {{ env?: NodeJS.ProcessEnv; readGhJson?: (args: string[]) => any; repositoryContext?: { owner: string; repo: string; repository: string; host?: string } }} [options]
@@ -802,11 +802,11 @@ async function validateIssueStartGate(issueContext, prompt, options = {}) {
     return;
   }
 
-  // GraphQL resolution failed too (e.g. no project access from this
-  // machine/token). We must NOT silently continue in that case — an issue
-  // sitting in "Backlog" would otherwise slip through unnoticed. Hard-stop
-  // and make the human explicitly confirm the board status before
-  // proceeding.
+  // Auch die GraphQL-Auflösung ist fehlgeschlagen (z. B. kein Projekt-Zugriff
+  // von dieser Maschine bzw. mit diesem Token). In diesem Fall darf es NICHT
+  // stillschweigend weitergehen — ein Issue in „Backlog“ würde sonst unbemerkt
+  // durchrutschen. Hart abbrechen und den Menschen den Board-Status explizit
+  // bestätigen lassen, bevor es weitergeht.
   log(
     `Issue #${issueContext.issueId}: project status could not be verified automatically (no project access from this machine/token).`
   );
@@ -892,7 +892,7 @@ function resolveProjectStatus(projectItems) {
 }
 
 function isTmuxAvailable() {
-  // tmux has no native Windows build; the flow then runs Copilot in the foreground.
+  // tmux gibt es nicht nativ für Windows; der Ablauf startet Copilot dann im Vordergrund.
   if (isWindows()) {
     return false;
   }
@@ -992,18 +992,18 @@ async function resolveCurrentTmuxContext(
 }
 
 /**
- * Feature branches MUST start from "dev" (dev-first policy, #116). This is
- * independent of `resolveDefaultBranch()`, which reflects the repository's
- * default branch (e.g. "main") and MUST NOT be used as a silent fallback for
- * new feature branches. Review (PR-mode) is unaffected: it continues to use
- * the PR's actual `baseRefName`, since review operates on an already-existing
- * PR's real base.
+ * Feature-Branches MÜSSEN von „dev“ abzweigen (dev-first-Policy, #116). Das ist
+ * unabhängig von `resolveDefaultBranch()`, das den Default-Branch des
+ * Repositories abbildet (z. B. „main“) und NICHT als stiller Fallback für neue
+ * Feature-Branches dienen darf. Der Review-Modus (PR) ist nicht betroffen: Er
+ * nutzt weiterhin das tatsächliche `baseRefName` des PRs, weil ein Review auf
+ * der echten Basis eines bereits existierenden PRs arbeitet.
  */
 const FEATURE_BRANCH_BASE = 'dev';
 
 /**
- * Fails closed, before any branch/worktree/PR creation side effect, when
- * "dev" cannot be resolved locally or on origin (#116).
+ * Bricht hart ab („fail closed“), bevor Branch, Worktree oder PR entstehen,
+ * wenn „dev“ lokal oder auf origin nicht auflösbar ist (#116).
  */
 function ensureDevBaseBranchAvailable(
   repoRoot,
@@ -1053,13 +1053,14 @@ function resolveBranchContext(
     };
   }
 
-  // Fail closed before any branch/worktree/PR creation side effect when
-  // "dev" is unavailable locally and on origin (#116).
+  // Hart abbrechen, bevor Branch, Worktree oder PR entstehen, wenn „dev“
+  // lokal und auf origin nicht verfügbar ist (#116).
   ensureDevBaseAvailable(repoRoot, FEATURE_BRANCH_BASE);
 
   return {
-    // Shared with ensure-issue-branch.mjs so both flows emit the identical
-    // Conventional Branch Name shape required by .husky/pre-push-validate.js.
+    // Gemeinsam mit ensure-issue-branch.mjs genutzt, damit beide Abläufe exakt
+    // dieselbe Conventional-Branch-Name-Form erzeugen, die
+    // .husky/pre-push-validate.js verlangt.
     branchName: buildIssueBranchName({
       issueId: issueContext.issueId,
       slug: issueContext.branchSlug,
@@ -1457,7 +1458,7 @@ export function ensureDependenciesReady(repoRoot, worktreePath) {
   ensureHuskyHooks(worktreePath);
 }
 
-// .husky/_ is generated (gitignored) and core.hooksPath points at it, so every worktree needs its own.
+// .husky/_ wird generiert (gitignored) und core.hooksPath zeigt darauf, deshalb braucht jeder Worktree eine eigene Kopie.
 function ensureHuskyHooks(worktreePath) {
   const huskyBin = resolve(worktreePath, 'node_modules', 'husky', 'bin.js');
   if (
@@ -1799,8 +1800,8 @@ function setTmuxSessionEnvironment(sessionName, portEnv) {
 }
 
 function createCopilotWindow(sessionName, worktreePath, portEnv, initialCopilotPrompt) {
-  // We start Copilot as the window command instead of sending keystrokes after attach,
-  // so the session launches deterministically without racing shell startup or history state.
+  // Copilot startet als Fensterkommando, statt nach dem Attach Tastendrücke zu senden;
+  // so startet die Session deterministisch, ohne Race mit Shell-Start oder History-Zustand.
   const result = runCommand(
     'tmux',
     [

@@ -26,7 +26,7 @@ export async function getLinkById(id: string): Promise<LinkMapping | null> {
       return null;
     }
 
-    // Handle legacy links without openInNewTab property
+    // Alt-Links ohne openInNewTab-Eigenschaft behandeln
     return {
       ...link,
       openInNewTab: link.openInNewTab ?? true, // Default to true
@@ -45,13 +45,13 @@ export async function incrementClickCount(id: string): Promise<boolean> {
       return false;
     }
 
-    // Increment click count
+    // Klickzahl erhöhen
     mappings.links[id].clicks += 1;
     mappings.analytics.totalClicks += 1;
     mappings.analytics.lastUpdated = new Date().toISOString().split("T")[0];
     mappings.links[id].lastUpdated = new Date().toISOString().split("T")[0];
 
-    // Write back to file
+    // Zurück in die Datei schreiben
     await fs.writeFile(MAPPINGS_FILE, JSON.stringify(mappings, null, 2));
     return true;
   } catch (error) {
@@ -70,7 +70,7 @@ export async function addLink(
 
     mappings.links[id] = {
       ...linkData,
-      // Set default for openInNewTab if not provided
+      // openInNewTab auf Default setzen, falls nicht angegeben
       openInNewTab: linkData.openInNewTab ?? true,
       clicks: 0,
       created: now,

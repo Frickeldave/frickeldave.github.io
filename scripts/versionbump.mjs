@@ -6,18 +6,18 @@ import { createInterface } from 'node:readline/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 /**
- * Version bump for this single-package repository.
+ * Versions-Bump für dieses Single-Package-Repository.
  *
- * A bump is only useful when it also opens a matching `## [x.y.z]` section in
- * `CHANGELOG.md`, because `.github/workflows/fd-deploy-prd.yml` greps the
- * changelog for exactly that heading before it promotes a release. A bump that
- * only rewrites `package.json` would therefore block every release, so this
- * script moves the current `## [Unreleased]` content into the new release
- * section and leaves an empty `## [Unreleased]` behind.
+ * Ein Bump ist nur sinnvoll, wenn er zugleich eine passende `## [x.y.z]`-Sektion
+ * in `CHANGELOG.md` öffnet, weil `.github/workflows/fd-deploy-prd.yml` vor dem
+ * Promote genau nach dieser Überschrift grept. Ein Bump, der nur `package.json`
+ * umschreibt, würde damit jedes Release blockieren; deshalb verschiebt dieses
+ * Skript den aktuellen Inhalt von `## [Unreleased]` in die neue Release-Sektion
+ * und lässt ein leeres `## [Unreleased]` zurück.
  *
- * Ported from CRAFT (`no_sync/scripts/versionbump.mjs`) with the workspace
- * discovery dropped (no `apps/` or `packages/` here), `prompts` replaced by
- * `node:readline/promises`, and the changelog step added.
+ * Übernommen aus `no_sync/scripts/versionbump.mjs`, ohne die
+ * Workspace-Erkennung (hier gibt es kein `apps/` oder `packages/`), mit
+ * `node:readline/promises` statt `prompts` und mit ergänztem Changelog-Schritt.
  */
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -32,7 +32,7 @@ const NEXT_SECTION_PATTERN = /^## \[/mu;
 const USAGE = 'Usage: node scripts/versionbump.mjs [x.y.z]';
 
 /**
- * Reads the `version` field of a package.json.
+ * Liest das Feld `version` einer package.json.
  * @param {string} packageJsonPath
  */
 export function readVersion(packageJsonPath) {
@@ -50,10 +50,10 @@ export function isValidSemver(version) {
 }
 
 /**
- * Compares two `major.minor.patch` versions. Returns a positive number if `a`
- * is greater, negative if smaller, zero if equal. Deliberately as strict as the
- * workflow's own `is_semver`/`version_is_greater` bash helpers: no pre-release
- * or build-metadata segments are understood.
+ * Vergleicht zwei `major.minor.patch`-Versionen. Liefert eine positive Zahl,
+ * wenn `a` größer ist, eine negative, wenn kleiner, und Null bei Gleichstand.
+ * Bewusst genauso streng wie die `is_semver`/`version_is_greater`-Bash-Helfer
+ * des Workflows: Pre-Release- und Build-Metadata-Segmente werden nicht verstanden.
  * @param {string} a
  * @param {string} b
  */
@@ -76,8 +76,8 @@ export function isVersionGreater(candidate, current) {
 }
 
 /**
- * Returns an error message when `candidate` cannot be used as the next version,
- * otherwise null.
+ * Liefert eine Fehlermeldung, wenn `candidate` nicht als nächste Version taugt,
+ * sonst null.
  * @param {string} candidate
  * @param {string} currentVersion
  */
@@ -92,8 +92,8 @@ export function validateTargetVersion(candidate, currentVersion) {
 }
 
 /**
- * Local calendar date in the `YYYY-MM-DD` shape used by the released
- * changelog headings.
+ * Lokales Kalenderdatum in der Form `YYYY-MM-DD`, wie sie die Release-Überschriften
+ * im Changelog nutzen.
  * @param {Date} date
  */
 export function formatReleaseDate(date = new Date()) {
@@ -116,8 +116,8 @@ export function formatVersionOverview({ currentVersion, newVersion, dateLabel })
 }
 
 /**
- * True when the changelog already documents `version`, regardless of the date
- * attached to it.
+ * Wahr, wenn der Changelog `version` bereits dokumentiert, unabhängig vom
+ * angehängten Datum.
  * @param {string} changelog
  * @param {string} version
  */
@@ -127,11 +127,12 @@ export function hasVersionSection(changelog, version) {
 }
 
 /**
- * Moves everything under `## [Unreleased]` into a new
- * `## [x.y.z] - <date>` section and leaves an empty `## [Unreleased]` behind.
+ * Verschiebt alles unter `## [Unreleased]` in eine neue Sektion
+ * `## [x.y.z] - <date>` und lässt ein leeres `## [Unreleased]` zurück.
  *
- * Pure string transformation: it throws on every input it cannot release
- * cleanly, so the caller can decide to write nothing at all.
+ * Reine String-Transformation: Bei jeder Eingabe, die sich nicht sauber
+ * freigeben lässt, wirft sie, damit der Aufrufer entscheiden kann, gar nichts
+ * zu schreiben.
  * @param {string} changelog
  * @param {string} version
  * @param {string} dateLabel
@@ -185,8 +186,8 @@ export function transformChangelog(changelog, version, dateLabel) {
 }
 
 /**
- * Rewrites the `version` field in place, keeping the rest of the file's
- * formatting untouched.
+ * Schreibt das Feld `version` an Ort und Stelle neu und lässt die übrige
+ * Formatierung der Datei unangetastet.
  * @param {string} packageJsonPath
  * @param {string} newVersion
  */
@@ -203,8 +204,8 @@ export function writeVersion(packageJsonPath, newVersion) {
 }
 
 /**
- * Asks for the target version until the answer is valid. An empty answer or a
- * closed input stream aborts and resolves to null.
+ * Fragt die Zielversion ab, bis die Antwort gültig ist. Eine leere Antwort oder
+ * ein geschlossener Eingabestrom bricht ab und liefert null.
  * @param {{ currentVersion: string; input?: NodeJS.ReadableStream; output?: NodeJS.WritableStream }} options
  */
 export async function promptForVersion({
@@ -239,8 +240,8 @@ export async function promptForVersion({
 }
 
 /**
- * `readline.question()` never settles when the input stream ends, so the
- * promise is raced against the interface's `close` event.
+ * `readline.question()` wird nie fertig, wenn der Eingabestrom endet; deshalb
+ * läuft das Promise gegen das `close`-Event des Interface im Rennen.
  * @param {import('node:readline/promises').Interface} readline
  * @param {string} question
  */
@@ -268,8 +269,8 @@ function readAnswer(readline, question) {
 }
 
 /**
- * Writes package.json plus the changelog section, then refreshes the lockfile.
- * Returns the process exit code.
+ * Schreibt package.json und die Changelog-Sektion und aktualisiert danach das
+ * Lockfile. Liefert den Exit-Code des Prozesses.
  * @param {{ newVersion: string; updatedChangelog: string }} input
  */
 function applyRelease({ newVersion, updatedChangelog }) {
@@ -329,7 +330,7 @@ export async function main(argv = process.argv.slice(2)) {
     newVersion = answer;
   }
 
-  // Fail before touching any file when the changelog cannot be released.
+  // Vor dem ersten Schreibzugriff abbrechen, wenn der Changelog nicht freigegeben werden kann.
   const updatedChangelog = transformChangelog(
     readFileSync(CHANGELOG_PATH, 'utf8'),
     newVersion,

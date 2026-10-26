@@ -196,8 +196,8 @@ const description =
     DetailedCartLine,
   } from "../../lib/cart";
 
-  // The nav badge lives outside this page's markup — bind it here as well, so
-  // direct visits to /handmade/warenkorb keep the counter in sync.
+  // Das Badge der Navigation liegt außerhalb des Markups dieser Seite — hier
+  // ebenfalls binden, damit direkte Aufrufe von /handmade/warenkorb den Zähler synchron halten.
   bindCartDom();
 
   const HTML_ESCAPES: Record<string, string> = {
@@ -212,9 +212,9 @@ const description =
     value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char);
 
   /**
-   * Current DOM bindings. Astro re-runs page scripts on navigation while the
-   * document (and this module) persists, so every reference has to be
-   * re-resolved against the fresh markup inside `bind()`.
+   * Aktuelle DOM-Bindungen. Astro führt Seiten-Skripte bei Navigation erneut aus,
+   * während das Dokument (und dieses Modul) bestehen bleibt, deshalb muss jede
+   * Referenz in `bind()` gegen das frische Markup neu aufgelöst werden.
    */
   let root: HTMLElement | null = null;
   let listEl: HTMLElement | null = null;
@@ -225,13 +225,13 @@ const description =
   let statusEl: HTMLElement | null = null;
   let noticeEl: HTMLElement | null = null;
 
-  /** Root element the current listeners are attached to. */
+  /** Wurzelelement, an dem die aktuellen Listener hängen. */
   let boundRoot: HTMLElement | null = null;
 
   let products: CartProduct[] = [];
   let latestSummary: CartSummary | null = null;
 
-  /** Set while the current cart exceeds the `mailto:` length limit. */
+  /** Gesetzt, solange der aktuelle Warenkorb das `mailto:`-Längenlimit überschreitet. */
   let mailtoTooLong = false;
 
   const setMessage = (
@@ -320,8 +320,8 @@ const description =
     const summary = summarizeCart(products, saved);
     latestSummary = summary;
 
-    // Drop lines whose product left the catalog, so the stored cart and the
-    // displayed cart never drift apart.
+    // Zeilen entfernen, deren Produkt aus dem Katalog gefallen ist, damit
+    // gespeicherter und angezeigter Warenkorb nie auseinanderlaufen.
     if (summary.lines.length !== saved.length) {
       writeCart(
         summary.lines.map((line) => ({
@@ -362,7 +362,7 @@ const description =
   };
 
   // ---------------------------------------------------------------------
-  // Interaction
+  // Interaktion
   // ---------------------------------------------------------------------
 
   const lineArticleNumber = (target: Element): string | null => {
@@ -415,8 +415,8 @@ const description =
   };
 
   /**
-   * Keep the send link in sync with the cart and the contact fields, so the
-   * generated mail text is inspectable (and copyable) before it is opened.
+   * Hält den Senden-Link synchron mit Warenkorb und Kontaktfeldern, damit der
+   * erzeugte Mailtext vor dem Öffnen einsehbar (und kopierbar) ist.
    */
   const updateMailtoTarget = (): void => {
     const sendEl = root?.querySelector<HTMLAnchorElement>("[data-cart-send]");
@@ -483,8 +483,8 @@ const description =
     const nextRoot = document.querySelector<HTMLElement>("[data-cart-root]");
     if (!nextRoot) return;
 
-    // Same markup (the initial `astro:page-load` right after a direct visit):
-    // already wired up, so only refresh the rendered state.
+    // Gleiches Markup (der initiale `astro:page-load` direkt nach einem Direktaufruf):
+    // bereits verdrahtet, also nur den gerenderten Zustand auffrischen.
     if (nextRoot === boundRoot) {
       render();
       return;
@@ -504,8 +504,8 @@ const description =
 
     if (!listEl || !summaryEl) return;
 
-    // Elements are re-created on every navigation, so their listeners die with
-    // them — no explicit teardown needed.
+    // Elemente werden bei jeder Navigation neu erzeugt, ihre Listener sterben mit
+    // ihnen — kein explizites Teardown nötig.
     listEl.addEventListener("click", handleClick);
     listEl.addEventListener("change", handleChange);
 
@@ -513,7 +513,7 @@ const description =
       .querySelector("[data-cart-send]")
       ?.addEventListener("click", handleSendClick);
 
-    // Rebuild the mail link while the visitor types their contact details.
+    // Mail-Link neu bauen, während der Besucher seine Kontaktdaten tippt.
     summaryEl?.addEventListener("input", updateMailtoTarget);
     root
       .querySelector("[data-cart-copy]")

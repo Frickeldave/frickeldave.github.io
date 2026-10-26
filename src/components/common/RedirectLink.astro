@@ -21,7 +21,7 @@ const displayText = text || link?.title || `Link zu ${id}`;
 const providerInfo = showProvider && link ? ` (${link.provider})` : "";
 const finalText = displayText + providerInfo;
 
-// Add rel attributes for affiliate links
+// rel-Attribute für Affiliate-Links ergänzen
 const relAttr = link?.affiliate ? "nofollow sponsored" : "nofollow";
 ---
 
@@ -38,14 +38,14 @@ const relAttr = link?.affiliate ? "nofollow sponsored" : "nofollow";
 <script>
   import { handleLinkRedirect } from "../../lib/clientRedirectService";
 
-  // Extend Window interface for type safety
+  // Window-Interface für Typsicherheit erweitern
   declare global {
     interface Window {
       handleRedirectClick: (id: string, referrer: string) => Promise<void>;
     }
   }
 
-  // Make function globally available
+  // Funktion global verfügbar machen
   window.handleRedirectClick = async (id: string, referrer: string) => {
     await handleLinkRedirect(id, referrer);
   };

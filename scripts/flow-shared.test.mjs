@@ -590,7 +590,7 @@ describe('trustCopilotFolder', () => {
     const home = makeDir();
     const configPath = join(home, '.copilot', 'config.json');
     mkdirSync(join(home, '.copilot'));
-    // Stored entries are absolute paths, so the fixture must be resolved like the real folder.
+    // Gespeicherte Einträge sind absolute Pfade, deshalb muss das Fixture wie der echte Ordner aufgelöst werden.
     const alreadyTrusted = resolve('/already');
     writeFileSync(
       configPath,

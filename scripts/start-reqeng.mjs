@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * Start ReqEng work for this project's GitHub issues from a plain terminal
- * before launching Copilot CLI.
+ * Startet die ReqEng-Arbeit an den GitHub-Issues dieses Projekts in einem
+ * normalen Terminal, bevor die Copilot-CLI startet.
  *
- * Usage:
+ * Aufruf:
  *   node scripts/start-reqeng.mjs
  *   node scripts/start-reqeng.mjs IS_480
  *   node scripts/start-reqeng.mjs is480
  *   ./scripts/start-reqeng.mjs
  *
- * Run this before starting a Copilot CLI session. Canonical naming, worktree
- * reuse and tmux-gate conventions are documented in:
+ * Vor einer Copilot-CLI-Session ausführen. Die verbindlichen Konventionen zu
+ * Benennung, Worktree-Wiederverwendung und tmux-Gate stehen in:
  *   - `.github/skills/worktree-naming-conventions/SKILL.md`
  *   - `.github/skills/tmux-session-management/SKILL.md`
  *
- * ReqEng prepares an isolated issue worktree and an optional tmux window. It
- * does not provision databases, compute service ports or install runtime
- * dependencies; no app services are started.
+ * ReqEng bereitet einen isolierten Issue-Worktree und optional ein tmux-Fenster
+ * vor. Datenbanken, Service-Ports und Laufzeit-Abhängigkeiten werden nicht
+ * provisioniert; es werden keine App-Services gestartet.
  */
 
 import { spawn, spawnSync } from 'node:child_process';
@@ -164,7 +164,7 @@ export async function runReqEng(options = {}) {
 }
 
 /**
- * Get the main Git checkout path by inspecting the registered worktrees.
+ * Ermittelt den Pfad des Haupt-Checkouts, indem die registrierten Worktrees geprüft werden.
  */
 function getMainCheckoutPath() {
   const result = spawnSync('git', ['worktree', 'list', '--porcelain'], { encoding: 'utf8' });
@@ -537,7 +537,7 @@ function buildCanonicalResourceName(repoName, canonicalRefName) {
 }
 
 function isTmuxAvailable() {
-  // tmux has no native Windows build; the flow then runs Copilot in the foreground.
+  // tmux gibt es nicht nativ für Windows; der Ablauf startet Copilot dann im Vordergrund.
   if (isWindows()) {
     return false;
   }
@@ -596,12 +596,12 @@ function resolveCurrentTmuxContext(tmuxAvailable, sessionName) {
  */
 export function resolveBranchContext(issueContext, repoRoot) {
   return {
-    // Shared with ensure-issue-branch.mjs and start-work.mjs so every flow
-    // emits the Conventional Branch Name shape required by
-    // .husky/pre-push-validate.js. The type comes from the issue's `type:*`
-    // labels via deriveBranchType and falls back to `feat`, matching
-    // start-work's default; `squad` is not an accepted type and would be
-    // rejected on push.
+    // Gemeinsam mit ensure-issue-branch.mjs und start-work.mjs genutzt, damit
+    // jeder Ablauf die Conventional-Branch-Name-Form erzeugt, die
+    // .husky/pre-push-validate.js verlangt. Der Typ kommt über deriveBranchType
+    // aus den `type:*`-Labels des Issues und fällt auf `feat` zurück — wie der
+    // Default von start-work; `squad` ist kein akzeptierter Typ und würde beim
+    // Push abgelehnt.
     branchName: buildIssueBranchName({
       type: deriveBranchType(issueContext.labels ?? []),
       issueId: issueContext.issueId,
@@ -845,9 +845,9 @@ function ensureWorktreeBranch(worktreePath, branchName) {
 }
 
 /**
- * A reused worktree can lag behind `origin/dev` and then carries outdated prompts and docs.
- * Merge `origin/dev` into it when it is clean; never fail the flow, only warn.
- * @param {string} worktreePath
+ * Ein wiederverwendeter Worktree kann hinter `origin/dev` zurückliegen und dann
+ * veraltete Prompts und Doku enthalten. `origin/dev` dann mergen, solange er
+ * sauber ist; den Ablauf nie abbrechen, nur warnen.
  */
 export function syncReusedWorktreeWithDev(worktreePath) {
   const git = (args, description) =>

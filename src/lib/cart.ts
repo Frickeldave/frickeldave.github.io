@@ -1,87 +1,87 @@
 /**
- * Client-side shopping cart for the Handmade catalog.
+ * Clientseitiger Warenkorb für den Handmade-Katalog.
  *
- * The cart lives entirely in the browser — no server, no third-party service,
- * no network transfer of cart contents. The finished cart is handed to the
- * visitor's own mail client via a `mailto:` link.
+ * Der Warenkorb lebt vollständig im Browser — kein Server, kein Drittanbieter,
+ * keine Netzwerkübertragung des Warenkorbinhalts. Der fertige Warenkorb wird über
+ * einen `mailto:`-Link an das Mailprogramm des Besuchers übergeben.
  *
- * Only `articleNumber` + `quantity` are persisted to `localStorage`. Product
- * details (name, price) are resolved from `/data/handmade.json` at render time,
- * so the cart can never display stale prices after a catalog update.
+ * Nur `articleNumber` + `quantity` werden in `localStorage` gespeichert.
+ * Produktdetails (Name, Preis) kommen zur Renderzeit aus `/data/handmade.json`,
+ * damit der Warenkorb nach einem Katalog-Update nie veraltete Preise zeigt.
  *
- * All functions are safe to call during SSR — without a `window` they degrade
- * to empty results instead of throwing.
+ * Alle Funktionen sind während des SSR sicher aufrufbar — ohne `window` liefern
+ * sie leere Ergebnisse, statt zu werfen.
  */
 
 import { formatPrice } from "./formatPrice";
 
-/** `localStorage` key holding the serialized cart lines. */
+/** `localStorage`-Schlüssel für die serialisierten Warenkorbzeilen. */
 export const CART_STORAGE_KEY = "frickeldave:handmade-cart";
 
-/** Dispatched on `window` whenever the cart contents change. */
+/** Wird bei jeder Änderung des Warenkorbinhalts auf `window` ausgelöst. */
 export const CART_UPDATED_EVENT = "handmade:cart-updated";
 
-/** Recipient of the cart mail. */
+/** Empfänger der Warenkorb-Mail. */
 export const CART_EMAIL = "handmade@frickeldave.de";
 
-/** Canonical cart page path, used by scripts and navigation. */
+/** Kanonischer Pfad der Warenkorbseite, genutzt von Skripten und Navigation. */
 export const CART_PAGE_PATH = "/handmade/warenkorb";
 
-/** Upper bound for a single line's quantity. */
+/** Obergrenze für die Menge einer einzelnen Zeile. */
 export const MAX_LINE_QUANTITY = 99;
 
 /**
- * Mail clients and browsers truncate `mailto:` URLs at roughly 2000 characters,
- * so anything above this threshold is reported as `tooLong` instead of being
- * silently cut off.
+ * Mailprogramme und Browser kürzen `mailto:`-URLs bei etwa 2000 Zeichen,
+ * deshalb wird alles darüber als `tooLong` gemeldet, statt still abgeschnitten
+ * zu werden.
  */
 export const MAILTO_LENGTH_LIMIT = 1900;
 
-/** A single persisted cart line. */
+/** Eine einzelne persistierte Warenkorbzeile. */
 export interface CartLine {
   articleNumber: string;
   quantity: number;
 }
 
-/** The product facts needed to display and price a cart line. */
+/** Die Produktdaten, die zum Anzeigen und Bepreisen einer Warenkorbzeile nötig sind. */
 export interface CartProduct {
   articleNumber: string;
   name: string;
   price: number;
 }
 
-/** A cart line joined with its resolved product data. */
+/** Eine Warenkorbzeile zusammen mit ihren aufgelösten Produktdaten. */
 export interface DetailedCartLine extends CartLine {
   product: CartProduct;
   lineTotal: number;
 }
 
-/** Fully resolved cart, ready for rendering. */
+/** Vollständig aufgelöster Warenkorb, bereit zum Rendern. */
 export interface CartSummary {
   lines: DetailedCartLine[];
-  /** Sum of all quantities. */
+  /** Summe aller Mengen. */
   itemCount: number;
-  /** Sum of all line totals, in euro. */
+  /** Summe aller Zeilensummen, in Euro. */
   total: number;
 }
 
-/** Optional visitor details added to the cart mail. */
+/** Optionale Besucherdaten für die Warenkorb-Mail. */
 export interface CartMailtoOptions {
   name?: string;
   email?: string;
   message?: string;
 }
 
-/** Result of building the cart mail link. */
+/** Ergebnis des Baus des Warenkorb-Mail-Links. */
 export interface CartMailtoResult {
   url: string;
   subject: string;
   body: string;
-  /** True when the mailto URL exceeds {@link MAILTO_LENGTH_LIMIT}. */
+  /** Wahr, wenn die mailto-URL {@link MAILTO_LENGTH_LIMIT} überschreitet. */
   tooLong: boolean;
 }
 
-/** Minimal shape of an entry in `/data/handmade.json`. */
+/** Minimale Form eines Eintrags in `/data/handmade.json`. */
 interface RawHandmadeProduct {
   articleNumber?: unknown;
   name?: unknown;
@@ -90,14 +90,14 @@ interface RawHandmadeProduct {
 }
 
 // ---------------------------------------------------------------------------
-// Browser guards
+// Browser-Wächter
 // ---------------------------------------------------------------------------
 
 const hasWindow = (): boolean => typeof window !== "undefined";
 
 /**
- * `localStorage` access throws in some privacy modes and when the quota is
- * exhausted, so every access is wrapped.
+ * `localStorage`-Zugriffe werfen in manchen Privatsphäre-Modi und bei
+ * erschöpftem Kontingent, deshalb ist jeder Zugriff gekapselt.
  */
 const getStorage = (): Storage | null => {
   if (!hasWindow()) return null;
@@ -109,10 +109,10 @@ const getStorage = (): Storage | null => {
 };
 
 // ---------------------------------------------------------------------------
-// Sanitizing
+// Bereinigung
 // ---------------------------------------------------------------------------
 
-/** Clamp a raw quantity into the supported integer range. */
+/** Begrenzt eine rohe Menge auf den unterstützten Ganzzahlbereich. */
 export const clampQuantity = (value: unknown): number => {
   const parsed = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(parsed)) return 0;
@@ -121,7 +121,7 @@ export const clampQuantity = (value: unknown): number => {
   return Math.min(int, MAX_LINE_QUANTITY);
 };
 
-/** Reduce an unknown value to a valid cart line, or `null` when unusable. */
+/** Reduziert einen unbekannten Wert auf eine gültige Warenkorbzeile oder `null`, wenn unbrauchbar. */
 const toCartLine = (value: unknown): CartLine | null => {
   if (typeof value !== "object" || value === null) return null;
   const candidate = value as { articleNumber?: unknown; quantity?: unknown };
@@ -136,7 +136,7 @@ const toCartLine = (value: unknown): CartLine | null => {
   return { articleNumber, quantity };
 };
 
-/** Merge duplicate lines and drop invalid ones. */
+/** Führt doppelte Zeilen zusammen und verwirft ungültige. */
 const normalizeLines = (lines: CartLine[]): CartLine[] => {
   const merged = new Map<string, number>();
 
@@ -152,14 +152,14 @@ const normalizeLines = (lines: CartLine[]): CartLine[] => {
 };
 
 // ---------------------------------------------------------------------------
-// Persistence
+// Persistenz
 // ---------------------------------------------------------------------------
 
 /**
- * Read the persisted cart.
+ * Liest den persistierten Warenkorb.
  *
- * Corrupted or foreign payloads are treated as an empty cart rather than
- * throwing, so a single bad write can never break the catalog.
+ * Beschädigte oder fremde Payloads gelten als leerer Warenkorb statt zu werfen,
+ * damit ein einzelner fehlerhafter Schreibvorgang nie den Katalog kaputt macht.
  */
 export const readCart = (): CartLine[] => {
   const storage = getStorage();
@@ -182,7 +182,7 @@ export const readCart = (): CartLine[] => {
   }
 };
 
-/** Persist the cart and notify listeners. Returns the normalized lines. */
+/** Persistiert den Warenkorb und benachrichtigt Listener. Liefert die normalisierten Zeilen. */
 export const writeCart = (lines: CartLine[]): CartLine[] => {
   const normalized = normalizeLines(lines);
 
@@ -191,7 +191,7 @@ export const writeCart = (lines: CartLine[]): CartLine[] => {
     try {
       storage.setItem(CART_STORAGE_KEY, JSON.stringify(normalized));
     } catch {
-      // Storage full or unavailable — the cart still works for this page view.
+      // Speicher voll oder nicht verfügbar — der Warenkorb funktioniert für diesen Seitenaufruf trotzdem.
     }
   }
 
@@ -205,10 +205,10 @@ export const writeCart = (lines: CartLine[]): CartLine[] => {
 };
 
 // ---------------------------------------------------------------------------
-// Mutations
+// Mutationen
 // ---------------------------------------------------------------------------
 
-/** Add `quantity` of a product, merging with an existing line. */
+/** Fügt `quantity` eines Produkts hinzu und führt mit einer bestehenden Zeile zusammen. */
 export const addToCart = (articleNumber: string, quantity = 1): CartLine[] => {
   const existing = readCart();
   const current = existing.find((line) => line.articleNumber === articleNumber);
@@ -226,7 +226,7 @@ export const addToCart = (articleNumber: string, quantity = 1): CartLine[] => {
   return writeCart([...existing, { articleNumber, quantity }]);
 };
 
-/** Set an absolute quantity. Values below 1 remove the line. */
+/** Setzt eine absolute Menge. Werte unter 1 entfernen die Zeile. */
 export const setLineQuantity = (
   articleNumber: string,
   quantity: number
@@ -243,29 +243,30 @@ export const setLineQuantity = (
   );
 };
 
-/** Remove a product from the cart. */
+/** Entfernt ein Produkt aus dem Warenkorb. */
 export const removeFromCart = (articleNumber: string): CartLine[] => {
   return writeCart(
     readCart().filter((line) => line.articleNumber !== articleNumber)
   );
 };
 
-/** Empty the cart. */
+/** Leert den Warenkorb. */
 export const clearCart = (): CartLine[] => writeCart([]);
 
 // ---------------------------------------------------------------------------
-// Derivation
+// Ableitung
 // ---------------------------------------------------------------------------
 
-/** Total number of items across all lines. */
+/** Gesamtzahl der Artikel über alle Zeilen. */
 export const getCartItemCount = (lines: CartLine[] = readCart()): number =>
   lines.reduce((sum, line) => sum + line.quantity, 0);
 
 /**
- * Resolve persisted lines against the catalog.
+ * Löst persistierte Zeilen gegen den Katalog auf.
  *
- * Lines whose article number is no longer in the catalog are dropped from the
- * summary so a discontinued product cannot stall the checkout mail.
+ * Zeilen, deren Artikelnummer nicht mehr im Katalog steht, werden aus der
+ * Zusammenfassung entfernt, damit ein ausgelistetes Produkt die Bestell-Mail
+ * nicht blockiert.
  */
 export const summarizeCart = (
   products: CartProduct[],
@@ -296,11 +297,11 @@ export const summarizeCart = (
 };
 
 /**
- * Pick the fields the cart needs out of the raw catalog payload.
+ * Pickt die Felder, die der Warenkorb braucht, aus dem rohen Katalog-Payload.
  *
- * `/data/handmade.json` carries a lot more per product; only visible entries
- * with a usable price take part in the cart, so a hidden product silently
- * drops out of the summary.
+ * `/data/handmade.json` enthält pro Produkt deutlich mehr; nur sichtbare
+ * Einträge mit brauchbarem Preis nehmen am Warenkorb teil, ein verstecktes
+ * Produkt fällt also still aus der Zusammenfassung.
  */
 export const extractCartProducts = (payload: unknown): CartProduct[] => {
   if (typeof payload !== "object" || payload === null) return [];
@@ -326,10 +327,10 @@ export const extractCartProducts = (payload: unknown): CartProduct[] => {
 };
 
 // ---------------------------------------------------------------------------
-// Mail hand-off
+// Mail-Übergabe
 // ---------------------------------------------------------------------------
 
-/** Build the subject line of the cart mail. */
+/** Baut die Betreffzeile der Warenkorb-Mail. */
 export const buildCartMailSubject = (summary: CartSummary): string => {
   const count = summary.itemCount;
   return count === 1
@@ -337,7 +338,7 @@ export const buildCartMailSubject = (summary: CartSummary): string => {
     : `Handmade Warenkorb — ${count} Artikel`;
 };
 
-/** Build the plain-text body of the cart mail. */
+/** Baut den Plain-Text-Body der Warenkorb-Mail. */
 export const buildCartMailBody = (
   summary: CartSummary,
   options: CartMailtoOptions = {}
@@ -387,10 +388,11 @@ export const buildCartMailBody = (
 };
 
 /**
- * Build the `mailto:` link for the current cart.
+ * Baut den `mailto:`-Link für den aktuellen Warenkorb.
  *
- * `tooLong` flags carts that exceed what mail clients reliably accept; callers
- * should offer the body for copying instead of opening an unusable link.
+ * `tooLong` markiert Warenkörbe, die mehr enthalten, als Mailprogramme
+ * verlässlich akzeptieren; Aufrufer sollten dann den Body zum Kopieren anbieten,
+ * statt einen unbrauchbaren Link zu öffnen.
  */
 export const buildCartMailto = (
   summary: CartSummary,

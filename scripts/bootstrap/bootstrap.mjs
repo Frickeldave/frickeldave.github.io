@@ -13,20 +13,21 @@ const DEFAULT_SCOPE = 'repo';
 const DEFAULT_REGISTRY = 'ghcr.io';
 const GITHUB_API_VERSION = '2022-11-28';
 const USER_AGENT = 'bootstrap-runner-setup';
-// The cluster is reached through a Rancher proxy that adds latency and
-// occasionally drops a single request. kubectl's own default is "no timeout",
-// which in practice means a hung request blocks forever, while a short timeout
-// turns normal proxy latency into a false negative. 60s is well above the
-// observed p99 (<1s) and above the 30s that already proved sufficient manually.
+// Der Cluster wird über einen Rancher-Proxy erreicht, der Latenz hinzufügt und
+// gelegentlich eine einzelne Anfrage verwirft. kubectl hat standardmäßig „kein
+// Timeout“; in der Praxis blockiert eine hängende Anfrage dann für immer, während
+// ein zu kurzes Timeout normale Proxy-Latenz in ein falsches Negativ verwandelt.
+// 60s liegt deutlich über der beobachteten p99 (<1s) und über den 30s, die sich
+// manuell bereits als ausreichend erwiesen haben.
 const KUBECTL_REQUEST_TIMEOUT = '60s';
-// Transient proxy failures are single-request events, so a couple of retries
-// with backoff removes them without masking a genuinely broken kubeconfig.
+// Sporadische Proxy-Fehler betreffen einzelne Anfragen; ein paar Wiederholungen
+// mit Backoff beseitigen sie, ohne eine wirklich defekte kubeconfig zu verdecken.
 const KUBECTL_RETRY_ATTEMPTS = 3;
 const KUBECTL_RETRY_BACKOFF_MS = 2000;
-// Docker registries answer transiently: a `docker push` can upload every layer
-// and then have the final manifest PUT rejected with a plain `denied`, and an
-// immediate retry succeeds. Three attempts with a short linear backoff cover
-// that without hiding a wrong password or a missing scope.
+// Docker-Registries antworten sporadisch: ein `docker push` kann alle Layer laden
+// und dann den abschließenden Manifest-PUT mit einem schlichten `denied` ablehnen,
+// während ein sofortiger zweiter Versuch gelingt. Drei Versuche mit kurzem linearem
+// Backoff decken das ab, ohne ein falsches Passwort oder einen fehlenden Scope zu verstecken.
 const DOCKER_RETRY_ATTEMPTS = 3;
 const DOCKER_RETRY_BACKOFF_MS = 2000;
 const CONFIG_FILENAME = 'bootstrap.json';
@@ -43,9 +44,9 @@ const KANIKO_CONTEXT_PATH = 'scripts/bootstrap/docker-dev-kaniko';
 const KANIKO_DOCKERFILE_PATH = 'scripts/bootstrap/docker-dev-kaniko/Dockerfile';
 const GITHUB_PAT_PROMPT =
   'Enter GITHUB_PAT (classic PAT, scopes: repo, read:packages, write:packages): ';
-// Every image reference is project-specific, so each one resolves from an env
-// var > bootstrap.json > fail-fast. `description` only names the setting, it is
-// never a package or image name.
+// Jede Image-Referenz ist projektspezifisch und wird deshalb aus Env-Variable >
+// bootstrap.json > Fail-fast aufgelöst. `description` benennt nur die Einstellung,
+// ist aber nie ein Paket- oder Image-Name.
 const IMAGE_SETTINGS = {
   devBaseImage: {
     variableName: 'DEV_BASE_IMAGE',
@@ -382,9 +383,9 @@ export function resolveImageBuildSettings(config, environment = process.env) {
   });
 
   return {
-    // The Deployment always references the runner image, so it is required on
-    // every run. The other two only feed the local build/push steps, so a run
-    // with SKIP_IMAGE_BUILD=true must not demand build-only settings.
+    // Das Deployment referenziert immer das Runner-Image, es ist also bei jedem
+    // Lauf nötig. Die beiden anderen speisen nur die lokalen Build-/Push-Steps;
+    // ein Lauf mit SKIP_IMAGE_BUILD=true darf Build-only-Einstellungen daher nicht verlangen.
     devBaseImage: resolveImageReference({
       setting: 'devBaseImage',
       envValue: environment.DEV_BASE_IMAGE,
@@ -429,15 +430,15 @@ function resolveImageReference({ setting, envValue, configValue, required }) {
   return image;
 }
 
-// Build-only settings are allowed to be unset when SKIP_IMAGE_BUILD=true; the
-// skip log then names the setting instead of printing "undefined".
+// Build-only-Einstellungen dürfen bei SKIP_IMAGE_BUILD=true ungesetzt sein; das
+// Skip-Log nennt dann die Einstellung, statt „undefined“ zu drucken.
 function describeImageForLog(image, setting) {
   return image ?? `<not configured: ${setting}>`;
 }
 
-// A resolved value that only exists in this repository is not portable: the
-// package must work for any project, so project identity always comes from the
-// config file and never from a built-in literal.
+// Ein aufgelöster Wert, den es nur in diesem Repository gibt, ist nicht portabel:
+// das Paket muss für jedes Projekt funktionieren, also kommt die Projektidentität
+// immer aus der Konfigurationsdatei und nie aus einem eingebauten Literal.
 function resolveProjectOption({ envValue, envName, configValue, configKey }) {
   const value = resolveStringOption({ envValue, configValue, defaultValue: undefined });
 
@@ -462,9 +463,9 @@ export function isValidKubernetesLabelValue(value) {
   );
 }
 
-// `app.kubernetes.io/part-of` identifies the owning application. An explicit
-// `partOf` key wins; otherwise the repository name is a sane, already-valid
-// default. Validated up front so kubectl cannot reject the apply later.
+// `app.kubernetes.io/part-of` benennt die zugehörige Anwendung. Ein expliziter
+// `partOf`-Schlüssel gewinnt; sonst ist der Repository-Name ein sinnvoller, bereits
+// gültiger Default. Wird vorab validiert, damit kubectl den Apply nicht später ablehnt.
 export function resolvePartOfLabel(config, runnerRepo) {
   const configuredPartOf =
     typeof config.partOf === 'string' && config.partOf.length > 0 ? config.partOf : undefined;
@@ -498,8 +499,8 @@ async function promptForHiddenInput(promptText) {
         stdin.setRawMode(false);
       }
       stdin.pause();
-      // Drop the TTY handle from the event loop so a later process.exit() does not
-      // tear down an still-referenced stdin reader (libuv assertion on Windows).
+      // TTY-Handle aus dem Event-Loop nehmen, damit ein späteres process.exit()
+      // keinen noch referenzierten stdin-Reader abräumt (libuv-Assertion unter Windows).
       stdin.unref();
     };
 
@@ -604,9 +605,9 @@ function runCommand(command, args, options = {}) {
   }
 }
 
-// `--request-timeout` bounds a single API request. It must not be attached to
-// watch-style subcommands (`rollout status`), where it would abort the watch
-// long before the command's own `--timeout` is reached.
+// `--request-timeout` begrenzt eine einzelne API-Anfrage. Es darf nicht an
+// Watch-Subkommandos (`rollout status`) gehängt werden, wo es den Watch lange vor
+// dem eigenen `--timeout` des Kommandos abbrechen würde.
 function supportsRequestTimeout(args) {
   if (args.includes('--client=true') || args.includes('--client')) {
     return false;
@@ -615,9 +616,8 @@ function supportsRequestTimeout(args) {
   return !(args[0] === 'rollout' && args[1] === 'status');
 }
 
-// Resolved once in main() from CLI > KUBECONFIG > bootstrap.json, then appended
-// to every kubectl invocation so a machine-wide context can never be hit by
-// accident.
+// Einmal in main() aufgelöst (CLI > KUBECONFIG > bootstrap.json) und dann an jeden
+// kubectl-Aufruf gehängt, damit nie versehentlich ein maschinenweiter Kontext greift.
 let activeKubeconfigPath = null;
 
 function setActiveKubeconfig(kubeconfigPath) {
@@ -641,8 +641,8 @@ function runKubectl(args, options = {}) {
   return runCommand('kubectl', withKubeconfigFlag(effectiveArgs), options);
 }
 
-// Renders the same kubectl command line this script would run, for operator
-// hints in error messages.
+// Rendert dieselbe kubectl-Kommandozeile, die dieses Skript ausführen würde, für
+// Bedienhinweise in Fehlermeldungen.
 function kubectlHint(args) {
   const commandParts = ['kubectl'];
 
@@ -671,8 +671,8 @@ function sleepSync(milliseconds) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 }
 
-// Retries a read-only kubectl probe and returns the collected failure reasons
-// instead of swallowing them, so a false negative is self-diagnosing.
+// Wiederholt eine lesende kubectl-Probe und liefert die gesammelten Fehlergründe
+// zurück, statt sie zu verschlucken, damit ein falsches Negativ sich selbst erklärt.
 function runKubectlWithRetry(args, { attempts = KUBECTL_RETRY_ATTEMPTS, ...options } = {}) {
   const failures = [];
 
@@ -700,9 +700,9 @@ function runDocker(args, options = {}) {
 const MISSING_DOCKER_MESSAGE =
   'Docker is required to build and push the bootstrap images (dev base, GitHub runner, Kaniko). Install Docker Desktop or the Docker Engine CLI and try again.';
 
-// Credential problems look like transient failures at a glance ("denied",
-// "unauthorized") but no amount of retrying fixes them, so they win over every
-// transient pattern.
+// Credential-Probleme sehen auf den ersten Blick wie sporadische Fehler aus
+// („denied“, „unauthorized“), aber kein Retry behebt sie; sie gewinnen daher gegen
+// jedes transiente Muster.
 const DOCKER_NON_TRANSIENT_PATTERNS = [
   'incorrect username or password',
   'not authorized',
@@ -711,7 +711,7 @@ const DOCKER_NON_TRANSIENT_PATTERNS = [
   'authentication required',
 ];
 
-// Whole-message signals of a flaky registry or network path.
+// Signale im Gesamttext, die auf eine wackelige Registry oder einen Netzwerkpfad deuten.
 const DOCKER_TRANSIENT_PATTERNS = [
   'connection reset',
   'i/o timeout',
@@ -727,9 +727,9 @@ const DOCKER_TRANSIENT_PATTERNS = [
 ];
 const DOCKER_TRANSIENT_HTTP_STATUS_PATTERN = /\b(?:502|503|504)\b/;
 
-// `denied` / `permission_denied` / `unauthorized` are only retried when the
-// same message also carries a server-side or rate-limit signal: on their own
-// they mean the token does not have the scope this push needs.
+// `denied` / `permission_denied` / `unauthorized` werden nur wiederholt, wenn
+// dieselbe Meldung zusätzlich ein serverseitiges oder Rate-Limit-Signal trägt: für
+// sich allein bedeuten sie, dass dem Token der nötige Scope für diesen Push fehlt.
 const DOCKER_CONDITIONAL_TRANSIENT_PATTERNS = ['denied', 'unauthorized'];
 const DOCKER_SERVER_SIDE_HTTP_STATUS_PATTERN = /\b(?:500|502|503|504)\b/;
 const DOCKER_SERVER_SIDE_PATTERNS = [
@@ -791,8 +791,8 @@ export function isTransientDockerFailure(message) {
   return false;
 }
 
-// The registry's own wording is only visible because stderr is captured, so it
-// is appended to the rethrown error to keep the operator's output complete.
+// Die Formulierung der Registry ist nur sichtbar, weil stderr mitgeschnitten wird;
+// sie wird an den erneut geworfenen Fehler gehängt, damit die Ausgabe vollständig bleibt.
 function withFailureText(error, failureText) {
   const annotated = error instanceof Error ? error : new Error(String(error));
 
@@ -803,10 +803,10 @@ function withFailureText(error, failureText) {
   return annotated;
 }
 
-// Shared by `docker login` and `docker push`: both can be hit by the same
-// transient registry hiccup, and both must surface genuine credential problems
-// immediately. `invoke` is injected so the retry policy is testable without a
-// Docker daemon.
+// Gemeinsam von `docker login` und `docker push` genutzt: beide kann derselbe
+// sporadische Registry-Aussetzer treffen, und beide müssen echte Credential-Probleme
+// sofort melden. `invoke` wird injiziert, damit die Retry-Policy ohne Docker-Daemon
+// testbar ist.
 export function retryTransientDockerFailure({
   label,
   invoke,
@@ -929,8 +929,8 @@ export function renderTemplate(templatePath, replacements) {
     rendered = rendered.replaceAll(placeholder, value);
   }
 
-  // Validate on a comment-free copy: a placeholder-shaped token inside a YAML
-  // comment is documentation, not a substitution target.
+  // Auf einer kommentarfreien Kopie validieren: ein platzhalterförmiger Token in einem
+  // YAML-Kommentar ist Dokumentation, kein Substitutionsziel.
   const renderedWithoutComments = rendered
     .split('\n')
     .filter((line) => !line.trimStart().startsWith('#'))
@@ -1012,8 +1012,8 @@ function loginToGhcr(githubUsername, githubPat) {
     invoke: () =>
       runDocker(['login', DEFAULT_REGISTRY, '--username', githubUsername, '--password-stdin'], {
         input: `${githubPat}\n`,
-        // Capture stderr only: the password prompt and progress stay visible,
-        // and the registry's error text is available for retry classification.
+        // Nur stderr mitschneiden: Passwort-Prompt und Fortschritt bleiben sichtbar,
+        // und der Fehlertext der Registry steht für die Retry-Klassifikation bereit.
         stdio: ['pipe', 'inherit', 'pipe'],
         missingBinaryMessage: MISSING_DOCKER_MESSAGE,
       }),
@@ -1040,9 +1040,9 @@ function pushDockerImage(image) {
     label: `docker push ${image}`,
     invoke: () =>
       runDocker(['push', image], {
-        // Capture stderr only: layer progress stays on stdout, and the final
-        // manifest error (e.g. a plain "denied") is available for the retry
-        // decision instead of only being printed.
+        // Nur stderr mitschneiden: der Layer-Fortschritt bleibt auf stdout, und der
+        // Manifest-Fehler (z. B. ein schlichtes „denied“) steht für die
+        // Retry-Entscheidung bereit, statt nur gedruckt zu werden.
         stdio: ['ignore', 'inherit', 'pipe'],
         missingBinaryMessage: MISSING_DOCKER_MESSAGE,
       }),
@@ -1128,10 +1128,10 @@ function readServerVersion() {
   }
 }
 
-// The operator must be able to see which cluster is targeted before any
-// manifest is applied, otherwise a stale kubeconfig silently bootstraps the
-// wrong cluster. The Rancher cluster id only shows up in the server URL, so it
-// is printed next to the plain cluster name from the kubeconfig.
+// Vor jedem Apply muss sichtbar sein, welcher Cluster das Ziel ist; sonst
+// bootstrappt eine veraltete kubeconfig still den falschen Cluster. Die
+// Rancher-Cluster-ID steht nur in der Server-URL, deshalb wird sie neben dem
+// schlichten Cluster-Namen aus der kubeconfig ausgegeben.
 function reportTargetCluster() {
   console.log(
     `  • kubeconfig: ${activeKubeconfigPath ?? '(none, using current kubectl context)'}`
@@ -1322,8 +1322,8 @@ async function main() {
   const runnerName = resolveStringOption({
     envValue: process.env.RUNNER_NAME,
     configValue: config.runnerName,
-    // Namespace-suffixed fallback only: GitHub runner names must be unique per
-    // repository, so an unconfigured second namespace must not collide.
+    // Nur als Fallback mit Namespace-Suffix: GitHub-Runner-Namen müssen pro
+    // Repository eindeutig sein, ein unkonfigurierter zweiter Namespace darf also nicht kollidieren.
     defaultValue: `github-actions-runner-${namespace}`,
   });
   const runnerOrg = resolveProjectOption({
@@ -1477,8 +1477,9 @@ async function main() {
   applyYaml(renderedDeploymentYaml);
   logSuccess('Deployment template rendered and applied');
 
-  // `kubectl apply` is a no-op when only the image *contents* changed behind a mutable
-  // tag, so the old pod would survive. Force a new pod template revision.
+  // `kubectl apply` ist ein No-op, wenn sich hinter einem beweglichen Tag nur der
+  // Image-Inhalt geändert hat, der alte Pod würde also überleben. Eine neue
+  // Pod-Template-Revision erzwingen.
   runKubectl(['rollout', 'restart', `deployment/${DEPLOYMENT_NAME}`, '-n', namespace]);
 
   logStep(`Step 10/10: Waiting for Deployment/${DEPLOYMENT_NAME} rollout to complete...`);

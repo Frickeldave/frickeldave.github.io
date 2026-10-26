@@ -1,31 +1,31 @@
 #!/usr/bin/env node
 /**
- * Sync GitHub Issues → frickeldave.de Project (GitHub Projects V2) board.
+ * Synchronisiert GitHub-Issues auf das frickeldave.de-Projektboard (GitHub Projects V2).
  *
- * Labels are the source of truth; the board is a one-way projection.
- * For every issue the script derives the target board column from its labels
- * and moves the corresponding project item there (adding it first if needed).
+ * Labels sind die Quelle der Wahrheit; das Board ist eine Einbahn-Projektion.
+ * Für jedes Issue leitet das Skript die Zielspalte aus seinen Labels ab und
+ * verschiebt das zugehörige Projekt-Item dorthin (und legt es bei Bedarf vorher an).
  *
- * Column mapping (see .squad/routing.md and Squad project-board docs):
- *   Done          → issue closed
+ * Spalten-Zuordnung (siehe .squad/routing.md und die Squad-Projektboard-Doku):
+ *   Done          → Issue geschlossen
  *   In Progress   → go:yes + squad:{member}
- *   Ready         → go:yes (no squad:{member})
+ *   Ready         → go:yes (ohne squad:{member})
  *   Needs Research→ go:needs-research
- *   Backlog       → anything else (go:no / no verdict yet)
+ *   Backlog       → alles andere (go:no / noch kein Votum)
  *
- * Usage:
- *   node scripts/sync-project-board.mjs --issue <number>   # sync one issue
- *   node scripts/sync-project-board.mjs --all              # re-sync all open issues
+ * Aufruf:
+ *   node scripts/sync-project-board.mjs --issue <number>   # ein Issue synchronisieren
+ *   node scripts/sync-project-board.mjs --all              # alle offenen Issues neu synchronisieren
  *   node scripts/sync-project-board.mjs --issue <n> --dry-run
  *
- * Required environment:
- *   SQUAD_PROJECT_TOKEN  PAT with `project` scope (never committed, not GITHUB_TOKEN)
+ * Benötigte Umgebung:
+ *   SQUAD_PROJECT_TOKEN  PAT mit `project`-Scope (nie committet, nicht GITHUB_TOKEN)
  *
- * Optional environment (defaults target the frickeldave.github.io setup):
- *   PROJECT_OWNER        GitHub user that owns the project   (default: Frickeldave)
- *   PROJECT_NUMBER       project number from the project URL (default: 2)
- *   REPO_OWNER           repository owner                    (default: Frickeldave)
- *   REPO_NAME            repository name                     (default: frickeldave.github.io)
+ * Optionale Umgebung (Defaults zielen auf das frickeldave.github.io-Setup):
+ *   PROJECT_OWNER        GitHub-Benutzer, dem das Projekt gehört   (Default: Frickeldave)
+ *   PROJECT_NUMBER       Projektnummer aus der Projekt-URL          (Default: 2)
+ *   REPO_OWNER           Repository-Owner                           (Default: Frickeldave)
+ *   REPO_NAME            Repository-Name                            (Default: frickeldave.github.io)
  */
 
 const token =
@@ -40,8 +40,8 @@ const REPO_NAME = process.env.REPO_NAME || 'frickeldave.github.io';
 
 const GRAPHQL_ENDPOINT = 'https://api.github.com/graphql';
 
-// Logical board columns. The physical option names on the board are resolved
-// per run so the script works with Squad-style or GitHub-default columns.
+// Logische Board-Spalten. Die physischen Optionsnamen auf dem Board werden pro Lauf
+// aufgelöst, damit das Skript mit Squad- oder GitHub-Default-Spalten funktioniert.
 const COLUMNS = {
   BACKLOG: 'Backlog',
   NEEDS_RESEARCH: 'Needs Research',
@@ -105,7 +105,7 @@ async function graphql(query, variables) {
   return body.data;
 }
 
-/** Resolve the project node id, the Status single-select field and its options. */
+/** Löst die Projekt-Node-ID, das Single-Select-Feld Status und seine Optionen auf. */
 async function resolveBoard() {
   const data = await graphql(
     `
@@ -162,7 +162,7 @@ async function resolveBoard() {
   return { project, statusField };
 }
 
-/** Map a logical column name to an existing option on the board. */
+/** Bildet einen logischen Spaltennamen auf eine vorhandene Option des Boards ab. */
 function findOption(options, column) {
   const target = column.toLowerCase();
   const exact = options.find((o) => o.name.toLowerCase() === target);
@@ -176,7 +176,7 @@ function findOption(options, column) {
   return null;
 }
 
-/** Derive the target column from an issue's labels and state. */
+/** Leitet die Zielspalte aus Labels und Zustand eines Issues ab. */
 function resolveColumn(issue) {
   if (issue.state === 'CLOSED') return COLUMNS.DONE;
 
@@ -243,7 +243,7 @@ async function listOpenIssues() {
   return (data?.repository?.issues?.nodes ?? []).map((n) => n.number);
 }
 
-/** Find the project item (if any) that corresponds to the issue number. */
+/** Findet das Projekt-Item (falls vorhanden), das zur Issue-Nummer gehört. */
 async function findProjectItem(projectId, issueNumber) {
   const data = await graphql(
     `

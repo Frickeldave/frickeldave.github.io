@@ -6,7 +6,7 @@ import type { LinkMapping } from "@/types/redirect";
 const mappings = await getLinkMappings();
 const { links, analytics } = mappings;
 
-// Sort links by click count (descending)
+// Links nach Klickzahl sortieren (absteigend)
 const sortedLinks = Object.entries(links).sort(
   ([, a], [, b]) => (b as LinkMapping).clicks - (a as LinkMapping).clicks
 );
