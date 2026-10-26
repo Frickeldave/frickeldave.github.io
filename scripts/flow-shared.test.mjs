@@ -5,6 +5,9 @@ import { after, describe, test } from 'node:test';
 import { testEach, vi } from './test-mock-support.mjs';
 
 import {
+  buildCopilotArgs,
+  buildCopilotChildEnv,
+  buildCopilotShellCommand,
   buildTmuxSessionName,
   detectIdFromTmuxSession,
   ensureProjectPropertyAccess,
@@ -12,6 +15,7 @@ import {
   launchInNewTmuxSession,
   parseFlowFlags,
   parseHumanMembers,
+  reportCopilotLaunchPlan,
   requestPullRequestReviewers,
   resolveAdditionalPrompt,
   resolveIssueWorktreePath,
@@ -481,6 +485,8 @@ describe('parseFlowFlags', () => {
       notmux: false,
       prompt: null,
       noprompt: false,
+      model: null,
+      noProvider: false,
       rest: ['IS_202', '--other'],
     });
   });
@@ -490,6 +496,8 @@ describe('parseFlowFlags', () => {
       notmux: true,
       prompt: null,
       noprompt: true,
+      model: null,
+      noProvider: false,
       rest: ['42'],
     });
     assert.equal(parseFlowFlags(['--prompt', '  Continue  ', '7']).prompt, 'Continue');
@@ -508,6 +516,168 @@ describe('parseFlowFlags', () => {
       assert.throws(() => parseFlowFlags(argv), /--prompt requires a non-empty message/);
     }
   );
+
+  test('extracts --model and --no-provider and rejects an empty --model value', () => {
+    assert.deepEqual(parseFlowFlags(['--model', ' deepseek-v4-pro ', '--no-provider', '7']), {
+      notmux: false,
+      prompt: null,
+      noprompt: false,
+      model: 'deepseek-v4-pro',
+      noProvider: true,
+      rest: ['7'],
+    });
+    assert.equal(parseFlowFlags(['--model=deepseek-v4-flash']).model, 'deepseek-v4-flash');
+    assert.throws(() => parseFlowFlags(['--model']), /--model requires a model id/);
+    assert.throws(() => parseFlowFlags(['--model=']), /--model requires a model id/);
+  });
+});
+
+describe('copilot launch plan helpers', () => {
+  const providerPlan = {
+    mode: 'provider',
+    model: 'deepseek-v4-pro',
+    envDelta: {
+      COPILOT_PROVIDER_TYPE: 'anthropic',
+      COPILOT_PROVIDER_BASE_URL: 'https://api.deepseek.com/anthropic',
+      COPILOT_PROVIDER_API_KEY_COMMAND: `cat '/home/tester/.config/fd/copilot-provider.key'`,
+      COPILOT_MODEL: 'deepseek-v4-pro',
+    },
+    envUnset: ['COPILOT_PROVIDER_API_KEY', 'COPILOT_PROVIDER_BEARER_TOKEN'],
+    warnings: [],
+  };
+  const fallbackPlan = {
+    mode: 'github',
+    model: null,
+    envDelta: {},
+    envUnset: ['COPILOT_PROVIDER_API_KEY'],
+    warnings: ['Copilot provider: missing key file. Using GitHub Copilot models instead.'],
+  };
+
+  test('buildCopilotArgs only adds --model in the provider mode', () => {
+    assert.deepEqual(buildCopilotArgs('Go', providerPlan), [
+      '--agent',
+      'Squad',
+      '--yolo',
+      '--model',
+      'deepseek-v4-pro',
+      '-i',
+      'Go',
+    ]);
+    assert.deepEqual(buildCopilotArgs('Go', fallbackPlan), [
+      '--agent',
+      'Squad',
+      '--yolo',
+      '-i',
+      'Go',
+    ]);
+    assert.deepEqual(buildCopilotArgs('Go'), ['--agent', 'Squad', '--yolo', '-i', 'Go']);
+  });
+
+  test('buildCopilotShellCommand prefixes exec env with unset flags before variables', () => {
+    const command = buildCopilotShellCommand({ PORT: '4321' }, 'Go', providerPlan);
+
+    assert.ok(
+      command.startsWith(
+        "exec env -u 'COPILOT_PROVIDER_API_KEY' -u 'COPILOT_PROVIDER_BEARER_TOKEN' PORT='4321' "
+      ),
+      command
+    );
+    assert.ok(command.includes("COPILOT_PROVIDER_TYPE='anthropic' "), command);
+    assert.ok(
+      command.includes("COPILOT_PROVIDER_BASE_URL='https://api.deepseek.com/anthropic' "),
+      command
+    );
+    // Der Key-Pfad steckt in einem sh-Quoting, die einfachen Quotes werden maskiert.
+    assert.ok(
+      command.includes(
+        "COPILOT_PROVIDER_API_KEY_COMMAND='cat '\\''/home/tester/.config/fd/copilot-provider.key'\\''' "
+      ),
+      command
+    );
+    assert.ok(
+      command.endsWith(
+        "'copilot' '--agent' 'Squad' '--yolo' '--model' 'deepseek-v4-pro' '-i' 'Go'"
+      ),
+      command
+    );
+
+    const order = [
+      "PORT='4321'",
+      "COPILOT_PROVIDER_TYPE='anthropic'",
+      'COPILOT_PROVIDER_BASE_URL=',
+      'COPILOT_PROVIDER_API_KEY_COMMAND=',
+      "COPILOT_MODEL='deepseek-v4-pro'",
+      "'copilot'",
+    ].map((part) => command.indexOf(part));
+    assert.deepEqual(order, [...order].sort((left, right) => left - right));
+    assert.ok(order.every((index) => index > 0));
+  });
+
+  test('buildCopilotShellCommand escapes quotes in the prompt', () => {
+    assert.ok(
+      buildCopilotShellCommand({}, "it's").endsWith("'-i' 'it'\\''s'"),
+      buildCopilotShellCommand({}, "it's")
+    );
+  });
+
+  test('buildCopilotShellCommand stays byte-identical without a plan', () => {
+    assert.equal(
+      buildCopilotShellCommand({}, 'Go'),
+      "exec 'copilot' '--agent' 'Squad' '--yolo' '-i' 'Go'"
+    );
+    assert.equal(
+      buildCopilotShellCommand({}, 'Go', null, { copilotCommand: '/usr/bin/copilot' }),
+      "exec '/usr/bin/copilot' '--agent' 'Squad' '--yolo' '-i' 'Go'"
+    );
+  });
+
+  test('buildCopilotChildEnv returns a fresh object and applies unset then delta', () => {
+    const baseEnv = {
+      PATH: '/bin',
+      COPILOT_PROVIDER_TYPE: 'openai',
+      COPILOT_PROVIDER_API_KEY: 'stale',
+    };
+    const childEnv = buildCopilotChildEnv(baseEnv, providerPlan, { PORT: '4321', EXTRA: 'x' });
+
+    assert.notEqual(childEnv, baseEnv);
+    assert.equal(baseEnv.COPILOT_PROVIDER_API_KEY, 'stale');
+    assert.deepEqual(childEnv, {
+      PATH: '/bin',
+      PORT: '4321',
+      EXTRA: 'x',
+      COPILOT_PROVIDER_TYPE: 'anthropic',
+      COPILOT_PROVIDER_BASE_URL: 'https://api.deepseek.com/anthropic',
+      COPILOT_PROVIDER_API_KEY_COMMAND: `cat '/home/tester/.config/fd/copilot-provider.key'`,
+      COPILOT_MODEL: 'deepseek-v4-pro',
+    });
+    assert.deepEqual(buildCopilotChildEnv({ A: '1' }), { A: '1' });
+    const cleared = buildCopilotChildEnv({ KEEP: '1', DROP: '2' }, {
+      envDelta: {},
+      envUnset: ['DROP'],
+    });
+    assert.deepEqual(cleared, { KEEP: '1' });
+  });
+
+  test('reportCopilotLaunchPlan logs the provider line and warns exactly once on fallback', () => {
+    const log = vi.fn();
+    const warn = vi.fn();
+
+    reportCopilotLaunchPlan(providerPlan, { log, warn, describe: () => 'Provider : deepseek' });
+    assert.deepEqual(log.mock.calls, [['Provider : deepseek']]);
+    assert.equal(warn.mock.calls.length, 0);
+
+    log.mockClear();
+    reportCopilotLaunchPlan(fallbackPlan, { log, warn, describe: () => 'unused' });
+    assert.equal(warn.mock.calls.length, 1);
+    assert.deepEqual(warn.mock.calls[0], [fallbackPlan.warnings[0]]);
+    assert.equal(log.mock.calls.length, 0);
+
+    log.mockClear();
+    warn.mockClear();
+    reportCopilotLaunchPlan(null, { log, warn });
+    reportCopilotLaunchPlan({ mode: 'github', warnings: [] }, { log, warn });
+    assert.deepEqual([log.mock.calls.length, warn.mock.calls.length], [0, 0]);
+  });
 });
 
 describe('resolveAdditionalPrompt', () => {
