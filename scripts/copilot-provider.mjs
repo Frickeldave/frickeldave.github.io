@@ -383,8 +383,9 @@ function githubPlan(reason = null, { host = DEFAULT_COPILOT_PROVIDER_HOST } = {}
     mode: 'github',
     model: null,
     envDelta: {},
-    // Ein ausgesprochener Fallback räumt Provider-Reste aus dem Kind-Env auf; der
-    // stille Opt-out ohne Konfigurationsdatei fasst die Umgebung dagegen nicht an.
+    // Jeder ausgesprochene Fallback und jedes Opt-out räumt Provider-Reste aus dem
+    // Kind-Env auf. Nur der unveränderte Default (keine Konfiguration, kein Flag)
+    // fasst die Umgebung nicht an.
     envUnset: reason ? [...COPILOT_MANAGED_ENV_KEYS] : [],
     warnings: reason ? [fallbackWarning(reason, host)] : [],
   };
@@ -393,9 +394,13 @@ function githubPlan(reason = null, { host = DEFAULT_COPILOT_PROVIDER_HOST } = {}
 /**
  * Löst den Launch-Plan auf: `--model` (CLI) > Konfigurationsdatei > Shell-Env > Default.
  *
- * Liefert `{ mode, model, envDelta, envUnset, warnings }`. Ohne Konfigurationsdatei
- * und ohne `FD_COPILOT_PROVIDER=deepseek` bleibt `mode: 'github'` byte-identisch zum
- * bisherigen Verhalten: leeres `envDelta`, leeres `envUnset`, keine Warnzeile.
+ * Liefert `{ mode, model, envDelta, envUnset, warnings }`. Ohne Konfigurationsdatei,
+ * ohne `FD_COPILOT_PROVIDER=deepseek` und ohne ausgesprochenes Opt-out bleibt
+ * `mode: 'github'` byte-identisch zum bisherigen Verhalten: leeres `envDelta`, leeres
+ * `envUnset`, keine Warnzeile. Ein ausgesprochenes Opt-out (`--no-provider`,
+ * `FD_COPILOT_PROVIDER=github` in Shell oder Datei) gewinnt dagegen immer, auch ohne
+ * Konfigurationsdatei: es liefert `envUnset` mit allen verwalteten Schlüsseln und
+ * genau eine Warnzeile.
  * Ein per `--model` übergebenes unbekanntes Modell wirft immer, auch im GitHub-Modus.
  *
  * @param {{
@@ -434,6 +439,17 @@ export function resolveCopilotLaunchPlan({
     return githubPlan('invalid FD_COPILOT_PROVIDER value (use "deepseek" or "github")');
   }
 
+  // Ein ausgesprochenes Opt-out gewinnt immer und braucht keine Datei: sonst bliebe
+  // ein exportiertes COPILOT_PROVIDER_* im Kind-Env und die CLI startete trotz
+  // Opt-out per BYOK. Die Warnung nennt nur den Host, nie den Key.
+  const shellHost = providerHost(env.COPILOT_PROVIDER_BASE_URL);
+  if (noProvider) {
+    return githubPlan('provider disabled by --no-provider', { host: shellHost });
+  }
+  if (shellSwitch === 'github') {
+    return githubPlan('provider disabled by FD_COPILOT_PROVIDER=github', { host: shellHost });
+  }
+
   let config;
   try {
     config = loadCopilotProviderConfig({ fs, configPath: resolvedConfigPath, geteuid });
@@ -456,10 +472,7 @@ export function resolveCopilotLaunchPlan({
   const baseUrl = config.get('COPILOT_PROVIDER_BASE_URL') ?? env.COPILOT_PROVIDER_BASE_URL;
   const host = providerHost(baseUrl);
 
-  if (noProvider) {
-    return githubPlan('provider disabled by --no-provider', { host });
-  }
-  if (shellSwitch === 'github' || configSwitch === 'github') {
+  if (configSwitch === 'github') {
     return githubPlan('provider disabled by FD_COPILOT_PROVIDER=github', { host });
   }
   if (!baseUrl) {

@@ -201,7 +201,7 @@ export function readiness(
         : tmux.error || tmux.status !== 0
           ? 'error'
           : 'yes',
-    copilot: copilotStatus({ env, spawnFn }),
+    copilot: copilotStatus({ env, spawnFn, homeDirectory }),
     provider: copilotProviderStatus({ env, homeDirectory, ...providerOptions }),
   };
 }
