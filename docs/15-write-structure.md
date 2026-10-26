@@ -1,17 +1,23 @@
-# Project Structure
+# Projektstruktur
 
 Dieses Dokument beschreibt die aktuelle Struktur des Repositories `frickeldave.github.io`.
 
 ## Repository root
 
-- `.github/` enthält GitHub Actions Workflows wie `deploy-dev.yml`, `deploy-prd.yml` und
-  `pull-request-checks.yml`.
+- `.github/` enthält die GitHub Actions Workflows: `fd-ci.yml`, `fd-deploy-dev.yml`,
+  `fd-promote-prd.yml`, `fd-deploy-prd.yml`, `fd-configure.yml`, `fd-bootstrap.yml`,
+  `fd-podcast-update.yml`, `fd-sync-project-board.yml` sowie die `squad-*.yml`-Workflows für Triage
+  und Label-Pflege.
 - `.squad/` enthält Team-, Routing- und Governance-Dateien für den internen Squad-Workflow.
-- `.copilot/` enthält lokale Copilot-Skills und projektspezifische Hilfen.
+- `.husky/` enthält die Git-Hooks für Commit-Message-Prüfung, Pre-Commit-Checks und den Pre-Push.
+- `.vale/` enthält die lokale Vale-Binary und die Styles für die Prosa-Prüfung.
+- `.openscad/` enthält die OpenSCAD-Installation, mit der `npm run scad:render` die 3D-Modelle baut.
 - `docs/` enthält die technische Projektdokumentation, Feature-Beschreibungen und Linter-Guides.
 - `public/` enthält statische Dateien, die unverändert ausgeliefert werden.
-- `scripts/` enthält Node-basierte Hilfsskripte für Prosa-Checks, Tool-Setup und lokale Git-Workflows.
+- `scripts/` enthält Node-basierte Hilfsskripte für Prosa-Checks, Tool-Setup, Bootstrap und lokale
+  Git-Workflows.
 - `src/` enthält den eigentlichen Astro-Quellcode, Content-Collections und Assets.
+- `test/` enthält die Playwright-e2e-Tests und den 3D-Build-Test.
 - `package.json` definiert die npm-Skripte und die direkten Abhängigkeiten.
 - `package-lock.json` pinnt den vollständigen npm-Dependency-Baum.
 - `astro.config.mjs`, `tailwind.config.*`, `eslint.config.mjs`, `tsconfig.json` und `wrangler.jsonc`
@@ -20,7 +26,8 @@ Dieses Dokument beschreibt die aktuelle Struktur des Repositories `frickeldave.g
 ## `src/`
 
 - `src/content.config.ts` definiert die Collection-Schemas.
-- `src/content/` enthält alle Inhalte, zum Beispiel Blog, Docs, Downloads, Rezepte und Rechtstexte.
+- `src/content/` enthält alle Inhalte, zum Beispiel Blog, Docs, Downloads, Rezepte, About-me,
+  Autoren und die englischen Seiten.
 - `src/assets/` enthält Bilder und andere Build-Zeit-Assets, gruppiert nach Fachbereich.
 - `src/components/` enthält Layout- und UI-Komponenten, unterteilt nach Domänen wie `blog/`,
   `home/`, `common/` oder `base/`.

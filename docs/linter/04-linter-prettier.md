@@ -72,7 +72,7 @@ Füge `format`-Scripts zu den Scripts in `package.json` hinzu:
 
 ```json
 "scripts": {
-  "format": "prettier -w ./src",
+  "format": "prettier --write ./src --log-level silent",
   "format:check": "prettier --check ./src"
 }
 ```
@@ -94,7 +94,6 @@ Erweitere den Husky pre-commit Hook, um Prettier vor ESLint auszuführen:
 
 ```sh
 #!/usr/bin/env sh
-.
 echo "Execute formatting (PRETTIER) -> consistent code formatting"
 npm run format:check
 
@@ -163,7 +162,7 @@ code --install-extension esbenp.prettier-vscode
 
 - Prettier formatiert automatisch bei jedem Commit durch den Husky-Hook
 - Du kannst einzelne Zeilen von der Formatierung ausschließen mit `// prettier-ignore`
-- Prettier und ESLint können konflikte haben - verwende `eslint-config-prettier` um Konflikte zu
+- Prettier und ESLint können Konflikte haben - verwende `eslint-config-prettier` um Konflikte zu
   vermeiden
 - Für Markdown-Dateien wird eine größere `printWidth` (100) verwendet für bessere Lesbarkeit
 - Das `prettier-plugin-tailwindcss` Plugin sortiert automatisch Tailwind-Klassen

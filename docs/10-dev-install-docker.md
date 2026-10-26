@@ -1,25 +1,26 @@
-# Dockerfile for developers
+# Dockerfile für Entwickler
 
-Die folgendes Docker Datei zeigt die konkrete Konfiguration der Entwicklungsumgebung die im Anschluß auch per SSH erreichbar ist. 
+Das folgende Docker-Setup zeigt die konkrete Konfiguration der Entwicklungsumgebung, die im Anschluss
+auch per SSH erreichbar ist.
 
 
 ## Verwendete Variablen
 
 | Variable                         | Bedeutung                                                            | Beispielwert                                 |
 | -------------------------------- | -------------------------------------------------------------------- | -------------------------------------------- |
-| `fdd_build_node_image`           | Basis-Image fuer den Build                                           | `node:24-bookworm`                           |
+| `fdd_build_node_image`           | Basis-Image für den Build                                           | `node:24-bookworm`                           |
 | `fdd_gid`                        | Group ID des Entwickler-Users im Container                           | `1000` (Id der lokalen non-admin user group) |
 | `fdd_uid`                        | User ID des Entwickler-Users im Container                            | `1000` (Id der lokalen non-admin user group) |
 | `fdd_build_exec_user`            | Name des Standard-Users im Container                                 | `appuser`                                    |
-| `fdd_ssh_public_key`             | Public SSH Key fuer `authorized_keys`                                | `ssh-ed25519 AAAAC3Nza... dev@laptop`        |
+| `fdd_ssh_public_key`             | Public SSH Key für `authorized_keys`                                | `ssh-ed25519 AAAAC3Nza... dev@laptop`        |
 | `fdd_ssh_port`                   | SSH-Port im Container                                                | `2222`                                       |
-| `fdd_ssh_password_auth`          | Passwort-Auth fuer SSH (`yes`/`no`)                                  | `no`                                         |
+| `fdd_ssh_password_auth`          | Passwort-Auth für SSH (`yes`/`no`)                                  | `no`                                         |
 | `fdd_nvm_version`                | Zu installierende NVM-Version                                        | `0.39.7`                                     |
-| `fdd_node_version`               | Node.js Version fuer NVM                                             | `24.18.0`                                    |
-| `fdd_git_private_key_passphrase` | Passphrase des privaten Deploy-Keys                                  | `my-strong-passphrase` (use a vault tool)    |
+| `fdd_node_version`               | Node.js Version für NVM                                             | `24.18.0`                                    |
+| `fdd_git_private_key_passphrase` | Passphrase des privaten Deploy-Keys                                  | `my-strong-passphrase` (Passwortmanager verwenden) |
 | `fdd_git_user_name`              | Globaler Git User Name im Container                                  | `Max Mustermann`                             |
 | `fdd_git_user_email`             | Globale Git User E-Mail im Container                                 | `max.mustermann@example.com`                 |
-| `fdd_build_image_name`           | Docker Image Name fuer den Runtime-Container                         | `fdd-dev`                                    |
+| `fdd_build_image_name`           | Docker Image Name für den Runtime-Container                         | `fdd-dev`                                    |
 | `fdd_build_image_tag`            | Docker Image Tag                                                     | `latest`                                     |
 | `fdd_build_host_port`            | Port auf dem Hostsystem                                              | `2222`                                       |
 | `fdd_build_container_port`       | Ziel-Port im Container                                               | `2222`                                       |

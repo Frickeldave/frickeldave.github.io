@@ -5,6 +5,14 @@ und mit Quellenangaben versehen werden.
 
 ## Inhaltsverzeichnis
 
+- Wo Bilder liegen
+- `src/assets/` vs. `public/`
+- Bilder referenzieren
+- Formate & Größen
+- Alt-Text (`imageAlt`)
+- Bildnachweis
+- Konventionen für die Ordnerstruktur
+
 ## Wo Bilder liegen
 
 | Pfad                       | Zweck                                                                                  |
@@ -74,11 +82,11 @@ import cover from "@assets/blog/mein-post/cover.jpg";
 Das deutsche Urheberrechtsgesetz (UrhG) verlangt eine Attribution für Fremdbilder.
 
 - Eigene Fotos: keine Attribution erforderlich, optional Selbstnennung in der Bildunterschrift.
-- Fremd-/Stock-Bilder: Nachweis auf der **Bildnachweis**-Seite (`src/content/terms/` —
-  Impressum-/Rechtsbereich). Mit Quelle, Urheber, Lizenz-Link.
+- Fremd-/Stock-Bilder: Nachweis auf der Bildnachweis-Seite im Rechtsbereich
+  (`src/pages/impressum.astro`). Mit Quelle, Urheber, Lizenz-Link.
 - KI-generierte Bilder: als solche kennzeichnen ("Bild generiert mit …") in der Bildunterschrift.
 
-Siehe den [Skill `compliancechecker`](../.github/archive/skills/compliancechecker/SKILL.md) für die
+Siehe den [Skill `compliancechecker`](../.squad/skills/compliancechecker/SKILL.md) für die
 vollständige Audit-Checkliste.
 
 ## Konventionen für die Ordnerstruktur

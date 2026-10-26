@@ -112,4 +112,4 @@ SQUAD_PROJECT_TOKEN=<pat> node scripts/sync-project-board.mjs --issue 272
 
 - [Squad Project Boards (Feature-Doku)](https://bradygaster.github.io/squad/docs/features/project-boards/)
 - [Work Routing](../../.squad/routing.md)
-- [Squad Label Sync Workflow](../../.github/workflows/squad-sync-squad-labels.yml)
+- [Label-Namespaces](../../.github/workflows/fd-configure.yml)

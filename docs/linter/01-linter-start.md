@@ -22,7 +22,7 @@ einbaust und mit Husky Git Hooks automatisierst.
 | **Prettier** | Code-Formatierung                | Alle unterstützten Dateitypen           | Einheitliche Formatierung und Styling                              |
 | **Vale**     | Prose-Linting                    | `.md`, `.mdx`, Text in Code-Kommentaren | Schreibstil, Grammatik, Terminologie                               |
 
-More details: 
+Weitere Details:
 
 - [Husky](./02-linter-husky.md)
 - [ESLint](./03-linter-eslint.md)
@@ -37,13 +37,13 @@ More details:
 - **Prettier**: Formatiert Code automatisch beim Speichern
 - **Vale**: Überprüft Dokumentation und Kommentare
 
-**1. Pre-commit Phase**
+**2. Commit-msg Phase**
 
 - Alle drei Tools laufen automatisch vor jedem Git-Commit
 - Verhindert, dass problematischer Code/Content committed wird
 - Stellt sicher, dass alle Änderungen den Qualitätsstandards entsprechen
-- Kann mit --no-verify übersprungen werden (Nicht empfohlen)
-  
+- Kann mit `--no-verify` übersprungen werden (nicht empfohlen)
+
 **3. CI/CD Pipeline**
 
 - Validiert, dass alle Regeln eingehalten werden
@@ -60,11 +60,16 @@ More details:
 
 ### Vor dem Commit
 
-1. **Pre-commit Hook** läuft automatisch
-2. **ESLint** prüft alle geänderten Code-Dateien
-3. **Prettier** formatiert alle Dateien
-4. **Vale** prüft alle Markdown-Dateien
-5. **Commit wird blockiert** bei Fehlern
+Die Prüfungen sitzen im `commit-msg`-Hook, nicht im `pre-commit`-Hook. Der Grund steht in
+`.husky/pre-commit`: Zuerst wird die Commit-Message geprüft (schnell), erst danach laufen die
+aufwendigen Prüfungen.
+
+1. **`commit-msg`-Hook** läuft automatisch
+2. **commitlint** prüft die Commit-Message auf Conventional Commits
+3. **Prettier** prüft die Formatierung (`npm run format:check`)
+4. **ESLint** prüft den Code (`npm run lint:check`)
+5. **Vale** prüft die Inhalte unter `src/content` (`npm run prose`)
+6. **Commit wird blockiert** bei Fehlern
 
 ### Bei Fehlern
 
@@ -74,7 +79,8 @@ More details:
 
 ## Nützliche Befehle für Entwickler
 
-- `npm install`: Installiert alle Dependencies und Vale automatisch über postinstall Hook
+- `npm install`: Installiert alle Dependencies und führt den `postinstall`-Hook aus (Vale über
+  `prose-install`, OpenSCAD über `scad:install`)
 - `npm run lint`: Versucht den Code automatisch zu korrigieren
 - `npm run lint:check`: Findet Fehler im Code und zeigt diese an
 - `npm run format`: Formatiert alle Dateien gemäß den Vorgaben

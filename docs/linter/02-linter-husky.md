@@ -1,12 +1,12 @@
 
-# Anleitung husky
+# Anleitung Husky
 
 Diese Anleitung beschreibt, wie die einzelnen Tools in ein NEUES astro oder node Projekt eingebunden
-werden. Dieses Schritte dienen der reinen Dokumentation und müssen NICHT vom Entwickler durchgeführt
+werden. Dieser Schritt dient der reinen Dokumentation und muss NICHT vom Entwickler durchgeführt
 werden.
 
-- [Anleitung husky](#anleitung-husky)
-  - [Pre-commit hooks via husky](#pre-commit-hooks-via-husky)
+- [Anleitung Husky](#anleitung-husky)
+  - [Pre-commit-Hooks mit Husky](#pre-commit-hooks-mit-husky)
   - [Voraussetzungen](#voraussetzungen)
   - [Installation](#installation)
   - [Einfachen pre-commit hook anlegen](#einfachen-pre-commit-hook-anlegen)
@@ -15,7 +15,7 @@ werden.
   - [Setup nach dem Clone](#setup-nach-dem-clone)
 
 
-## Pre-commit hooks via husky
+## Pre-commit-Hooks mit Husky
 
 Husky ist ein Tool, das **Git Hooks** in Node.js-Projekten vereinfacht und automatisiert. Git Hooks
 sind Skripte, die automatisch zu bestimmten Zeitpunkten im Git-Workflow ausgeführt werden (z.B. vor
@@ -77,7 +77,7 @@ Füge in `package.json` unter `scripts` folgendes hinzu (falls noch nicht vorhan
 
 ```json
 "scripts": {
-  "prepare": "husky install"
+  "prepare": "husky"
 }
 ```
 
@@ -97,7 +97,6 @@ Lege die Datei `.husky/pre-commit` mit folgendem Inhalt an:
 
 ```sh
 #!/usr/bin/env sh
-.
 echo "Husky pre-commit hook: hello from husky!"
 ```
 

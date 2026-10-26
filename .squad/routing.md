@@ -49,7 +49,8 @@ Workflow wenn Issue fehlt:
 
 Scope-Begrenzung:
 
-- Nur Dateien ändern, die explizit vom Issue erwähnt oder klar vom stated Issue Scope abgeleitet sind.
+- Nur Dateien ändern, die explizit vom Issue erwähnt werden oder sich klar aus dem im Issue
+  beschriebenen Scope ableiten lassen.
 
 ## Branching & Commit-Konvention
 

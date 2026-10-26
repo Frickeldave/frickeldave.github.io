@@ -1,25 +1,28 @@
-## Summary
+## Zusammenfassung
 
 Closes #
 
-What changes, and why? One or two sentences are enough — the reasoning belongs in the linked issue.
+Was ändert sich und warum? Ein bis zwei Sätze reichen – die Begründung gehört ins verlinkte Issue.
 
-## Release label and version
+## Release-Label und Version
 
-- [ ] The linked issue carries exactly one `release:*` label: `release:v1.0.0` (or another existing target
-      such as `release:v0.6.0`) when the work ships with that version, `release:backlog` when it is not
-      targeted yet. The label lives on the issue, not on this PR, and no workflow validates it.
-- [ ] `CHANGELOG.md` has an entry under `## [Unreleased]` in Keep a Changelog format (`Added`, `Changed`,
-      `Fixed`, `Removed`, `Security`) that references the issue as `(#123)`. Required for every PR that
-      changes code or the site.
-- [ ] Only release PRs touch `version` in `package.json`. `fd-deploy-prd` promotes `dev` → `main` only if
-      that version has its own `## [x.y.z]` section in `CHANGELOG.md` and is greater than the latest GitHub
-      release — entries under `## [Unreleased]` alone are not enough to promote.
-- [ ] Base branch is `dev`. `main` is updated exclusively by the `fd-deploy-prd` workflow; never open a PR
-      against `main`.
+- [ ] Das verlinkte Issue trägt genau ein `release:*`-Label: `release:v1.0.0` (oder ein anderes
+      bestehendes Ziel wie `release:v0.6.0`), wenn die Arbeit mit dieser Version ausgeliefert wird,
+      `release:backlog`, solange sie keinem Release zugeordnet ist. Das Label hängt am Issue, nicht an
+      diesem PR, und kein Workflow validiert es.
+- [ ] `CHANGELOG.md` hat einen Eintrag unter `## [Unreleased]` im Keep-a-Changelog-Format (`Added`,
+      `Changed`, `Fixed`, `Removed`, `Security`), der das Issue als `(#123)` referenziert. Pflicht für
+      jeden PR, der Code oder die Site ändert.
+- [ ] Nur Release-PRs ändern `version` in `package.json`. Der Promote-Weg (`fd-promote-prd` →
+      `fd-deploy-prd`) führt `dev` → `main` nur aus, wenn diese Version einen eigenen
+      `## [x.y.z]`-Abschnitt in `CHANGELOG.md` hat und höher ist als das letzte GitHub-Release –
+      Einträge nur unter `## [Unreleased]` reichen für einen Promote nicht.
+- [ ] Base-Branch ist `dev`. `main` wird ausschließlich über den Promote-Weg aktualisiert
+      (`fd-promote-prd` stößt `fd-deploy-prd` an); niemals einen PR gegen `main` öffnen.
 
 ## Review
 
-- [ ] `fd-ci` is green (lint, format, prose via Vale, 3D smoke test, e2e) — it runs on PRs targeting `dev`.
-- [ ] Squad review happened where `.squad/routing.md` requires it; Tony is the final approver.
-- [ ] Squash merge into `dev`, and only after an explicit human go-ahead.
+- [ ] `fd-ci` ist grün (Lint, Format, Prosa über Vale, 3D-Smoke-Test, e2e) – der Workflow läuft auf
+      PRs gegen `dev`.
+- [ ] Squad-Review ist dort erfolgt, wo `.squad/routing.md` es verlangt; Tony ist der finale Approver.
+- [ ] Squash-Merge nach `dev`, und zwar erst nach ausdrücklichem Go eines Menschen.

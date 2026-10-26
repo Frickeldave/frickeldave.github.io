@@ -3,42 +3,68 @@
 Dieses Dokument beschreibt den aktuellen automatisierten Deployment-Ablauf des Repositories.
 
 Die früher dokumentierten npm-Skripte `deploy:dev` und `deploy:prd` existieren nicht mehr. Die
-Automatisierung läuft heute über GitHub Actions und branch-basierte Workflows.
+Automatisierung läuft heute über GitHub Actions und eine Kette aus vier `fd-*`-Workflows.
 
 ## Übersicht
 
-Es gibt zwei operative Deployment-Wege:
+Es gibt zwei Deployment-Wege, die beide über `fd-ci` abgesichert sind:
 
-- **`dev`-Deployment**: Ein Push auf `dev` triggert
-  [.github/workflows/deploy-dev.yml](../../.github/workflows/deploy-dev.yml).
-- **Produktions-Deployment**: Ein Push auf `main` triggert
-  [.github/workflows/deploy-prd.yml](../../.github/workflows/deploy-prd.yml).
+- **`dev`-Deployment**: Ein Push auf `dev` startet
+  [.github/workflows/fd-ci.yml](../../.github/workflows/fd-ci.yml). Ist dieser Lauf grün, stößt
+  [.github/workflows/fd-deploy-dev.yml](../../.github/workflows/fd-deploy-dev.yml) das
+  HomeNet-Deployment an und veröffentlicht das Pre-Release `dev-v<version>`.
+- **Produktions-Deployment**: `main` wird ausschließlich über den Promote-Weg aktualisiert.
+  [.github/workflows/fd-promote-prd.yml](../../.github/workflows/fd-promote-prd.yml) merged `dev`
+  nach `main` und dispatcht
+  [.github/workflows/fd-deploy-prd.yml](../../.github/workflows/fd-deploy-prd.yml), der GitHub Pages
+  baut, deployt und anschließend Tag und Release setzt.
 
-Die lokale Vorbereitung des Merges erfolgt derzeit manuell per Git oder mit
-[scripts/merge-branches.mjs](../../scripts/merge-branches.mjs). In VS Code steht zusätzlich die Task
-`Deploy to Main` aus [.vscode/tasks.json](../../.vscode/tasks.json) zur Verfügung.
+Direkte Pushes auf `main` und Pull Requests gegen `main` sind nicht vorgesehen. Für `main` gibt es
+keinen lokalen Merge-Schritt mehr; die früher dokumentierte VS-Code-Task `Deploy to Main` und
+`scripts/merge-branches.mjs` sind damit kein Bestandteil des Release-Ablaufs.
 
 ## Architektur
 
-Die Deployments sind heute bewusst aufgeteilt:
+Die Deployments sind bewusst aufgeteilt:
 
-- `deploy-dev.yml` stößt nach einem Push auf `dev` ein nachgelagertes HomeNet-Deployment an.
-- `deploy-prd.yml` baut die Astro-Site auf `main` und veröffentlicht sie über GitHub Pages.
-- Die Validierung vor dem Push bleibt lokal: `npm run build`, `npm run lint:check` und optional
-  `npm run prose`.
-- Der Branch-Merge von `dev` nach `main` ist ein eigener bewusst sichtbarer Schritt.
+- `fd-ci.yml` prüft Lint, Format, Vale, einen 3D-Smoke-Test und die e2e-Tests.
+- `fd-deploy-dev.yml` startet nach einem erfolgreichen `fd-ci`-Lauf auf `dev` das
+  HomeNet-Deployment (Tag `fd`) und publiziert das Pre-Release `dev-v<version>` genau für den
+  Commit, den CI geprüft hat.
+- `fd-promote-prd.yml` ist in Phase 1 manuell (`workflow_dispatch`) und prüft vor dem Merge die
+  beiden `main`-Regeln: `package.json`-Version größer als das letzte stabile Release und eigener
+  `## [x.y.z]`-Abschnitt in `CHANGELOG.md`. Zusätzlich muss die `dev`-Spitze einen grünen
+  `fd-ci`-Lauf haben.
+- `fd-deploy-prd.yml` ist der Produktionspfad: CI-Gate, Merge `dev` → `main`, Pages-Build und
+  -Deploy, danach Tag und Release. Ein zweiter Lauf ohne neue Version ist ein No-Op.
+- Die Validierung vor dem Push bleibt zusätzlich lokal: `npm run build` und `npm run lint:check`,
+  optional `npm run prose`.
+
+Die Runner sind bewusst unterschiedlich belegt: `fd-ci`, `fd-deploy-dev` und `fd-promote-prd`
+laufen auf den self-hosted Runnern mit dem Label `fd`, `fd-deploy-prd` auf `ubuntu-latest`, weil
+dort der Pages-Deploy mit `id-token` läuft.
+
+Release-Modell:
+
+- `dev`-Läufe erzeugen Pre-Releases `dev-v<version>`. Sie gelten nie als Produktionsstand und nie
+  als Vergleichsbasis.
+- Stabile Releases heißen `v<version>` und sind keine Pre-Releases. Der Promote vergleicht
+  ausschließlich gegen das neueste stabile Release, damit ein Dev-Pre-Release die Produktion nicht
+  blockieren kann.
 
 ```mermaid
 flowchart TD
-  start([Lokale Änderungen]) --> verify[Lokale Checks]
-  verify --> pushDev[Push nach dev]
-  pushDev --> devWorkflow[deploy-dev.yml]
-  devWorkflow --> homenet[HomeNet Deployment]
-  homenet --> verifyDev[Verifikation]
-  verifyDev --> mergeMain[Merge dev nach main]
-  mergeMain --> pushMain[Push nach main]
-  pushMain --> prdWorkflow[deploy-prd.yml]
+  start([Issue-Branch]) --> pr[Draft-PR gegen dev]
+  pr --> squash[Squash-Merge nach dev]
+  squash --> pushDev[Push nach dev]
+  pushDev --> ci[fd-ci.yml]
+  ci --> devDeploy[fd-deploy-dev.yml]
+  devDeploy --> homenet[HomeNet-Deployment]
+  devDeploy --> devRelease[Pre-Release dev-v Version]
+  ci -. manuell .-> promote[fd-promote-prd.yml]
+  promote --> prdWorkflow[fd-deploy-prd.yml]
   prdWorkflow --> githubPages[GitHub Pages]
+  prdWorkflow --> prdRelease[Release v Version]
 ```
 
 ## Voraussetzungen
@@ -47,66 +73,80 @@ Für beide Wege gilt:
 
 - **Node.js**: >= 24.x
 - **Git**: korrekt konfiguriert mit Benutzer-Credentials
-- **Clean working tree** vor dem finalen `dev` → `main` Merge
 - **Lokale Qualitätschecks** vor dem Push, mindestens `npm run build` und `npm run lint:check`
-- **GitHub CLI (`gh`)** nur dann, wenn du mit `scripts/merge-branches.mjs` oder GitHub-Operationen
-  arbeitest
+- **GitHub CLI (`gh`)** für Promote, Workflow-Runs und GitHub-Operationen
+
+Zusätzlich für die Produktion:
+
+- **Self-hosted Runner** mit dem Label `fd` für `fd-ci`, `fd-deploy-dev` und `fd-promote-prd`
+- **Secret `HOMENET_PAT`** für das Dev-Deployment
+- **Version und Changelog**: `version` in `package.json` höher als das letzte stabile Release und
+  ein passender `## [x.y.z]`-Abschnitt in `CHANGELOG.md` — Einträge unter `## [Unreleased]` allein
+  reichen für einen Promote nicht
 
 ## Dev-Deployment
 
 1. Änderungen lokal prüfen und committen.
 2. Auf `dev` pushen.
-3. GitHub Actions startet [deploy-dev.yml](../../.github/workflows/deploy-dev.yml).
-4. Der Workflow dispatcht das HomeNet-Repository mit dem Tag `fd` und der Source-Branch-Information.
+3. GitHub Actions startet [fd-ci.yml](../../.github/workflows/fd-ci.yml).
+4. Nach grünem Lauf startet [fd-deploy-dev.yml](../../.github/workflows/fd-deploy-dev.yml), der das
+   HomeNet-Repository mit dem Tag `fd` und der Source-Branch-Information dispatcht und das
+   Pre-Release `dev-v<version>` anlegt.
 5. Anschließend die Zielumgebung verifizieren.
+
+Ein erneutes Dev-Deployment ohne neue Version ist kein Fehler: Das Pre-Release existiert bereits
+und wird nicht verschoben.
 
 ## Produktions-Deployment
 
-1. Sicherstellen, dass `dev` den gewünschten Stand enthält.
-2. Lokal nach `main` mergen, entweder manuell oder über die VS Code Task `Deploy to Main`.
-3. `main` nach GitHub pushen.
-4. GitHub Actions startet [deploy-prd.yml](../../.github/workflows/deploy-prd.yml).
-5. Der Workflow baut die Astro-Site und veröffentlicht sie über GitHub Pages.
+1. Sicherstellen, dass `dev` den gewünschten Stand enthält und `fd-ci` grün ist.
+2. Version anheben: `npm run versionbump` schreibt `package.json`, `package-lock.json` und den
+   `## [x.y.z]`-Abschnitt in `CHANGELOG.md`.
+3. Den Versions-Commit auf `dev` pushen.
+4. Promote auslösen:
 
-## Lokale Einstiegspunkte
+   ```bash
+   gh workflow run fd-promote-prd.yml
+   ```
 
-### Manuell mit Git
+   Mit `dry_run` prüft der Workflow nur und ändert nichts:
 
-```bash
-git checkout dev
-git push origin dev
+   ```bash
+   gh workflow run fd-promote-prd.yml -f dry_run=true
+   ```
 
-git checkout main
-git pull origin main
-git merge dev --no-ff -m "Deploy dev to main"
-git push origin main
-git checkout dev
-```
+5. Der Workflow merged `dev` nach `main` und dispatcht
+   [fd-deploy-prd.yml](../../.github/workflows/fd-deploy-prd.yml).
+6. `fd-deploy-prd.yml` prüft die Version erneut, baut und veröffentlicht die Astro-Site über GitHub
+   Pages und setzt erst danach Tag und Release `v<version>`.
 
-### VS Code Task
+Ein Promote auf einen unveränderten `dev`-Stand ist ein No-Op: `git merge` meldet
+„Already up to date.“ und es wird nichts gepusht.
 
-Die Task `Deploy to Main` in [.vscode/tasks.json](../../.vscode/tasks.json) führt den lokalen
-`dev` → `main` Merge inklusive Push in einem Schritt aus.
+## Manuelle Eingriffe
 
-### Interaktiv mit Skript
-
-```bash
-node scripts/merge-branches.mjs dev
-node scripts/merge-branches.mjs main
-```
-
-Details dazu stehen in [scripts/README.md](../../scripts/README.md).
+- `gh workflow run fd-deploy-prd.yml` startet den Produktionspfad direkt. Das ist der Weg, um ein
+  fehlgeschlagenes Deployment zu wiederholen, wenn keine neue Version nötig ist.
+- `gh workflow run fd-deploy-dev.yml` wiederholt das Dev-Deployment und das Pre-Release für den
+  aktuellen `dev`-Stand.
+- `scripts/merge-branches.mjs` bleibt als lokales Werkzeug für Branch-Vergleiche verfügbar. Für
+  `main` ist es nicht vorgesehen, weil es das Versions-Gate umgeht.
 
 ## Fehlerbehandlung
 
-- Schlägt `deploy-dev.yml` fehl, prüfe zuerst den Workflow-Run und das nachgelagerte HomeNet-Dispatch.
-- Schlägt `deploy-prd.yml` fehl, prüfe Build-Fehler, GitHub Pages Deployment und den letzten Push auf
-  `main`.
+- Schlägt `fd-ci.yml` fehl, prüfe zuerst den Workflow-Run und die betroffene Stufe (Lint, Format,
+  Vale, 3D-Smoke-Test, e2e).
+- Schlägt `fd-deploy-dev.yml` fehl, prüfe den Run und das nachgelagerte HomeNet-Dispatch.
+- Schlägt `fd-promote-prd.yml` fehl, prüfe die beiden `main`-Regeln: Ist die Version höher als das
+  letzte stabile Release, und existiert der `## [x.y.z]`-Abschnitt in `CHANGELOG.md`?
+- Schlägt `fd-deploy-prd.yml` nach dem Merge fehl, reicht ein erneuter Lauf des Workflows. Die
+  Version bleibt unverändert, weil der Release erst nach einem erfolgreichen Pages-Deploy gesetzt
+  wird.
 - Vor jedem Produktions-Deployment sollten lokale Checks grün sein, damit Fehler nicht erst im
   Workflow auffallen.
 
 ## Siehe auch
 
 - [Usage Guide](../11-dev-usage.md)
-- [Branching and Naming Strategy](../13-dev-branch-naming-strategy.md)
+- [Branching- und Naming-Strategie](../13-dev-branch-naming-strategy.md)
 - [Scripts Overview](../../scripts/README.md)

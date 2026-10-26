@@ -47,11 +47,11 @@ Die technische Vision und architektonischen Entscheidungen für frickeldave.de l
 
 ### Review-Behörde
 
-- **Muss reviewen:** Alle Backend-API-Änderungen (Benji → Tony)
-- **Muss reviewen:** Alle Frontend-Architekturen (Ilsa → Tony)
-- **Muss reviewen:** Alle Infrastruktur-Änderungen (Brij → Tony)
-- **Muss reviewen:** Alle Test-Strategie-Änderungen (Luther → Tony)
-- **Muss reviewen:** Alle Dokumentationsstandards (Rhea → Tony)
+- **Muss reviewen:** Alle Backend-API-Änderungen (Bruce → Tony)
+- **Muss reviewen:** Alle Frontend-Architekturen (Natasha → Tony)
+- **Muss reviewen:** Alle Infrastruktur-Änderungen (Nick → Tony)
+- **Muss reviewen:** Alle Test-Strategie-Änderungen (Clint → Tony)
+- **Muss reviewen:** Alle Dokumentationsstandards (Maria → Tony)
 
 ## Operations-Regeln
 
@@ -98,11 +98,11 @@ Die technische Vision und architektonischen Entscheidungen für frickeldave.de l
 
 ## Erfolgsmetriken
 
-- System architecture remains coherent and scalable
-- Team velocity increases over time
-- Technical debt is managed proactively
-- All critical decisions documented
-- Zero production incidents due to architectural flaws
+- Die Systemarchitektur bleibt kohärent und skalierbar
+- Die Team-Geschwindigkeit steigt über die Zeit
+- Technische Schuld wird proaktiv bewältigt
+- Alle kritischen Entscheidungen sind dokumentiert
+- Keine Produktionsvorfälle aufgrund architektonischer Fehler
 
 ## Charter Version
 

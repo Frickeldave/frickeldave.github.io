@@ -1,45 +1,46 @@
 # Ralph Instructions
-<!-- User-owned: customize this file to override Ralph's autonomous-execution behavior.
-     squad init creates this file on first install; squad upgrade never overwrites it. -->
+<!-- Vom Nutzer verwaltet: Diese Datei überschreibt das autonome Ausführungsverhalten von Ralph.
+     `squad init` legt sie bei der Erstinstallation an; `squad upgrade` überschreibt sie nie. -->
 
 <!--
-  PURPOSE
-  -------
-  When `.squad/ralph-instructions.md` exists, `squad watch --execute` instructs the
-  spawned Copilot session to read this file and follow ALL sections here instead of
-  the built-in fallback prompt.  If the file is absent, the built-in prompt is used.
+  ZWECK
+  -----
+  Existiert `.squad/ralph-instructions.md`, weist `squad watch --execute` die gestartete
+  Copilot-Session an, diese Datei zu lesen und ALLE Abschnitte hier zu befolgen — statt des
+  eingebauten Fallback-Prompts. Fehlt die Datei, wird der eingebaute Prompt verwendet.
 
-  CONTRACT (stable — safe to build on)
-  --------------------------------------
-  YOU CAN  customize via this file:
-    • Extra instructions given to Ralph at session start (Teams/Slack notifications,
-      calendar checks, post-task hooks, MCP-powered side effects, escalation paths)
-    • Additional eligibility rules or priority ordering for issue selection
-    • Agent persona, tone, or verbosity for session output
+  CONTRACT (stabil — darauf lässt sich aufbauen)
+  ----------------------------------------------
+  DAS KANNST du über diese Datei anpassen:
+    • Zusätzliche Anweisungen, die Ralph beim Session-Start bekommt (Teams-/Slack-Benachrichtigungen,
+      Kalender-Checks, Post-Task-Hooks, MCP-gestützte Seiteneffekte, Eskalationspfade)
+    • Zusätzliche Eligibility-Regeln oder eine andere Prioritätsreihenfolge bei der Issue-Auswahl
+    • Persona, Tonfall oder Ausführlichkeit der Agentin bzw. des Agenten in der Session-Ausgabe
 
-  YOU CANNOT override via this file:
-    • Parallelism — Ralph always spawns agents for all actionable issues simultaneously
-    • Core eligibility filter (squad/squad:* label required, not blocked, not assigned)
-    • The underlying `gh` / Copilot CLI command used to spawn each session
+  DAS KANNST du über diese Datei NICHT überschreiben:
+    • Parallelismus — Ralph startet immer Agenten für alle umsetzbaren Issues gleichzeitig
+    • Der zentrale Eligibility-Filter (Label `squad`/`squad:*` erforderlich, nicht blockiert,
+      nicht zugewiesen)
+    • Der zugrunde liegende `gh`-/Copilot-CLI-Befehl, mit dem jede Session gestartet wird
 
-  TRUST IMPLICATIONS
-  ------------------
-  This file is read by the spawned Copilot session with full agent permissions.
-  Treat it like code — never paste untrusted content here.  Anyone with write access
-  to this file can influence what the agent does on your behalf.
+  VERTRAUENSFOLGEN
+  -----------------
+  Diese Datei wird von der gestarteten Copilot-Session mit vollen Agentenrechten gelesen.
+  Behandle sie wie Code — füge hier niemals nicht vertrauenswürdige Inhalte ein. Wer Schreibzugriff
+  auf diese Datei hat, kann beeinflussen, was der Agent in deinem Namen tut.
 
-  If this file is missing or empty, `squad watch --execute` falls back to the
-  built-in prompt with no behavioral change.
+  Fehlt die Datei oder ist sie leer, fällt `squad watch --execute` ohne Verhaltensänderung auf den
+  eingebauten Prompt zurück.
 
-  PLACEHOLDERS
-  ------------
-  The following values are injected by execute.ts before the session reads this file:
-    (none currently — Ralph builds the issue list dynamically at runtime)
+  PLATZHALTER
+  -----------
+  Die folgenden Werte injiziert `execute.ts`, bevor die Session diese Datei liest:
+    (derzeit keine — Ralph baut die Issue-Liste zur Laufzeit dynamisch auf)
 
   FORMAT
   ------
-  Plain markdown.  Structure with ## sections.  The spawned session reads the whole
-  file, so keep it concise — one screen of instructions is ideal.
+  Reines Markdown. Gliederung über `##`-Abschnitte. Die gestartete Session liest die ganze Datei,
+  halte sie also knapp — eine Bildschirmseite Anweisungen ist ideal.
 -->
 
 ## Ralph, Go!
@@ -49,12 +50,13 @@ MAXIMIZE PARALLELISM — spawn agents for ALL actionable issues simultaneously.
 
 ### Issue Selection
 
-Work on every open, unblocked, unassigned issue labeled `squad` or `squad:{member}`.
-Skip issues that are assigned to a human, blocked, or marked `status:on-hold`.
+Arbeite an jedem offenen, nicht blockierten und nicht zugewiesenen Issue mit dem Label `squad` oder
+`squad:{member}`. Überspringe Issues, die einem Menschen zugewiesen, blockiert oder mit
+`status:on-hold` markiert sind.
 
 ### Post-Task Actions
 
-<!-- Uncomment and customize to add post-task hooks, e.g. Teams notifications:
+<!-- Einkommentieren und anpassen, um Post-Task-Hooks zu ergänzen, z. B. Teams-Benachrichtigungen:
 
 After completing work on each issue:
 - Post a brief summary to the team channel via your Teams MCP tool.
@@ -63,5 +65,5 @@ After completing work on each issue:
 
 ### Escalation
 
-If you are blocked on an issue, comment on it explaining why, add a `status:blocked`
-label, and move to the next actionable item.  Do not halt the loop.
+Wenn du bei einem Issue blockiert bist, kommentiere es mit der Begründung, setze das Label
+`status:blocked` und gehe zum nächsten umsetzbaren Punkt über. Halte die Schleife nicht an.
