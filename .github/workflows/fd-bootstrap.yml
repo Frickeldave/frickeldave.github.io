@@ -52,6 +52,7 @@ on:
       - ".github/workflows/fd-bootstrap/**"
       - ".github/workflows/fd-bootstrap.yml"
       - "scripts/copilot-environment.mjs"
+      - "scripts/copilot-provider.mjs"
       - "scripts/platform-shared.mjs"
 
 permissions:
@@ -144,7 +145,7 @@ jobs:
           elif [ "${GITHUB_EVENT_NAME}" = "push" ]; then
             if [ -z "${BEFORE_SHA}" ] || [ -z "${BEFORE_SHA//0/}" ] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
               build=true
-            elif ! git diff --quiet "${BEFORE_SHA}" "${GITHUB_SHA}" -- "${BOOTSTRAP_DIR}/docker-dev-full" scripts/copilot-environment.mjs scripts/platform-shared.mjs; then
+            elif ! git diff --quiet "${BEFORE_SHA}" "${GITHUB_SHA}" -- "${BOOTSTRAP_DIR}/docker-dev-full" scripts/copilot-environment.mjs scripts/copilot-provider.mjs scripts/platform-shared.mjs; then
               build=true
             fi
           fi
