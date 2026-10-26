@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-10-26
+
 ### Added
 
 - Optionale DeepSeek-Anbindung der Copilot CLI (BYOK über die Anthropic-kompatible API) mit Opt-in über den optionalen Schritt `7/7` von `fd-setup` oder eine Konfigurationsdatei unter `${XDG_CONFIG_HOME:-$HOME/.config}/fd/`; ohne Aktivierung bleibt das Verhalten unverändert (#285).
