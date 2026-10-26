@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Das Freitextfeld `image` von `fd-bootstrap` akzeptiert jetzt ein von der GHCR-Paketseite kopiertes `docker pull …`: Umgebender Leerraum und die Präfixe `docker pull`, `docker image pull` und `podman pull` werden entfernt, leere Eingaben fallen unverändert auf `ghcr.io/<owner>/fd-dev-full:latest` zurück. Eine Referenz, die danach nicht der OCI-Form (Registry-Host, Repository-Pfad in Kleinbuchstaben, optionales Tag) entspricht, bricht den Lauf im Runner mit einer `::error::`-Meldung ab, die den Wert und die erwartete Form nennt — vor jedem `kubectl`-Aufruf und damit ohne Kaniko-Job, statt nach Minuten mit einer Registry-Fehlermeldung im Cluster (#282).
+
 ## [1.0.6] - 2026-10-26
 
 ### Added

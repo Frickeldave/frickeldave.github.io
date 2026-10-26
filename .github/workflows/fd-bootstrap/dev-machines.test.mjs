@@ -398,6 +398,45 @@ describe('image reference hygiene', () => {
   const OCI_REPOSITORY = /^ghcr\.io\/[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*$/;
   const DNS1123_LABEL = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
 
+  const resolveScript = resolveStep?.run ?? '';
+
+  // Runs the real step script in the resolved bash, so normalization and validation
+  // behave exactly as on the runner. Returns the exit code, stderr and the parsed
+  // GITHUB_ENV / GITHUB_OUTPUT files of that run.
+  const resolveImages = (inputImage, owner = 'Frickeldave') => {
+    const envFile = path.join(
+      mkdtempSync(path.join(root, 'node_modules', '.fd-images-')),
+      'github_env'
+    );
+    tempDirs.push(path.dirname(envFile));
+    writeFileSync(envFile, '');
+    const outputFile = `${envFile}.out`;
+    writeFileSync(outputFile, '');
+
+    const result = spawnSync(bash ?? 'bash', ['-c', resolveScript], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        GITHUB_REPOSITORY_OWNER: owner,
+        GITHUB_ENV: envFile.replaceAll('\\', '/'),
+        GITHUB_OUTPUT: outputFile.replaceAll('\\', '/'),
+        INPUT_IMAGE: inputImage,
+      },
+    });
+    const resolved = Object.fromEntries(
+      readFileSync(envFile, 'utf8')
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)])
+    );
+    return {
+      status: result.status,
+      stderr: result.stderr ?? '',
+      env: resolved,
+      output: readFileSync(outputFile, 'utf8').trim(),
+    };
+  };
+
   test('the workflow never interpolates a raw GitHub owner into an image reference', () => {
     assert.ok(!workflowText.includes('ghcr.io/${{ github.repository_owner }}'));
     assert.ok(!/\$\{\{\s*github\.repository_owner\s*\}\}/.test(workflowText));
@@ -408,46 +447,16 @@ describe('image reference hygiene', () => {
 
   test('resolving the image references lowercases the owner and rejects uppercase refs', () => {
     assert.ok(resolveStep, 'the build job needs the "Resolve image references" step');
-    const script = resolveStep.run;
-    assert.match(script, /tr '\[:upper:\]' '\[:lower:\]'/);
-    assert.match(script, /\*\[A-Z\]\*\)/);
+    assert.match(resolveScript, /tr '\[:upper:\]' '\[:lower:\]'/);
+    assert.match(resolveScript, /\*\[A-Z\]\*\)/);
 
-    const envFile = path.join(
-      mkdtempSync(path.join(root, 'node_modules', '.fd-images-')),
-      'github_env'
-    );
-    tempDirs.push(path.dirname(envFile));
-    writeFileSync(envFile, '');
-    const outputFile = `${envFile}.out`;
-    writeFileSync(outputFile, '');
-
-    const result = spawnSync(
-      bash ?? 'bash',
-      ['-c', script],
-      {
-        encoding: 'utf8',
-        env: {
-          ...process.env,
-          GITHUB_REPOSITORY_OWNER: 'Frickeldave',
-          GITHUB_ENV: envFile.replaceAll('\\', '/'),
-          GITHUB_OUTPUT: outputFile.replaceAll('\\', '/'),
-          INPUT_IMAGE: '',
-        },
-      }
-    );
-    assert.equal(result.status, 0, result.stderr);
-
-    const resolved = Object.fromEntries(
-      readFileSync(envFile, 'utf8')
-        .split('\n')
-        .filter(Boolean)
-        .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)])
-    );
-    assert.equal(resolved.DEV_BASE_IMAGE, 'ghcr.io/frickeldave/fd-dev-base:latest');
-    assert.equal(resolved.KANIKO_IMAGE, 'ghcr.io/frickeldave/fd-dev-kaniko:latest');
-    assert.equal(resolved.IMAGE_REF, 'ghcr.io/frickeldave/fd-dev-full:latest');
-    assert.equal(resolved.CACHE_REPO, 'ghcr.io/frickeldave/fd-dev-kaniko-cache');
-    for (const [name, ref] of Object.entries(resolved)) {
+    const blank = resolveImages('');
+    assert.equal(blank.status, 0, blank.stderr);
+    assert.equal(blank.env.DEV_BASE_IMAGE, 'ghcr.io/frickeldave/fd-dev-base:latest');
+    assert.equal(blank.env.KANIKO_IMAGE, 'ghcr.io/frickeldave/fd-dev-kaniko:latest');
+    assert.equal(blank.env.IMAGE_REF, 'ghcr.io/frickeldave/fd-dev-full:latest');
+    assert.equal(blank.env.CACHE_REPO, 'ghcr.io/frickeldave/fd-dev-kaniko-cache');
+    for (const [name, ref] of Object.entries(blank.env)) {
       if (name === 'CACHE_REPO') {
         // Cache repository has no tag; OCI repository names are lowercase only.
         assert.match(ref, OCI_REPOSITORY, `${ref} must be a valid OCI repository`);
@@ -456,24 +465,69 @@ describe('image reference hygiene', () => {
       }
     }
     // The dev-machine job consumes this job output as its image.
-    assert.equal(
-      readFileSync(outputFile, 'utf8').trim(),
-      'image_ref=ghcr.io/frickeldave/fd-dev-full:latest'
-    );
+    assert.equal(blank.output, 'image_ref=ghcr.io/frickeldave/fd-dev-full:latest');
 
     // A mixed-case override must fail fast instead of timing out in the cluster.
-    const rejected = spawnSync(bash ?? 'bash', ['-c', script], {
-      encoding: 'utf8',
-      env: {
-        ...process.env,
-        GITHUB_REPOSITORY_OWNER: 'Frickeldave',
-        GITHUB_ENV: envFile.replaceAll('\\', '/'),
-        GITHUB_OUTPUT: outputFile.replaceAll('\\', '/'),
-        INPUT_IMAGE: 'ghcr.io/Frickeldave/fd-dev-full:latest',
-      },
-    });
+    const rejected = resolveImages('ghcr.io/Frickeldave/fd-dev-full:latest');
     assert.notEqual(rejected.status, 0);
     assert.match(rejected.stderr, /must be lowercase/);
+  });
+
+  // Regression guard for run 40390700825: a `docker pull …` snippet copied from the
+  // GHCR package page was accepted verbatim and only failed inside the Kaniko Job
+  // ("registries must be valid RFC 3986 URI authorities: docker pull ghcr.io").
+  test('normalizes a pasted pull command into a bare image reference', () => {
+    const pasted = resolveImages('docker pull ghcr.io/frickeldave/fd-dev-full:latest');
+    assert.equal(pasted.status, 0, pasted.stderr);
+    assert.equal(pasted.env.IMAGE_REF, 'ghcr.io/frickeldave/fd-dev-full:latest');
+    assert.equal(pasted.output, 'image_ref=ghcr.io/frickeldave/fd-dev-full:latest');
+    assert.match(pasted.env.IMAGE_REF, OCI_IMAGE);
+
+    for (const [input, expected] of [
+      ['DOCKER PULL ghcr.io/frickeldave/fd-dev-full:latest', 'ghcr.io/frickeldave/fd-dev-full:latest'],
+      ['docker image pull ghcr.io/frickeldave/fd-dev-full:latest', 'ghcr.io/frickeldave/fd-dev-full:latest'],
+      ['podman pull ghcr.io/frickeldave/fd-dev-full:latest', 'ghcr.io/frickeldave/fd-dev-full:latest'],
+      ['  docker pull   ghcr.io/frickeldave/fd-dev-full:v2  ', 'ghcr.io/frickeldave/fd-dev-full:v2'],
+    ]) {
+      const result = resolveImages(input);
+      assert.equal(result.status, 0, `${input}: ${result.stderr}`);
+      assert.equal(result.env.IMAGE_REF, expected, input);
+    }
+  });
+
+  test('rejects image inputs it cannot normalize before any cluster interaction', () => {
+    // `docker pull` alone, the bare host from the incident log, and other malformed
+    // shapes must abort with an actionable annotation instead of creating a Job.
+    for (const input of [
+      'docker pull',
+      'podman pull ',
+      'docker pull ghcr.io',
+      'ghcr.io/frickeldave/fd-dev-full@sha256:abc123',
+      'fd-dev-full:latest',
+      'ghcr.io//fd-dev-full:latest',
+      'ghcr.io/frickeldave/fd-dev-full:',
+      'ghcr.io/frickeldave/fd-dev-full:latest extra',
+      'ghcr.io/frickeldave/fd-dev-full:latest\nrm -rf /',
+    ]) {
+      const result = resolveImages(input);
+      assert.notEqual(result.status, 0, `${input} must be rejected`);
+      assert.match(result.stderr, /::error::/, `${input} needs an ::error:: annotation`);
+      assert.ok(
+        result.stderr.includes(input.trim()) || result.stderr.includes(input),
+        `${input} must be named in the message: ${result.stderr}`
+      );
+      assert.equal(result.env.IMAGE_REF, undefined, `${input} must not publish an image ref`);
+      assert.equal(result.output, '', `${input} must not publish the job output`);
+    }
+
+    // Validation runs in the resolve step, which must not talk to the cluster.
+    assert.doesNotMatch(resolveScript, /kubectl/);
+    const stepNames = buildJob.steps.map((step) => step.name);
+    assert.ok(
+      stepNames.indexOf('Resolve image references') <
+        stepNames.findIndex((name) => String(name).includes('Kaniko')),
+      'validation must precede the Kaniko build'
+    );
   });
 
   test('the rendered Kaniko Job stays a valid, lowercase Kubernetes object', () => {

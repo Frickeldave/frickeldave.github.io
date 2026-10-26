@@ -40,7 +40,7 @@ on:
         type: boolean
         default: false
       image:
-        description: Dev machine image (empty = ghcr.io/<owner-lowercase>/fd-dev-full:latest)
+        description: "Dev machine image as a bare OCI reference, e.g. ghcr.io/<owner>/fd-dev-full:latest (empty = ghcr.io/<owner-lowercase>/fd-dev-full:latest). A pasted 'docker pull …' line is accepted and normalized; anything else aborts the run before a build Job is created."
         required: false
         type: string
         default: ""
@@ -94,17 +94,65 @@ jobs:
       # GitHub-Kontextwerte sind nicht normalisiert („Frickeldave"), und eine
       # gemischt geschriebene Referenz lehnt der Kubelet mit InvalidImageName ab;
       # deshalb wird hier jede Image-Referenz aus einem kleingeschriebenen Owner gebildet.
+      #
+      # Die Eingabe kommt aus einem Freitextfeld im Dispatch-Dialog. Ein von der
+      # GHCR-Paketseite kopiertes „docker pull ghcr.io/…" ist deshalb ein erwarteter
+      # Fall: Präfix abstreifen, danach Form prüfen. Ungültige Werte brechen hier ab,
+      # bevor irgendein kubectl-Aufruf läuft — sonst entsteht erst im Cluster ein
+      # Kaniko-Job, der nach Minuten mit einer kryptischen Registry-Meldung scheitert.
       - id: images
         name: Resolve image references
         env:
           INPUT_IMAGE: ${{ inputs.image }}
         run: |
           set -euo pipefail
+
+          # Entfernt umgebende Leerzeichen (auch CR aus Copy-Paste) ohne Subprozess.
+          trim() {
+            value="$1"
+            while :; do
+              case "${value}" in
+                *[[:space:]]) value="${value%?}" ;;
+                *) break ;;
+              esac
+            done
+            while :; do
+              case "${value}" in
+                [[:space:]]*) value="${value#?}" ;;
+                *) break ;;
+              esac
+            done
+            printf '%s' "${value}"
+          }
+
           owner_lc="$(printf '%s' "${GITHUB_REPOSITORY_OWNER:?}" | tr '[:upper:]' '[:lower:]')"
+          default_image="ghcr.io/${owner_lc}/fd-dev-full:latest"
           dev_base_image="ghcr.io/${owner_lc}/fd-dev-base:latest"
           kaniko_image="ghcr.io/${owner_lc}/fd-dev-kaniko:latest"
           cache_repo="ghcr.io/${owner_lc}/fd-dev-kaniko-cache"
-          image_ref="${INPUT_IMAGE:-ghcr.io/${owner_lc}/fd-dev-full:latest}"
+          input_image="$(trim "${INPUT_IMAGE:-}")"
+
+          if [ -z "${input_image}" ]; then
+            image_ref="${default_image}"
+          else
+            image_ref="${input_image}"
+            # Ein mitkopiertes „docker pull …" / „podman pull …" case-insensitiv
+            # abstreifen: Die Präfixlänge ist in Original und Kleinschreibung gleich.
+            # Reihenfolge zählt, das längere „docker image pull " zuerst.
+            input_lc="$(printf '%s' "${image_ref}" | tr '[:upper:]' '[:lower:]')"
+            for prefix in 'docker image pull ' 'docker pull ' 'podman pull '; do
+              case "${input_lc}" in
+                "${prefix}"*)
+                  image_ref="$(trim "${image_ref:${#prefix}}")"
+                  break
+                  ;;
+              esac
+            done
+            if [ -z "${image_ref}" ]; then
+              echo "::error::Image input '${input_image}' contains no image reference. Expected an OCI reference like ${default_image} (a pasted 'docker pull ${default_image}' line also works)." >&2
+              exit 1
+            fi
+          fi
 
           for ref in "${image_ref}" "${dev_base_image}" "${kaniko_image}"; do
             case "${ref}" in
@@ -114,6 +162,22 @@ jobs:
                 ;;
             esac
           done
+
+          # Explizite OCI-Form: Registry-Host (optional mit Port), mindestens ein
+          # Repository-Segment in Kleinbuchstaben, optional ein Tag. Ein Digest oder
+          # ein bloßer Host wie „ghcr.io" ist damit ungültig.
+          oci_reference='^[a-z0-9]+([.-][a-z0-9]+)*(:[0-9]+)?(/[a-z0-9]+([._-][a-z0-9]+)*)+(:[A-Za-z0-9_][A-Za-z0-9._-]{0,127})?$'
+          invalid_image() {
+            echo "::error::Invalid image reference '${input_image:-${image_ref}}' (resolved: '${image_ref}'). Expected '<registry-host>/<lowercase/repository>[:tag]', for example ${default_image}; a pasted 'docker pull <reference>' line is normalized." >&2
+            exit 1
+          }
+          # Weißraum (auch ein Zeilenumbruch aus einem mehrzeiligen Copy-Paste) wäre
+          # für grep zeilenweise unsichtbar, landet aber genau so im --destination
+          # des Kaniko-Jobs — deshalb zuerst verwerfen.
+          case "${image_ref}" in
+            *[[:space:]]*) invalid_image ;;
+          esac
+          printf '%s' "${image_ref}" | grep -Eq "${oci_reference}" || invalid_image
 
           # Der Kaniko-Layer-Cache ist ein GHCR-Repository ohne Tag; auch er muss
           # kleingeschrieben sein (OCI-Repository-Namen), daher separat geprüft.
