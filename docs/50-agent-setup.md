@@ -116,7 +116,7 @@ Vor der ersten Dateiveränderung erwartet Squad alle folgenden Punkte:
 3. Der Issue-Status ist exakt `Ready to implement` oder `In progress`.
 4. Tony hat genau dieses Issue explizit freigegeben.
 5. Der Nutzer hat bestätigt, dass genau an diesem Issue gearbeitet wird.
-6. Der lokale Marker `.frickeldave-active-issue` wurde für diese Aufgabe angelegt oder aktualisiert.
+6. Der lokale Marker `.frickeldave-active-issue` liegt im Ziel-Worktree und wurde vom Launcher für diese Aufgabe aktiviert.
 
 Fehlt eine dieser Bedingungen, stoppt die Implementierung. Die einzige Ausnahme ist reine
 Issue-Metadatenpflege, die ohne Freischaltung von Dateiedits stattfinden kann.
@@ -129,6 +129,12 @@ eine wahrscheinliche Zuständigkeit geroutet wurde, etwa `squad:natasha`, `squad
 Die Datei `.frickeldave-active-issue` ist der lokale Aktivierungsmarker. Sie ist der Nachweis auf
 Session-Ebene, dass das freigegebene Issue aktuell Änderungen auslösen darf. Die erforderliche
 YAML-Struktur ist in `.squad/routing.md` dokumentiert.
+
+Geschrieben wird der Marker ausschließlich vom Launcher `npm run start-work`, nachdem alle übrigen
+Gates grün sind, und zwar in den Worktree, in dem die Session läuft. Der ausdrückliche menschliche
+Aufruf des Launchers ist damit die Nutzerbestätigung, Tonys Freigabe bleibt durch `go:yes` belegt.
+Der Marker ist gitignored und worktree-lokal, ein neuer Worktree bringt ihn also nicht mit. Agenten
+lesen ihn nur und legen ihn nie an; `npm run start-reqeng` schreibt ihn ebenfalls nie.
 
 ## Verbindliche Referenzen
 

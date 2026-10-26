@@ -25,10 +25,13 @@ await mockModule('./platform-shared.mjs', {
 });
 
 const {
+  activateActiveIssueMarker,
+  buildActiveIssueMarkerContent,
   createPortEnvironment,
   ensureDevBaseBranchAvailable,
   ensureBranchReadyForWorktree,
   ensureDependenciesReady,
+  formatActiveIssueTimestamp,
   loadProjectItemsViaGraphql,
   main,
   parseCanonicalRefToken,
@@ -354,6 +357,12 @@ test('main does not assign the selected issue when the issue gate fails', async 
     );
     assert.equal(prompt.question.mock.calls[0][0], 'Enter the numeric issue ID: ');
     assert.equal(prompt.close.mock.calls.length, 1);
+    assert.equal(
+      vi.mocked(writeFileSync).mock.calls.filter(([path]) => path.endsWith('.frickeldave-active-issue'))
+        .length,
+      0,
+      'a failed gate must never activate the marker'
+    );
   } finally {
     process.argv = originalArgv;
     consoleLog.mockRestore();
@@ -729,6 +738,27 @@ testEach([
       assert.match(vi.mocked(spawn).mock.calls[0][1].at(-1), /work_ref: IS_113/);
       assert.doesNotMatch(vi.mocked(spawn).mock.calls[0][1].at(-1), /startreview\.prompt\.md/);
     }
+    const markerWrites = vi
+      .mocked(writeFileSync)
+      .mock.calls.filter(([path]) => path === join(worktreePath, '.frickeldave-active-issue'));
+    assert.equal(markerWrites.length, 1, 'the launcher activates the marker exactly once');
+    const markerContent = markerWrites[0][1];
+    assert.match(markerContent, /^issue: 113$/m);
+    assert.match(markerContent, /^title: "\[BUG\] Mission status differs"$/m);
+    assert.match(markerContent, /^status: "Ready to Implement"$/m);
+    assert.match(markerContent, /^tony_approved: true$/m);
+    assert.match(markerContent, /^tony_approved_at: "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{4}"$/m);
+    assert.match(
+      markerContent,
+      new RegExp(
+        `^session_id: "${scenario.tmux ? 'IS113' : 'ExampleProject_IS_113-notmux'}"$`,
+        'm'
+      )
+    );
+    assert.ok(
+      messages.includes('Aktivierungsmarker .frickeldave-active-issue für #113 aktiviert.'),
+      'the marker activation is logged'
+    );
     assert.equal(prompt.close.mock.calls.length, 1);
   } finally {
     process.argv = originalArgv;
@@ -1151,5 +1181,126 @@ test('validateIssueStartGate requires an implementer label beyond squad:tony and
         log() {},
       }),
     /missing implementer squad:\* label/
+  );
+});
+
+const markerContext = {
+  worktreePath: resolve('/repo_IS_282'),
+  issueId: 282,
+  issueTitle: 'Workflows aus CRAFT adaptieren',
+  projectStatus: 'Ready to Implement',
+  sessionId: 'IS282',
+  tonyApproved: true,
+};
+
+test('activateActiveIssueMarker writes the documented YAML for the gated issue', () => {
+  const writes = [];
+  const messages = [];
+  const now = new Date('2026-10-26T09:47:28Z');
+
+  const markerPath = activateActiveIssueMarker(markerContext, {
+    fileExists: () => false,
+    writeFile: (path, content) => writes.push([path, content]),
+    now,
+    log: (message) => messages.push(message),
+  });
+
+  assert.equal(markerPath, join(markerContext.worktreePath, '.frickeldave-active-issue'));
+  assert.deepEqual(writes, [
+    [
+      markerPath,
+      [
+        'issue: 282',
+        'title: "Workflows aus CRAFT adaptieren"',
+        'status: "Ready to Implement"',
+        'tony_approved: true',
+        `tony_approved_at: "${formatActiveIssueTimestamp(now)}"`,
+        'session_id: "IS282"',
+        '',
+      ].join('\n'),
+    ],
+  ]);
+  assert.deepEqual(messages, [
+    'Aktivierungsmarker .frickeldave-active-issue für #282 aktiviert.',
+  ]);
+});
+
+test('activateActiveIssueMarker keeps an identical marker untouched on a repeated run', () => {
+  const now = new Date('2026-10-26T09:47:28Z');
+  const approvedAt = formatActiveIssueTimestamp(now);
+  const existing = buildActiveIssueMarkerContent({
+    issueId: 282,
+    issueTitle: markerContext.issueTitle,
+    status: 'Ready to Implement',
+    sessionId: 'IS282',
+    approvedAt,
+  });
+  const writes = [];
+  const messages = [];
+
+  activateActiveIssueMarker(markerContext, {
+    fileExists: () => true,
+    readFile: () => existing,
+    writeFile: (path, content) => writes.push([path, content]),
+    now: new Date('2026-10-26T11:15:00Z'),
+    log: (message) => messages.push(message),
+  });
+
+  assert.deepEqual(writes, [], 'an unchanged marker must not be rewritten');
+  assert.deepEqual(messages, [
+    'Aktivierungsmarker .frickeldave-active-issue für #282 ist bereits aktuell (tony_approved_at bleibt ' +
+      approvedAt +
+      ').',
+  ]);
+});
+
+test('activateActiveIssueMarker overwrites a marker of another issue visibly', () => {
+  const writes = [];
+  const messages = [];
+
+  activateActiveIssueMarker(markerContext, {
+    fileExists: () => true,
+    readFile: () => 'issue: 281\ntitle: "Altes Issue"\nstatus: "In Progress"\n',
+    writeFile: (path, content) => writes.push([path, content]),
+    now: new Date('2026-10-26T09:47:28Z'),
+    log: (message) => messages.push(message),
+  });
+
+  assert.equal(writes.length, 1);
+  assert.match(writes[0][1], /^issue: 282$/m);
+  assert.deepEqual(messages, [
+    'Aktivierungsmarker .frickeldave-active-issue für #282 aktiviert (vorher #281).',
+  ]);
+});
+
+test('activateActiveIssueMarker refuses to write without a confirmed Tony approval', () => {
+  const writes = [];
+
+  assert.throws(
+    () =>
+      activateActiveIssueMarker(
+        { ...markerContext, tonyApproved: false },
+        {
+          fileExists: () => false,
+          writeFile: (path, content) => writes.push([path, content]),
+          log: () => {},
+        }
+      ),
+    /darf ohne bestätigte Tony-Freigabe/
+  );
+  assert.deepEqual(writes, []);
+});
+
+test('activateActiveIssueMarker fails loudly when the marker cannot be written', () => {
+  assert.throws(
+    () =>
+      activateActiveIssueMarker(markerContext, {
+        fileExists: () => false,
+        writeFile: () => {
+          throw new Error('EACCES');
+        },
+        log: () => {},
+      }),
+    /konnte nicht geschrieben werden: EACCES.*Ohne Marker darf die Copilot-Session nicht starten/
   );
 });

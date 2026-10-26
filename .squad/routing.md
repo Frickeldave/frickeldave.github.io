@@ -32,6 +32,20 @@ tony_approved_at: "2026-06-30T15:41:12+0200"
 session_id: "session-or-chat-id"
 ```
 
+Wer den Marker schreibt:
+
+- Ausschließlich der Launcher `npm run start-work` aktiviert den Marker, nachdem
+	`validateIssueStartGate()` alle übrigen Gates bestätigt hat. Der ausdrückliche
+	menschliche Aufruf des Launchers ist die Nutzerbestätigung; Tony autorisiert
+	weiterhin über `go:yes`.
+- `tony_approved: true` entsteht nur auf diesem gate-geprüften Pfad (also bei
+	`go:yes` und ohne Konflikt-Label).
+- Die Datei ist gitignored und damit maschinen- und worktree-lokal. Ein frisch
+	angelegter Worktree hat sie nie; der Launcher schreibt sie in genau den
+	Worktree, in dem die Session läuft.
+- Agenten lesen den Marker nur. Sie legen ihn nicht an, ändern ihn nicht und
+	fälschen ihn nicht. `npm run start-reqeng` schreibt ihn nie.
+
 Mechanischer Check vor jeder Dateiveränderung:
 
 - `tony_approved` muss `true` sein.

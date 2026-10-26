@@ -55,10 +55,12 @@ number does not authorize picking an issue.
    - an implementer label `squad:{member}` (not `squad:tony` or `squad:pepper` alone),
    - issue status exactly `Ready to implement` or `In progress` per the status whitelist in
      `.squad/routing.md`,
-   - `.frickeldave-active-issue` exists, names this issue and carries `tony_approved: true`.
-   Agents only read that marker; Tony is the only role that authorizes its activation, and no agent
-   creates, edits or fakes it. Stop immediately if it is missing, names another issue or has
-   `tony_approved: false`.
+   - `.frickeldave-active-issue` exists in this worktree, names this issue and carries
+     `tony_approved: true`. The launcher `npm run start-work` creates or updates that marker right
+     after its own gates pass, on the explicit human start call and Tony's `go:yes`; agents only read
+     it and never create, edit or fake it. If it is missing although the launcher reported green
+     gates, stop and report the launcher state instead of activating it yourself. Stop immediately if
+     it names another issue or has `tony_approved: false`.
    If the automatic status check fails, demand explicit human confirmation; a known non-allowed status must
    stop. Offer the requirement workflow (`npm run start-reqeng`) when the approval is missing.
 2. Respect the requirement phase: implementation builds on a finished specification.

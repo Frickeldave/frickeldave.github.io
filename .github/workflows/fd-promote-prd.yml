@@ -30,7 +30,7 @@ name: fd-promote-prd (Promote dev → main, then trigger fd-deploy-prd)
 # existiert (`fd-deploy-prd.yml`) — danach ist dieser Workflow dispatchbar und kann
 # übernehmen.
 #
-# Gates (bewusst aus `fd-deploy-prd.yml` dupliziert)
+# Gates (dupliziert aus `fd-deploy-prd.yml` mit Absicht)
 # Vor dem Merge werden die beiden `main`-Regeln erneut geprüft: Die `package.json`-Version
 # muss größer sein als das letzte GitHub-Release und einen eigenen
 # `## [x.y.z]`-Abschnitt in CHANGELOG.md haben. Sie sind dupliziert statt geteilt,
@@ -40,6 +40,17 @@ name: fd-promote-prd (Promote dev → main, then trigger fd-deploy-prd)
 # Zusätzliches Gate, das `fd-deploy-prd.yml` nicht braucht (es läuft *nach* dem
 # Merge): Die `dev`-Spitze muss bereits einen grünen `fd-ci`-Lauf haben, damit kein
 # ungeprüfter Commit `main` erreichen kann.
+#
+# Versionsvergleich (dreiwertig, Basis = letztes STABILES Release)
+#   dev >  latest stable → maschinenlesbar `should_promote=true`: Merge dev→main,
+#                          danach Dispatch von `fd-deploy-prd.yml`.
+#   dev == latest stable → `should_promote=false`, `::notice::` „nichts zu promoten":
+#                          kein Merge, kein Push, kein Dispatch, Lauf endet grün.
+#                          (Normalfall direkt nach einer Promotion.)
+#   dev <  latest stable → `::error::` und exit 1: `dev` liegt hinter `main` zurück,
+#                          ein echter Anomaliezustand, der laut scheitern muss.
+#   `dev-v*`-Pre-Releases und Drafts zählen nie als Basis. `dry_run` endet in allen
+#   drei Fällen grün und berichtet nur (Relation + Plan).
 #
 # Doppelter fd-ci-Lauf: akzeptiert
 # Das `ci-gate` in `fd-deploy-prd.yml` dispatcht `fd-ci` auf `dev` und wartet darauf
@@ -92,6 +103,8 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
+      relation: ${{ steps.version_gate.outputs.relation }}
+      should_promote: ${{ steps.version_gate.outputs.should_promote }}
       pushed: ${{ steps.merge.outputs.pushed }}
       commit: ${{ steps.merge.outputs.commit }}
     steps:
@@ -127,43 +140,72 @@ jobs:
           fi
           echo "✅ Version $VERSION has a CHANGELOG entry"
 
-      - name: Determine latest GitHub release
+      # Nur stabile Releases zählen als Basis; `dev-v*`-Pre-Releases (aus fd-deploy-dev)
+      # und Drafts dürfen eine Promotion weder blockieren noch verfälschen.
+      - name: Determine latest stable GitHub release
         id: latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // empty' 2>/dev/null || true)
+          LATEST=$(gh release list --limit 100 --exclude-drafts --json tagName,isPrerelease \
+            --jq '[.[] | select((.isPrerelease == false) and ((.tagName | startswith("dev-v")) | not))][0].tagName // empty' \
+            2>/dev/null || true)
           if [ -z "$LATEST" ]; then
-            echo "ℹ️ No existing GitHub release found — version check passes."
+            echo "ℹ️ Noch kein stabiles GitHub-Release — jede Version ist ein Upgrade."
           else
-            echo "🔎 Latest GitHub release: $LATEST"
+            echo "🔎 Letztes stabiles GitHub-Release: $LATEST"
           fi
           echo "tag=$LATEST" >> "$GITHUB_OUTPUT"
 
-      - name: Verify version is greater than latest release
+      # Dreiwertig: größer → promoten, gleich → No-Op (grün), kleiner → Fehler.
+      # „Gleich" ist der Normalfall nach einer Promotion und darf keinen roten Lauf
+      # erzeugen; „kleiner" bedeutet, dass `dev` hinter `main` zurückliegt — ein echter
+      # Anomaliezustand, der laut scheitern muss.
+      - name: Compare dev version with the latest stable release
+        id: version_gate
         env:
           VERSION: ${{ steps.version.outputs.version }}
           LATEST_TAG: ${{ steps.latest.outputs.tag }}
         run: |
-          node -e '
-            const v = process.env.VERSION;
-            const latestRaw = process.env.LATEST_TAG;
-            if (!latestRaw) {
-              console.log("ℹ️ No existing release — version check passes.");
-              process.exit(0);
-            }
-            const latest = latestRaw.replace(/^v/, "");
-            const pa = v.split(".").map(Number);
-            const pb = latest.split(".").map(Number);
+          set -euo pipefail
+          if [ -z "$LATEST_TAG" ]; then
+            echo "relation=none" >> "$GITHUB_OUTPUT"
+            echo "should_promote=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Noch kein stabiles Release — dev $VERSION wird promotet."
+            exit 0
+          fi
+          RELATION=$(VERSION="$VERSION" BASE="$LATEST_TAG" node -e '
+            const parse = (v) => String(v).replace(/^v/, "").split(".").map(Number);
+            const a = parse(process.env.VERSION);
+            const b = parse(process.env.BASE);
             for (let i = 0; i < 3; i++) {
-              const a = pa[i] || 0;
-              const b = pb[i] || 0;
-              if (a > b) { console.log(`✅ ${v} > ${latest}`); process.exit(0); }
-              if (a < b) break;
+              const x = a[i] || 0;
+              const y = b[i] || 0;
+              if (x !== y) { console.log(x > y ? "greater" : "less"); process.exit(0); }
             }
-            console.error(`❌ Version ${v} is not greater than the latest release ${latest}. Bump the version in package.json.`);
-            process.exit(1);
-          '
+            console.log("equal");
+          ')
+          echo "relation=$RELATION" >> "$GITHUB_OUTPUT"
+          case "$RELATION" in
+            greater)
+              echo "should_promote=true" >> "$GITHUB_OUTPUT"
+              echo "::notice::dev $VERSION > letztes stabiles Release $LATEST_TAG — dev wird promotet."
+              ;;
+            equal)
+              echo "should_promote=false" >> "$GITHUB_OUTPUT"
+              echo "::notice::dev entspricht bereits dem letzten stabilen Release $LATEST_TAG — nichts zu promoten. Kein Merge, kein Dispatch."
+              ;;
+            less)
+              echo "should_promote=false" >> "$GITHUB_OUTPUT"
+              echo "::error::dev $VERSION ist älter als das letzte stabile Release $LATEST_TAG. dev liegt hinter main — Version in package.json prüfen und dev nachziehen."
+              exit 1
+              ;;
+            *)
+              echo "should_promote=false" >> "$GITHUB_OUTPUT"
+              echo "::error::Unerwartetes Vergleichsergebnis \"$RELATION\"."
+              exit 1
+              ;;
+          esac
 
       # fd-deploy-prd.yml prüft *nach* dem Merge; dieser Workflow darf einen
       # ungeprüften Commit gar nicht erst auf `main` bringen. Nur lesend: Er nutzt das
@@ -189,7 +231,11 @@ jobs:
       - name: Dry run — show plan
         if: ${{ inputs.dry_run }}
         run: |
-          echo "🔍 DRY RUN — no merge, no push, no deployment dispatch."
+          echo "🔍 DRY RUN — kein Merge, kein Push, kein Deploy-Dispatch."
+          echo "dev version      : ${{ steps.version.outputs.version }}"
+          echo "latest stable rel: ${{ steps.latest.outputs.tag }}"
+          echo "relation         : ${{ steps.version_gate.outputs.relation }}"
+          echo "would promote    : ${{ steps.version_gate.outputs.should_promote }}"
           echo "Would merge origin/dev into main with message:"
           echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
           echo "Would then dispatch fd-deploy-prd.yml on main (CI gate → Pages deploy → tag ${{ steps.version.outputs.tag }} + release)."
@@ -198,7 +244,8 @@ jobs:
       # selbstgehostete Workspace bleibt zwischen Läufen bestehen, ein veralteter lokaler
       # `main`-Branch könnte sonst wiederverwendet werden und einen Non-Fast-Forward-Push erzeugen.
       - name: Merge dev → main
-        if: ${{ !inputs.dry_run }}
+        # Nur bei „dev > latest stable"; im Gleichstand gibt es nichts zu mergen.
+        if: ${{ !inputs.dry_run && steps.version_gate.outputs.should_promote == 'true' }}
         id: merge
         run: |
           git checkout -B main origin/main
@@ -216,10 +263,33 @@ jobs:
             echo "✅ Pushed main: $AFTER"
           fi
 
+      - name: Step summary (promote)
+        if: always()
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST_TAG: ${{ steps.latest.outputs.tag }}
+          RELATION: ${{ steps.version_gate.outputs.relation }}
+          SHOULD_PROMOTE: ${{ steps.version_gate.outputs.should_promote }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          {
+            echo "### Promote dev → main"
+            echo ""
+            echo "| Feld | Wert |"
+            echo "| --- | --- |"
+            echo "| dev-Version | \`$VERSION\` |"
+            echo "| letztes stabiles Release | \`$LATEST_TAG\` |"
+            echo "| Vergleich | \`$RELATION\` |"
+            echo "| Promotion nötig | \`$SHOULD_PROMOTE\` |"
+            echo "| dry run | \`$DRY_RUN\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   deploy-prd:
     name: Trigger fd-deploy-prd
     needs: promote
-    if: ${{ !inputs.dry_run }}
+    # Im Gleichstand (`dev == latest stable`) wurde nichts gemerged, also auch nichts
+    # zu deployen: kein Dispatch. Im Dry-Run ohnehin nie.
+    if: ${{ !inputs.dry_run && needs.promote.outputs.should_promote == 'true' }}
     # Selbstgehosteter Runner (Label: fd); kein Checkout nötig, nur `gh`.
     runs-on: [self-hosted, fd]
     env:
