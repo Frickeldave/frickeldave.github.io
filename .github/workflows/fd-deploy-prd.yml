@@ -21,12 +21,14 @@ on:
 # `promote` vergleicht nur gegen das neueste davon, ein dev-Pre-Release kann eine
 # Promotion daher nie blockieren.
 #
-# promote (Outputs: dev_version, latest_stable, main_version, should_deploy)
-# dev_version <= latest_stable → kein Merge (nichts Neues zu promoten) und
-# should_deploy=false.
-# dev_version  > latest_stable → Merge dev→main (ein zweiter Lauf ist ein No-Op:
-# „Already up to date"/„Everything up-to-date"),
-# danach wird die Version aus main gelesen.
+# promote (Outputs: dev_version, latest_stable, relation, main_version, should_deploy)
+# dev_version  > latest_stable → `relation=greater`: Merge dev→main (ein zweiter Lauf
+#                                ist ein No-Op: „Already up to date"),
+#                                danach wird die Version aus main gelesen.
+# dev_version == latest_stable → `relation=equal`: kein Merge, `newer=false`,
+#                                ::notice:: „nichts zu promoten", Lauf bleibt grün.
+# dev_version  < latest_stable → `relation=less`: ::error:: und exit 1 (dev liegt
+#                                hinter main zurück, echter Anomaliezustand).
 # main_version  > latest_stable → should_deploy=true  → deploy-pages + release.
 # main_version <= latest_stable → should_deploy=false → beide werden übersprungen,
 # der Lauf bleibt grün mit einem ::notice::
@@ -159,34 +161,55 @@ jobs:
           fi
           echo "tag=$LATEST" >> "$GITHUB_OUTPUT"
 
+      # Dreiwertig: größer → promoten, gleich → No-Op (grün), kleiner → Fehler.
+      # „Gleich" ist der Normalfall nach einer Promotion und darf keinen roten Lauf
+      # erzeugen; „kleiner" heißt, dass `dev` hinter `main` zurückliegt — ein echter
+      # Anomaliezustand, der laut scheitern muss.
       - name: Decide whether dev is ahead of the latest stable release
         id: dev_gate
         env:
           DEV_VERSION: ${{ steps.version.outputs.version }}
           LATEST_TAG: ${{ steps.latest.outputs.tag }}
         run: |
+          set -euo pipefail
           if [ -z "$LATEST_TAG" ]; then
+            echo "relation=none" >> "$GITHUB_OUTPUT"
             echo "newer=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::No stable release yet — dev $DEV_VERSION will be promoted."
+            echo "::notice::Noch kein stabiles Release — dev $DEV_VERSION wird promotet."
             exit 0
           fi
-          if DEV="$DEV_VERSION" BASE="$LATEST_TAG" node -e '
+          RELATION=$(DEV="$DEV_VERSION" BASE="$LATEST_TAG" node -e '
             const parse = (v) => String(v).replace(/^v/, "").split(".").map(Number);
             const a = parse(process.env.DEV);
             const b = parse(process.env.BASE);
             for (let i = 0; i < 3; i++) {
               const x = a[i] || 0;
               const y = b[i] || 0;
-              if (x !== y) process.exit(x > y ? 0 : 1);
+              if (x !== y) { console.log(x > y ? "greater" : "less"); process.exit(0); }
             }
-            process.exit(1);
-          '; then
-            echo "newer=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::dev $DEV_VERSION > latest stable release $LATEST_TAG — dev is promoted to main."
-          else
-            echo "newer=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Nothing to promote: dev $DEV_VERSION is not higher than the latest stable release $LATEST_TAG."
-          fi
+            console.log("equal");
+          ')
+          echo "relation=$RELATION" >> "$GITHUB_OUTPUT"
+          case "$RELATION" in
+            greater)
+              echo "newer=true" >> "$GITHUB_OUTPUT"
+              echo "::notice::dev $DEV_VERSION > letztes stabiles Release $LATEST_TAG — dev wird nach main promotet."
+              ;;
+            equal)
+              echo "newer=false" >> "$GITHUB_OUTPUT"
+              echo "::notice::dev entspricht bereits dem letzten stabilen Release $LATEST_TAG — nichts zu promoten, kein Merge."
+              ;;
+            less)
+              echo "newer=false" >> "$GITHUB_OUTPUT"
+              echo "::error::dev $DEV_VERSION ist älter als das letzte stabile Release $LATEST_TAG. dev liegt hinter main — Version in package.json prüfen und dev nachziehen."
+              exit 1
+              ;;
+            *)
+              echo "newer=false" >> "$GITHUB_OUTPUT"
+              echo "::error::Unerwartetes Vergleichsergebnis \"$RELATION\"."
+              exit 1
+              ;;
+          esac
 
       - name: Dry run — show plan
         if: ${{ inputs.dry_run }}
@@ -194,6 +217,7 @@ jobs:
           echo "🔍 DRY RUN — no changes will be made."
           echo "dev version      : ${{ steps.version.outputs.version }}"
           echo "latest stable rel: ${{ steps.latest.outputs.tag }}"
+          echo "relation         : ${{ steps.dev_gate.outputs.relation }}"
           echo "dev is ahead     : ${{ steps.dev_gate.outputs.newer }}"
           echo "Would merge origin/dev into main with message:"
           echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
