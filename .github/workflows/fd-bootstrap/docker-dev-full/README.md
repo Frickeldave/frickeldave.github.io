@@ -17,12 +17,35 @@ Playwright) bleibt im Basis-Image (siehe [`../../../../scripts/bootstrap/docker-
 - Beim Start klont `fd-clone-repo` das Repository nach `FD_REPO_DIR`. Schlägt der Clone fehl
   (privates Repo), führt `fd-setup` durch die Anmeldung: `gh auth login`,
   `gh auth refresh -s read:project`, Git-Identität aus `gh api user`, Clone des Repositories,
-  `npm ci` (Fallback `npm install`) und `copilot login`. Die Anmeldung bleibt bewusst manuell,
-  weil die Maschine keine Secrets enthält; es wird **keine** `.env`-Datei geschrieben.
+  `npm ci` (Fallback `npm install`) und `copilot login`. Die Anmeldung bleibt bewusst manuell; es
+  wird **keine** `.env`-Datei geschrieben. **Eine bewusst begrenzte Ausnahme:** Mit aktivem
+  DeepSeek-Provider liegt der API-Key als Datei mit `0600` unter `~/.config/fd/` — außerhalb des
+  Repositories, nicht im Image und nicht in der Prozessumgebung. Ohne Opt-in enthält die Maschine
+  keine Secrets.
+- `fd-setup` endet mit dem **optionalen** Schritt `7/7` „Optional: DeepSeek-Provider“. Der Schritt
+  läuft nur nach ausdrücklicher Bestätigung bzw. mit `FD_SETUP_DEEPSEEK=1` (der Key kommt dann über
+  stdin); der Key wird per `read -rs` abgefragt (kein Echo, kein Verlauf) und als
+  `~/.config/fd/copilot-provider.key` mit `0600` in einem `0700`-Verzeichnis abgelegt, daneben
+  `copilot-provider.env` mit `0600`. Danach prüft `fd-setup` die Konfiguration über den
+  `provider`-Modus des Provider-Moduls. Der Schritt ist idempotent, überschreibt eine vorhandene
+  Konfiguration nur nach ausdrücklichem `y` und erzeugt ohne TTY, bei Ablehnung oder mit `--help`
+  keine Datei.
+- `fd-setup --reset-provider` löscht Konfigurations- und Key-Datei, stellt den GitHub-Default wieder
+  her und gibt den Widerrufshinweis aus. `$HOME` ist im Dev-Pod bewusst flüchtig (kein Volume); nach
+  einem Pod- oder Image-Neustart muss der Key neu gesetzt werden.
+- `fd-welcome` zeigt genau eine Provider-Zeile, exemplarisch
+  `Provider : deepseek (api.deepseek.com) | Modell: deepseek-v4-flash` bzw.
+  `Provider : GitHub Copilot (Standard)`; dieselbe Zeile liefert im Container
+  `node /usr/local/lib/fd-dev/copilot-environment.mjs provider --line`. Die gemeinsame
+  Statusfunktion gibt dafür nur `set`, `unset` oder `invalid-permissions` aus — keinen Key,
+  keine Länge, kein Präfix. Details stehen in
+  [Copilot-Provider (DeepSeek)](../../../../docs/17-dev-copilot-provider.md).
 - Hilfsskripte im Image: `fd-setup` (geführtes Onboarding, idempotent), `fd-clone-repo`,
   `fd-welcome` (Login-Banner, nur interaktive Shells, ohne Netzwerkzugriff) und die gemeinsame
-  Statusfunktion `/usr/local/lib/fd-dev/fd-status.sh` mit `copilot-environment.mjs`
-  (dieselbe Implementierung wie die Start-Flows).
+  Statusfunktion `/usr/local/lib/fd-dev/fd-status.sh` mit `copilot-environment.mjs` und
+  `copilot-provider.mjs` (dieselbe Implementierung wie die Start-Flows). Das Provider-Modul wird als
+  `/usr/local/lib/fd-dev/copilot-provider.mjs` mit `0644` kopiert; fehlt die `COPY`-Zeile, fällt der
+  Provider-Status im Image fehl.
 - `fd-setup` und die Start-Flows konfigurieren Shift+Enter entsprechend Copilots
   `/terminal-setup` und deaktivieren die TUI-Maus mit `copilot config mouse false`, soweit
   unterstützt. Vorhandene Einstellungen bleiben erhalten.
@@ -39,8 +62,8 @@ Playwright) bleibt im Basis-Image (siehe [`../../../../scripts/bootstrap/docker-
 ## Build
 
 Der Workflow `fd-bootstrap.yml` baut das Image per Kaniko-Job (Kontext: Repository-Root), bei
-Änderung in diesem Verzeichnis, an `scripts/copilot-environment.mjs` / `scripts/platform-shared.mjs`
-oder per `build_image`. Lokal:
+Änderung in diesem Verzeichnis, an `scripts/copilot-environment.mjs`, `scripts/platform-shared.mjs`
+oder `scripts/copilot-provider.mjs` oder per `build_image`. Lokal:
 
 ```bash
 docker build \

@@ -37,6 +37,22 @@ Der `postinstall`-Hook besteht aus `npm run prose-install && npm run scad:instal
 | `npm run versionbump`              | Hebt die Version in `package.json` und ergänzt den `CHANGELOG.md`-Eintrag |
 | `npm run test:scripts`             | Führt die Tests der Start-Flow- und Release-Skripte aus                |
 
+### Copilot-Provider (optional)
+
+Die Start-Flows nutzen standardmäßig die GitHub-Copilot-Modelle. Optional lässt sich ein
+Drittanbieter-Modell (DeepSeek über die Anthropic-kompatible API) aktivieren — einmalig über den
+optionalen Schritt `7/7` von `fd-setup` oder über eine Konfigurationsdatei unter `~/.config/fd/`.
+Pro Lauf steuern `--model deepseek-v4-flash|deepseek-v4-pro` und `--no-provider` die Auswahl:
+
+```bash
+npm run start-work -- IS_285 --model deepseek-v4-pro
+npm run start-reqeng -- IS_285 --no-provider
+```
+
+Ohne Aktivierung ändert sich nichts; ein ungültiges `--model` bricht den Flow ab. Aktivierung,
+Dateien und Rechte, Variablen, Fallback, Fehlersuche und der Drittanbieter-Hinweis stehen in
+[Copilot-Provider (DeepSeek)](./17-dev-copilot-provider.md).
+
 Weitere Details zum automatisierten Deployment stehen in
 [FR006: Automatisierte Deployment-Workflows](./features/fr006-autodeploy.md).
 

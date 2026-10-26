@@ -7,6 +7,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
@@ -79,9 +80,9 @@ mkdir -p "$FD_REPO_DIR/.git"
 `,
 };
 
-function setup(env = {}) {
-  const work = mkdtempSync(path.join(root, 'node_modules', '.fd-setup-'));
-  tempDirs.push(work);
+function setup(env = {}, { input, args = [], work: existingWork } = {}) {
+  const work = existingWork ?? mkdtempSync(path.join(root, 'node_modules', '.fd-setup-'));
+  if (!tempDirs.includes(work)) tempDirs.push(work);
   const bin = path.join(work, 'bin');
   const state = path.join(work, 'state');
   const home = path.join(work, 'home');
@@ -93,14 +94,23 @@ function setup(env = {}) {
     chmodSync(path.join(bin, name), 0o755);
   }
   const repoDir = path.join(home, 'frickeldave.github.io');
+  const argv = args.map((arg) => `'${arg.replace(/'/g, `'\\''`)}'`).join(' ');
   // PATH is exported inside the shell: a Windows-style entry in spawn's env is
   // not picked up reliably by Git Bash, and the stubs must win over the real tools.
   const result = spawnSync(
     bash,
-    ['-c', `export PATH='${toPosix(bin)}':"$PATH"; exec bash '${toSlashes(path.join(dir, 'fd-setup.sh'))}'`],
+    [
+      '-c',
+      `export PATH='${toPosix(bin)}':"$PATH"; exec bash '${toSlashes(
+        path.join(dir, 'fd-setup.sh')
+      )}'${argv ? ` ${argv}` : ''}`,
+    ],
     {
       encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
+      input,
+      // The opt-in path reads the key from stdin; without an input the descriptor
+      // stays closed, which is exactly the non-interactive "no key" case.
+      stdio: [input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
       env: {
         ...process.env,
         HOME: toSlashes(home),
@@ -215,4 +225,87 @@ describe('fd-setup.sh with stubbed gh/git/npm/clone', () => {
     assert.ok(result.stdout.includes('markieren → Rechtsklick'));
     assert.ok(result.stdout.includes('Alt+Ziehen'));
   });
+
+  // Assembled at runtime so the tracked file never contains a key-shaped literal.
+  const SENTINEL_KEY = ['sk', 'Sentinel0123456789abcdef'].join('-');
+  const sentinel = (result) => `${result.stdout}${result.stderr}`;
+  const providerPaths = (home) => ({
+    configPath: path.join(home, '.config', 'fd', 'copilot-provider.env'),
+    keyPath: path.join(home, '.config', 'fd', 'copilot-provider.key'),
+  });
+
+  test('opt-in stores the key in a 0600 file and never prints it', { skip: skipWithoutBash }, () => {
+    const run = setup(
+      { GH_SCOPES: '1', FD_SETUP_DEEPSEEK: '1' },
+      { input: `${SENTINEL_KEY}\n` }
+    );
+    assert.equal(run.result.status, 0);
+    const { configPath, keyPath } = providerPaths(run.home);
+    assert.equal(readFileSync(keyPath, 'utf8'), `${SENTINEL_KEY}\n`);
+    assert.equal(statSync(keyPath).mode & 0o777, 0o600);
+    assert.equal(statSync(configPath).mode & 0o777, 0o600);
+    assert.equal(statSync(path.dirname(configPath)).mode & 0o777, 0o700);
+    assert.match(readFileSync(configPath, 'utf8'), /^FD_COPILOT_PROVIDER=deepseek$/m);
+    assert.ok(run.result.stdout.includes('provider active.'));
+    assert.ok(!sentinel(run.result).includes(SENTINEL_KEY), 'the key must never be printed');
+  });
+
+  test(
+    '--reset-provider removes both files and prints the revocation hint without key material',
+    { skip: skipWithoutBash },
+    () => {
+      const first = setup(
+        { GH_SCOPES: '1', FD_SETUP_DEEPSEEK: '1' },
+        { input: `${SENTINEL_KEY}\n` }
+      );
+      const { configPath, keyPath } = providerPaths(first.home);
+      assert.ok(existsSync(configPath) && existsSync(keyPath));
+      const reset = setup({ GH_SCOPES: '1' }, { args: ['--reset-provider'], work: first.work });
+      assert.equal(reset.result.status, 0);
+      assert.ok(!existsSync(configPath), 'the configuration file must be gone');
+      assert.ok(!existsSync(keyPath), 'the key file must be gone');
+      const output = sentinel(reset.result);
+      assert.ok(output.includes(`removed ${toSlashes(configPath)}`));
+      assert.ok(output.includes(`removed ${toSlashes(keyPath)}`));
+      assert.ok(output.includes('https://platform.deepseek.com/api_keys'));
+      assert.ok(output.includes('the start flows use GitHub Copilot models again'));
+      assert.ok(!output.includes(SENTINEL_KEY));
+    }
+  );
+
+  test('reports rejected permissions instead of the key content', { skip: skipWithoutBash }, () => {
+    const first = setup(
+      { GH_SCOPES: '1', FD_SETUP_DEEPSEEK: '1' },
+      { input: `${SENTINEL_KEY}\n` }
+    );
+    const { configPath, keyPath } = providerPaths(first.home);
+    chmodSync(configPath, 0o644);
+    chmodSync(keyPath, 0o644);
+    const second = setup({ GH_SCOPES: '1', FD_SETUP_DEEPSEEK: '1' }, { work: first.work });
+    assert.equal(second.result.status, 0);
+    const output = sentinel(second.result);
+    assert.ok(output.includes('provider files found but rejected'));
+    assert.ok(output.includes('files 0600'));
+    assert.ok(output.includes("re-run 'fd-setup --reset-provider'"));
+    assert.ok(!output.includes(SENTINEL_KEY));
+    // Existing files stay untouched, only their mode is reported as the problem.
+    assert.equal(readFileSync(keyPath, 'utf8'), `${SENTINEL_KEY}\n`);
+  });
+
+  for (const [label, value, expected] of [
+    ['an empty key', '', /no key entered; nothing was written/],
+    ['a key without the sk- prefix', 'not-a-deepseek-key', /does not look like a DeepSeek key/],
+    ['a key with shell characters', 'sk-Sentinel value with spaces', /characters outside A-Z a-z 0-9 _ -/],
+  ]) {
+    test(`opt-in rejects ${label} without writing or echoing it`, { skip: skipWithoutBash }, () => {
+      const run = setup({ GH_SCOPES: '1', FD_SETUP_DEEPSEEK: '1' }, { input: `${value}\n` });
+      assert.equal(run.result.status, 0);
+      const { configPath, keyPath } = providerPaths(run.home);
+      assert.ok(!existsSync(configPath), 'no configuration file must be written');
+      assert.ok(!existsSync(keyPath), 'no key file must be written');
+      const output = sentinel(run.result);
+      assert.match(output, expected);
+      if (value) assert.ok(!output.includes(value), 'the rejected value must not be echoed');
+    });
+  }
 });
