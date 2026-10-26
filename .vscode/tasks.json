@@ -2,9 +2,10 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Deploy to Main",
+      "label": "Promote dev → main (fd-promote-prd)",
+      "detail": "Startet fd-promote-prd.yml über 'gh workflow run … --ref main'. Der Workflow prüft Versions-Gate, CHANGELOG-Pflicht und den grünen fd-ci-Lauf auf dev, merged danach dev nach main und dispatcht fd-deploy-prd. main wird nie direkt gepusht. Achtung: dispatchbar erst, wenn fd-promote-prd.yml auf main liegt; bis dahin 'gh workflow run fd-deploy-prd.yml' verwenden.",
       "type": "shell",
-      "command": "git checkout main && git pull origin main && git merge dev --no-ff -m \"${input:commitMessage}\" && git push origin main && git checkout dev",
+      "command": "gh workflow run fd-promote-prd.yml --ref main",
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -18,14 +19,6 @@
         "showReuseMessage": true,
         "clear": false
       }
-    }
-  ],
-  "inputs": [
-    {
-      "id": "commitMessage",
-      "type": "promptString",
-      "description": "Enter merge commit message",
-      "default": "Deploy dev to main"
     }
   ]
 }

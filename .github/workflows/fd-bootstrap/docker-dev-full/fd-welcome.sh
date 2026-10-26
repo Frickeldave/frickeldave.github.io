@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Login banner for interactive shells. Prints nothing unless stdout is a terminal
-# (or --force is given), so scp/sftp/`ssh host cmd` are never disturbed. No network access.
+# Login-Banner für interaktive Shells. Gibt nichts aus, außer stdout ist ein Terminal
+# (oder --force ist gesetzt), damit scp/sftp/`ssh host cmd` nie gestört werden. Kein Netzzugriff.
 set -u
 
 if [ "${1:-}" != "--force" ] && { [ ! -t 1 ] || [ ! -t 0 ]; }; then

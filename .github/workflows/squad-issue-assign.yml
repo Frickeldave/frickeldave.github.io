@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   assign-work:
-    # Only trigger on squad:{member} labels (not the base "squad" label)
+    # Nur bei squad:{member}-Labels auslösen (nicht beim Basis-Label „squad")
     if: startsWith(github.event.label.name, 'squad:')
     runs-on: ubuntu-latest
     steps:
@@ -109,7 +109,7 @@ jobs:
 
             core.info(`Issue #${issue.number} assigned to ${assignedMember.name} (${assignedMember.role})`);
 
-      # Separate step: assign @copilot using PAT (required for coding agent)
+      # Eigener Step: @copilot per PAT zuweisen (für den Coding Agent nötig)
       - name: Assign @copilot coding agent
         if: github.event.label.name == 'squad:copilot'
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b #v7

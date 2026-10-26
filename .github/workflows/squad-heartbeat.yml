@@ -1,19 +1,19 @@
 name: squad-heartbeat (Ralph, work-monitor heartbeat)
-# ⚠️ SYNC: This workflow is maintained in 4 locations. Changes must be applied to all:
-#   - templates/workflows/squad-heartbeat.yml (source template)
-#   - packages/squad-cli/templates/workflows/squad-heartbeat.yml (CLI package)
-#   - .squad/templates/workflows/squad-heartbeat.yml (installed template)
-#   - .github/workflows/squad-heartbeat.yml (active workflow)
-# Run 'squad upgrade' to sync installed copies from source templates.
+# ⚠️ SYNC: Dieser Workflow wird an 4 Stellen gepflegt. Änderungen müssen überall ankommen:
+# - templates/workflows/squad-heartbeat.yml (Quell-Template)
+# - packages/squad-cli/templates/workflows/squad-heartbeat.yml (CLI-Paket)
+# - .squad/templates/workflows/squad-heartbeat.yml (installiertes Template)
+# - .github/workflows/squad-heartbeat.yml (aktiver Workflow)
+# `squad upgrade` synchronisiert installierte Kopien aus den Quell-Templates.
 
 on:
-  # React to completed work or new squad work
+  # Auf abgeschlossene oder neue Squad-Arbeit reagieren
   issues:
     types: [closed, labeled]
   pull_request:
     types: [closed]
 
-  # Manual trigger
+  # Manueller Auslöser
   workflow_dispatch:
 
 permissions:
@@ -97,7 +97,7 @@ jobs:
             
             core.info(`🔄 Ralph triaged ${results.length} issue(s)`);
 
-      # Copilot auto-assign step (uses PAT if available)
+      # Copilot-Auto-Assign-Step (nutzt PAT, falls vorhanden)
       - name: Ralph — Assign @copilot issues
         if: success()
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b #v7

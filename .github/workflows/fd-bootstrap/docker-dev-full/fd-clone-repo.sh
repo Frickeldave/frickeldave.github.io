@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Idempotent: clones the repository once and leaves an existing checkout untouched.
+# Idempotent: klont das Repository einmal und lässt einen vorhandenen Checkout unangetastet.
 set -euo pipefail
 
 repo_url="${FD_REPO_URL:?FD_REPO_URL is required}"
@@ -16,7 +16,7 @@ if [ -n "${repo_branch}" ]; then
     clone_args+=(--branch "${repo_branch}")
 fi
 
-# `gh auth setup-git` makes git use the developer's `gh auth login` credentials.
+# `gh auth setup-git` sorgt dafür, dass git die Zugangsdaten aus `gh auth login` nutzt.
 if gh auth status >/dev/null 2>&1; then
     gh auth setup-git >/dev/null 2>&1 || true
 fi

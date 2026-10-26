@@ -41,6 +41,12 @@ function makeHome(copilotVersion = '1.0.98.') {
   return home;
 }
 
+// On Windows the Node side of the scripts spawns the real `copilot.cmd`: the
+// bash stub is not a `.cmd`/`.exe`, so it is never selected, and the real CLI
+// needs more than the 5 s spawn budget under load. Those assertions therefore
+// run on the Linux runners (fd-ci) only.
+const skipCopilotStatus = process.platform === 'win32' ? 'real copilot.cmd is spawned on Windows' : false;
+
 function run(script, args, { home, env = {}, cwd } = {}) {
   return spawnSync(bash, [toSlashes(path.join(dir, script)), ...args], {
     encoding: 'utf8',
@@ -54,11 +60,13 @@ function run(script, args, { home, env = {}, cwd } = {}) {
       FD_STATUS_LIB: toSlashes(path.join(dir, 'fd-status.sh')),
       FD_RUNTIME_LIB: toSlashes(path.resolve('scripts/copilot-environment.mjs')),
       FD_REPO_DIR: toSlashes(path.join(home, 'repo')),
-      // The surrounding shell may carry a token; the banner must report the
-      // offline state of the container, not the test environment.
+      // The surrounding shell may carry a token or a COPILOT_HOME from the
+      // developer's own CLI session; the banner must report the offline state of
+      // the container, not the test environment.
       GH_TOKEN: '',
       GITHUB_TOKEN: '',
       COPILOT_GITHUB_TOKEN: '',
+      COPILOT_HOME: '',
       ...env,
     },
   });
@@ -148,7 +156,7 @@ describe('fd scripts', () => {
     assert.equal(result.stderr, '');
   });
 
-  test('fd-welcome --force reports offline status and the key hints', { skip: skipWithoutBash }, () => {
+  test('fd-welcome --force reports offline status and the key hints', { skip: skipWithoutBash || skipCopilotStatus }, () => {
     const home = makeHome();
     const out = run('fd-welcome.sh', ['--force'], { home }).stdout;
     assert.ok(out.includes('GitHub CLI logged in : no'));
@@ -162,7 +170,7 @@ describe('fd scripts', () => {
     assert.ok(out.includes('kubectl -n ${FD_NAMESPACE:-fd-infra} exec -it fd-dev-<handle>-0'));
   });
 
-  test('fd-welcome detects logins and checkout from local files only', { skip: skipWithoutBash }, () => {
+  test('fd-welcome detects logins and checkout from local files only', { skip: skipWithoutBash || skipCopilotStatus }, () => {
     const home = makeHome();
     mkdirSync(path.join(home, '.config', 'gh'), { recursive: true });
     writeFileSync(
@@ -182,7 +190,7 @@ describe('fd scripts', () => {
     assert.ok(!result.stdout.includes('SECRET-VALUE'));
   });
 
-  test('fd-welcome reports no for a settings-only Copilot config', { skip: skipWithoutBash }, () => {
+  test('fd-welcome reports no for a settings-only Copilot config', { skip: skipWithoutBash || skipCopilotStatus }, () => {
     const home = makeHome();
     mkdirSync(path.join(home, '.copilot'), { recursive: true });
     writeFileSync(path.join(home, '.copilot', 'config.json'), '{"theme":"dark"}');
@@ -265,7 +273,8 @@ describe('entrypoint bashrc and VS Code settings', () => {
     const home = makeHome();
     writeFileSync(path.join(home, '.bashrc'), '# user\nfd-welcome old hook\n');
     const snippet = entrypoint.match(
-      /# Banner for interactive shells[\s\S]*?echo "\$\{welcome_hook\}" >> "\$\{HOME\}\/\.bashrc"/
+      // Anchored on the code, not on a comment: comment wording may change freely.
+      /if \[ -f "\$\{HOME\}\/\.bashrc" \]; then[\s\S]*?echo "\$\{welcome_hook\}" >> "\$\{HOME\}\/\.bashrc"/
     )?.[0];
     const hookLine = entrypoint.match(/^welcome_hook='(.*)'$/m)[1];
     const script = `welcome_hook='${hookLine}'\n${snippet}\n${snippet}`;

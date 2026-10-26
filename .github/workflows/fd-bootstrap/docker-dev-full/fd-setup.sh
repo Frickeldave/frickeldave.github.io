@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Guided, idempotent first-time setup. Logins stay interactive on purpose: the machine
-# holds no secrets, so the developer authenticates via device flow. Tokens are never printed.
+# Geführtes, idempotentes Erstsetup. Anmeldungen bleiben bewusst interaktiv: Die Maschine
+# enthält keine Secrets, daher meldet sich der Entwickler per Device-Flow an. Tokens werden nie ausgegeben.
 set -u
 
 usage() {

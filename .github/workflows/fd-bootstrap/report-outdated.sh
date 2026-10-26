@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Lists running dev machines that still use an older image/spec because nothing
-# restarts them automatically (StatefulSet updateStrategy OnDelete). A machine is
-# outdated when its pod revision differs from the StatefulSet update revision, or
-# when a new image was built (same tag, so the revision does not change).
+# Listet laufende Dev-Maschinen, die noch ein älteres Image/Spec nutzen, weil nichts
+# sie automatisch neu startet (StatefulSet-UpdateStrategy OnDelete). Eine Maschine ist
+# veraltet, wenn die Pod-Revision von der Update-Revision des StatefulSets abweicht oder
+# ein neues Image gebaut wurde (gleicher Tag, die Revision ändert sich also nicht).
 #
 # Env: NAMESPACE, MACHINES_FILE, IMAGE_BUILT (true/false), KUBECTL_REQUEST_TIMEOUT,
-#      GITHUB_STEP_SUMMARY (optional).
+# GITHUB_STEP_SUMMARY (optional).
 set -euo pipefail
 
 namespace="${NAMESPACE:?NAMESPACE is required}"

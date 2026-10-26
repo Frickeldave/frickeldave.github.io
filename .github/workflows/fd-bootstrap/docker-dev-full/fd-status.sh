@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Sourced by fd-setup and fd-welcome. Offline checks only: no network access,
-# no token is ever read into output.
+# Wird von fd-setup und fd-welcome eingebunden. Nur Offline-Prüfungen: kein Netzzugriff,
+# kein Token wird je in die Ausgabe gelesen.
 
 fd_gh_logged_in() {
     if [ -n "${GH_TOKEN:-}" ] || [ -n "${GITHUB_TOKEN:-}" ]; then
@@ -18,7 +18,7 @@ fd_tmux_installed() {
     command -v tmux >/dev/null 2>&1
 }
 
-# Shared with the start flows. Never run an interactive auth command here.
+# Gemeinsam mit den Start-Flows genutzt. Hier nie einen interaktiven Auth-Befehl ausführen.
 fd_runtime="${FD_RUNTIME_LIB:-$(dirname "${BASH_SOURCE[0]}")/copilot-environment.mjs}"
 fd_copilot_status() {
     node "${fd_runtime}" auth 2>/dev/null || echo error

@@ -1,36 +1,36 @@
 name: fd-podcast-update (Sync podcast episodes + deploy)
 
-# Runner: self-hosted, label `fd` (see scripts/bootstrap/README.md) for BOTH jobs.
+# Runner: selbstgehostet, Label `fd` (siehe scripts/bootstrap/README.md) für BEIDE Jobs.
 #
-#   * `podcast-update` — the runner image (Ubuntu 24.04, non-root `appuser`, no
-#     sudo) already carries Node 24, `git`, `gh` and `jq`, which is the entire
-#     toolset this job uses. It therefore runs without `setup-node`, without
-#     `npm ci` (the four scripts under scripts/workflows/podcast-update/ import
-#     Node builtins only) and without nvm: the old `bash -il` login-shell
-#     wrapper and the `nvm.sh` sourcing are gone, and the Node major version is
-#     asserted against the runner instead of provisioned by it.
-#   * `deploy-main` — same runners. `withastro/action` runs its own `npm ci` +
-#     `astro build` (Node 24 via the `node-version` input, served by the nested
-#     `actions/setup-node`), and `actions/deploy-pages` publishes the artifact.
-#     A Pages deployment needs nothing but `pages`/`id-token` permissions, which
-#     a self-hosted runner gets as well, so the `github-pages` environment stays.
+# * `podcast-update` — das Runner-Image (Ubuntu 24.04, Nicht-root-`appuser`, kein
+# sudo) bringt Node 24, `git`, `gh` und `jq` bereits mit, also das komplette
+# Toolset dieses Jobs. Er läuft daher ohne `setup-node`, ohne
+# `npm ci` (die vier Skripte unter scripts/workflows/podcast-update/ importieren nur
+# Node-Builtins) und ohne nvm: Der alte `bash -il`-Login-Shell-Wrapper und das
+# Sourcen von `nvm.sh` sind entfallen, und die Node-Major-Version wird gegen den
+# Runner geprüft, statt von ihm bereitgestellt.
+# * `deploy-main` — dieselben Runner. `withastro/action` führt sein eigenes `npm ci` +
+# `astro build` aus (Node 24 über den `node-version`-Input, bereitgestellt vom
+# verschachtelten `actions/setup-node`), und `actions/deploy-pages` veröffentlicht das Artifact.
+# Ein Pages-Deployment braucht nur die Permissions `pages`/`id-token`, die ein
+# selbstgehosteter Runner ebenfalls erhält, das `github-pages`-Environment bleibt also.
 #
-# Third-party actions are pinned to full commit SHAs with a `# vN` comment, like
-# fd-ci.yml and fd-configure.yml, so a re-pointed tag cannot change what runs on
-# our own hardware. The actions nested *inside* `withastro/action`
-# (setup-node, upload-pages-artifact) are referenced by that action's own file
-# as tags; pinning the composite's SHA is the extent of control we have.
+# Drittanbieter-Actions sind auf volle Commit-SHAs gepinnt, mit `# vN`-Kommentar, wie in
+# fd-ci.yml und fd-configure.yml; ein umgehängter Tag kann also nicht ändern, was auf
+# unserer eigenen Hardware läuft. Die *innerhalb* von `withastro/action` verschachtelten
+# Actions (setup-node, upload-pages-artifact) referenziert die Datei dieser Action
+# selbst per Tag; den SHA der Composite zu pinnen ist unsere Kontrollmöglichkeit.
 #
-# Copilot CLI: `generate-metadata.mjs` shells out to `gh copilot`, which gh 2.102
-# implements as a built-in command — it executes the Copilot CLI already on PATH
-# (/usr/bin/copilot, v1.0.95 on the runner), so nothing is installed or
-# downloaded at job time. Verified on the fd runner: `gh copilot -p` reaches the
-# CLI, whose only remaining requirement is the GITHUB_TOKEN env var the step
-# already sets from secrets.COPILOT_GITHUB_TOKEN.
+# Copilot CLI: `generate-metadata.mjs` ruft `gh copilot` auf, was gh 2.102
+# als eingebautes Kommando umsetzt — es startet die Copilot CLI, die bereits im PATH
+# liegt (/usr/bin/copilot, v1.0.95 auf dem Runner); zur Job-Laufzeit wird also nichts
+# installiert oder geladen. Auf dem fd-Runner geprüft: `gh copilot -p` erreicht die
+# CLI, deren einzige verbleibende Voraussetzung die Env-Variable GITHUB_TOKEN ist, die der
+# Step bereits aus secrets.COPILOT_GITHUB_TOKEN setzt.
 
 on:
   schedule:
-    # Every Tuesday at 09:00 CET/CEST
+    # Jeden Dienstag um 09:00 CET/CEST
     - cron: "0 8 * * 2" # 08:00 UTC = 09:00 CET (winter) / 07:00 UTC = 09:00 CEST (summer)
   workflow_dispatch:
     inputs:
@@ -69,9 +69,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # The runner image provides Node 24 at /usr/bin/node, so nothing is
-      # provisioned here — the major version is verified and the job fails hard
-      # if the image ever drifts away from v24.
+      # Das Runner-Image stellt Node 24 unter /usr/bin/node bereit, es wird also nichts
+      # bereitgestellt — die Major-Version wird geprüft, und der Job schlägt hart fehl,
+      # falls das Image je von v24 abweicht.
       - name: Check Node.js version
         run: |
           echo "🔍 Checking Node.js version..."
@@ -86,9 +86,9 @@ jobs:
       - name: Global episode comparison (against main)
         id: check_episodes
         run: |
-          # Self-hosted workspaces persist between runs; the script appends to
-          # $GITHUB_OUTPUT, so truncate the file first to keep a stale
-          # `missing_episode` from a previous run out of this one.
+          # Selbstgehostete Workspaces bleiben zwischen Läufen bestehen; das Skript hängt an
+          # $GITHUB_OUTPUT an, daher die Datei zuerst leeren, damit ein veraltetes
+          # `missing_episode` aus einem früheren Lauf nicht hier hineinragt.
           : > "$GITHUB_OUTPUT"
           echo "📡 Comparing RSS feed with main branch..."
           node scripts/workflows/podcast-update/compare-episodes.mjs
@@ -101,9 +101,9 @@ jobs:
           echo "✅ No new episodes found. All episodes are up to date."
           exit 0
 
-      # `gh copilot` is gh's built-in passthrough to the Copilot CLI that sits on
-      # PATH (/usr/bin/copilot on the fd runner), so no gh extension is needed.
-      # The script maps COPILOT_GITHUB_TOKEN onto GITHUB_TOKEN for the CLI.
+      # `gh copilot` ist ghs eingebauter Durchgriff auf die Copilot CLI im
+      # PATH (/usr/bin/copilot auf dem fd-Runner), eine gh-Extension ist also nicht nötig.
+      # Das Skript bildet COPILOT_GITHUB_TOKEN für die CLI auf GITHUB_TOKEN ab.
       - name: Generate episode metadata using Copilot CLI
         if: steps.check_episodes.outputs.missing_episode != ''
         id: generate_metadata
@@ -162,19 +162,19 @@ jobs:
           if [ "${{ github.event.inputs.dryRun }}" == "true" ]; then
             echo "🦁 DRY RUN: Would copy doag.md from dev (same ID as dev)."
           else
-            # Copy doag.md directly from dev to avoid generating a new random ID
+            # doag.md direkt aus dev kopieren, um keine neue Zufalls-ID zu erzeugen
             git checkout dev -- src/content/aboutme/doag.md
             git add src/content/aboutme/doag.md
             git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
             git push origin main
           fi
 
-      # NOTE: The previous "Trigger production deployment" step (which
-      # dispatched the now-removed fd-release.yml) has been dropped. main is
-      # now deployed to GitHub Pages by the `deploy-main` job below
-      # (withastro/action@v3 build + actions/deploy-pages@v4) whenever this
-      # workflow actually updates main. fd-deploy-prd remains available as a
-      # standalone production deploy.
+      # HINWEIS: Der frühere Step „Trigger production deployment" (der
+      # das inzwischen entfernte fd-release.yml dispatchte) ist entfallen. `main` wird
+      # jetzt vom `deploy-main`-Job unten nach GitHub Pages deployt
+      # (withastro/action@v3-Build + actions/deploy-pages@v4), sobald dieser
+      # Workflow `main` tatsächlich aktualisiert. fd-deploy-prd bleibt als
+      # eigenständiger Produktions-Deploy verfügbar.
 
       - name: Success summary
         if: steps.check_episodes.outputs.missing_episode != ''
@@ -193,13 +193,13 @@ jobs:
   deploy-main:
     needs: podcast-update
     if: (github.event.inputs.target == 'all' || github.event_name == 'schedule') && github.event.inputs.dryRun != 'true'
-    # Self-hosted runner (label: fd), see the header. `withastro/action` does its
-    # own install/build, so no npm or Node setup is needed here either.
+    # Selbstgehosteter Runner (Label: fd), siehe Kopf. `withastro/action` erledigt
+    # Install und Build selbst, eine npm-/Node-Einrichtung ist also auch hier nicht nötig.
     runs-on: [self-hosted, fd]
     environment: github-pages
     steps:
-      # withastro/action does NOT check out the repository itself and looks for
-      # the lockfile in the checked-out tree, so this step has to stay.
+      # withastro/action checkt das Repository nicht selbst aus und sucht die
+      # Lockfile im ausgecheckten Baum, dieser Step muss daher bleiben.
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:

@@ -3,11 +3,11 @@ FROM ${DEV_BASE_IMAGE}
 
 USER root
 
-# Only SSH is added on top of fd-dev-base; the toolchain stays in the base image.
+# Auf fd-dev-base kommt nur SSH hinzu; die Toolchain bleibt im Basis-Image.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openssh-server netcat-openbsd \
     && rm -rf /var/lib/apt/lists/* \
-    # Unlocked account without a password, otherwise sshd rejects key logins.
+    # Entsperrtes Konto ohne Passwort, sonst lehnt sshd Key-Logins ab.
     && usermod -p '*' appuser
 
 COPY --chmod=755 .github/workflows/fd-bootstrap/docker-dev-full/entrypoint.sh /usr/local/bin/fd-dev-entrypoint
@@ -19,7 +19,7 @@ COPY --chmod=644 .github/workflows/fd-bootstrap/docker-dev-full/fd-status.sh /us
 COPY --chmod=644 scripts/copilot-environment.mjs /usr/local/lib/fd-dev/copilot-environment.mjs
 COPY --chmod=644 scripts/platform-shared.mjs /usr/local/lib/fd-dev/platform-shared.mjs
 
-# Strip CRLF: a Windows checkout would make the kernel look for `/usr/bin/env bash\r`.
+# CRLF entfernen: Ein Windows-Checkout ließe den Kernel nach `/usr/bin/env bash\r` suchen.
 RUN sed -i 's/\r$//' /usr/local/bin/fd-dev-entrypoint /usr/local/bin/fd-clone-repo \
     /usr/local/bin/fd-setup /usr/local/bin/fd-welcome /usr/local/lib/fd-dev/fd-status.sh
 

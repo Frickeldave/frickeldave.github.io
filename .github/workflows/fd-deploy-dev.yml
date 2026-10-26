@@ -1,28 +1,28 @@
 name: fd-deploy-dev (Deploy dev on CI success)
 
-# Two jobs after a green FD CI run on `dev`:
-#   build-and-deploy → dispatches the HomeNet/Ansible playbook (tag `fd`).
-#   release          → publishes the GitHub pre-release `dev-v<version>` for
-#                      exactly the CI commit (version from that commit's
-#                      package.json, not from the default branch).
+# Zwei Jobs nach einem grünen FD-CI-Lauf auf `dev`:
+# build-and-deploy → dispatcht das HomeNet/Ansible-Playbook (Tag `fd`).
+# release          → veröffentlicht das GitHub-Pre-Release `dev-v<version>` für
+# genau den CI-Commit (Version aus der package.json
+# dieses Commits, nicht vom Default-Branch).
 #
-# Release semantics (ported from the CRAFT project):
-#   * one `dev-v<version>` pre-release per version; repeated dev deploys of the
-#     same version are no-ops (`::notice::`, green).
-#   * `--latest=false --prerelease` keep stable releases the only "latest"
-#     ones, so fd-deploy-prd can compare against them (it filters
-#     `isPrerelease == false` and ignores `dev-v*` tags defensively).
-#   * an existing tag that points to a different commit is never moved: the job
-#     warns and skips instead of rewriting published history.
+# Release-Semantik:
+# * ein `dev-v<version>`-Pre-Release pro Version; wiederholte dev-Deploys
+# derselben Version sind No-Ops (`::notice::`, grün).
+# * `--latest=false --prerelease` sorgt dafür, dass nur stabile Releases „latest"
+# sind, sodass fd-deploy-prd dagegen vergleichen kann (filtert
+# `isPrerelease == false` und ignoriert `dev-v*`-Tags defensiv).
+# * ein vorhandener Tag auf einem anderen Commit wird nie verschoben: Der Job
+# warnt und überspringt, statt veröffentlichte Historie umzuschreiben.
 #
-# Both jobs run on the self-hosted `fd` runners; the runner image already ships
-# node 24, gh, jq and git, so no setup action is needed.
+# Beide Jobs laufen auf den selbstgehosteten `fd`-Runnern; das Runner-Image
+# bringt node 24, gh, jq und git bereits mit, eine Setup-Action ist nicht nötig.
 
 on:
   workflow_dispatch:
-  # Deploys only after FD CI succeeds on a push to `dev`. Using `workflow_run`
-  # (rather than invoking fd-ci from here) guarantees this workflow can never
-  # deploy a build that hasn't already passed CI.
+  # Deployt nur, nachdem FD CI bei einem Push auf `dev` erfolgreich war. `workflow_run`
+  # (statt fd-ci von hier aufzurufen) stellt sicher, dass dieser Workflow nie einen
+  # Build deployt, der CI nicht bereits bestanden hat.
   workflow_run:
     workflows:
       - "fd-ci (Lint, Format, Vale, e2e checks)"
@@ -34,9 +34,9 @@ permissions:
 
 jobs:
   build-and-deploy:
-    # Deploy when FD CI passed on `dev` after a push (human push) or an
-    # explicit workflow_dispatch (fd-podcast-update / manual CI). Pull_request
-    # runs never trigger a dev deploy.
+    # Deployt, wenn FD CI auf `dev` nach einem Push (menschlicher Push) oder einem
+    # expliziten workflow_dispatch (fd-podcast-update / manuelle CI) grün war.
+    # Pull-Request-Läufe lösen nie ein dev-Deploy aus.
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
     runs-on: [self-hosted, fd]
     steps:
@@ -80,9 +80,9 @@ jobs:
   release:
     name: Publish dev release (dev-v<version>)
     needs: build-and-deploy
-    # Same gate as the deploy job: only a green FD CI run for `dev` publishes a
-    # release. A plain `workflow_dispatch` of this workflow carries no
-    # workflow_run payload, so there would be no commit to target.
+    # Gleiches Gate wie der Deploy-Job: Nur ein grüner FD-CI-Lauf für `dev`
+    # veröffentlicht ein Release. Ein reiner `workflow_dispatch` dieses Workflows
+    # hat keine workflow_run-Payload, es gäbe also keinen Commit als Ziel.
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
     runs-on: [self-hosted, fd]
     permissions:
@@ -93,8 +93,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          # The version must come from the commit CI validated; dev may already
-          # be one commit ahead by the time this job runs.
+          # Die Version muss aus dem von CI geprüften Commit kommen; dev kann
+          # beim Start dieses Jobs bereits einen Commit weiter sein.
           ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Read version from the deployed commit
@@ -137,8 +137,8 @@ jobs:
             esac
           }
 
-          # An existing release means this version was already published; dev may
-          # be redeployed many times with an unchanged version.
+          # Ein vorhandenes Release bedeutet: Diese Version ist schon veröffentlicht; dev kann
+          # mit unveränderter Version mehrfach neu deployt werden.
           if gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
             echo "::notice::${RELEASE_TAG} already released; skipping."
             exit 0
@@ -160,8 +160,8 @@ jobs:
             --generate-notes \
             --prerelease \
             --latest=false 2>"${RUNNER_TEMP}/release.err"; then
-            # Two concurrent runs for the same version can both pass the checks
-            # above; the loser gets a 422 "already_exists" — that is a success.
+            # Zwei parallele Läufe derselben Version können beide die Prüfungen oben
+            # bestehen; der Verlierer erhält 422 „already_exists" — das ist ein Erfolg.
             if grep -qi "already_exists\|already exists" "${RUNNER_TEMP}/release.err"; then
               echo "::notice::${RELEASE_TAG} was created by a concurrent run; skipping."
               exit 0

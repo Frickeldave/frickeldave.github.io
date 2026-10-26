@@ -9,33 +9,33 @@ on:
         default: false
         type: boolean
 
-# Phases: ci-gate dispatches fd-ci and waits (actions: write); promote merges
-# dev into main (contents: write); deploy-pages builds + publishes the site
-# (pages + id-token); release tags + releases only AFTER a successful Pages
-# deploy (contents: write) so a failed deploy does not consume a version.
+# Phasen: ci-gate dispatcht fd-ci und wartet (actions: write); promote merged
+# dev nach main (contents: write); deploy-pages baut und veröffentlicht die Seite
+# (pages + id-token); release taggt und veröffentlicht erst NACH einem erfolgreichen
+# Pages-Deploy (contents: write), damit ein fehlgeschlagener Deploy keine Version verbraucht.
 #
-# Release model and state logic:
-#   dev releases  = pre-releases `dev-v<version>` (fd-deploy-dev), never deployed
-#                   to production and never used as the comparison baseline.
-#   stable releases = `v<version>`, `isPrerelease == false`, no `dev-v` tag.
-#                   `promote` compares against the newest of these only, so a
-#                   dev pre-release can never block a promotion.
+# Release-Modell und Zustandslogik:
+# dev-Releases    = Pre-Releases `dev-v<version>` (fd-deploy-dev), nie nach Produktion
+# deployt und nie als Vergleichsbasis verwendet.
+# stabile Releases = `v<version>`, `isPrerelease == false`, kein `dev-v`-Tag.
+# `promote` vergleicht nur gegen das neueste davon, ein dev-Pre-Release kann eine
+# Promotion daher nie blockieren.
 #
-#   promote (outputs: dev_version, latest_stable, main_version, should_deploy)
-#     dev_version <= latest_stable → no merge (nothing new to promote) and
-#                                    should_deploy=false.
-#     dev_version  > latest_stable → merge dev→main (a second run is a no-op:
-#                                    "Already up to date"/"Everything up-to-date"),
-#                                    then read the version from main.
-#     main_version  > latest_stable → should_deploy=true  → deploy-pages + release.
-#     main_version <= latest_stable → should_deploy=false → both are skipped and
-#                                    the run stays green with a ::notice::
-#                                    ("nichts zu deployen, main ist bereits
-#                                    veröffentlicht"). Retrying after a failed
-#                                    deploy therefore needs no version bump.
+# promote (Outputs: dev_version, latest_stable, main_version, should_deploy)
+# dev_version <= latest_stable → kein Merge (nichts Neues zu promoten) und
+# should_deploy=false.
+# dev_version  > latest_stable → Merge dev→main (ein zweiter Lauf ist ein No-Op:
+# „Already up to date"/„Everything up-to-date"),
+# danach wird die Version aus main gelesen.
+# main_version  > latest_stable → should_deploy=true  → deploy-pages + release.
+# main_version <= latest_stable → should_deploy=false → beide werden übersprungen,
+# der Lauf bleibt grün mit einem ::notice::
+# („nichts zu deployen, main ist bereits
+# veröffentlicht"). Ein erneuter Versuch nach einem fehlgeschlagenen
+# Deploy braucht daher keinen Versions-Bump.
 #
-#   dry_run: nothing is merged, dispatched, tagged, released or deployed; the
-#            promotion decision is still computed and printed.
+# dry_run: Nichts wird gemerged, dispatcht, getaggt, veröffentlicht oder deployt; die
+# Promotion-Entscheidung wird trotzdem berechnet und ausgegeben.
 permissions:
   contents: write
   actions: write
@@ -51,8 +51,8 @@ jobs:
     name: Gate — FD CI must pass on dev
     runs-on: ubuntu-latest
     env:
-      # The ci-gate job has no checkout step, so `gh` cannot auto-detect the
-      # repository from a git remote. Pin it explicitly for all gh commands.
+      # Der ci-gate-Job hat keinen Checkout-Step, `gh` kann das Repository also nicht
+      # aus einem Git-Remote ableiten. Deshalb für alle gh-Befehle explizit gepinnt.
       GH_REPO: ${{ github.repository }}
     steps:
       - name: Dry run — explain CI gate
@@ -140,10 +140,10 @@ jobs:
           fi
           echo "✅ Version $VERSION has a CHANGELOG entry"
 
-      # Only stable releases count as the baseline. `gh release list` is ordered
-      # newest first; drafts never block, and `dev-v*` pre-releases are excluded
-      # twice (isPrerelease and tag prefix) so they can never block or delay a
-      # production promotion.
+      # Nur stabile Releases zählen als Basis. `gh release list` ist absteigend nach
+      # Erstellungsdatum sortiert; Drafts blockieren nie, `dev-v*`-Pre-Releases werden
+      # doppelt ausgeschlossen (isPrerelease und Tag-Prefix), damit sie eine Promotion
+      # nie blockieren oder verzögern.
       - name: Determine latest stable GitHub release
         id: latest
         env:
@@ -201,8 +201,8 @@ jobs:
           echo "Then (only if deploy succeeds): tag and release: ${{ steps.version.outputs.tag }}"
 
       - name: Merge dev → main
-        # Only when dev actually carries a newer version; otherwise the merge
-        # would move main without a deploy. A repeated run merges nothing.
+        # Nur wenn dev tatsächlich eine neuere Version trägt; sonst würde der Merge
+        # main ohne Deploy verschieben. Ein wiederholter Lauf merged nichts.
         if: ${{ !inputs.dry_run && steps.dev_gate.outputs.newer == 'true' }}
         run: |
           git checkout main
@@ -210,8 +210,8 @@ jobs:
           git push origin main
           echo "✅ Pushed main"
 
-      # The deployed state is defined by main, not by dev: after the merge the
-      # version of main decides whether Pages + the stable release run at all.
+      # Der deployte Zustand wird von main bestimmt, nicht von dev: Nach dem Merge
+      # entscheidet die Version in main, ob Pages und das stabile Release laufen.
       - name: Read version from main and decide
         id: decide
         env:
@@ -263,25 +263,25 @@ jobs:
             echo "| dry run | \`${{ inputs.dry_run }}\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # NOTE: Tag + release are intentionally NOT created here.
-      # They are deferred to the `release` job, which runs only after the
-      # Pages deploy succeeded — so a failed deploy does not consume a version.
+      # HINWEIS: Tag und Release werden hier bewusst NICHT erzeugt.
+      # Sie sind in den `release`-Job verlagert, der erst nach dem erfolgreichen
+      # Pages-Deploy läuft — ein fehlgeschlagener Deploy verbraucht also keine Version.
 
   deploy-pages:
     name: Build & deploy to GitHub Pages
     needs: promote
-    # Runs only when main really carries a version above the latest stable
-    # release (see the state logic in the header); otherwise the run stays green
-    # without deploying.
+    # Läuft nur, wenn main wirklich eine Version über dem letzten stabilen
+    # Release trägt (siehe Zustandslogik im Kopf); sonst bleibt der Lauf grün,
+    # ohne zu deployen.
     if: ${{ !inputs.dry_run && needs.promote.outputs.should_deploy == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # IMPORTANT: withastro/action does NOT check out the repository itself.
-      # It expects an already-checked-out tree; without this checkout it fails
-      # with "No lockfile found" because it inspects an empty directory.
+      # WICHTIG: withastro/action checkt das Repository nicht selbst aus.
+      # Es erwartet einen bereits ausgecheckten Baum; ohne diesen Checkout scheitert es
+      # mit „No lockfile found", weil es ein leeres Verzeichnis untersucht.
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
         with:
           ref: main
@@ -303,8 +303,8 @@ jobs:
     if: ${{ !inputs.dry_run && needs.promote.outputs.should_deploy == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      # Deferred tag + release: only runs after deploy-pages succeeded, so a
-      # failed deploy does not burn a version number (retry needs no bump).
+      # Verzögerter Tag und Release: läuft erst nach erfolgreichem deploy-pages, damit ein
+      # fehlgeschlagener Deploy keine Versionsnummer verbraucht (Retry braucht keinen Bump).
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
         with:
           ref: main

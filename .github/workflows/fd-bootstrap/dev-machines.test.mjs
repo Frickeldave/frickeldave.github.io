@@ -395,6 +395,7 @@ describe('image reference hygiene', () => {
   const kanikoTemplatePath = buildJob.env.KANIKO_JOB_TEMPLATE;
 
   const OCI_IMAGE = /^ghcr\.io\/[a-z0-9]+(?:[._-][a-z0-9]+)*\/[a-z0-9]+(?:[._-][a-z0-9]+)*:[A-Za-z0-9_][A-Za-z0-9._-]{0,127}$/;
+  const OCI_REPOSITORY = /^ghcr\.io\/[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*$/;
   const DNS1123_LABEL = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
 
   test('the workflow never interpolates a raw GitHub owner into an image reference', () => {
@@ -445,8 +446,14 @@ describe('image reference hygiene', () => {
     assert.equal(resolved.DEV_BASE_IMAGE, 'ghcr.io/frickeldave/fd-dev-base:latest');
     assert.equal(resolved.KANIKO_IMAGE, 'ghcr.io/frickeldave/fd-dev-kaniko:latest');
     assert.equal(resolved.IMAGE_REF, 'ghcr.io/frickeldave/fd-dev-full:latest');
-    for (const ref of Object.values(resolved)) {
-      assert.match(ref, OCI_IMAGE, `${ref} must be a valid OCI reference`);
+    assert.equal(resolved.CACHE_REPO, 'ghcr.io/frickeldave/fd-dev-kaniko-cache');
+    for (const [name, ref] of Object.entries(resolved)) {
+      if (name === 'CACHE_REPO') {
+        // Cache repository has no tag; OCI repository names are lowercase only.
+        assert.match(ref, OCI_REPOSITORY, `${ref} must be a valid OCI repository`);
+      } else {
+        assert.match(ref, OCI_IMAGE, `${ref} must be a valid OCI reference`);
+      }
     }
     // The dev-machine job consumes this job output as its image.
     assert.equal(
@@ -478,7 +485,8 @@ describe('image reference hygiene', () => {
       .replaceAll('__GIT_CONTEXT__', 'git://github.com/Frickeldave/frickeldave.github.io.git#refs/heads/dev#abc')
       .replaceAll('__DOCKERFILE_PATH__', '.github/workflows/fd-bootstrap/docker-dev-full/Dockerfile')
       .replaceAll('__DESTINATION_ARGS__', '--destination=ghcr.io/frickeldave/fd-dev-full:latest')
-      .replaceAll('__DEV_BASE_IMAGE__', 'ghcr.io/frickeldave/fd-dev-base:latest');
+      .replaceAll('__DEV_BASE_IMAGE__', 'ghcr.io/frickeldave/fd-dev-base:latest')
+      .replaceAll('__CACHE_REPO__', 'ghcr.io/frickeldave/fd-dev-kaniko-cache');
     const job = parseAllDocuments(rendered)[0].toJS();
 
     assert.match(job.metadata.name, DNS1123_LABEL);
@@ -495,6 +503,19 @@ describe('image reference hygiene', () => {
         assert.match(buildArg, OCI_IMAGE);
       }
     }
+
+    // Layer cache: enabled, GHCR repository lowercase, TTL bounded.
+    assert.ok(container.args.includes('--cache=true'), 'the build must use the layer cache');
+    const cacheRepo = container.args.find((arg) => String(arg).startsWith('--cache-repo='));
+    assert.ok(cacheRepo, 'the build must set --cache-repo');
+    assert.match(cacheRepo.slice('--cache-repo='.length), OCI_REPOSITORY);
+    const cacheTtl = container.args.find((arg) => String(arg).startsWith('--cache-ttl='));
+    assert.match(cacheTtl ?? '', /^--cache-ttl=\d+h$/, 'the cache must expire');
+    // The cache repo must not be pushed as the build destination.
+    assert.ok(
+      !container.args.some((arg) => String(arg).startsWith('--destination=') && String(arg).includes('cache')),
+      '--destination must point at the image, not at the cache'
+    );
     // Secret names are DNS-1123 subdomains: the job name plus a suffix stays valid.
     assert.match(container.env.find((entry) => entry.name === 'GIT_PASSWORD').valueFrom.secretKeyRef.name, /^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$/);
   });

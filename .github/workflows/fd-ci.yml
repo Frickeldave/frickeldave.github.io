@@ -1,10 +1,10 @@
 name: fd-ci (Lint, Format, Vale, e2e checks)
 
 on:
-  # Single CI gate. Runs on pull requests targeting `dev`, on pushes to `dev`,
-  # and manually from the Actions tab. The deploy workflows depend on this:
-  #   - fd-deploy-dev listens for a successful FD CI push run on `dev`.
-  #   - fd-deploy-prd dispatches this workflow and waits for its success.
+  # Einziges CI-Gate. Läuft bei Pull Requests gegen `dev`, bei Pushes auf `dev`
+  # und manuell über den Actions-Tab. Die Deploy-Workflows hängen davon ab:
+  # - fd-deploy-dev wartet auf einen erfolgreichen FD-CI-Push-Lauf auf `dev`.
+  # - fd-deploy-prd dispatcht diesen Workflow und wartet auf seinen Erfolg.
   pull_request:
     branches:
       - dev
@@ -18,9 +18,9 @@ permissions:
 
 jobs:
   lint-checks:
-    # Self-hosted runner (label: fd) — 2 replicas, see scripts/bootstrap/README.md
-    # `npm ci` also runs the `postinstall` hook, which fetches Vale and OpenSCAD
-    # into the workspace; the runner image carries the compilers those need.
+    # Selbstgehosteter Runner (Label: fd) — 2 Replicas, siehe scripts/bootstrap/README.md
+    # `npm ci` führt auch den `postinstall`-Hook aus, der Vale und OpenSCAD
+    # in den Workspace holt; das Runner-Image bringt die nötigen Compiler mit.
     runs-on: [self-hosted, fd]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -42,10 +42,10 @@ jobs:
         run: npm run prose
 
   scad-smoke-test:
-    # Self-hosted runner (label: fd) — 2 replicas, see scripts/bootstrap/README.md
-    # `install-openscad.mjs` unpacks the Linux AppImage via
-    # `--appimage-extract`, so the renderer runs without FUSE and without sudo.
-    # The STL export itself is headless: no X server or xvfb is involved.
+    # Selbstgehosteter Runner (Label: fd) — 2 Replicas, siehe scripts/bootstrap/README.md
+    # `install-openscad.mjs` entpackt das Linux-AppImage per
+    # `--appimage-extract`, der Renderer läuft also ohne FUSE und ohne sudo.
+    # Der STL-Export selbst ist headless: kein X-Server, kein xvfb.
     runs-on: [self-hosted, fd]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -61,14 +61,14 @@ jobs:
         run: node --test test/scad/scad-build.test.cjs
 
   e2e-test:
-    # Self-hosted runner (label: fd) — 2 replicas, see scripts/bootstrap/README.md
-    # The Playwright browsers are baked into the `fd-dev-base` runner image
-    # (`PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright`, chromium revision matches
-    # `@playwright/test` 1.63.0), so nothing is downloaded at job time. The OS
-    # libraries are baked in too and `appuser` has no sudo, so an
-    # `--with-deps` install is neither needed nor possible.
-    # The runner limits were raised for this job: the webServer build needs
-    # ~8 GiB and ~6 min at 3 vCPU (issue #282, step 10).
+    # Selbstgehosteter Runner (Label: fd) — 2 Replicas, siehe scripts/bootstrap/README.md
+    # Die Playwright-Browser sind im Runner-Image `fd-dev-base` enthalten
+    # (`PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright`, Chromium-Revision passt zu
+    # `@playwright/test` 1.63.0), zur Job-Laufzeit wird also nichts geladen. Auch die
+    # OS-Bibliotheken sind enthalten, und `appuser` hat kein sudo, eine
+    # `--with-deps`-Installation ist weder nötig noch möglich.
+    # Für diesen Job wurden die Runner-Limits erhöht: Der webServer-Build braucht
+    # ~8 GiB und ~6 min bei 3 vCPU (Issue #282, Step 10).
     runs-on: [self-hosted, fd]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -80,9 +80,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # `npm ci` already installs OpenSCAD via `postinstall`; the explicit call
-      # below is a no-op safety net so `npm run build` inside the Playwright
-      # webServer always finds a renderer.
+      # `npm ci` installiert OpenSCAD bereits über `postinstall`; der explizite
+      # Aufruf unten ist ein No-Op-Sicherheitsnetz, damit `npm run build` im Playwright-
+      # webServer immer einen Renderer findet.
       - name: Install OpenSCAD
         run: node scripts/install-openscad.mjs --quiet
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Deliberately restarts the selected dev machines by deleting their pod; the
-# StatefulSet recreates it from the current spec (imagePullPolicy: Always pulls
-# the newest image). ALL DATA IN THE CONTAINER IS LOST. Machines with a live SSH
-# session are skipped unless FORCE_RESTART=true.
+# Startet die ausgewählten Dev-Maschinen bewusst neu, indem ihr Pod gelöscht wird; das
+# StatefulSet erzeugt ihn aus dem aktuellen Spec neu (imagePullPolicy: Always zieht
+# das neueste Image). ALLE DATEN IM CONTAINER GEHEN VERLOREN. Maschinen mit aktiver
+# SSH-Sitzung werden übersprungen, außer FORCE_RESTART=true.
 #
-# Env: NAMESPACE, MACHINES_FILE (one machine name per line), FORCE_RESTART,
-#      SESSIONS_SCRIPT (path of active-sessions.sh), KUBECTL_REQUEST_TIMEOUT.
+# Env: NAMESPACE, MACHINES_FILE (ein Maschinenname pro Zeile), FORCE_RESTART,
+# SESSIONS_SCRIPT (Pfad von active-sessions.sh), KUBECTL_REQUEST_TIMEOUT.
 set -euo pipefail
 
 namespace="${NAMESPACE:?NAMESPACE is required}"
@@ -29,7 +29,7 @@ while read -r machine; do
   if [ "${force}" = "true" ]; then
     echo "${machine}: force_restart=true, skipping the session check."
   else
-    # An unreadable session count is treated as "busy" so data is never lost by accident.
+    # Eine unlesbare Sitzungszahl gilt als „beschäftigt", damit nie versehentlich Daten verloren gehen.
     if sessions="$(kubectl exec -i "${pod}" -n "${namespace}" -c dev --request-timeout="${timeout}" -- sh -s < "${sessions_script}" 2>/dev/null)" &&
       [[ "${sessions}" =~ ^[0-9]+$ ]]; then
       if [ "${sessions}" -gt 0 ]; then

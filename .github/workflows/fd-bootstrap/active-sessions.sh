@@ -1,11 +1,11 @@
 #!/bin/sh
-# Prints the number of live SSH sessions of a dev machine. Streamed into the
-# container via `kubectl exec -i ... -- sh -s`, so it only uses POSIX sh and
-# /proc (no ps/who needed). sshd renames each session process to
-# "sshd: <user>@pts/N" (or "@notty" for exec/port-forward only sessions);
-# the listener and pre-auth processes carry no "@" and are not counted.
-# A machine without an SSH key runs no sshd at all, so the count is 0.
-# PROC_DIR is overridable for tests.
+# Gibt die Anzahl aktiver SSH-Sitzungen einer Dev-Maschine aus. Wird per
+# `kubectl exec -i ... -- sh -s` in den Container gestreamt, nutzt daher nur POSIX sh und
+# /proc (kein ps/who nötig). sshd benennt jeden Sitzungsprozess um zu
+# „sshd: <user>@pts/N" (bzw. „@notty" für reine exec-/Port-Forward-Sitzungen);
+# Listener und Pre-Auth-Prozesse tragen kein „@" und werden nicht gezählt.
+# Eine Maschine ohne SSH-Schlüssel startet kein sshd, die Anzahl ist dann 0.
+# PROC_DIR ist für Tests überschreibbar.
 proc_dir="${PROC_DIR:-/proc}"
 count=0
 for cmdline in "$proc_dir"/[0-9]*/cmdline; do

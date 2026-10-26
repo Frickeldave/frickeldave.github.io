@@ -1,17 +1,17 @@
-# Ad-hoc Kaniko build Job template.
+# Vorlage für einen Ad-hoc-Kaniko-Build-Job.
 #
-# Rendered and applied by `.github/workflows/fd-bootstrap.yml` once per image
-# build, then deleted again in the same workflow run. Placeholder convention is
-# the same as for every other manifest in this repository: double-underscore
-# tokens are substituted in memory (via `sed`) right before `kubectl apply -f -`.
+# Wird von `.github/workflows/fd-bootstrap.yml` pro Image-Build gerendert und
+# angewendet und im selben Workflow-Lauf wieder gelöscht. Die Platzhalter-
+# Konvention ist wie bei allen Manifesten hier: Doppel-Unterstrich-Token werden
+# unmittelbar vor `kubectl apply -f -` im Speicher ersetzt (per `sed`).
 #
-# Why a dedicated Job instead of running the executor inside the runner pod:
-# Kaniko unpacks the base image filesystem directly onto `/` of its own
-# container. Running it as a subprocess inside the long-lived runner container
-# would (a) fail because the runner runs non-root and cannot chown `/`, and
-# (b) corrupt the runner's own `/bin`, `/usr`, ... if it were allowed to. A
-# throwaway pod per build gives Kaniko the disposable root filesystem it is
-# designed for.
+# Warum ein eigener Job statt des Executors im Runner-Pod:
+# Kaniko entpackt das Basis-Image-Dateisystem direkt auf `/` seines eigenen
+# Containers. Als Subprozess im langlebigen Runner-Container würde das (a)
+# scheitern, weil der Runner als Nicht-root läuft und `/` nicht chown kann, und
+# (b) das `/bin`, `/usr`, ... des Runners beschädigen, wenn es erlaubt wäre. Ein
+# wegwerfbarer Pod pro Build gibt Kaniko das Wegwerf-Root-Dateisystem, für das
+# es gebaut ist.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -21,11 +21,11 @@ metadata:
     app.kubernetes.io/name: kaniko-build
     app.kubernetes.io/part-of: fd-infra
 spec:
-  # No automatic retry: a failing build must surface as a failed workflow step.
+  # Kein automatischer Retry: Ein fehlschlagender Build muss als fehlgeschlagener Workflow-Step sichtbar werden.
   backoffLimit: 0
-  # Keep finished Jobs long enough to inspect after a failed workflow. The
-  # workflow removes its own Jobs explicitly; failures remain until this TTL
-  # expires so their pod logs and status are still available.
+  # Fertige Jobs bleiben lange genug zum Inspizieren nach einem fehlgeschlagenen
+  # Workflow erhalten. Der Workflow löscht seine Jobs selbst; Fehlschläge bleiben
+  # bis zum Ablauf dieser TTL, damit Pod-Logs und Status noch verfügbar sind.
   ttlSecondsAfterFinished: 86400
   template:
     metadata:
@@ -34,9 +34,9 @@ spec:
         app.kubernetes.io/part-of: fd-infra
     spec:
       restartPolicy: Never
-      # ghcr-pull-secret is required here too: fd-dev-kaniko and the fd-dev-base
-      # parent image are private packages, so an anonymous pull always fails.
-      # The same secret carries the GHCR credentials Kaniko uses to push.
+      # ghcr-pull-secret ist auch hier nötig: fd-dev-kaniko und das Eltern-Image
+      # fd-dev-base sind private Pakete, ein anonymer Pull scheitert daher immer.
+      # Dasselbe Secret enthält die GHCR-Credentials, mit denen Kaniko pusht.
       imagePullSecrets:
         - name: ghcr-pull-secret
       containers:
@@ -44,36 +44,49 @@ spec:
           image: __KANIKO_IMAGE__
           imagePullPolicy: Always
           securityContext:
-            # Deliberately root. Kaniko extracts the base image onto the root
-            # filesystem of its own container and needs unrestricted chown /
-            # write access on `/` to do so. This is process isolation inside a
-            # throwaway container, not host root: no privileged mode, no added
-            # capabilities, no hostPath/hostNetwork/hostPID, and the pod is
-            # deleted right after the build.
+            # Bewusst root. Kaniko entpackt das Basis-Image auf das Root-
+            # Dateisystem seines eigenen Containers und braucht uneingeschränktes chown /
+            # Schreibrechte auf `/`. Das ist Prozess-Isolation in einem wegwerfbaren
+            # Container, kein Host-root: kein privileged-Modus, keine zusätzlichen
+            # Capabilities, kein hostPath/hostNetwork/hostPID, und der Pod wird direkt
+            # nach dem Build gelöscht.
             runAsUser: 0
             runAsGroup: 0
             allowPrivilegeEscalation: false
             privileged: false
-          # Invoke the pinned executor explicitly instead of relying on the
-          # image entrypoint.
+          # Den gepinnten Executor explizit aufrufen statt sich auf den
+          # Image-Entrypoint zu verlassen.
           command:
             - /kaniko/executor
-          # __EXTRA_BUILD_ARGS__ is deleted by the workflow when it is unused.
+          # __EXTRA_BUILD_ARGS__ wird vom Workflow entfernt, wenn es ungenutzt ist.
           args:
             - --context=__GIT_CONTEXT__
-            # Relative to the root of the cloned Git context.
+            # Relativ zum Root des geklonten Git-Kontexts.
             - --dockerfile=__DOCKERFILE_PATH__
             - __DESTINATION_ARGS__
             - --build-arg=DEV_BASE_IMAGE=__DEV_BASE_IMAGE__
             - __EXTRA_BUILD_ARGS__
+            # Layer-Cache. Ohne ihn baut jeder Lauf das apt-get-Layer von
+            # docker-dev-full neu (~5 min). Der Cache liegt in einem eigenen GHCR-Paket
+            # (geschrieben mit denselben Credentials wie das Image) und wird von Kaniko
+            # pro Layer über den Content-Hash adressiert; eine geänderte Dockerfile-Zeile
+            # oder eine geänderte COPY-Quelle baut weiterhin genau dieses Layer neu.
+            # `--cache-copy-layers` ist bewusst NICHT gesetzt: Die COPY-Layer sind
+            # wenige KB und in Millisekunden neu gebaut, während jedes gecachte Layer
+            # einen weiteren Manifest-Push/Pull pro Lauf kosten würde.
+            - --cache=true
+            - --cache-repo=__CACHE_REPO__
+            # Zwei Wochen (Kanikos Default), hier explizit, damit die Erneuerung des
+            # langlebigen apt-Layers sichtbar und anpassbar ist.
+            - --cache-ttl=336h
           env:
-            # Registry credentials for both the base-image pull and the push.
+            # Registry-Credentials für Basis-Image-Pull und Push.
             - name: DOCKER_CONFIG
               value: /kaniko/.docker
-            # Clone auth for the private Git build context. Kaniko's Git
-            # resolver consumes the credentials as username/password. Passed
-            # via env (not embedded in the context URL) so the token never
-            # shows up in `kubectl get job -o yaml` or Kubernetes event logs.
+            # Clone-Auth für den Git-Build-Kontext. Kanikos Git-Resolver nutzt die
+            # Credentials als Benutzername/Passwort. Übergabe per Env (nicht in der
+            # Kontext-URL), damit das Token nie in `kubectl get job -o yaml` oder in
+            # Kubernetes-Event-Logs auftaucht.
             - name: GIT_USERNAME
               value: x-access-token
             - name: GIT_PASSWORD
@@ -87,8 +100,8 @@ spec:
               memory: 512Mi
             limits:
               cpu: 1000m
-              # Higher than the runner container's limit: no runner process
-              # shares this container, and image builds are memory hungry.
+              # Höher als das Limit des Runner-Containers: Hier läuft kein Runner-Prozess,
+              # und Image-Builds brauchen viel Speicher.
               memory: 4Gi
           volumeMounts:
             - name: ghcr-registry-config

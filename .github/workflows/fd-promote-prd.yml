@@ -1,60 +1,60 @@
 name: fd-promote-prd (Promote dev → main, then trigger fd-deploy-prd)
 
-# Purpose
-#   Promotes `dev` into `main` — the only sanctioned way to update `main` in this
-#   repo — and then dispatches `fd-deploy-prd.yml`, which owns the production
-#   path (its own CI gate → merge no-op → Pages build/deploy → tag + release).
-#   This workflow intentionally stops at "main is current": it does not build,
-#   deploy, tag or release anything itself.
+# Zweck
+# Promotet `dev` nach `main` — der einzige erlaubte Weg, `main` in diesem
+# Repo zu aktualisieren — und dispatcht danach `fd-deploy-prd.yml`, der den
+# Produktionspfad besitzt (eigenes CI-Gate → Merge-No-Op → Pages-Build/Deploy → Tag + Release).
+# Dieser Workflow endet bewusst bei „main ist aktuell": Er baut, deployt,
+# taggt oder veröffentlicht selbst nichts.
 #
-# Phases
-#   Phase 1 (this file): manual only. `workflow_dispatch` with `dry_run`, because
-#   promoting to production is a deliberate human decision, and because the
-#   version gate below means a promote usually follows a version bump.
-#   Phase 2 (not enabled): the same promote logic can be triggered
-#   automatically, without touching the merge code, via
+# Phasen
+# Phase 1 (diese Datei): nur manuell. `workflow_dispatch` mit `dry_run`, weil
+# eine Promotion nach Produktion eine bewusste menschliche Entscheidung ist und
+# das Versions-Gate unten bedeutet, dass einer Promotion meist ein Versions-Bump folgt.
+# Phase 2 (nicht aktiviert): Dieselbe Promote-Logik kann
+# automatisch ausgelöst werden, ohne den Merge-Code anzufassen, über
 #     on:
 #       workflow_run:
 #         workflows: ["fd-ci (Lint, Format, Vale, e2e checks)"]
 #         types: [completed]
 #         branches: [dev]
-#   plus a job-level `if: github.event.workflow_run.conclusion == 'success'`.
-#   That would promote on every green dev push — exactly why it is not on yet.
+# plus ein Job-Level-`if: github.event.workflow_run.conclusion == 'success'`.
+# Das würde bei jedem grünen dev-Push promoten — genau deshalb ist es noch aus.
 #
-# Chicken-and-egg (deliberately documented, not a bug)
-#   `workflow_dispatch` only works for workflow files that already exist on the
-#   DEFAULT branch (`main`). This file therefore cannot be started by hand
-#   before it has been promoted to `main` once; until then
-#   `gh workflow run fd-promote-prd.yml` answers with HTTP 404. The first
-#   promote that ships it has to come from a path that exists on `main` today
-#   (`fd-deploy-prd.yml`) — after that this workflow is dispatchable and can
-#   take over.
+# Henne-und-Ei-Problem (bewusst dokumentiert, kein Bug)
+# `workflow_dispatch` funktioniert nur für Workflow-Dateien, die bereits auf dem
+# DEFAULT-Branch (`main`) liegen. Diese Datei lässt sich daher nicht von Hand
+# starten, bevor sie einmal nach `main` promotet wurde; bis dahin antwortet
+# `gh workflow run fd-promote-prd.yml` mit HTTP 404. Die erste
+# Promotion, die sie ausliefert, muss über einen Weg laufen, der heute auf `main`
+# existiert (`fd-deploy-prd.yml`) — danach ist dieser Workflow dispatchbar und kann
+# übernehmen.
 #
-# Gates (duplicated from `fd-deploy-prd.yml` on purpose)
-#   Before merging, the two `main` rules are re-checked: `package.json` version
-#   must be greater than the latest GitHub release and must have its own
-#   `## [x.y.z]` section in CHANGELOG.md. They are duplicated instead of shared
-#   because GitHub has no mechanism to reuse steps between workflows; making
-#   them reusable would mean a new composite action plus edits to the production
-#   deploy workflow, which is the higher risk here. Both copies stay identical.
-#   Additional gate that `fd-deploy-prd.yml` does not need (it runs *after* the
-#   merge): the `dev` tip must already have a green `fd-ci` run, so no
-#   unverified commit can reach `main`.
+# Gates (bewusst aus `fd-deploy-prd.yml` dupliziert)
+# Vor dem Merge werden die beiden `main`-Regeln erneut geprüft: Die `package.json`-Version
+# muss größer sein als das letzte GitHub-Release und einen eigenen
+# `## [x.y.z]`-Abschnitt in CHANGELOG.md haben. Sie sind dupliziert statt geteilt,
+# weil GitHub keine Möglichkeit hat, Steps zwischen Workflows wiederzuverwenden; sie
+# wiederverwendbar zu machen hieße: neue Composite Action plus Änderungen am
+# Produktions-Deploy-Workflow, was hier das höhere Risiko wäre. Beide Kopien bleiben identisch.
+# Zusätzliches Gate, das `fd-deploy-prd.yml` nicht braucht (es läuft *nach* dem
+# Merge): Die `dev`-Spitze muss bereits einen grünen `fd-ci`-Lauf haben, damit kein
+# ungeprüfter Commit `main` erreichen kann.
 #
-# Duplicate fd-ci run: accepted
-#   `fd-deploy-prd.yml`'s `ci-gate` dispatches `fd-ci` on `dev` and waits for it
-#   (~6 min). After a promote, `main` equals the `dev` tip, so that run
-#   re-verifies the same tree. Accepted instead of removed: `fd-deploy-prd.yml`
-#   is the production path and gets no risky rewrite, and this workflow already
-#   refuses an unverified `dev` tip, so the second run costs time but no
-#   correctness — and it doubles as the retry path when only the deploy failed.
-#   A promote of an unchanged `dev` is a no-op: `git merge` reports
-#   "Already up to date." and no push happens.
+# Doppelter fd-ci-Lauf: akzeptiert
+# Das `ci-gate` in `fd-deploy-prd.yml` dispatcht `fd-ci` auf `dev` und wartet darauf
+# (~6 min). Nach einer Promotion entspricht `main` der `dev`-Spitze, dieser Lauf
+# prüft also denselben Stand erneut. Akzeptiert statt entfernt: `fd-deploy-prd.yml`
+# ist der Produktionspfad und wird nicht riskant umgeschrieben, und dieser Workflow
+# lehnt eine ungeprüfte `dev`-Spitze ab; der zweite Lauf kostet Zeit, aber keine
+# Korrektheit — und er dient als Wiederholungsweg, wenn nur der Deploy scheiterte.
+# Eine Promotion eines unveränderten `dev` ist ein No-Op: `git merge` meldet
+# „Already up to date." und es wird nicht gepusht.
 #
-# Runner: self-hosted, label `fd` (see scripts/bootstrap/README.md) for BOTH
-# jobs. The image carries Node 24, git, gh and jq, so neither `setup-node` nor
-# `npm ci` is needed; third-party actions are pinned to full commit SHAs with a
-# `# vN` comment, like fd-ci.yml / fd-configure.yml / fd-podcast-update.yml.
+# Runner: selbstgehostet, Label `fd` (siehe scripts/bootstrap/README.md) für BEIDE
+# Jobs. Das Image bringt Node 24, git, gh und jq mit, weder `setup-node` noch
+# `npm ci` sind nötig; Drittanbieter-Actions sind auf volle Commit-SHAs gepinnt, mit
+# `# vN`-Kommentar, wie in fd-ci.yml / fd-configure.yml / fd-podcast-update.yml.
 
 on:
   workflow_dispatch:
@@ -70,8 +70,8 @@ on:
         default: true
         type: boolean
 
-# contents: write for the merge push, actions: write to dispatch fd-deploy-prd
-# and to read the fd-ci / fd-deploy-prd runs.
+# contents: write für den Merge-Push, actions: write zum Dispatchen von fd-deploy-prd
+# und zum Lesen der fd-ci-/fd-deploy-prd-Läufe.
 permissions:
   contents: write
   actions: write
@@ -83,11 +83,11 @@ concurrency:
 jobs:
   promote:
     name: Promote dev → main
-    # Self-hosted runner (label: fd).
+    # Selbstgehosteter Runner (Label: fd).
     runs-on: [self-hosted, fd]
     env:
-      # `gh` in the deploy job (and in any step without a checkout) cannot infer
-      # the repository from a git remote; pin it for all jobs.
+      # `gh` kann im Deploy-Job (und in jedem Step ohne Checkout) das Repository nicht
+      # aus einem Git-Remote ableiten; daher für alle Jobs gepinnt.
       GH_REPO: ${{ github.repository }}
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -165,16 +165,16 @@ jobs:
             process.exit(1);
           '
 
-      # fd-deploy-prd.yml gates *after* the merge; this workflow must not put an
-      # unverified commit on `main` in the first place. Read-only: it reuses the
-      # existing fd-ci result for the exact dev tip instead of dispatching a new
-      # run (no extra ~6 min).
+      # fd-deploy-prd.yml prüft *nach* dem Merge; dieser Workflow darf einen
+      # ungeprüften Commit gar nicht erst auf `main` bringen. Nur lesend: Er nutzt das
+      # vorhandene fd-ci-Ergebnis für genau die dev-Spitze, statt einen neuen Lauf zu
+      # dispatchen (keine zusätzlichen ~6 min).
       - name: Verify dev tip passed fd-ci
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # origin/dev, not HEAD: the branch may have moved between checkout and
-          # `git fetch --all`, and origin/dev is exactly what gets merged below.
+          # origin/dev, nicht HEAD: Der Branch kann sich zwischen Checkout und
+          # `git fetch --all` bewegt haben, und origin/dev wird unten genau gemerged.
           SHA=$(git rev-parse origin/dev)
           echo "🔎 dev tip: $SHA"
           RUNS=$(gh run list --workflow=fd-ci.yml --branch dev --commit "$SHA" --limit 20 --json databaseId,status,conclusion)
@@ -194,9 +194,9 @@ jobs:
           echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
           echo "Would then dispatch fd-deploy-prd.yml on main (CI gate → Pages deploy → tag ${{ steps.version.outputs.tag }} + release)."
 
-      # `git checkout -B main origin/main` instead of `git checkout main`: the
-      # self-hosted workspace persists between runs, so a stale local `main`
-      # branch could otherwise be reused and produce a non-fast-forward push.
+      # `git checkout -B main origin/main` statt `git checkout main`: Der
+      # selbstgehostete Workspace bleibt zwischen Läufen bestehen, ein veralteter lokaler
+      # `main`-Branch könnte sonst wiederverwendet werden und einen Non-Fast-Forward-Push erzeugen.
       - name: Merge dev → main
         if: ${{ !inputs.dry_run }}
         id: merge
@@ -207,7 +207,7 @@ jobs:
           AFTER=$(git rev-parse HEAD)
           echo "commit=$AFTER" >> "$GITHUB_OUTPUT"
           if [ "$BEFORE" = "$AFTER" ]; then
-            # Idempotent re-promote: "Already up to date." leaves HEAD untouched.
+            # Idempotente erneute Promotion: „Already up to date." lässt HEAD unangetastet.
             echo "pushed=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️ main already contained dev (Already up to date) — nothing to push."
           else
@@ -220,7 +220,7 @@ jobs:
     name: Trigger fd-deploy-prd
     needs: promote
     if: ${{ !inputs.dry_run }}
-    # Self-hosted runner (label: fd); no checkout needed, `gh` only.
+    # Selbstgehosteter Runner (Label: fd); kein Checkout nötig, nur `gh`.
     runs-on: [self-hosted, fd]
     env:
       GH_REPO: ${{ github.repository }}

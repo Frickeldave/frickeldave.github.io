@@ -1,59 +1,59 @@
 name: fd-configure (Sync all label namespaces)
 
-# What this workflow does
-#   Single source of truth for every label this repo manages:
-#     * static namespaces: `go:*`, `release:*`, `type:*`, `priority:*`, the
-#       high-signal labels `bug` / `feedback` and the base `squad` triage label;
-#     * member namespaces: `squad:<member>` for every roster row (Scribe
-#       excluded) plus `squad:copilot` while a coding agent is on the team.
-#   The roster is read from `.squad/team.md`; the run fails loudly when the table
-#   cannot be parsed instead of syncing an empty member list. It is also the only
-#   roster source — the historical `.ai-team/` fallback is not carried over, this
-#   repo has no such file.
+# Was dieser Workflow tut
+# Einzige Quelle der Wahrheit für jedes Label, das dieses Repo verwaltet:
+# * statische Namespaces: `go:*`, `release:*`, `type:*`, `priority:*`, die
+# aussagekräftigen Labels `bug` / `feedback` und das Basis-Triage-Label `squad`;
+# * Mitglieder-Namespaces: `squad:<member>` für jede Roster-Zeile (Scribe
+# ausgenommen) plus `squad:copilot`, solange ein Coding Agent im Team ist.
+# Der Roster wird aus `.squad/team.md` gelesen; der Lauf schlägt laut fehl, wenn die
+# Tabelle nicht parsebar ist, statt eine leere Mitgliederliste zu synchronisieren. Sie ist
+# auch die einzige Roster-Quelle — der historische `.ai-team/`-Fallback entfällt, dieses
+# Repo hat keine solche Datei.
 #
-# Why the member labels live here now
-#   `squad-sync-squad-labels.yml` used to own `squad:<member>` / `squad:copilot`
-#   while this workflow owned the static namespaces. Both reacted to the same
-#   trigger (`push` on `.squad/team.md`), carried the same action pins and wrote
-#   the same static payload byte for byte: two runs for one result, with a
-#   standing risk of the copies drifting apart. That workflow is retired, so
-#   "who owns label X" has exactly one answer. `squad-label-enforce.yml` is
-#   unaffected — it enforces `go:` / `release:` / `type:` / `priority:`
-#   exclusivity on issues and creates no labels itself.
+# Warum die Mitglieder-Labels jetzt hier liegen
+# `squad-sync-squad-labels.yml` besaß früher `squad:<member>` / `squad:copilot`,
+# während dieser Workflow die statischen Namespaces besaß. Beide reagierten auf denselben
+# Trigger (`push` auf `.squad/team.md`), hatten dieselben Action-Pins und schrieben
+# dieselbe statische Payload byte-genau: zwei Läufe für ein Ergebnis, mit dem
+# dauerhaften Risiko auseinanderlaufender Kopien. Jener Workflow ist stillgelegt, damit
+# „wer besitzt Label X" genau eine Antwort hat. `squad-label-enforce.yml` ist
+# unberührt — es erzwingt die Exklusivität von `go:` / `release:` / `type:` / `priority:`
+# auf Issues und erzeugt selbst keine Labels.
 #
-# Member colour stability (why colours do not move)
-#   `squad:<member>` colours are derived deterministically: the slug hash
-#   (`h = h * 31 + charCode`, i.e. Java's `String.hashCode`) is mapped into a
-#   curated 20-colour palette and linear probing resolves collisions, so no two
-#   members share a colour. Palette, hash and probe direction are unchanged and
-#   members are still visited in roster order — that combination is what keeps
-#   the existing colours identical. Reordering the roster changes the probe
-#   sequence and therefore the colours: the roster order is part of the contract.
+# Farbstabilität der Mitglieder (warum Farben nicht wandern)
+# Die Farben von `squad:<member>` werden deterministisch abgeleitet: Der Slug-Hash
+# (`h = h * 31 + charCode`, also Javas `String.hashCode`) wird auf eine kuratierte
+# 20-Farben-Palette abgebildet, lineares Sondieren löst Kollisionen, sodass keine zwei
+# Mitglieder eine Farbe teilen. Palette, Hash und Sondierrichtung sind unverändert,
+# und die Mitglieder werden weiterhin in Roster-Reihenfolge besucht — diese Kombination
+# hält die bestehenden Farben identisch. Eine Umsortierung des Rosters ändert die
+# Sondierreihenfolge und damit die Farben: Die Roster-Reihenfolge gehört zum Vertrag.
 #
-# Not managed here
-#   * `status:in-pr-review` and `podcast-update` are created by hand / by the
-#     podcast workflow.
-#   * `go:done` / `go:cancelled` are not synced: nothing consumes them.
-#     `scripts/sync-project-board.mjs` derives the Done column from the issue
-#     state, and `squad-label-enforce.yml` only enforces `go:` exclusivity, so
-#     the two labels would be unused noise.
-#   * `go:spec-finished` is the one addition over the historical static set; it is
-#     Pepper's gate (see `.squad/routing.md`) and is synced with the live colour.
-#   * No board/PROJECT configuration job: the board consumer
-#     (`scripts/sync-project-board.mjs`) resolves Backlog / Needs Research /
-#     Ready / In Progress / Done by alias and skips an issue with a hint when an
-#     option is missing, so a write-capable board job would mutate a live
-#     Projects V2 board for options nothing reads.
-#   * No `setup-node` step: `actions/github-script` runs on the runner's own
-#     Node runtime and no other Node code is executed here.
+# Hier nicht verwaltet
+# * `status:in-pr-review` und `podcast-update` entstehen von Hand bzw. durch den
+# Podcast-Workflow.
+# * `go:done` / `go:cancelled` werden nicht synchronisiert: Niemand nutzt sie.
+# `scripts/sync-project-board.mjs` leitet die Done-Spalte aus dem Issue-Status ab,
+# und `squad-label-enforce.yml` erzwingt nur `go:`-Exklusivität; die beiden Labels
+# wären also ungenutzter Ballast.
+# * `go:spec-finished` ist die einzige Ergänzung gegenüber dem historischen statischen Set; es ist
+# Peppers Gate (siehe `.squad/routing.md`) und wird mit der aktuellen Farbe synchronisiert.
+# * Kein Board-/PROJECT-Konfigurationsjob: Der Board-Consumer
+# (`scripts/sync-project-board.mjs`) löst Backlog / Needs Research /
+# Ready / In Progress / Done per Alias auf und überspringt ein Issue mit Hinweis, wenn
+# eine Option fehlt; ein schreibfähiger Board-Job würde also ein laufendes
+# Projects-V2-Board für Optionen verändern, die niemand liest.
+# * Kein `setup-node`-Step: `actions/github-script` läuft mit der Node-Runtime des
+# Runners, und hier wird kein weiterer Node-Code ausgeführt.
 #
-# Runner: self-hosted, label `fd` (see scripts/bootstrap/README.md).
+# Runner: selbstgehostet, Label `fd` (siehe scripts/bootstrap/README.md).
 
 on:
   push:
-    # `.squad/team.md` is the roster source for the `squad:<member>` labels, and
-    # the workflow file itself is listed so a change to the label definitions
-    # takes effect with the same commit.
+    # `.squad/team.md` ist die Roster-Quelle für die `squad:<member>`-Labels, und die
+    # Workflow-Datei selbst ist gelistet, damit eine Änderung der Label-Definitionen
+    # mit demselben Commit wirksam wird.
     paths:
       - ".squad/team.md"
       - ".github/workflows/fd-configure.yml"
