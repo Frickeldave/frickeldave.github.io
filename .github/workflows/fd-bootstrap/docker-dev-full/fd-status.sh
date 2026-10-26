@@ -27,3 +27,16 @@ fd_copilot_status() {
 fd_yes_no() {
     if "$@"; then echo yes; else echo no; fi
 }
+
+# BYOK-Status des Copilot-Providers (Issue #285): set | unset | invalid-permissions.
+# Rein offline: geprüft werden nur Präsenz, Eigentümer und Rechte der beiden Dateien.
+# Kein Key-Inhalt, keine Länge, kein Präfix, kein Hash in der Ausgabe.
+fd_copilot_provider() {
+    node "${fd_runtime}" provider --state 2>/dev/null || echo error
+}
+
+# Dieselbe Prüfung als eine Zeile für das Banner, z. B.
+# "Provider : deepseek (api.deepseek.com) | Modell: deepseek-v4-flash".
+fd_copilot_provider_line() {
+    node "${fd_runtime}" provider --line 2>/dev/null || echo "Provider : unknown"
+}

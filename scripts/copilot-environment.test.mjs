@@ -10,6 +10,7 @@ import {
   COPY_HINT,
   parseJsonc,
   prepareCopilotEnvironment,
+  providerStatusLines,
   readiness,
   reportReadiness,
 } from './copilot-environment.mjs';
@@ -65,6 +66,29 @@ describe('offline Copilot status', () => {
       expect(auth(undefined, { env: { [key]: 'not-a-real-secret' } })).toBe('yes');
     }
   );
+
+  it('forwards homeDirectory from readiness to copilotStatus', () => {
+    const home = fixture();
+    mkdirSync(join(home, '.copilot'));
+    writeFileSync(
+      join(home, '.copilot', 'config.json'),
+      JSON.stringify({ lastLoggedInUser: user, loggedInUsers: [user] })
+    );
+    const spawnFn = vi.fn((cmd, args) => {
+      if (cmd === 'git' && args.includes('--show-toplevel'))
+        return { status: 0, stdout: `${home}\n` };
+      if (cmd === 'git' && args.includes('--git-common-dir'))
+        return { status: 0, stdout: `${join(home, '.git')}\n` };
+      if (cmd === 'git' && args.includes('--is-inside-work-tree'))
+        return { status: 0, stdout: 'true\n' };
+      if (cmd === 'copilot') return version();
+      return { status: 0, stdout: '' };
+    });
+    const state = readiness(home, { env: {}, notmux: true, homeDirectory: home, spawnFn });
+    // Without the forwarded home this would read the real ~/.copilot and report "no".
+    expect(state.copilot).toBe('yes');
+    expect(state.provider.state).toBe('unset');
+  });
 
   itEach([
     [{ status: 0, stdout: '1.0.98\n' }, 'no'],
@@ -327,4 +351,168 @@ describe('terminal configuration', () => {
       );
     }
   );
+});
+
+describe('offline BYOK provider status', () => {
+  // Assembled at runtime so the tracked file never contains a key-shaped literal.
+  const KEY = ['sk', 'TEST0123456789abcdef'].join('-');
+  const BASE_URL = 'https://api.deepseek.com/anthropic';
+
+  function providerFixture({ configMode = 0o600, keyMode = 0o600 } = {}) {
+    const home = fixture();
+    chmodSync(home, 0o700);
+    const dir = join(home, '.config', 'fd');
+    mkdirSync(dir, { recursive: true, mode: 0o700 });
+    chmodSync(dir, 0o700);
+    const configPath = join(dir, 'copilot-provider.env');
+    const keyPath = join(dir, 'copilot-provider.key');
+    writeFileSync(
+      configPath,
+      `FD_COPILOT_PROVIDER=deepseek\nCOPILOT_PROVIDER_BASE_URL=${BASE_URL}\nCOPILOT_MODEL=deepseek-v4-pro\n`
+    );
+    writeFileSync(keyPath, `${KEY}\n`);
+    chmodSync(configPath, configMode);
+    chmodSync(keyPath, keyMode);
+    return { home, configPath, keyPath };
+  }
+
+  const spawnFnFor = (repo) =>
+    vi.fn((cmd, args) => {
+      if (cmd === 'git' && args.includes('--show-toplevel')) return { status: 0, stdout: `${repo}\n` };
+      if (cmd === 'git' && args.includes('--git-common-dir'))
+        return { status: 0, stdout: `${join(repo, '.git')}\n` };
+      if (cmd === 'git' && args.includes('--is-inside-work-tree'))
+        return { status: 0, stdout: 'true\n' };
+      if (cmd === 'copilot' && args[0] === '--version') return version();
+      if (cmd === 'tmux') return { status: 0, stdout: 'tmux 3.4\n' };
+      return { status: 0, stdout: 'v1.0.0\n' };
+    });
+
+  const readinessFor = (repo, options) =>
+    readiness(repo, { env: {}, notmux: true, spawnFn: spawnFnFor(repo), ...options });
+
+  it('reports state set with host, model and limits', () => {
+    const { home, configPath, keyPath } = providerFixture();
+    const provider = readinessFor(home, { homeDirectory: home, configPath, keyPath }).provider;
+
+    expect(provider.state).toBe('set');
+    expect(provider.type).toBe('anthropic');
+    expect(provider.baseUrl).toBe(BASE_URL);
+    expect(provider.host).toBe('api.deepseek.com');
+    expect(provider.model).toBe('deepseek-v4-pro');
+    expect(providerStatusLines(provider)).toEqual([
+      'Provider : deepseek (api.deepseek.com) | Modell: deepseek-v4-pro',
+      '  Provider type     : anthropic',
+      `  Provider base URL : ${BASE_URL}`,
+      '  Provider model    : deepseek-v4-pro',
+      '  Provider limits   : prompt=840000 output=128000',
+    ]);
+    expect(providerStatusLines(provider).join('\n')).not.toContain(KEY);
+  });
+
+  it('reports unset without a configuration file and keeps the single provider line', () => {
+    const home = fixture();
+    const provider = readinessFor(home, {
+      homeDirectory: home,
+      configPath: join(home, 'missing.env'),
+      keyPath: join(home, 'missing.key'),
+    }).provider;
+
+    expect(provider.state).toBe('unset');
+    expect(provider.warnings).toEqual([]);
+    expect(providerStatusLines(provider)).toEqual(['Provider : GitHub Copilot (Standard)']);
+  });
+
+  it('reports invalid-permissions instead of the key content for an unsafe key file', () => {
+    const { home, configPath, keyPath } = providerFixture({ keyMode: 0o644 });
+    const provider = readinessFor(home, { homeDirectory: home, configPath, keyPath }).provider;
+
+    expect(provider.state).toBe('invalid-permissions');
+    expect(providerStatusLines(provider)).toEqual([
+      'Provider : invalid-permissions (GitHub Copilot in use)',
+    ]);
+    expect(provider.warnings.join('\n')).not.toContain(KEY);
+    expect(provider.warnings.join('\n')).toContain('Key file');
+  });
+
+  it('marks GitHub auth as not required while the BYOK provider is active', () => {
+    const { home, configPath, keyPath } = providerFixture();
+    mkdirSync(join(home, '.copilot'));
+    writeFileSync(
+      join(home, '.copilot', 'config.json'),
+      '{"lastLoggedInUser":null,"loggedInUsers":[]}'
+    );
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      reportReadiness(home, {
+        // COPILOT_HOME overrides the derived ~/.copilot path explicitly.
+        env: { COPILOT_HOME: join(home, '.copilot') },
+        notmux: true,
+        homeDirectory: home,
+        configPath,
+        keyPath,
+        spawnFn: spawnFnFor(home),
+      });
+      const lines = log.mock.calls.map(([line]) => line);
+      expect(lines).toContain('  Copilot CLI logged in: not required (BYOK provider is active)');
+      expect(lines).toContain('  Provider : deepseek (api.deepseek.com) | Modell: deepseek-v4-pro');
+      expect(lines.join('\n')).not.toContain(KEY);
+    } finally {
+      log.mockRestore();
+    }
+  });
+
+  itEach([
+    ['--state', 'set'],
+    ['--line', 'Provider : deepseek (api.deepseek.com) | Modell: deepseek-v4-pro'],
+  ])('provider %s prints exactly one line', (flag, expected) => {
+    const { home, configPath, keyPath } = providerFixture();
+    const result = spawnSync(
+      process.execPath,
+      [resolve('scripts', 'copilot-environment.mjs'), 'provider', flag],
+      {
+        encoding: 'utf8',
+        env: { FD_COPILOT_PROVIDER_CONFIG: configPath, FD_COPILOT_API_KEY_FILE: keyPath },
+      }
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout.trimEnd()).toBe(expected);
+    expect(result.stdout).not.toContain(KEY);
+  });
+
+  it('provider without flags prints the detail block', () => {
+    const { configPath, keyPath } = providerFixture();
+    const result = spawnSync(
+      process.execPath,
+      [resolve('scripts', 'copilot-environment.mjs'), 'provider'],
+      {
+        encoding: 'utf8',
+        env: { FD_COPILOT_PROVIDER_CONFIG: configPath, FD_COPILOT_API_KEY_FILE: keyPath },
+      }
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout.trimEnd().split('\n')).toHaveLength(5);
+    expect(result.stdout).toContain('  Provider limits   : prompt=840000 output=128000');
+  });
+
+  itEach([
+    ['unset', 'unset'],
+    ['invalid-permissions', 'invalid-permissions'],
+  ])('provider --state prints %s', (state, expected) => {
+    const { home } = providerFixture({ configMode: 0o644 });
+    const configPath =
+      state === 'unset' ? join(home, 'absent.env') : join(home, '.config', 'fd', 'copilot-provider.env');
+    const keyPath =
+      state === 'unset' ? join(home, 'absent.key') : join(home, '.config', 'fd', 'copilot-provider.key');
+    const result = spawnSync(
+      process.execPath,
+      [resolve('scripts', 'copilot-environment.mjs'), 'provider', '--state'],
+      {
+        encoding: 'utf8',
+        env: { FD_COPILOT_PROVIDER_CONFIG: configPath, FD_COPILOT_API_KEY_FILE: keyPath },
+      }
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe(expected);
+  });
 });

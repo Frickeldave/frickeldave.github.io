@@ -31,7 +31,11 @@ import { isWindows, prepareSpawn } from './platform-shared.mjs';
 import { prepareCopilotEnvironment } from './copilot-environment.mjs';
 import {
   assignIssueToUser,
+  buildCopilotArgs,
+  buildCopilotChildEnv,
+  buildCopilotShellCommand,
   buildTmuxSessionName,
+  COPILOT_COMMAND,
   ensureProjectPropertyAccess,
   resolveIssueWorktreePath,
   resolveCurrentGitHubUser,
@@ -39,9 +43,11 @@ import {
   ensureTmuxSessionAvailable,
   launchInNewTmuxSession,
   parseFlowFlags,
+  reportCopilotLaunchPlan,
   resolveAdditionalPrompt,
   trustWorktreeFolder,
 } from './flow-shared.mjs';
+import { resolveCopilotLaunchPlan } from './copilot-provider.mjs';
 import { ensureDependenciesReady } from './start-work.mjs';
 
 const WORKFLOW_PROMPT_RELATIVE_PATH = '.github/prompts/startreqeng.prompt.md';
@@ -74,6 +80,8 @@ Flow flags:
   --prompt "<text>"   Start directly with this additional prompt (skips the question).
   --noprompt          Skip the question for an additional prompt.
   --prompt and --noprompt are mutually exclusive.
+  --model <id>        Copilot provider model for this run (deepseek-v4-flash|deepseek-v4-pro).
+  --no-provider       Ignore the DeepSeek provider configuration for this run.
 
 Outside tmux, the script creates the session IS<n> (aborts if it already exists,
 e.g. attach with: tmux attach -t IS202) and continues there. Created sessions use
@@ -85,9 +93,6 @@ foreground automatically when tmux is missing.
 
 Run this script before starting a Copilot CLI session.
 `;
-
-const COPILOT_COMMAND = 'copilot';
-const COPILOT_ARGS = ['--agent', 'Squad', '--yolo'];
 
 /**
  * @param {{
@@ -124,6 +129,11 @@ export async function runReqEng(options = {}) {
 
   const repoRoot = getMainCheckoutPathFn();
   const flowFlags = parseFlowFlags(argv);
+  // Der Plan wird genau einmal pro Lauf aufgelöst; ein ungültiges --model bricht hier ab.
+  const copilotPlan = resolveCopilotLaunchPlan({
+    modelFlag: flowFlags.model,
+    noProvider: flowFlags.noProvider,
+  });
   const cliSelection = parseCliSelection(flowFlags.rest);
   const prompt = createInterfaceFn({
     input: process.stdin,
@@ -160,7 +170,7 @@ export async function runReqEng(options = {}) {
     prompt.close();
   }
 
-  await launchPreparedWorkFn(preparedWorkContext, issueContext, initialCopilotPrompt);
+  await launchPreparedWorkFn(preparedWorkContext, issueContext, initialCopilotPrompt, copilotPlan);
 }
 
 /**
@@ -199,13 +209,19 @@ async function prepareWorkContext(issueContext, repoRoot, prompt, { notmux = fal
   };
 }
 
-async function launchPreparedWork(preparedWorkContext, issueContext, initialCopilotPrompt) {
+async function launchPreparedWork(
+  preparedWorkContext,
+  issueContext,
+  initialCopilotPrompt,
+  copilotPlan = null
+) {
   const { tmuxAvailable, tmuxContext, worktreeContext } = preparedWorkContext;
   const copilotPrompt = buildInitialCopilotPromptWithIssueContext(
     initialCopilotPrompt,
     issueContext
   );
 
+  reportCopilotLaunchPlan(copilotPlan);
   trustWorktreeFolder(worktreeContext.worktreePath);
   prepareCopilotEnvironment(worktreeContext.worktreePath, {
     tmuxAvailable,
@@ -213,10 +229,15 @@ async function launchPreparedWork(preparedWorkContext, issueContext, initialCopi
   });
 
   if (!tmuxAvailable) {
-    const exitCode = await runForegroundCommand(COPILOT_COMMAND, buildCopilotArgs(copilotPrompt), {
-      cwd: worktreeContext.worktreePath,
-      env: process.env,
-    });
+    const exitCode = await runForegroundCommand(
+      COPILOT_COMMAND,
+      buildCopilotArgs(copilotPrompt, copilotPlan),
+      {
+        cwd: worktreeContext.worktreePath,
+        // Frisches Objekt statt process.env: keine lebende Referenz im Kindprozess.
+        env: buildCopilotChildEnv(process.env, copilotPlan),
+      }
+    );
     process.exitCode = exitCode;
     return;
   }
@@ -225,7 +246,8 @@ async function launchPreparedWork(preparedWorkContext, issueContext, initialCopi
     const windowId = createCopilotWindow(
       issueContext.tmuxSessionName,
       worktreeContext.worktreePath,
-      copilotPrompt
+      copilotPrompt,
+      copilotPlan
     );
     selectTmuxWindow(issueContext.tmuxSessionName, windowId);
     return;
@@ -234,7 +256,7 @@ async function launchPreparedWork(preparedWorkContext, issueContext, initialCopi
   process.exitCode = launchInNewTmuxSession(
     issueContext.tmuxSessionName,
     worktreeContext.worktreePath,
-    buildCopilotShellCommand(copilotPrompt)
+    buildCopilotShellCommand({}, copilotPrompt, copilotPlan)
   );
 }
 
@@ -1036,7 +1058,7 @@ function remoteBranchExists(repoRoot, branchName) {
   return result.status === 0;
 }
 
-function createCopilotWindow(sessionName, worktreePath, initialCopilotPrompt) {
+function createCopilotWindow(sessionName, worktreePath, initialCopilotPrompt, copilotPlan = null) {
   const result = runCommand(
     'tmux',
     [
@@ -1050,7 +1072,7 @@ function createCopilotWindow(sessionName, worktreePath, initialCopilotPrompt) {
       'copilot',
       '-c',
       worktreePath,
-      buildCopilotShellCommand(initialCopilotPrompt),
+      buildCopilotShellCommand({}, initialCopilotPrompt, copilotPlan),
     ],
     {
       description: `creating Copilot tmux window for session ${sessionName}`,
@@ -1064,10 +1086,6 @@ function selectTmuxWindow(sessionName, windowId) {
   runCommand('tmux', ['select-window', '-t', `${sessionName}:${windowId}`], {
     description: `selecting tmux window ${sessionName}:${windowId}`,
   });
-}
-
-function buildCopilotArgs(initialCopilotPrompt) {
-  return [...COPILOT_ARGS, '-i', initialCopilotPrompt];
 }
 
 function buildInitialCopilotPrompt(additionalPrompt) {
@@ -1087,13 +1105,6 @@ function buildInitialCopilotPromptWithIssueContext(initialCopilotPrompt, issueCo
     `Issue-ID: ${issueContext.issueId}`,
     `Kanonischer Kontextname: ${issueContext.canonicalName}`,
   ].join('\n');
-}
-
-function buildCopilotShellCommand(initialCopilotPrompt) {
-  const command = [COPILOT_COMMAND, ...buildCopilotArgs(initialCopilotPrompt)]
-    .map(shellQuote)
-    .join(' ');
-  return `exec ${command}`;
 }
 
 function readGhJson(args) {
@@ -1137,10 +1148,6 @@ function slugifyTitle(title) {
 
 function stripIssueTitleLabels(title) {
   return title.replace(/^(?:\s*\[[^\]]+\]\s*)+/u, '').trim();
-}
-
-function shellQuote(value) {
-  return `'${String(value).replaceAll("'", `'\\''`)}'`;
 }
 
 /**

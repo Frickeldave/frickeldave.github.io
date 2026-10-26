@@ -27,6 +27,8 @@ await mockModule('./platform-shared.mjs', {
 const {
   activateActiveIssueMarker,
   buildActiveIssueMarkerContent,
+  buildCopilotArgs,
+  buildCopilotChildEnv,
   createPortEnvironment,
   ensureDevBaseBranchAvailable,
   ensureBranchReadyForWorktree,
@@ -40,6 +42,7 @@ const {
   resolveBranchContext,
   resolveCurrentTmuxContext,
   resolveProjectStatus,
+  runForegroundCommand,
   runGateThenAssignAndResolveBranch,
   validateIssueStartGate,
 } = await import('./start-work.mjs');
@@ -1303,4 +1306,62 @@ test('activateActiveIssueMarker fails loudly when the marker cannot be written',
       }),
     /konnte nicht geschrieben werden: EACCES.*Ohne Marker darf die Copilot-Session nicht starten/
   );
+});
+
+test('launches Copilot in the foreground with the provider argv and child environment', async () => {
+  const handlers = new Map();
+  spawn.mockImplementation(() => {
+    const child = { once: (event, handler) => (handlers.set(event, handler), child) };
+    setTimeout(() => handlers.get('exit')?.(0, null), 0);
+    return child;
+  });
+  const plan = {
+    mode: 'provider',
+    model: 'deepseek-v4-pro',
+    envDelta: {
+      COPILOT_PROVIDER_TYPE: 'anthropic',
+      COPILOT_MODEL: 'deepseek-v4-pro',
+    },
+    envUnset: ['COPILOT_PROVIDER_API_KEY'],
+    warnings: [],
+  };
+
+  const exitCode = await runForegroundCommand('copilot', buildCopilotArgs('Go', plan), {
+    cwd: '/wt',
+    env: buildCopilotChildEnv({ PATH: '/bin', COPILOT_PROVIDER_API_KEY: 'stale' }, plan, {
+      DEV_SERVER_PORT: '4321',
+    }),
+  });
+
+  assert.equal(exitCode, 0);
+  const [command, args, options] = spawn.mock.calls[0];
+  assert.equal(command, 'copilot');
+  assert.deepEqual(args, ['--agent', 'Squad', '--yolo', '--model', 'deepseek-v4-pro', '-i', 'Go']);
+  assert.deepEqual(options.env, {
+    PATH: '/bin',
+    DEV_SERVER_PORT: '4321',
+    COPILOT_PROVIDER_TYPE: 'anthropic',
+    COPILOT_MODEL: 'deepseek-v4-pro',
+  });
+  assert.equal(Object.hasOwn(options.env, 'COPILOT_PROVIDER_API_KEY'), false);
+});
+
+test('--help documents --model and --no-provider', async () => {
+  const argv = process.argv;
+  const chunks = [];
+  const write = vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+    chunks.push(String(chunk));
+    return true;
+  });
+  try {
+    process.argv = ['node', 'start-work.mjs', '--help'];
+    await main();
+  } finally {
+    process.argv = argv;
+    write.mockRestore();
+  }
+
+  const help = chunks.join('');
+  assert.match(help, /--model <id>\s+Copilot provider model/);
+  assert.match(help, /--no-provider\s+Ignore the DeepSeek provider configuration/);
 });

@@ -1,14 +1,21 @@
 /**
  * Prüfungen der Copilot-CLI-Umgebung, die sich die Start-Flow-Skripte teilen.
  *
- * `node scripts/copilot-environment.mjs auth|terminal|status` lässt sich auch
+ * `node scripts/copilot-environment.mjs auth|terminal|status|provider` lässt sich auch
  * allein ausführen; `status` berichtet über FLOW_REPO_ROOT (Default: aktuelles Verzeichnis).
+ * `provider` zeigt die BYOK-Konfiguration offline (kein API-Call, kein Key-Inhalt):
+ * `provider` den Detailblock, `provider --line` genau eine Zeile und
+ * `provider --state` nur `set`/`unset`/`invalid-permissions`.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, platform } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {
+  copilotProviderStatus,
+  describeCopilotProviderStatus,
+} from './copilot-provider.mjs';
 import { prepareSpawn } from './platform-shared.mjs';
 
 export const COPY_HINT =
@@ -162,7 +169,10 @@ export function resolveRepositoryRoots(repoPath, { spawnFn = command } = {}) {
   return { checkoutPath, repoRoot, mainRoot, gitWorkTree };
 }
 
-export function readiness(repoPath, { env = process.env, spawnFn = command, notmux = false } = {}) {
+export function readiness(
+  repoPath,
+  { env = process.env, spawnFn = command, notmux = false, homeDirectory, ...providerOptions } = {}
+) {
   const { checkoutPath, repoRoot, mainRoot, gitWorkTree } = resolveRepositoryRoots(repoPath, {
     spawnFn,
   });
@@ -191,8 +201,29 @@ export function readiness(repoPath, { env = process.env, spawnFn = command, notm
         : tmux.error || tmux.status !== 0
           ? 'error'
           : 'yes',
-    copilot: copilotStatus({ env, spawnFn }),
+    copilot: copilotStatus({ env, spawnFn, homeDirectory }),
+    provider: copilotProviderStatus({ env, homeDirectory, ...providerOptions }),
   };
+}
+
+/**
+ * Zeilen der Offline-Provider-Sicht. Die erste Zeile ist immer die Provider-Zeile
+ * (`Provider : …`), die Detailzeilen nennen Typ, Base-URL, Modell und beide Limits.
+ * @param {ReturnType<typeof copilotProviderStatus>} provider
+ * @returns {string[]}
+ */
+export function providerStatusLines(provider) {
+  const lines = [describeCopilotProviderStatus(provider)];
+  if (provider?.state !== 'set') {
+    return lines;
+  }
+  return [
+    ...lines,
+    `  Provider type     : ${provider.type}`,
+    `  Provider base URL : ${provider.baseUrl}`,
+    `  Provider model    : ${provider.model}`,
+    `  Provider limits   : prompt=${provider.maxPromptTokens} output=${provider.maxOutputTokens}`,
+  ];
 }
 
 export function reportReadiness(repoPath, options = {}) {
@@ -217,7 +248,14 @@ export function reportReadiness(repoPath, options = {}) {
       '  tmux is optional: without it the flow launches Copilot in the foreground (--notmux).'
     );
   }
-  console.log(`  Copilot CLI logged in: ${state.copilot}`);
+  providerStatusLines(state.provider).forEach((line) => console.log(`  ${line}`));
+  // BYOK braucht laut `copilot help providers` keine GitHub-Authentifizierung; ein
+  // fehlender GitHub-Account ist dann kein Mangel.
+  const loggedIn =
+    state.provider?.state === 'set' && state.copilot !== 'yes'
+      ? 'not required (BYOK provider is active)'
+      : state.copilot;
+  console.log(`  Copilot CLI logged in: ${loggedIn}`);
   console.log(
     '  Copilot auth is offline: yes = local account/token configured; validity/subscription not checked.'
   );
@@ -327,8 +365,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   } else if (action === 'status') {
     // FLOW_REPO_ROOT erlaubt Berichte über einen anderen Checkout; Default ist das aktuelle Verzeichnis.
     reportReadiness(process.env.FLOW_REPO_ROOT || process.cwd());
+  } else if (action === 'provider') {
+    const provider = copilotProviderStatus({ env: process.env });
+    if (process.argv.includes('--state')) {
+      console.log(provider.state);
+    } else if (process.argv.includes('--line')) {
+      console.log(describeCopilotProviderStatus(provider));
+    } else {
+      providerStatusLines(provider).forEach((line) => console.log(line));
+    }
   } else {
-    console.error('Usage: copilot-environment.mjs auth|terminal|status');
+    console.error('Usage: copilot-environment.mjs auth|terminal|status|provider [--line|--state]');
     process.exitCode = 2;
   }
 }
