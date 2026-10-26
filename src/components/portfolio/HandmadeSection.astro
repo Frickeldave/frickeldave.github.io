@@ -10,7 +10,7 @@ interface Props {
 const { entry } = Astro.props;
 const { handmadeProjects = [] } = entry.data;
 
-// Fetch all blog posts to find more DIY/Holzwerken projects
+// Alle Blog-Posts holen, um weitere DIY-/Holzwerken-Projekte zu finden
 const allBlogPosts = await getEntries("blog");
 const blogProjects = allBlogPosts
   .filter((post) => {
@@ -31,13 +31,13 @@ const blogProjects = allBlogPosts
     };
   });
 
-// Merge static projects from aboutme index and dynamic projects from blog
-// Use a Map to avoid duplicates by title or blogUrl
+// Statische Projekte aus aboutme/index und dynamische Projekte aus dem Blog zusammenführen
+// Map nutzen, um Duplikate über Titel oder blogUrl zu vermeiden
 const projectMap = new Map();
 
-// Add blog projects first (generally more up to date)
+// Zuerst die Blog-Projekte ergänzen (meist aktueller)
 blogProjects.forEach((p) => projectMap.set(p.blogUrl, p));
-// Add static projects (may overwrite or add new ones)
+// Dann die statischen Projekte ergänzen (überschreiben oder neu hinzufügen)
 handmadeProjects.forEach((p) => projectMap.set(p.blogUrl, p));
 
 const combinedProjects = Array.from(projectMap.values());

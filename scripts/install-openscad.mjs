@@ -1,29 +1,30 @@
 #!/usr/bin/env node
 /**
- * Cross-platform OpenSCAD CLI installer
+ * Plattformübergreifender OpenSCAD-CLI-Installer
  *
- * Downloads and extracts the OpenSCAD CLI binary for the current platform
- * into a project-local directory. Falls back to an existing `openscad` in PATH.
+ * Lädt die OpenSCAD-CLI-Binary für die aktuelle Plattform herunter und entpackt
+ * sie in ein projektlokales Verzeichnis. Fällt auf ein vorhandenes `openscad` im
+ * PATH zurück.
  *
- * Usage:
- *   node scripts/install-openscad.mjs           # interactive
- *   node scripts/install-openscad.mjs --quiet   # silent mode
- *   node scripts/install-openscad.mjs --force   # reinstall even if already installed
+ * Aufruf:
+ *   node scripts/install-openscad.mjs           # interaktiv
+ *   node scripts/install-openscad.mjs --quiet   # stiller Modus
+ *   node scripts/install-openscad.mjs --force   # auch bei vorhandener Installation neu installieren
  *
  * CI:
- *   npm ci                                      # triggers postinstall
- *   node scripts/install-openscad.mjs --quiet   # explicit install
+ *   npm ci                                      # löst postinstall aus
+ *   node scripts/install-openscad.mjs --quiet   # explizite Installation
  */
 
 import { execFile, execFileSync } from "node:child_process";
-import { chmod, mkdir, rm, stat } from "node:fs/promises";
+import { chmod, mkdir, readdir, rm, stat } from "node:fs/promises";
 import { createWriteStream, existsSync } from "node:fs";
 import https from "node:https";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// ── Konfiguration ─────────────────────────────────────────────────────────────
 
 const OPENSCAD_VERSION = "2021.01";
 const DOWNLOAD_BASE = "https://files.openscad.org";
@@ -32,13 +33,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..");
 const OPENSCAD_DIR = path.resolve(PROJECT_ROOT, ".openscad");
 
-// Detect platform and architecture
+// Plattform und Architektur erkennen
 const isWindows = process.platform === "win32";
 const isMacOS = process.platform === "darwin";
 const isLinux = process.platform === "linux";
 const isArm = process.arch === "arm64" || process.arch === "aarch64";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Hilfsfunktionen ───────────────────────────────────────────────────────────
 
 let quiet = false;
 let force = false;
@@ -60,14 +61,25 @@ function error(...args) {
   console.error("\x1b[31m✖ ", ...args, "\x1b[0m");
 }
 
+// Literal-String in PowerShell; das Escape für ein einfaches Anführungszeichen ist '' (Verdopplung).
+function psLiteral(value) {
+  return `'${path.resolve(value).replace(/'/g, "''")}'`;
+}
+
 function execShell(cmd, args = [], opts = {}) {
   return new Promise((resolve, reject) => {
     const proc = execFile(
       cmd,
       args,
       { ...opts, timeout: 120_000 },
-      (err, stdout, _stderr) => {
-        if (err) return reject(err);
+      (err, stdout, stderr) => {
+        if (err) {
+          // Das Fehlerobjekt von execFile trägt die mitgeschnittene Ausgabe hier nicht,
+          // deshalb hängen wir sie für Aufrufer an, die lesbare Fehlermeldungen bauen.
+          err.stdout = stdout;
+          err.stderr = stderr;
+          return reject(err);
+        }
         resolve(stdout);
       }
     );
@@ -78,7 +90,26 @@ function execShell(cmd, args = [], opts = {}) {
   });
 }
 
-// ── Platform detection ────────────────────────────────────────────────────────
+// Führt eine PowerShell-Kommandozeile aus und meldet bei Fehlschlag das exakte
+// Kommando, damit ein fehlendes oder kaputtes Tool als lesbare Meldung statt als nacktes ENOENT auftaucht.
+function runPowershell(command) {
+  const args = ["-NoProfile", "-NonInteractive", "-Command", command];
+  return new Promise((resolve, reject) => {
+    execShell("powershell.exe", args).then(resolve, (err) => {
+      const detail = (err.stderr?.toString() ?? "").trim();
+      const wrapped = new Error(
+        `powershell.exe ${args.join(" ")} failed (exit ${
+          err.code ?? "unknown"
+        }): ${detail || err.message}`
+      );
+      wrapped.stdout = err.stdout;
+      wrapped.stderr = err.stderr;
+      reject(wrapped);
+    });
+  });
+}
+
+// ── Plattform-Erkennung ───────────────────────────────────────────────────────
 
 function getOpenSCADDownloadUrl() {
   if (isWindows) {
@@ -109,7 +140,7 @@ function getOpenSCADBinaryPath() {
   throw new Error(`Unsupported platform: ${process.platform} ${process.arch}`);
 }
 
-// ── PATH helpers ──────────────────────────────────────────────────────────────
+// ── PATH-Hilfen ───────────────────────────────────────────────────────────────
 
 function findInPath(command) {
   try {
@@ -126,7 +157,7 @@ function findInPath(command) {
   }
 }
 
-// ── Download utilities ────────────────────────────────────────────────────────
+// ── Download-Hilfen ───────────────────────────────────────────────────────────
 
 function downloadFile(url, destPath) {
   return new Promise((resolve, reject) => {
@@ -159,7 +190,7 @@ function downloadFile(url, destPath) {
   });
 }
 
-// ── Installers per platform ───────────────────────────────────────────────────
+// ── Installer je Plattform ────────────────────────────────────────────────────
 
 async function installLinuxAppImage() {
   const binaryPath = getOpenSCADBinaryPath();
@@ -170,7 +201,7 @@ async function installLinuxAppImage() {
   await downloadFile(url, appImagePath);
   await chmod(appImagePath, 0o755);
 
-  // Extract AppImage so it can run without FUSE (CI-friendly)
+  // AppImage entpacken, damit es ohne FUSE läuft (CI-freundlich)
   log("Extracting AppImage (this may take a moment)...");
   try {
     await execShell(appImagePath, ["--appimage-extract"], { cwd: OPENSCAD_DIR });
@@ -178,14 +209,14 @@ async function installLinuxAppImage() {
     warn("AppImage extraction failed, trying direct execution later:", err.message);
   }
 
-  // Try to find the extracted binary
+  // Extrahierte Binary suchen
   const extractedBinary = path.join(OPENSCAD_DIR, "squashfs-root", "usr", "bin", "openscad");
   if (existsSync(extractedBinary)) {
     await chmod(extractedBinary, 0o755);
-    // Create wrapper symlink
+    // Wrapper-Symlink anlegen
     await execShell("ln", ["-sf", extractedBinary, binaryPath]).catch(() => {});
   } else if (existsSync(appImagePath)) {
-    // Fallback: wrapper script that runs the AppImage
+    // Fallback: Wrapper-Skript, das das AppImage ausführt
     const wrapper = `#!/bin/sh\nexec "${appImagePath}" "$@"\n`;
     await import("node:fs/promises").then((fs) => fs.writeFile(binaryPath, wrapper));
     await chmod(binaryPath, 0o755);
@@ -199,17 +230,17 @@ async function installMacOSDmg() {
 
   await downloadFile(url, dmgPath);
 
-  // Mount DMG
+  // DMG mounten
   const mountDir = path.join(OPENSCAD_DIR, "_mount");
   await mkdir(mountDir, { recursive: true });
   await execShell("hdiutil", ["attach", dmgPath, "-mountpoint", mountDir, "-nobrowse", "-quiet"]);
 
   try {
-    // Copy OpenSCAD.app
+    // OpenSCAD.app kopieren
     await execShell("cp", ["-R", path.join(mountDir, "OpenSCAD.app"), OPENSCAD_DIR]);
     await chmod(binaryPath, 0o755);
   } finally {
-    // Unmount DMG
+    // DMG unmounten
     await execShell("hdiutil", ["detach", mountDir, "-quiet"]).catch(() => {});
   }
 
@@ -217,40 +248,96 @@ async function installMacOSDmg() {
   await rm(mountDir, { recursive: true, force: true });
 }
 
+// Sucht rekursiv nach einem Dateinamen (case-insensitiv) und liefert seinen Pfad.
+async function findFileRecursive(dir, fileName) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const found = await findFileRecursive(fullPath, fileName);
+      if (found) return found;
+    } else if (entry.name.toLowerCase() === fileName.toLowerCase()) {
+      return fullPath;
+    }
+  }
+  return null;
+}
+
 async function installWindowsZip() {
   const zipPath = path.join(OPENSCAD_DIR, `OpenSCAD-${OPENSCAD_VERSION}.zip`);
+  const stagingDir = path.join(OPENSCAD_DIR, "_extract");
   const url = getOpenSCADDownloadUrl();
 
   await downloadFile(url, zipPath);
-  await execShell("tar", ["-xf", zipPath, "-C", OPENSCAD_DIR]);
-  await rm(zipPath, { force: true });
 
-  // The zip extracts to OpenSCAD-2021.01/; move contents up
-  const extractedDir = path.join(OPENSCAD_DIR, `OpenSCAD-${OPENSCAD_VERSION}`);
-  if (existsSync(extractedDir)) {
-    const entries = await import("node:fs/promises").then((fs) => fs.readdir(extractedDir));
-    for (const entry of entries) {
-      const src = path.join(extractedDir, entry);
-      const dst = path.join(OPENSCAD_DIR, entry);
-      await execShell("mv", [src, dst]).catch(() => {});
+  try {
+    // `unzip`, `cp` und `mv` gibt es unter Windows nicht, deshalb mit PowerShells
+    // Expand-Archive entpacken, das immer vorhanden ist. `-LiteralPath` schaltet die
+    // Wildcard-Expansion ab und `ErrorActionPreference=Stop` macht aus
+    // nicht-terminierenden Cmdlet-Fehlern einen Exit-Code ungleich Null statt einer
+    // stillen Teilentpackung.
+    await rm(stagingDir, { recursive: true, force: true });
+    await mkdir(stagingDir, { recursive: true });
+    await runPowershell(
+      [
+        "$ErrorActionPreference='Stop';",
+        `Expand-Archive -LiteralPath ${psLiteral(zipPath)}`,
+        `-DestinationPath ${psLiteral(stagingDir)} -Force`,
+      ].join(" ")
+    );
+
+    // Das Archiv verpackt seinen Inhalt in ein einziges Top-Level-Verzeichnis, dessen
+    // Name in der Schreibweise variiert hat (`OpenSCAD-2021.01` vs. das mitgelieferte
+    // `openscad-2021.01`). Deshalb den Ordner suchen, der die Binary tatsächlich
+    // enthält, statt seinen Namen anzunehmen. Wird er nicht gefunden, ist das ein
+    // harter Fehler.
+    const extractedBinary = await findFileRecursive(stagingDir, "openscad.exe");
+    if (!extractedBinary) {
+      throw new Error(
+        `openscad.exe not found in the extracted archive at ${stagingDir}`
+      );
     }
-    await rm(extractedDir, { recursive: true, force: true });
+    const payloadDir = path.dirname(extractedBinary);
+
+    // Reste eines abgebrochenen Laufs entfernen, damit das Verschieben nicht kollidiert.
+    const keep = new Set(
+      [path.basename(zipPath), path.basename(stagingDir)].map((name) =>
+        name.toLowerCase()
+      )
+    );
+    for (const entry of await readdir(OPENSCAD_DIR)) {
+      if (!keep.has(entry.toLowerCase())) {
+        await rm(path.join(OPENSCAD_DIR, entry), { recursive: true, force: true });
+      }
+    }
+
+    // Den Archivinhalt eine Ebene nach oben verschieben, damit openscad.exe in .openscad/ liegt.
+    await runPowershell(
+      [
+        "$ErrorActionPreference='Stop';",
+        `Get-ChildItem -LiteralPath ${psLiteral(payloadDir)} |`,
+        `Move-Item -Destination ${psLiteral(OPENSCAD_DIR)} -Force`,
+      ].join(" ")
+    );
+  } finally {
+    await rm(stagingDir, { recursive: true, force: true }).catch(() => {});
+    await rm(zipPath, { force: true }).catch(() => {});
   }
 }
 
-// ── Main install ──────────────────────────────────────────────────────────────
+// ── Hauptinstallation ─────────────────────────────────────────────────────────
 
 async function installOpenSCAD() {
   log(`OpenSCAD installer v${OPENSCAD_VERSION}`);
 
-  // 1. Check PATH first
+  // 1. Zuerst den PATH prüfen
   const pathBinary = findInPath("openscad");
   if (pathBinary && !force) {
     log(`✓ OpenSCAD found in PATH: ${pathBinary}`);
     return;
   }
 
-  // 2. Check local install
+  // 2. Lokale Installation prüfen
   const binaryPath = getOpenSCADBinaryPath();
   const binaryExists = await stat(binaryPath)
     .then(() => true)
@@ -270,7 +357,7 @@ async function installOpenSCAD() {
     else if (isMacOS) await installMacOSDmg();
     else if (isWindows) await installWindowsZip();
 
-    // Verify installation
+    // Installation prüfen
     if (!existsSync(binaryPath)) {
       throw new Error(`Installation completed but binary not found at ${binaryPath}`);
     }
@@ -278,7 +365,7 @@ async function installOpenSCAD() {
     const version = await execShell(binaryPath, ["--version"]).catch(() => "unknown");
     log(`✓ OpenSCAD installed: ${version.trim() || binaryPath}`);
 
-    // Warn if xvfb-run is missing on Linux — needed for headless PNG rendering
+    // Warnen, wenn xvfb-run unter Linux fehlt — nötig für headless PNG-Rendering
     if (isLinux) {
       try {
         execFileSync("which", ["xvfb-run"], { stdio: "ignore", timeout: 5_000 });

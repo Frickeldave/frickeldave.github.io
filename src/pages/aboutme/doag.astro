@@ -31,14 +31,14 @@ if (!doagEntry) {
 const episodes = doagEntry.data.episodes || [];
 const podcastPlatforms = doagEntry.data.podcast_platforms || [];
 
-// Get unique editions for filter
+// Eindeutige Editionen für die Filterung ermitteln
 const editions = [...new Set(episodes.map((e) => e.edition))];
 
-// Get unique years from episode dates
+// Eindeutige Jahre aus den Episodendaten ermitteln
 const years = [
   ...new Set(
     episodes.map((e) => {
-      // Extract year from date string (e.g., "20. Januar 2026" -> "2026")
+      // Jahr aus dem Datumsstring extrahieren (z. B. "20. Januar 2026" -> "2026")
       const match = e.date.match(/\d{4}/);
       return match ? match[0] : null;
     })
@@ -281,7 +281,7 @@ const toc = episodes.map((episode) => ({
 </AboutMeLayout>
 
 <script>
-  // Force script re-execution on each page load
+  // Skript bei jedem Seitenaufruf erneut ausführen
   (() => {
     let selectedEdition = "all";
     let searchQuery = "";
@@ -327,12 +327,12 @@ const toc = episodes.map((episode) => ({
 
           let visible = true;
 
-          // Filter by edition
+          // Nach Edition filtern
           if (selectedEdition !== "all" && edition !== selectedEdition) {
             visible = false;
           }
 
-          // Filter by search (title or guests)
+          // Nach Suche filtern (Titel oder Gäste)
           if (searchQuery) {
             const query = searchQuery.toLowerCase();
             if (!title.includes(query) && !guests.includes(query)) {
@@ -340,7 +340,7 @@ const toc = episodes.map((episode) => ({
             }
           }
 
-          // Filter by year
+          // Nach Jahr filtern
           if (selectedYear !== "all") {
             if (!date.includes(selectedYear)) {
               visible = false;
@@ -356,7 +356,7 @@ const toc = episodes.map((episode) => ({
           }
         });
 
-        // Update results count
+        // Ergebniszähler aktualisieren
         const totalCount = episodeCards.length;
         const resultsText = `${visibleCount} von ${totalCount} Episoden`;
 
@@ -364,7 +364,7 @@ const toc = episodes.map((episode) => ({
           resultsCount.textContent = resultsText;
         }
 
-        // Show/hide no results message
+        // „Keine Ergebnisse“-Meldung ein- bzw. ausblenden
         if (noResults) {
           if (visibleCount === 0) {
             noResults.classList.remove("hidden");
@@ -373,15 +373,15 @@ const toc = episodes.map((episode) => ({
           }
         }
 
-        // Update TOC (Table of Contents) - filter links in sidebar
-        // Find all links in the "Auf dieser Seite" section that start with #
+        // ToC (Inhaltsverzeichnis) aktualisieren - Links in der Sidebar filtern
+        // Alle Links im Abschnitt „Auf dieser Seite“ finden, die mit # beginnen
         const tocLinks = document.querySelectorAll('a[href^="#"]');
         tocLinks.forEach((link) => {
           const href = link.getAttribute("href") || "";
           const episodeId = href.replace("#", "");
           const listItem = link.closest("li");
 
-          // Only filter TOC links, not other anchor links
+          // Nur ToC-Links filtern, keine anderen Ankerlinks
           if (listItem && episodeId && href.startsWith("#doag-voices-")) {
             if (visibleEpisodeIds.includes(episodeId)) {
               listItem.classList.remove("hidden");
@@ -392,25 +392,25 @@ const toc = episodes.map((episode) => ({
         });
       }
 
-      // Search input
+      // Suchfeld
       searchInput?.addEventListener("input", (e) => {
         searchQuery = (e.target as HTMLInputElement).value;
         updateDisplay();
       });
 
-      // Edition filter
+      // Editions-Filter
       editionFilter?.addEventListener("change", (e) => {
         selectedEdition = (e.target as HTMLSelectElement).value;
         updateDisplay();
       });
 
-      // Date filter
+      // Datumsfilter
       dateFilter?.addEventListener("change", (e) => {
         selectedYear = (e.target as HTMLSelectElement).value;
         updateDisplay();
       });
 
-      // Clear filters button
+      // Button „Filter zurücksetzen“
       clearButton?.addEventListener("click", () => {
         selectedEdition = "all";
         searchQuery = "";
@@ -423,18 +423,18 @@ const toc = episodes.map((episode) => ({
         updateDisplay();
       });
 
-      // Initial display update
+      // Erste Anzeige aktualisieren
       updateDisplay();
     }
 
-    // Initialize immediately if DOM is ready
+    // Sofort initialisieren, wenn das DOM bereit ist
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", initializeFilters);
     } else {
       setTimeout(initializeFilters, 0);
     }
 
-    // Re-initialize on Astro page events
+    // Bei Astro-Seitenereignissen neu initialisieren
     document.addEventListener("astro:page-load", () => {
       console.log(
         "Astro page load event detected, reinitializing podcast filters..."

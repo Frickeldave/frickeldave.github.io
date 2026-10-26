@@ -1,6 +1,6 @@
 ---
-// Static redirect handler for GitHub Pages compatibility
-// Uses client-side JavaScript to handle redirects
+// Statischer Redirect-Handler für GitHub-Pages-Kompatibilität
+// Nutzt clientseitiges JavaScript, um Redirects zu behandeln
 import BaseLayout from "../../components/base/BaseLayout.astro";
 ---
 
@@ -51,10 +51,10 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
 
   <!-- Client-side redirect handler -->
   <script is:inline>
-    // Client-side link management for GitHub Pages compatibility
+    // Clientseitige Link-Verwaltung für GitHub-Pages-Kompatibilität
     let linkMappings = null;
 
-    // Initialize link mappings from static JSON
+    // Link-Zuordnungen aus statischem JSON initialisieren
     async function initializeLinkMappings() {
       try {
         const response = await fetch("/data/link-mappings.json");
@@ -71,7 +71,7 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
       }
     }
 
-    // Get link by ID
+    // Link anhand der ID holen
     function getLinkById(id) {
       if (!linkMappings) {
         console.error("Link mappings not initialized");
@@ -83,14 +83,14 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
         return null;
       }
 
-      // Handle legacy links without openInNewTab property
+      // Alt-Links ohne openInNewTab-Eigenschaft behandeln
       return {
         ...link,
         openInNewTab: link.openInNewTab ?? true, // Default to true
       };
     }
 
-    // Increment click count (client-side storage)
+    // Klickzahl erhöhen (clientseitiger Speicher)
     function incrementClickCount(id) {
       if (!linkMappings) {
         console.error("Link mappings not initialized");
@@ -102,17 +102,17 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
         return;
       }
 
-      // Get current counts from localStorage
+      // Aktuelle Zählerstände aus localStorage holen
       const stored = localStorage.getItem("linkClickCounts");
       const clickCounts = stored ? JSON.parse(stored) : {};
 
-      // Increment count
+      // Zähler erhöhen
       clickCounts[id] = (clickCounts[id] || 0) + 1;
 
-      // Store back to localStorage
+      // Zurück in localStorage schreiben
       localStorage.setItem("linkClickCounts", JSON.stringify(clickCounts));
 
-      // Update total clicks
+      // Gesamtzahl der Klicks aktualisieren
       const totalClicks = Object.values(clickCounts).reduce(
         (sum, count) => sum + count,
         0
@@ -134,10 +134,10 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
       }
 
       try {
-        // Initialize link mappings
+        // Link-Zuordnungen initialisieren
         await initializeLinkMappings();
 
-        // Get link info from static data
+        // Link-Info aus statischen Daten holen
         const link = getLinkById(id);
 
         if (!link) {
@@ -145,12 +145,12 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
           return;
         }
 
-        // Increment click count
+        // Klickzahl erhöhen
         incrementClickCount(id);
 
         showLinkInfo(link);
 
-        // Auto-redirect after delay
+        // Automatisch nach Verzögerung weiterleiten
         const redirectDelay = link.affiliate ? 3000 : 2000;
         setTimeout(() => {
           if (link.openInNewTab) {
@@ -233,13 +233,13 @@ import BaseLayout from "../../components/base/BaseLayout.astro";
       if (error) error.style.display = "block";
     }
 
-    // Load link info when page loads
+    // Link-Info beim Laden der Seite holen
     document.addEventListener("DOMContentLoaded", loadLinkInfo);
   </script>
 </BaseLayout>
 
 <style>
-  /* Additional styles for the redirect page */
+  /* Zusätzliche Stile für die Redirect-Seite */
   main {
     min-height: 70vh;
     display: flex;

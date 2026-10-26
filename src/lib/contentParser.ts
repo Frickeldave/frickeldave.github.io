@@ -21,8 +21,8 @@ export const getEntries = async (
   entries = noDrafts
     ? entries.filter(
         (entry: GenericEntry) =>
-          // In dev mode (npm run dev), drafts/hidden entries stay visible for local preview.
-          // In production builds, only entries with draft=false and visible=true are shown.
+          // Im Dev-Modus (npm run dev) bleiben Draft- und versteckte Einträge für die
+          // lokale Vorschau sichtbar. In Produktions-Builds erscheinen nur Einträge mit draft=false und visible=true.
           import.meta.env.DEV ||
           ("draft" in entry.data &&
             !entry.data.draft &&
@@ -34,7 +34,7 @@ export const getEntries = async (
   return entries;
 };
 
-// Fetch all pages in all specified collections, flattened into a single array
+// Alle Seiten aller angegebenen Collections holen, flach zu einem Array zusammengefasst
 export const getEntriesBatch = async (
   collections: CollectionKey[],
   sortFunction?: (array: GenericEntry[]) => GenericEntry[],
@@ -49,7 +49,7 @@ export const getEntriesBatch = async (
   return allCollections.flat();
 };
 
-// Fetch top-level folders within a collection
+// Top-Level-Ordner innerhalb einer Collection holen
 export const getGroups = async (
   collection: CollectionKey,
   sortFunction?: (array: GenericEntry[]) => GenericEntry[]
@@ -62,7 +62,7 @@ export const getGroups = async (
   return entries;
 };
 
-// Fetch entries within the specified collection and group
+// Einträge innerhalb der angegebenen Collection und Gruppe holen
 export const getEntriesInGroup = async (
   collection: CollectionKey,
   groupSlug: string,

@@ -9,7 +9,7 @@ interface Props {
 const { entry } = Astro.props;
 const { publications } = entry.data;
 
-// Transform publications for the grid
+// Publikationen für das Raster umformen
 const publicationsWithImages = (publications || []).map((pub) => {
   let imageUrl = "/images/placeholder-publication.png";
 

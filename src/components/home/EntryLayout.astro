@@ -15,11 +15,11 @@ import NewsCarousel from "./NewsCarousel";
 import { sortByDate } from "@lib/sortFunctions";
 import type { ImageMetadata } from "astro";
 
-// Import handmade data and images
+// Handmade-Daten und -Bilder importieren
 import handmadeDataRaw from "../../../public/data/handmade.json";
 import placeholderImage from "@/assets/placeholder-product-notfound.png";
 
-// Import news data and placeholder
+// News-Daten und Platzhalter importieren
 import newsDataRaw from "../../../public/data/news.json";
 import placeholderNewsImage from "@/assets/placeholder-news.png";
 
@@ -39,22 +39,22 @@ type NewsData = {
 
 const newsData = newsDataRaw as NewsData;
 
-// Import all news images using Vite's glob
+// Alle News-Bilder per Vite-Glob importieren
 const newsImages = import.meta.glob<{ default: ImageMetadata }>(
   "/src/assets/news/*.{jpeg,jpg,png,gif}",
   { eager: true }
 );
 
-// Helper to get news image by path
+// Helfer: News-Bild anhand des Pfads holen
 const getNewsImage = (imageUrl: string): string => {
-  // imageUrl format: "src/assets/news/2026-01-15-wordpress-blog-migration-complete.png"
-  // Add leading slash to match glob import keys
+  // imageUrl-Format: "src/assets/news/2026-01-15-wordpress-blog-migration-complete.png"
+  // Führenden Schrägstrich ergänzen, damit es zu den Glob-Import-Keys passt
   const imagePath = "/" + imageUrl;
   const matchingImage = newsImages[imagePath];
   return matchingImage ? matchingImage.default.src : placeholderNewsImage.src;
 };
 
-// Prepare news with image URLs for React component
+// News mit Bild-URLs für die React-Komponente vorbereiten
 const visibleNews = newsData.news
   .filter((item) => item.visible)
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -64,13 +64,13 @@ const visibleNews = newsData.news
     imageUrl: getNewsImage(item.imageUrl),
   }));
 
-// Import all handmade images using Vite's glob
+// Alle Handmade-Bilder per Vite-Glob importieren
 const handmadeImages = import.meta.glob<{ default: ImageMetadata }>(
   "/src/assets/handmade/**/*.{png,jpg,jpeg,webp}",
   { eager: true }
 );
 
-// Create image map
+// Bild-Zuordnung anlegen
 const imageMap = Object.entries(handmadeImages).reduce(
   (acc, [path, image]) => {
     const relativePath = path.replace("/src/assets/handmade/", "");
@@ -80,13 +80,13 @@ const imageMap = Object.entries(handmadeImages).reduce(
   {} as Record<string, ImageMetadata>
 );
 
-// Helper to get product image
+// Helfer: Produktbild holen
 const getProductImage = (
   category: string,
   articleNumber: string
 ): ImageMetadata => {
   const categoryFolder = category;
-  // Dynamic lookup: find any image that belongs to this product (starts with category/articleNumber/)
+  // Dynamischer Lookup: jedes Bild finden, das zu diesem Produkt gehört (beginnt mit Kategorie/Artikelnummer/)
   const prefix = `${categoryFolder}/${articleNumber}/`;
   const matchingPath = Object.keys(imageMap).find((path) =>
     path.startsWith(prefix)
@@ -95,7 +95,7 @@ const getProductImage = (
   return matchingPath ? imageMap[matchingPath] : placeholderImage;
 };
 
-// Prepare handmade products with image URLs for React component
+// Handmade-Produkte mit Bild-URLs für die React-Komponente vorbereiten
 const visibleProducts = handmadeData.products
   .filter((p) => p.visible)
   .slice(0, 8);
@@ -114,10 +114,10 @@ interface Props {
 const { entry } = Astro.props;
 const { image, imageAlt, title, content, button } = entry.data;
 
-// Get all blog posts for tabs
+// Alle Blog-Posts für die Tabs holen
 const allPosts = (await getEntries("blog", sortByDate)) as BlogEntry[];
 
-// Helper to format post data for React component
+// Helfer: Post-Daten für die React-Komponente formatieren
 const formatPostData = (post: BlogEntry) => ({
   id: post.id,
   title: post.data.title,
@@ -129,7 +129,7 @@ const formatPostData = (post: BlogEntry) => ({
     : undefined,
 });
 
-// Filter posts by tags/categories for each tab
+// Posts je Tab nach Tags/Kategorien filtern
 const diyTags = ["diy", "handmade", "holz", "wood", "laser", "epoxidharz"];
 const itTags = [
   "it",
@@ -287,7 +287,7 @@ const tabData = [
 </BaseLayout>
 
 <style>
-  /* Hide news section if empty - handled by React component returning null */
+  /* News-Bereich ausblenden, wenn leer - erledigt die React-Komponente durch null-Rückgabe */
   #news-section:has(.news-carousel:empty) {
     display: none;
   }

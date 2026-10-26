@@ -1,7 +1,7 @@
 import type { MarkdownHeading } from "astro";
 import type { HeadingHierarchy } from "@/types/index";
 
-// Create headings for table of contents
+// Überschriften für das Inhaltsverzeichnis erzeugen
 export function createHeadingHierarchy(headings: MarkdownHeading[]) {
   const topLevelHeadings: HeadingHierarchy[] = [];
 

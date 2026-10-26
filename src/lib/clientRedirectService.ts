@@ -1,12 +1,12 @@
-// Client-side link management for GitHub Pages compatibility
-// This replaces the server-side API routes
+// Clientseitige Link-Verwaltung für GitHub-Pages-Kompatibilität
+// Ersetzt die serverseitigen API-Routen
 
 import type { LinkMapping, LinkMappings } from "@/types";
 
-// Store link mappings in the client
+// Link-Zuordnungen im Client speichern
 let linkMappings: LinkMappings | null = null;
 
-// Initialize link mappings from static JSON
+// Link-Zuordnungen aus statischem JSON initialisieren
 export async function initializeLinkMappings(): Promise<void> {
   try {
     const response = await fetch("/data/link-mappings.json");
@@ -23,7 +23,7 @@ export async function initializeLinkMappings(): Promise<void> {
   }
 }
 
-// Get link by ID
+// Link anhand der ID holen
 export function getLinkById(id: string): LinkMapping | null {
   if (!linkMappings) {
     console.error("Link mappings not initialized");
@@ -35,14 +35,14 @@ export function getLinkById(id: string): LinkMapping | null {
     return null;
   }
 
-  // Handle legacy links without openInNewTab property
+  // Alt-Links ohne openInNewTab-Eigenschaft behandeln
   return {
     ...link,
     openInNewTab: link.openInNewTab ?? true, // Default to true
   };
 }
 
-// Increment click count (client-side storage)
+// Klickzahl erhöhen (clientseitiger Speicher)
 export function incrementClickCount(id: string): void {
   if (!linkMappings) {
     console.error("Link mappings not initialized");
@@ -54,17 +54,17 @@ export function incrementClickCount(id: string): void {
     return;
   }
 
-  // Get current counts from localStorage
+  // Aktuelle Zählerstände aus localStorage holen
   const stored = localStorage.getItem("linkClickCounts");
   const clickCounts = stored ? JSON.parse(stored) : {};
 
-  // Increment count
+  // Zähler erhöhen
   clickCounts[id] = (clickCounts[id] || 0) + 1;
 
-  // Store back to localStorage
+  // Zurück in localStorage schreiben
   localStorage.setItem("linkClickCounts", JSON.stringify(clickCounts));
 
-  // Update total clicks
+  // Gesamtzahl der Klicks aktualisieren
   const totalClicks = Object.values(clickCounts).reduce(
     (sum: number, count) => sum + (count as number),
     0
@@ -76,14 +76,14 @@ export function incrementClickCount(id: string): void {
   );
 }
 
-// Get click count for a link
+// Klickzahl für einen Link holen
 export function getClickCount(id: string): number {
   const stored = localStorage.getItem("linkClickCounts");
   const clickCounts = stored ? JSON.parse(stored) : {};
   return clickCounts[id] || 0;
 }
 
-// Get all analytics data
+// Alle Analytics-Daten holen
 export function getAnalytics(): {
   totalClicks: number;
   lastUpdated: string;
@@ -104,12 +104,12 @@ export function getAnalytics(): {
   };
 }
 
-// Handle link redirect
+// Link-Redirect behandeln
 export async function handleLinkRedirect(
   id: string,
   referrer?: string
 ): Promise<void> {
-  // Initialize if not done yet
+  // Initialisieren, falls noch nicht geschehen
   if (!linkMappings) {
     await initializeLinkMappings();
   }
@@ -117,15 +117,15 @@ export async function handleLinkRedirect(
   const link = getLinkById(id);
 
   if (!link) {
-    // Redirect to 404 or error page
+    // Auf 404- bzw. Fehlerseite umleiten
     window.location.href = "/404";
     return;
   }
 
-  // Increment click count
+  // Klickzahl erhöhen
   incrementClickCount(id);
 
-  // For affiliate links, show disclosure page
+  // Bei Affiliate-Links die Offenlegungsseite zeigen
   if (link.affiliate) {
     const returnParam = referrer
       ? `&return=${encodeURIComponent(referrer)}`
@@ -134,7 +134,7 @@ export async function handleLinkRedirect(
     return;
   }
 
-  // For non-affiliate links, redirect directly
+  // Bei Nicht-Affiliate-Links direkt umleiten
   if (link.openInNewTab) {
     window.open(link.targetUrl, "_blank");
   } else {

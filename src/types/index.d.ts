@@ -38,7 +38,7 @@ export type EntryReference = {
   collection: string;
 };
 
-// Define heading hierarchy so that we can generate ToC
+// Überschriften-Hierarchie definieren, damit wir das ToC erzeugen können
 export interface HeadingHierarchy extends MarkdownHeading {
   subheadings: HeadingHierarchy[];
 }
@@ -49,7 +49,7 @@ export type MenuItem = {
   children: MenuItem[];
 };
 
-// Define the type for menu items to created nested object
+// Typ für Menüeinträge definieren, um verschachtelte Objekte zu erzeugen
 export type MenuItemWithDraft = {
   title?: string;
   id: string;
@@ -58,13 +58,13 @@ export type MenuItemWithDraft = {
   children: MenuItemWithDraft[];
 };
 
-// Define the props for the SideNavMenu component
+// Props für die SideNavMenu-Komponente definieren
 export type SideNavMenuProps = {
   items: MenuItemWithDraft[];
   level: number;
 };
 
-// Link redirect system types
+// Typen des Link-Redirect-Systems
 export type LinkMapping = {
   title: string;
   description: string;
@@ -86,7 +86,7 @@ export type LinkMappings = {
   };
 };
 
-// Handmade products types
+// Typen der Handmade-Produkte
 export type HandmadeItem = {
   articleNumber: string;
   name: string;

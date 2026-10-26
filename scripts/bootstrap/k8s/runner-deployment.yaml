@@ -1,0 +1,113 @@
+# Template placeholders use the double-underscore NAME convention and must be
+# substituted by scripts/bootstrap/bootstrap.mjs before kubectl apply.
+# The part-of label is rendered from the optional "partOf" key in
+# bootstrap.json and falls back to the configured "githubRunnerRepo".
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-actions-runner
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: github-actions-runner
+    app.kubernetes.io/part-of: __PART_OF__
+spec:
+  replicas: 2 # Each pod registers under a unique name (see RUNNER_NAME_PREFIX/POD_NAME below), so they run as independent parallel runners.
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: github-actions-runner
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: github-actions-runner
+        app.kubernetes.io/part-of: __PART_OF__
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: github-runner
+          image: __RUNNER_IMAGE__
+          # The runner image uses a mutable tag (:latest). IfNotPresent would pin the node
+          # to whatever it cached first, so a rebuilt image would never reach the pod.
+          imagePullPolicy: Always
+          env:
+            - name: REPO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-registration
+                  key: REPO_URL
+            - name: RUNNER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-registration
+                  key: RUNNER_TOKEN
+            # Base name only: the entrypoint combines it with POD_NAME (and
+            # prepends this prefix only when the pod name lacks it) so replicas
+            # don't register under the same runner identity and replace each
+            # other.
+            - name: RUNNER_NAME_PREFIX
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-registration
+                  key: RUNNER_NAME
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: RUNNER_SCOPE
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-registration
+                  key: RUNNER_SCOPE
+            - name: RUNNER_LABELS
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-registration
+                  key: RUNNER_LABELS
+            # Still required: a future application deploy workflow calls
+            # `crane manifest` inside this container to check whether a
+            # versioned image already exists in GHCR, and GHCR packages need
+            # pull auth for that. Kaniko itself never runs here - it runs in a
+            # throwaway Kubernetes Job started by that workflow. Do not remove
+            # this mount as "leftover".
+            - name: DOCKER_CONFIG
+              value: /home/appuser/.registry-docker
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: false
+          resources:
+            # Measured on the `fd` cluster (issue #282, step 10): the Playwright
+            # e2e job's `npm run build` peaks at ~8 GiB of page cache in the
+            # container cgroup and needs ~3 vCPU to finish in ~6 min. Requests
+            # stay small on purpose - the worker nodes are shared, so a runner
+            # must not reserve a large slice of the node and block its own
+            # rolling update. Limits are the actual capacity the runner may
+            # burst into.
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "3"
+              memory: 8Gi
+          volumeMounts:
+            - name: ghcr-registry-config
+              mountPath: /home/appuser/.registry-docker
+              readOnly: true
+      volumes:
+        - name: ghcr-registry-config
+          secret:
+            secretName: ghcr-pull-secret
+            defaultMode: 0440
+            items:
+              - key: .dockerconfigjson
+                path: config.json
+      restartPolicy: Always

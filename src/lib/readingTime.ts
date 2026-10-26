@@ -1,4 +1,4 @@
-// content reading
+// Lesezeit des Inhalts
 const readingTime = (content: string, complexity: number): string => {
   const WPS = 200 / 60;
 

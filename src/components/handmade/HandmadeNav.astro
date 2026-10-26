@@ -6,7 +6,7 @@ const links = [
   { href: "/handmade/glaser", text: "Gläser" },
 ];
 
-// ... props ...
+// ... Props ...
 export interface TocItem {
   text: string;
   slug: string;
@@ -136,7 +136,7 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
     const accordionHeaders = document.querySelectorAll(".accordion-header");
 
     accordionHeaders.forEach((header) => {
-      // Only attach listener if we are not on large screen (though button is disabled via pointer-events-none)
+      // Listener nur anhängen, wenn wir nicht auf einem großen Screen sind (der Button ist per pointer-events-none deaktiviert)
       header.addEventListener("click", () => {
         if (window.innerWidth >= 1024) return;
 
@@ -149,9 +149,9 @@ const { currentPath = Astro.url.pathname, toc } = Astro.props;
     });
   }
 
-  // Setup on initial load
+  // Beim initialen Laden einrichten
   setupAccordion();
 
-  // Re-setup on view transitions
+  // Bei View Transitions neu einrichten
   document.addEventListener("astro:after-swap", setupAccordion);
 </script>

@@ -16,22 +16,22 @@
   }
 
   function setTheme(darkMode) {
-    // Update DOM
+    // DOM aktualisieren
     if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-    // Update localStorage
+    // localStorage aktualisieren
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }
 
-  // This prevents flickering back to default theme before the page is fully loaded
+  // Verhindert das Zurückflackern zum Default-Theme, bevor die Seite vollständig geladen ist
   setTheme(getTheme(defaultTheme));
 
   document.addEventListener("astro:page-load", () => {
     setTheme(getTheme(defaultTheme));
-    // Theme switcher
+    // Theme-Umschalter
     const themeSwitch = document.querySelectorAll("[data-theme-switcher]");
     themeSwitch.forEach((el) => {
       el.addEventListener("change", (e) => {

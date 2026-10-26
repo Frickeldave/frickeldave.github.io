@@ -4,28 +4,28 @@
 Diese Vorlage dient zur strukturierten, nachvollziehbaren Bewertung einer Anwendung nach den 12-Factor-Prinzipien.
 
 ## Geltungsbereich
-Verwendbar fuer neue Services, groessere Releases, Migrationen und Betriebsfreigaben in diesem Repository.
+Verwendbar für neue Services, größere Releases, Migrationen und Betriebsfreigaben in diesem Repository.
 
 ## Nutzung (Schritte)
 1. Pro Faktor Evidenz sammeln (Datei, Konfiguration, Command-Ausgabe).
-2. Status setzen: 🟢 (Gruen), 🟡 (Gelb), 🔴 (Rot).
+2. Status setzen: 🟢 (Grün), 🟡 (Gelb), 🔴 (Rot).
 3. Befund kurz und konkret dokumentieren.
 4. Massnahmen mit Owner und Zieltermin erfassen.
 5. Gesamtentscheidung treffen: Go oder No-Go.
 
 ## Status-Legende
-- 🟢 (Gruen): Erfuellt, keine kritischen Luecken.
-- 🟡 (Gelb): Teilweise erfuellt, Restarbeiten geplant.
-- 🔴 (Rot): Nicht erfuellt oder hohes Risiko.
+- 🟢 (Grün): Erfüllt, keine kritischen Lücken.
+- 🟡 (Gelb): Teilweise erfüllt, Restarbeiten geplant.
+- 🔴 (Rot): Nicht erfüllt oder hohes Risiko.
 
 ## Gesamtentscheidung (Go/No-Go)
 - [ ] Go
 - [ ] No-Go
-- Begruendung:
+- Begründung:
 - Blocker (falls No-Go):
 
-## Audit-Uebersicht (I-XII)
-| Faktor | Primaer | Sekundaer | Status (🟢/🟡/🔴) | Evidenz (Datei/Command) | Befund | Massnahmen |
+## Audit-Übersicht (I-XII)
+| Faktor | Primär | Sekundär | Status (🟢/🟡/🔴) | Evidenz (Datei/Command) | Befund | Massnahmen |
 | --- | --- | --- | --- | --- | --- | --- |
 | I. Codebase | Nick | Tony |  |  |  |  |
 | II. Dependencies | Bruce | Nick |  |  |  |  |
@@ -41,13 +41,13 @@ Verwendbar fuer neue Services, groessere Releases, Migrationen und Betriebsfreig
 | XII. Admin Processes | Bruce | Nick |  |  |  |  |
 
 ## Faktor I - Codebase
-- [ ] Genau eine Codebase pro App, mehrere Deploys nur ueber Branch/Env.
+- [ ] Genau eine Codebase pro App, mehrere Deploys nur über Branch/Env.
 - [ ] Kein manuelles Hotfixing direkt auf Servern.
 - [ ] Reproduzierbarer Checkout/Build dokumentiert.
 - [ ] Evidenz eingetragen (z. B. git remote -v, Branch-Strategie).
 
 ## Faktor II - Dependencies
-- [ ] Alle Abhaengigkeiten explizit im Manifest (z. B. package.json).
+- [ ] Alle Abhängigkeiten explizit im Manifest (z. B. package.json).
 - [ ] Lockfile vorhanden und aktuell.
 - [ ] Build ohne globale, nicht deklarierte Tools reproduzierbar.
 - [ ] Evidenz eingetragen (z. B. npm ci, npm ls).
@@ -66,37 +66,37 @@ Verwendbar fuer neue Services, groessere Releases, Migrationen und Betriebsfreig
 
 ## Faktor V - Build, Release, Run
 - [ ] Build, Release und Run sind klar getrennt.
-- [ ] Release ist unveraenderlich und eindeutig versioniert.
-- [ ] Rollback-Pfad fuer letzte stabile Version dokumentiert.
+- [ ] Release ist unveränderlich und eindeutig versioniert.
+- [ ] Rollback-Pfad für letzte stabile Version dokumentiert.
 - [ ] Evidenz eingetragen (CI-Workflow, Release-Artefakt).
 
 ## Faktor VI - Processes
 - [ ] App-Prozesse sind zustandslos; Session-State nicht lokal persistent.
 - [ ] Persistenz nur in dedizierten Stores.
-- [ ] Wiederanlauf eines Prozesses fuehrt nicht zu Datenverlust.
+- [ ] Wiederanlauf eines Prozesses führt nicht zu Datenverlust.
 - [ ] Evidenz eingetragen (Architektur-Doku, Runtime-Verhalten).
 
 ## Faktor VII - Port Binding
-- [ ] Service stellt sich selbst per Port zur Verfuegung.
+- [ ] Service stellt sich selbst per Port zur Verfügung.
 - [ ] Keine implizite Kopplung an externen App-Server.
 - [ ] Health-Endpoint und Basis-Routing definiert.
 - [ ] Evidenz eingetragen (Startkommando, Runtime-Konfig).
 
 ## Faktor VIII - Concurrency
-- [ ] Horizontaler Scale-out ueber Prozessmodell moeglich.
+- [ ] Horizontaler Scale-out über Prozessmodell möglich.
 - [ ] Worker/Job-Typen klar getrennt und benannt.
-- [ ] Lastspitzen koennen ohne Architekturbruch abgefangen werden.
+- [ ] Lastspitzen können ohne Architekturbruch abgefangen werden.
 - [ ] Evidenz eingetragen (Skalierungsstrategie, Deploy-Settings).
 
 ## Faktor IX - Disposability
 - [ ] Schneller Start und sauberer, schneller Shutdown.
-- [ ] Graceful shutdown fuer In-Flight-Requests umgesetzt.
+- [ ] Graceful shutdown für In-Flight-Requests umgesetzt.
 - [ ] Prozess kann nach Crash sicher neu starten.
 - [ ] Evidenz eingetragen (Signal-Handling, Startzeit-Metrik).
 
 ## Faktor X - Dev/Prod Parity
-- [ ] Moeglichst kleine Differenz zwischen Dev, Stage, Prod.
-- [ ] Gleiche Kerntechnologien und vergleichbare Datenfluesse.
+- [ ] Möglichst kleine Differenz zwischen Dev, Stage, Prod.
+- [ ] Gleiche Kerntechnologien und vergleichbare Datenflüsse.
 - [ ] Deployment-Frequenz und Change-Lead-Time angemessen.
 - [ ] Evidenz eingetragen (Umgebungsvergleich, Pipeline-Laufzeiten).
 
@@ -109,7 +109,7 @@ Verwendbar fuer neue Services, groessere Releases, Migrationen und Betriebsfreig
 ## Faktor XII - Admin Processes
 - [ ] Einmalige Admin-Tasks laufen in gleicher Runtime wie App.
 - [ ] Tasks sind versioniert und automatisierbar.
-- [ ] Berechtigungen und Audit-Trail fuer Admin-Tasks vorhanden.
+- [ ] Berechtigungen und Audit-Trail für Admin-Tasks vorhanden.
 - [ ] Evidenz eingetragen (Runbook, Task-Command, CI-Job).
 
 ## Abnahme

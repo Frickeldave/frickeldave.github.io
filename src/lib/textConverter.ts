@@ -16,7 +16,7 @@ export const markdownify = (content: string, div?: boolean) => {
   return div ? marked.parse(content) : marked.parseInline(content);
 };
 
-// hyphen to space, uppercase only first letter in each word
+// Bindestriche zu Leerzeichen, nur den ersten Buchstaben jedes Worts groß
 export const upperHumanize = (content: string) => {
   if (!content) {
     return "";
@@ -27,7 +27,7 @@ export const upperHumanize = (content: string) => {
     .replace(/(^\w{1})|(\s{1}\w{1})/g, (match) => match.toUpperCase());
 };
 
-// hyphen to space, lowercase all letters
+// Bindestriche zu Leerzeichen, alle Buchstaben klein
 export const lowerHumanize = (content: string) => {
   if (!content) {
     return "";
@@ -44,7 +44,7 @@ export const plainify = (content: string) => {
   return stripHTML;
 };
 
-// strip entities for plainify
+// Entities für plainify entfernen
 const htmlEntityDecoder = (htmlWithEntities: string) => {
   const entityList: { [key: string]: string } = {
     "&nbsp;": " ",

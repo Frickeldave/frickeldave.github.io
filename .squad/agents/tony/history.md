@@ -26,3 +26,9 @@
 ## 2026-09-10
 
 - Issue #269 (Workflow-Konsolidierung) authored + triagiert (Labels `squad`, `squad:nick`, `go:yes`, `type:chore`), genehmigt, `.frickeldave-active-issue` aktiviert
+
+## 2026-09-25
+
+- Issue #281 ("Humanizer-Nacharbeit: Dark Software Factory Artikel") triagiert, Label `squad:maria` gesetzt, als "Ready to implement" freigegeben.
+- Maria beauftragt mit unabhängiger KI-Anteil-Bewertung und Revision des Artikels `src/content/blog/2026-09-25-dark-software-factory.md`.
+- Ergebnis: Commit `0caa9e9` auf `dev`, Issue #281 geschlossen.

@@ -4,13 +4,13 @@ import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Minimal dependency-free static file server for the Astro `dist/` build.
+ * Minimaler, abhängigkeitsfreier Static-File-Server für den Astro-`dist/`-Build.
  *
- * Astro 7's `astro preview` daemonizes (the launcher exits immediately), which
- * is incompatible with Playwright's `webServer` (it needs a foreground,
- * long-running process). This tiny server stays in the foreground so Playwright
- * can manage its lifecycle, and serves the same static output that
- * `astro preview` would.
+ * Astro 7s `astro preview` daemonisiert (der Launcher beendet sich sofort), was mit
+ * Playwrights `webServer` nicht kompatibel ist (es braucht einen Vordergrundprozess,
+ * der lange läuft). Dieser kleine Server bleibt im Vordergrund, damit Playwright
+ * seinen Lebenszyklus steuern kann, und liefert dieselbe statische Ausgabe, die
+ * `astro preview` liefern würde.
  */
 
 const PORT = Number(process.env.PORT || 4321);
@@ -47,7 +47,7 @@ function resolvePath(pathname) {
 const server = createServer((req, res) => {
   let filePath = resolvePath(new URL(req.url, `http://${req.headers.host}`).pathname);
 
-  // Directory request → serve index.html (Astro static output layout).
+  // Verzeichnis-Anfrage → index.html ausliefern (Astro-Static-Output-Layout).
   if (statSync(filePath, { throwIfNoEntry: false })?.isDirectory()) {
     filePath = join(filePath, 'index.html');
   }

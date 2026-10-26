@@ -1,640 +1,320 @@
-# Scripts Documentation
+# Skript-Dokumentation
 
-Übersicht aller verfügbaren Scripts im Projekt. Diese Scripts automatisieren wichtige Entwicklungs- und Deployment-Prozesse.
+Diese Seite beschreibt alle Hilfsskripte unter `scripts/`. Sie sind in Node.js geschrieben, laufen
+plattformübergreifend (Windows, Linux, macOS) und decken Build, Prosa-Prüfung, Issue-Workflows,
+Release, Projekt-Board, Übersetzung und Podcast-Sync ab.
+
+Fast jedes Skript lässt sich über ein npm-Skript aufrufen. Wo es kein npm-Skript gibt, steht der
+direkte `node`-Aufruf daneben. Externe Werkzeuge, die einzelne Skripte erwarten: Git, GitHub CLI
+(`gh`), optional `tmux` und `kubectl` (nur Bootstrap).
 
 ## Inhaltsverzeichnis
 
-- [Quick Start](#quick-start)
-- [Installation Scripts](#installation-scripts)
-  - [install-gh-copilot.mjs](#install-gh-copilotmjs)
-  - [prose-install.mjs](#prose-installmjs)
-- [Development Scripts](#development-scripts)
-  - [merge-branches.mjs](#merge-branchesmjs)
-  - [prose-check.mjs](#prose-checkmjs)
-  - [translate.mjs](#translatemjs)
-- [Podcast Update Scripts](#podcast-update-scripts)
-  - [compare-episodes.mjs](#compare-episodesmjs)
-  - [generate-metadata.mjs](#generate-metadatamjs)
-  - [update-doag.mjs](#update-doagmjs)
+- [Schnellstart](#schnellstart)
+- [Build und 3D-Modelle](#build-und-3d-modelle)
+- [Prosa-Prüfung mit Vale](#prosa-prüfung-mit-vale)
+- [Issue- und Branch-Workflows](#issue--und-branch-workflows)
+- [Gemeinsame Module](#gemeinsame-module)
+- [Projekt-Board synchronisieren](#projekt-board-synchronisieren)
+- [Übersetzung von Inhalten](#übersetzung-von-inhalten)
+- [Runner-Bootstrap](#runner-bootstrap)
+- [Podcast-Update](#podcast-update)
+- [Tests](#tests)
+- [Hinweise](#hinweise)
 
----
+## Schnellstart
 
-## Quick Start
+| npm-Skript        | Datei                            | Zweck                                        |
+| ----------------- | -------------------------------- | -------------------------------------------- |
+| `scad:install`    | `install-openscad.mjs`           | OpenSCAD lokal installieren                  |
+| `scad:render`     | `build-scad.mjs`                 | 3D-Modelle rendern                           |
+| `prose-install`   | `prose-install.mjs`              | Vale und Styles installieren                 |
+| `prose`           | `prose-check.mjs`                | Prosa mit Vale prüfen                        |
+| `bootstrap`       | `bootstrap/bootstrap.mjs`        | Self-hosted Runner bootstrappen              |
+| `test:bootstrap`  | `bootstrap/bootstrap.test.mjs`   | Tests des Bootstrap-Skripts                  |
+| `start-work`      | `start-work.mjs`                 | Issue-Branch, Worktree und Draft-PR          |
+| `start-reqeng`    | `start-reqeng.mjs`               | Requirement-Engineering-Session              |
+| `start-review`    | `start-review.mjs`               | Review-Worktree für einen PR                 |
+| `versionbump`     | `versionbump.mjs`                | Version und Changelog anheben                |
+| `test:scripts`    | `*.test.mjs`                     | Tests der Start-Flow- und Release-Skripte    |
 
-Alle Scripts können über npm ausgeführt werden:
+`postinstall` besteht aus `npm run prose-install && npm run scad:install`, damit nach `npm install`
+sowohl Vale als auch OpenSCAD bereitstehen.
+
+## Build und 3D-Modelle
+
+### `build-scad.mjs`
 
 ```bash
-# Installation (wird automatisch nach npm install ausgeführt)
-npm run install-gh-copilot  # GitHub Copilot CLI installieren
-npm run prose-install       # Vale Prose Checker installieren
-
-# Entwicklung
-npm run prose               # Inhalte mit Vale überprüfen
+npm run scad:render
+node scripts/build-scad.mjs
 ```
 
----
+Sucht alle SCAD-Quelldateien, rendert daraus STL-Dateien, erzeugt die Metadaten-JSON und cached das
+Ergebnis über einen Datei-Hash. Die Ausgabe landet unter `dist/3dmodels/`; generierte Dateien werden
+nicht eingecheckt. `npm run build` ruft das Skript vor `astro build` auf, und `fd-ci` fährt einen
+eigenen Smoke-Test für den 3D-Build.
 
-## Installation Scripts
+### `install-openscad.mjs`
 
-### install-gh-copilot.mjs
-
-**Zweck:** Installiert die GitHub Copilot CLI global, falls nicht bereits vorhanden.
-
-**Beschreibung:**
-- Überprüft, ob die GitHub Copilot CLI (`@github/copilot`) bereits installiert ist
-- Verifiziert die Installation durch Versionsprüfung (vs. bloße Exit-Code Prüfung)
-- Installiert die CLI global via npm, falls erforderlich
-- Wird automatisch als Post-Install Hook ausgeführt (`npm install`)
-
-**Usage:**
 ```bash
-npm run install-gh-copilot
-# oder direkt:
-node scripts/install-gh-copilot.mjs
+npm run scad:install
+node scripts/install-openscad.mjs            # interaktiv
+node scripts/install-openscad.mjs --quiet    # ohne Rückfragen
+node scripts/install-openscad.mjs --force    # Neuinstallation erzwingen
 ```
 
-**Ausgabe:**
-- ✓ "Copilot CLI: already installed, skipping." — CLI ist bereits vorhanden
-- ✓ "Copilot CLI installed successfully." — Installation erfolgreich
-- ⚠ Warnung bei Installationsfehler (nicht kritisch)
+Lädt die OpenSCAD-CLI für die aktuelle Plattform herunter und entpackt sie in ein projektlokales
+Verzeichnis. Existiert bereits ein `openscad` im `PATH`, wird das genutzt. Das Skript läuft
+automatisch im `postinstall`-Hook.
 
-**Abhängigkeiten:**
-- Node.js (gebündelt)
-- npm (zum Installieren von `@github/copilot`)
+### `get-openscad-path.mjs`
 
-#### Verwendung im GitHub Workflow
+Kein eigenständiges Kommando, sondern ein Modul: Es liefert den Pfad zur OpenSCAD-Binary in dieser
+Reihenfolge — `openscad` aus dem `PATH`, dann die projektlokale Installation, sonst `null`.
+`build-scad.mjs` importiert die Funktion.
 
-**Postinstall Hook (.github/workflows/pull-request-checks.yml):**
-```yaml
-- name: Install dependencies
-  run: npm ci  # Führt postinstall-Hook aus
+```javascript
+import { getOpenSCADPath } from "./scripts/get-openscad-path.mjs";
+
+const openscad = getOpenSCADPath();
 ```
 
-Das Script wird automatisch nach `npm ci` / `npm install` aufgerufen:
-- Im lokalen Setup (Development)
-- In CI/CD Pipelines (via `npm ci` in Workflows)
-- Auf Build-Servern und Runner-Instanzen
+## Prosa-Prüfung mit Vale
 
-**Automatischer Ablauf:**
-1. Pull Request wird erstellt → Workflow triggered
-2. `npm ci` wird ausgeführt
-3. postinstall-Hook führt `npm run install-gh-copilot` aus
-4. GitHub Copilot CLI wird (falls nicht vorhanden) installiert
-5. Weitere Checks können auf der CLI zugreifen
+### `prose-check.mjs`
 
----
-
-### prose-install.mjs
-
-**Zweck:** Installiert Vale (Prose Checker) und Style Guides plattformübergreifend.
-
-**Beschreibung:**
-- Erkennt automatisch die aktuelle Plattform (Windows, macOS, Linux)
-- Erkennt die CPU-Architektur (x86_64, ARM64)
-- Lädt die korrekte Vale-Binary (v3.7.1) herunter
-- Installiert Microsoft und write-good Style Guides
-- Unterstützt Force-Reinstall und Silent Mode
-
-**Usage:**
-```bash
-npm run prose-install              # Interaktiv
-node scripts/prose-install.mjs     # Interaktiv
-
-node scripts/prose-install.mjs --quiet   # Stille Installation (keine Ausgabe)
-node scripts/prose-install.mjs --force   # Erzwingt Neuinstallation
-node scripts/prose-install.mjs -q -f     # Kombiniert: stille, erzwungene Installation
-```
-
-**Parameter:**
-| Parameter | Shorthand | Beschreibung |
-|-----------|-----------|---|
-| `--quiet` | `-q` | Unterdrückt alle Ausgaben (außer Fehlern) |
-| `--force` | `-f` | Erzwingt Neuinstallation, auch wenn bereits vorhanden |
-
-**Installation:**
-- **Windows:** `vale.exe` (64-bit)
-- **macOS:** `vale` (ARM64 oder x86_64)
-- **Linux:** `vale` (64-bit)
-- **Zielverzeichnis:** `.vale/` im Projekt-Root
-
-**Style Guides:**
-- Microsoft (Corporate style, best practices)
-- write-good (Plain language, readability)
-
-**Fehlermeldungen:**
-- Unsupported platform → Script beendet sich mit Fehlermeldung
-- Download fehlgeschlagen → Detaillierte Fehler mit Wiederherstellungshinweisen
-
-**Abhängigkeiten:**
-- Node.js (gebündelt)
-- Internet-Zugang (zum Herunterladen von Vale und Styles)
-
-#### Verwendung im GitHub Workflow
-
-**Postinstall Hook (.github/workflows/pull-request-checks.yml):**
-```yaml
-- name: Install dependencies
-  run: npm ci  # Führt postinstall-Hook aus, der prose-install aufruft
-```
-
-Das Script wird automatisch nach `npm ci` / `npm install` aufgerufen:
-- Im lokalen Setup (Development)
-- In CI/CD Pipelines (via `npm ci` in Workflows)
-- Auf Build-Servern und Runner-Instanzen
-
-**Automatischer Ablauf:**
-1. Pull Request wird erstellt → Workflow triggered
-2. `npm ci` wird ausgeführt
-3. postinstall-Hook führt `npm run prose-install` aus
-4. Vale wird platformgerecht heruntergeladen und installiert
-5. Style Guides werden konfiguriert
-6. Nachfolgende `npm run prose` Checks können Vale verwenden
-
-**Workflow-Integration:**
-- `.github/workflows/pull-request-checks.yml` — Vale Installation vor Prose Checks
-- Stille Installation (`--quiet` Flag) wird in CI empfohlen
-- Force-Reinstall wird nicht benötigt (wird bei jedem Run frisch installiert)
-
----
-
-## Development Scripts
-
-### merge-branches.mjs
-
-**Zweck:** Automatisiertes Merging von Feature-Branches in Entwicklungszweige mit PR-Erstellung und konfigurierbarer Konfliktauflösung.
-
-**Beschreibung:**
-- Feature-Branch → Dev-Branch → Main-Branch Workflow
-- Erstellt automatisch Pull Requests via GitHub CLI
-- Unterstützt konfigurierbare Merge-Strategien
-- Interaktive Konfliktauflösung bei Bedarf
-- Plattformunabhängig (Windows, macOS, Linux)
-- Farbiges Terminal-Output für bessere Lesbarkeit
-
-**Features:**
-- ✓ Automatische Branch-Erkennung (aktueller Branch)
-- ✓ Pull Request Erstellung über GitHub CLI
-- ✓ Auto-Merge mit konfigurierbarer Strategie
-- ✓ Interaktive Konfliktauflösung
-- ✓ Benutzerfreundliche Terminal-UI mit Farbcodes
-
-**Voraussetzungen:**
-- GitHub CLI (`gh`) installiert und authentifiziert
-- Lokales Git Repository mit Branches
-
-**Usage:**
-```bash
-# Automatische Branch-Erkennung (mergt aktuellen Branch)
-node scripts/merge-branches.mjs
-
-# Explizit zu dev mergen
-node scripts/merge-branches.mjs dev
-
-# Explizit zu main mergen
-node scripts/merge-branches.mjs main
-```
-
-**Workflow:**
-1. Prüft GitHub CLI Installation und Authentifizierung
-2. Erkennt aktuellen Branch
-3. Erstellt Pull Request für den Ziel-Branch
-4. Wartet auf Benutzerbestätigung
-5. Führt Merge durch (bei Bedarf mit Konfliktauflösung)
-6. Pushed Änderungen
-
-**Ausgabe (farbig):**
-```
-ℹ GitHub CLI verfügbar: gh version ...
-✓ GitHub CLI authentifiziert
-▶ Extracting branch information...
-▶ Creating pull request...
-? Proceed with merge? [y/n]
-✓ Merge successful
-```
-
-#### Verwendung im GitHub Workflow
-
-**Nicht in CI Workflows verwendet.**
-
-Dieses Script ist ausschließlich für **lokale, manuelle Entwicklung** gedacht:
-- Feature-Branch lokal mergen
-- Interaktive Konfliktauflösung auf dem Developer-Rechner
-- Manuelles PR-Management vor automatisierten Checks
-
-**Warum nicht in Workflows?**
-- GitHub Workflows verwenden automatisierte Merge-Optionen via `gh pr merge`
-- Keine interaktive User-Eingabe in CI/CD möglich
-
-**Empfohlener Workflow:**
-1. Lokal: `node scripts/merge-branches.mjs dev` (interaktiv)
-2. Push der Änderungen
-3. GitHub Workflows übernehmen automatisierte Checks und Deployment
-
----
-
-### prose-check.mjs
-
-**Zweck:** Führt Vale-Überprüfungen auf allen Inhalten durch (Prose/Style Checking).
-
-**Beschreibung:**
-- Prüft Inhalte in `src/content` auf Style-Richtlinien
-- Nutzt Vale-Konfiguration aus `.vale.ini`
-- Plattformübergreifende Binary-Erkennung (`.vale/vale` oder `.vale/vale.exe`)
-- Einfacher direkter Aufruf ohne Zusatzkonfiguration
-
-**Usage:**
 ```bash
 npm run prose
-# oder direkt:
-node scripts/prose-check.mjs
 ```
 
-**Prüfungen (via Style Guides):**
-- Microsoft Style Guidelines (formale Anforderungen)
-- write-good Guidelines (Lesbarkeit, Klarheit)
-- Vale-Standard Rules
+Ruft Vale mit `.vale.ini` gegen `src/content` auf und verwendet die Binary aus `.vale/`
+(`vale` bzw. `vale.exe`). Geprüft werden also die Inhalte der Site, nicht die Projektdokumentation
+unter `docs/`.
 
-**Output:**
-- Violations werden mit Dateipfad, Zeile, Spalte und Fehlerbeschreibung angezeigt
-- Nicht-kritische Fehler: Warning
-- Kritische Fehler: Error
+### `prose-install.mjs`
 
-**Beispiel-Output:**
-```
-src/content/blog/article.md
-  42:15  error    Avoid using "However" at the start of a sentence.
-  58:3   warning  Use "do not" instead of "don't"
-```
-
-**Abhängigkeiten:**
-- Vale installiert (via `npm run prose-install`)
-- `.vale.ini` Konfigurationsdatei
-- Style Guides in `.vale/styles/`
-
-#### Verwendung im GitHub Workflow
-
-**Pull Request Checks (.github/workflows/pull-request-checks.yml):**
-```yaml
-- name: Running Vale prose check...
-  run: npm run prose || { echo "❌ Vale prose check failed"; exit 1; }
-```
-
-**Workflow-Integration:**
-- **Trigger:** Pull Request auf `dev` oder `main` Branch
-- **Step:** Nach ESLint und Prettier Checks
-- **Konsequenz bei Fehler:** PR-Check schlägt fehl, Merge wird blockiert
-- **Zeitpunkt:** Auf jedem Push in einem offenen PR
-
-**Ablauf in CI/CD:**
-1. PR wird erstellt/aktualisiert
-2. `npm ci` installiert Dependencies + Vale
-3. Linting-Checks laufen:
-   - ESLint (`npm run lint:check`)
-   - Prettier (`npm run format:check`)
-   - **Vale Prose Check** (`npm run prose`) ← hier ist dieses Script
-4. Bei Fehler: PR-Check rot, Merge blockiert
-5. Bei Erfolg: ✅ Alle Checks bestanden, Merge möglich
-
-**Status-Badge im PR:**
-- 🟢 Grün: Prose Check bestanden
-- 🔴 Rot: Vale-Fehler gefunden (müssen behoben werden)
-
----
-
-### translate.mjs
-
-**Zweck:** Übersetzt technische Dokumentation mit LLM-API von Englisch in andere Sprachen (z.B. Deutsch, Klingonisch).
-
-**Beschreibung:**
-- Integriert mit LLM-APIs (OpenAI-kompatibel, vgl. Ollama, etc.)
-- Unterstützt mehrere Zielsprachen (über `SUPPORTED_LANGS` konfigurierbar)
-- Behält Markdown-Formatierung, Code-Blöcke und Links bei
-- Nutzt Umgebungsvariablen für API-Konfiguration
-- Ausgabeverzeichnisse pro Sprache
-
-**Unterstützte Sprachen (aktuell):**
-- `de` → Deutsch (`de/`)
-- `kl` → Klingonisch (`kl/`) — konstruierte Star Trek Sprache
-
-**Konfiguration (.env erforderlich):**
-```env
-LLM_API_URL=http://localhost:11434/v1    # LLM API Endpoint
-LLM_API_KEY=no-key                        # API Key (falls erforderlich)
-LLM_MODEL=llama2                          # Modell-Name
-TARGET_LANG=de                            # Standard-Zielsprache
-```
-
-**Usage:**
 ```bash
-# Mit .env Konfiguration (Standard)
-node scripts/translate.mjs <eingabedatei>
-
-# CLI-Parameter überschreiben .env
-node scripts/translate.mjs <eingabedatei> --lang=kl
-node scripts/translate.mjs <eingabedatei> kl
-
-# In package.json (npm):
-npm run translate <datei> -- --lang=kl
+npm run prose-install
+node scripts/prose-install.mjs            # interaktiv
+node scripts/prose-install.mjs --quiet    # ohne Rückfragen
+node scripts/prose-install.mjs --force    # Neuinstallation erzwingen
 ```
 
-**Parameter:**
-| Parameter | Beschreibung |
-|-----------|---|
-| `--lang=<code>` | Zielsprache setzen (z.B. `kl`, `de`) |
-| `<code>` als 2. Arg | Alternative: Sprache als direktes Argument |
+Lädt die Vale-Binary (3.7.1) samt der Styles `Microsoft` und `write-good` nach `.vale/` und setzt die
+Ausführungsrechte. Läuft automatisch im `postinstall`-Hook.
 
-**Workflow:**
-1. `.env` Datei laden
-2. LLM_API_URL und LLM_MODEL prüfen (erforderlich)
-3. Eingabedatei laden
-4. Pro Chunk über LLM übersetzen
-5. Markdown-Struktur beibehalten
-6. In `src/content/<lang>/` speichern
+## Issue- und Branch-Workflows
 
-**Ausgabe:**
-```
-✓ Übersetzung abgeschlossen
-  Eingabe: docs/tutorial.md
-  Ausgabe: src/content/de/tutorial.md
-  Sprache: Deutsch
-  Token: 1242
-```
+### `start-work.mjs`
 
-**LLM-Integration:**
-- Kompatibel mit OpenAI-API Format
-- Unterstützt lokale LLMs (Ollama, etc.)
-- Bearer Token Authentifizierung (wenn LLM_API_KEY gesetzt)
-
-**Fehlerbehandlung:**
-- `.env` nicht gefunden → Fehler mit Hinweis auf `.env.example`
-- LLM_API_URL oder LLM_MODEL fehlt → Fehler mit Anforderungen
-- API-Fehler → Detaillierte Fehlermeldung
-
-#### Verwendung im GitHub Workflow
-
-**Nicht in CI Workflows verwendet.**
-
-Dieses Script ist für **lokale, manuelle Content-Übersetzung** gedacht:
-- Übersetzung von Dokumentation vor Commit
-- Manuelle Übersetzung durch Entwickler
-- Auf Bedarf basierend (keine automatisierte Übersetzung)
-
-**Warum nicht in Workflows?**
-- Externe LLM-API Abhängigkeit (`.env` Konfiguration erforderlich)
-- Kostenintensiv (API-Aufrufe pro Übersetzung)
-- Keine automatisierte Übersetzung gewünscht (manueller Prozess)
-- CI/CD sollte keine LLM-Credentials speichern
-
-**Manueller Workflow:**
 ```bash
-# Lokal durchführen:
-npm run translate path/to/file.md --lang=de
-git add src/content/de/file.md
-git commit -m "docs: translate file to German"
-git push
-# → Danach: GitHub Workflows überprüfen Inhalte mit prose-check und triggern Deployment automatisch
+npm run start-work -- IS_480
+npm run start-work -- IS_480 --notmux
+npm run start-work -- IS_480 --prompt "Setze beim letzten Schritt fort"
 ```
 
----
+Bereitet die Umsetzung eines Issues vor: löst den kanonischen Issue-Kontext auf, prüft bei Bedarf die
+Issue-Gates, legt den Issue-Branch nach Conventional Branch Names an
+(`<type>/issue-<n>-<slug>` auf Basis von `dev`) und erstellt bzw. verwendet den kanonischen Worktree
+wieder. Danach öffnet das Skript den Draft-PR gegen `dev` und startet Copilot im Worktree mit dem
+Hinweis, `.github/prompts/startwork.prompt.md` zu lesen.
 
-## Podcast Update Scripts
+Flags: `--notmux` (ohne tmux-Session, auf Windows der Standardweg), `--prompt <text>` und
+`--noprompt`.
 
-Diese Scripts automatisieren das Auffinden und Hinzufügen neuer Podcast-Episoden zur doag.md Datei.
+### `start-reqeng.mjs`
 
-### compare-episodes.mjs
-
-**Zweck:** Vergleicht den Acast RSS-Feed mit existierenden Episoden in doag.md und identifiziert fehlende Episodes.
-
-**Beschreibung:**
-- Lädt RSS-Feed vom Acast DOAG Voices Podcast
-- Vergleicht mit existierenden Episoden in `src/content/aboutme/doag.md`
-- Findet die **älteste fehlende Episode**
-- Gibt Ergebnis als JSON aus
-- Nutzt als Eingabe für nachfolgende Metadaten-Generierung
-
-**Usage:**
 ```bash
-node scripts/workflows/podcast-update/compare-episodes.mjs
+npm run start-reqeng -- IS_480
 ```
 
-**Ausgabe:**
-```json
-{
-  "title": "Episode Title",
-  "description": "Episode description from RSS feed",
-  "pubDateFormatted": "2026-06-25",
-  "audioUrl": "https://...",
-  "link": "https://..."
-}
-```
+Gleicher Ablauf wie `start-work`, aber für Requirement Engineering: eigener Worktree und eine Session,
+die mit `.github/prompts/startreqeng.prompt.md` arbeitet. Das Issue-Ref-Format `IS_480` und `is480`
+werden beide akzeptiert.
 
-**Abhängigkeiten:**
-- Node.js (gebündelt)
-- Internet-Zugang (zum Abrufen des RSS-Feeds)
+### `start-review.mjs`
 
-#### Verwendung im GitHub Workflow
-
-**Podcast Update Workflow (.github/workflows/podcast-update.yml):**
-```yaml
-on:
-  schedule:
-    # Every Tuesday at 09:00 CET/CEST
-    - cron: "0 8 * * 2"
-  workflow_dispatch:
-
-jobs:
-  podcast-update:
-    steps:
-      - name: Global episode comparison (against main)
-        run: node scripts/workflows/podcast-update/compare-episodes.mjs
-```
-
-**Workflow-Integration:**
-- **Trigger:** Wöchentlich (dienstags 09:00 CET) oder manuell via `workflow_dispatch`
-- **Step:** Erster Check im Workflow
-- **Konsequenz:** Wenn keine neuen Episodes gefunden → Workflow beendet sich
-- **Output:** Wird an nächste Steps weitergegeben
-
-**Ablauf in CI/CD:**
-1. Workflow triggert (Schedule oder manuell)
-2. compare-episodes.mjs lädt Acast RSS-Feed
-3. Vergleicht mit doag.md (main branch)
-4. Falls neue Episode gefunden → JSON Output
-5. Falls keine neue Episode → Workflow stoppt (erfolgreich)
-6. Falls neue Episode → Nächster Step generiert Metadaten
-
----
-
-### generate-metadata.mjs
-
-**Zweck:** Generiert strukturierte Metadaten für eine Podcast-Episode mittels GitHub Copilot CLI.
-
-**Beschreibung:**
-- Liest Episode-JSON aus compare-episodes.mjs
-- Sendet Prompt an GitHub Copilot CLI
-- Lässt Copilot Metadaten (Titel, Edition, Gäste, Beschreibung) generieren
-- Fallback-Mechanismus: API oder manuelle Eingabe wenn CLI fehlschlägt
-- Speichert Ergebnis in `metadata.json`
-- Validiert JSON-Output vor Speicherung
-
-**Supported Podcast Editionen:**
-- `People` — Persönliche Geschichten hinter dem Fachwissen
-- `FutureAI` — KI im Hier und Morgen, Ethik und Zukunftsvisionen
-- `DataWorld` — Von Analytics bis zu intelligenten Architekturen
-- `CloudTalk` — Wie Cloud-Technologien Unternehmen verändern
-- `DevLand` — Moderne Softwareentwicklung zwischen Wandel und multiplen Perspektiven
-
-**Usage:**
 ```bash
-node scripts/workflows/podcast-update/generate-metadata.mjs
+npm run start-review -- PR_480
 ```
 
-**Ausgabe (metadata.json):**
-```json
-{
-  "title": "Episode Title",
-  "edition": "FutureAI",
-  "guests": "Dave König und Dr. Max Mustermann",
-  "date": "2026-06-25",
-  "description": "Zusammenfassung der Episode (2-4 Sätze)",
-  "links": {
-    "spotify": "https://open.spotify.com/show/...",
-    "apple": "https://podcasts.apple.com/de/podcast/...",
-    "amazon": "https://music.amazon.de/podcasts/..."
-  }
-}
-```
+Legt einen Review-Worktree auf dem Head-Branch eines bestehenden Pull Requests an und startet die
+Session mit `.github/prompts/startreview.prompt.md`. Der Review endet mit einem Verdict; gemergt wird
+erst nach ausdrücklicher menschlicher Freigabe.
 
-**Abhängigkeiten:**
-- GitHub Copilot CLI (`@github/copilot`) — installiert via postinstall-Hook
-- `GITHUB_TOKEN` Environment Variable (für Copilot Authentifizierung)
-- Node.js 24+
+### `ensure-issue-branch.mjs`
 
-#### Verwendung im GitHub Workflow
+Kein eigenständiges Kommando, sondern ein Modul für die Start-Flow-Skripte: Es leitet Branch-Typ und
+-slug aus dem Issue ab und erzeugt den Branch nach der Repo-Policy
+`<type>/issue-<n>-<slug>` mit Basis `dev`. Das frühere Schema `squad/<issue>-<type>` ist bewusst
+entfernt, weil `.husky/pre-push-validate.js` nur Conventional Branch Names akzeptiert.
 
-**Podcast Update Workflow (.github/workflows/podcast-update.yml):**
-```yaml
-- name: Generate episode metadata using Copilot CLI
-  if: steps.check_episodes.outputs.missing_episode != ''
-  run: node scripts/workflows/podcast-update/generate-metadata.mjs
-  env:
-    GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
+### `merge-branches.mjs`
 
-**Workflow-Integration:**
-- **Trigger:** Nach compare-episodes.mjs (wenn neue Episode gefunden)
-- **Step:** Zweiter Schritt im Podcast-Update Workflow
-- **Konsequenz:** Generiert metadata.json für next Step
-- **Abhängigkeit:** Nur wenn `missing_episode` nicht leer ist
-
-**Ablauf in CI/CD:**
-1. compare-episodes.mjs hat neue Episode gefunden
-2. generate-metadata.mjs wird aufgerufen
-3. GitHub Copilot analysiert Episode-Daten
-4. Strukturierte Metadaten werden generiert
-5. metadata.json wird im Workspace gespeichert
-6. Wird von update-doag.mjs weiterverarbeitet
-
----
-
-### update-doag.mjs
-
-**Zweck:** Aktualisiert doag.md mit neuer Podcast-Episode und generiert eindeutige Episode-IDs.
-
-**Beschreibung:**
-- Liest Metadaten aus `metadata.json`
-- Generiert eindeutige 5-stellige Episode-ID (z.B. `doag-voices-42857`)
-- Validiert auf Duplikate mit existierenden Episodes
-- Inserted Episode am **Anfang** des Episode-Arrays
-- Aktualisiert doag.md Datei
-- Supportet Dry-Run Mode (Validierung ohne Commit)
-
-**Usage:**
 ```bash
-# Mit commit und push
+node scripts/merge-branches.mjs          # automatische Branch-Erkennung
+node scripts/merge-branches.mjs dev      # explizit nach dev
+node scripts/merge-branches.mjs main     # explizit nach main
+```
+
+Erstellt über die GitHub CLI einen Pull Request, kann ihn per Auto-Merge zusammenführen und bietet bei
+Konflikten eine interaktive Auflösung an. Für `main` ist das Skript **nicht** der Release-Weg: Die
+Produktion läuft ausschließlich über `fd-promote-prd.yml` und `fd-deploy-prd.yml` mit Versions-Gate
+(siehe [FR006](../docs/features/fr006-autodeploy.md)).
+
+### `versionbump.mjs`
+
+```bash
+npm run versionbump            # fragt nach der Zielversion
+npm run versionbump 1.2.3      # Version direkt setzen
+```
+
+Hebt `version` in `package.json` und `package-lock.json` an und verschiebt die Einträge unter
+`## [Unreleased]` in einen neuen Abschnitt `## [x.y.z]` in `CHANGELOG.md`. Genau diesen Abschnitt
+verlangt `fd-deploy-prd` vor einem Promote. Das Skript committet und pusht nicht — Commit und Push
+bleiben ein bewusster eigener Schritt.
+
+## Gemeinsame Module
+
+Diese Dateien werden von den Start-Flow-Skripten importiert und haben keinen eigenen npm-Aufruf:
+
+- `flow-shared.mjs` — gemeinsame Helfer der Flow-Skripte: Flag-Parsing (`--notmux`, `--prompt`,
+  `--noprompt`), Worktree-Pfade, tmux-Start, Projekt-Zugriff, Issue-Erkennung. Enthält auch die
+  Defaults für das Projekt-Board (`PROJECT_OWNER`, `PROJECT_NUMBER`).
+- `platform-shared.mjs` — plattformabhängiges Starten von Prozessen. Auf Windows sind `npm`, `npx`
+  und `copilot` `.cmd`-Shims, die seit Node 20.12 `shell: true` und korrektes Quoting brauchen.
+- `copilot-environment.mjs` — prüft und richtet die Copilot-CLI-Umgebung ein (Auth, Terminal,
+  VS-Code-Settings). Auch direkt aufrufbar:
+
+  ```bash
+  node scripts/copilot-environment.mjs auth
+  node scripts/copilot-environment.mjs terminal
+  node scripts/copilot-environment.mjs status
+  ```
+
+## Projekt-Board synchronisieren
+
+### `sync-project-board.mjs`
+
+```bash
+SQUAD_PROJECT_TOKEN=<pat> node scripts/sync-project-board.mjs --issue 272
+SQUAD_PROJECT_TOKEN=<pat> node scripts/sync-project-board.mjs --all
+SQUAD_PROJECT_TOKEN=<pat> node scripts/sync-project-board.mjs --all --dry-run
+```
+
+Leitet aus den Labels eines Issues die Zielspalte im GitHub-Projekt V2 ab und verschiebt das Item
+dorthin. Labels sind die Quelle der Wahrheit, das Board ist eine Einweg-Projektion. Benötigt einen PAT
+mit Scope `project` (Repository-Secret `SQUAD_PROJECT_TOKEN`); das eingebaute `GITHUB_TOKEN` kann
+Projects V2 nicht ansprechen. `PROJECT_OWNER` (Default `Frickeldave`) und `PROJECT_NUMBER` (Default
+`2`) sind überschreibbar. Details stehen in
+[FR007](../docs/features/fr007-project-board-sync.md); der Workflow ist
+`.github/workflows/fd-sync-project-board.yml`.
+
+## Übersetzung von Inhalten
+
+### `translate.mjs`
+
+```bash
+node scripts/translate.mjs src/content/blog/beispiel.md --lang=de
+node scripts/translate.mjs src/content/blog/beispiel.md de
+```
+
+Übersetzt eine Content-Datei über ein LLM mit OpenAI-kompatibler Chat-API. Erwartet eine `.env` im
+Projektwurzelverzeichnis mit `LLM_API_URL`, `LLM_API_KEY` und `LLM_MODEL`; `.env.example` dient als
+Vorlage. Unterstützte Zielsprachen stehen im Skript (`de`, `kl` als Beispiel für eine konstruierte
+Sprache). Das Skript ist **kein** npm-Skript — es wird direkt mit `node` aufgerufen. Die `.env` wird
+nie eingecheckt.
+
+## Runner-Bootstrap
+
+### `bootstrap/`
+
+```powershell
+$env:GITHUB_PAT = "ghp_xxxxx"
+$env:GITHUB_USERNAME = "<github-username>"
+.\scripts\bootstrap\bootstrap.ps1
+```
+
+```bash
+npm run bootstrap
+node scripts/bootstrap/bootstrap.mjs
+```
+
+Bootstrap für den GitHub-Actions-Self-hosted-Runner in Kubernetes: Namespace, Images, Secrets, RBAC
+und das Runner-Deployment. Alle projektspezifischen Werte stehen in `bootstrap/bootstrap.json` — es
+gibt bewusst keine eingebauten Defaults für Namespace oder Repository. Fehlt ein Pflichtwert, bricht
+das Skript mit einer klaren Meldung ab.
+
+| Datei                            | Zweck                                                        |
+| -------------------------------- | ------------------------------------------------------------ |
+| `bootstrap/bootstrap.mjs`        | Node-Implementierung, aufgerufen über `npm run bootstrap`    |
+| `bootstrap/bootstrap.ps1`        | Windows-Wrapper, installiert Node.js bei Bedarf              |
+| `bootstrap/bootstrap.json`       | einzige Quelle für projektspezifische Werte                  |
+| `bootstrap/bootstrap.md`         | ausführliche Ablaufbeschreibung                              |
+| `bootstrap/README.md`            | Paketdokumentation und Übernahme in andere Projekte          |
+| `bootstrap/bootstrap.test.mjs`   | Tests, ausgeführt über `npm run test:bootstrap`              |
+| `bootstrap/docker-dev-base/`     | Basis-Image mit Node, Git, gh und Copilot CLI                |
+| `bootstrap/docker-dev-ghrunner/` | Runner-Image für die self-hosted Runner                      |
+| `bootstrap/docker-dev-kaniko/`   | Kaniko-Build-Image, genutzt von `fd-bootstrap.yml`           |
+| `bootstrap/k8s/`                 | Namespace, RBAC, Runner-Deployment und Secrets               |
+
+Der Workflow `.github/workflows/fd-bootstrap.yml` baut die Dev-Images und legt bei Bedarf
+Entwicklungsmaschinen an. Details stehen in `bootstrap/README.md`.
+
+## Podcast-Update
+
+Die vier Skripte unter `scripts/workflows/podcast-update/` bilden den Ablauf von
+`.github/workflows/fd-podcast-update.yml` ab.
+
+### `compare-episodes.mjs`
+
+Liest den Acast-RSS-Feed, parst die Episoden und vergleicht sie mit dem Frontmatter von
+`src/content/aboutme/doag.md`. Die älteste fehlende Episode landet als JSON in `missing-episode.json`
+und in `GITHUB_OUTPUT` für die nachfolgenden Schritte.
+
+### `generate-metadata.mjs`
+
+Erzeugt die Episoden-Metadaten über die GitHub Copilot CLI (`gh copilot`, das intern die Copilot CLI
+aufruft) und schreibt sie als `metadata.json`. Schlägt die CLI fehl, greift ein Fallback auf die API
+bzw. auf manuelle Eingaben.
+
+### `generate-metadata-api.mjs`
+
+Dieselbe Aufgabe ohne CLI: erzeugt die Metadaten direkt über die API.
+
+### `update-doag.mjs`
+
+```bash
 node scripts/workflows/podcast-update/update-doag.mjs
-
-# Dry-run (nur validieren, kein commit)
 node scripts/workflows/podcast-update/update-doag.mjs --dry-run
 ```
 
-**Ablauf:**
-1. Reads metadata.json
-2. Extracts existing IDs from doag.md
-3. Generates new unique ID
-4. Inserts episode at array start
-5. Updates doag.md
-6. (wenn nicht --dry-run) Ready für git commit
+Fügt die neue Episode mit einer eindeutigen fünfstelligen ID am Anfang des Episoden-Arrays in
+`doag.md` ein und behält dabei Einrückung und Zeilenstruktur bei. `--dry-run` validiert nur.
 
-**Abhängigkeiten:**
-- metadata.json (von generate-metadata.mjs)
-- doag.md (zu aktualisierende Datei)
-- Node.js 24+
+## Tests
 
-#### Verwendung im GitHub Workflow
+- `npm run test:scripts` — Tests der Start-Flow- und Release-Skripte:
+  `start-work.test.mjs`, `start-reqeng.test.mjs`, `start-review.test.mjs`, `start-flow-flags.test.mjs`,
+  `flow-shared.test.mjs`, `platform-shared.test.mjs`, `copilot-environment.test.mjs`,
+  `ensure-issue-branch.test.mjs`, `versionbump.test.mjs`. Der Lauf braucht
+  `--experimental-test-module-mocks`.
+- `npm run test:bootstrap` — Tests des Bootstrap-Skripts.
+- `test-mock-support.mjs` — Adapter, der die für vitest geschriebenen Tests auf `node --test`
+  lauffähig macht (`vi.fn`, `vi.spyOn`, `vi.stubEnv`, `expect`-Teilmenge).
 
-**Podcast Update Workflow (.github/workflows/podcast-update.yml):**
-```yaml
-- name: Update dev branch
-  run: |
-    if [ "${{ github.event.inputs.dryRun }}" == "true" ]; then
-      node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-      echo "🦁 DRY RUN: Skipping git commit and push."
-    else
-      node scripts/workflows/podcast-update/update-doag.mjs
-      git add src/content/aboutme/doag.md
-      git commit -m "feat(podcast): Add episode '$TITLE'" --no-verify
-      git push origin dev
-    fi
-```
+Playwright-e2e-Tests und der 3D-Build-Test liegen außerhalb von `scripts/` unter `test/` und laufen in
+`fd-ci`.
 
-**Workflow-Integration:**
-- **Trigger:** Nach generate-metadata.mjs (wenn keine Fehler)
-- **Step:** Dritter Schritt im Podcast-Update Workflow
-- **Konsequenz:** Commitet und pushed Episode zu dev-Branch
-- **Abhängigkeit:** Nur wenn generate-metadata erfolgreich war
+## Hinweise
 
-**Ablauf in CI/CD:**
-1. generate-metadata.mjs hat Metadaten generiert
-2. update-doag.mjs wird aufgerufen
-3. Unique ID wird generiert
-4. Episode wird in doag.md inserted
-5. Datei wird aktualisiert
-6. Git commit: `"feat(podcast): Add episode 'Title'"`
-7. Git push zu dev-Branch
-8. Triggert automatisch deploy-dev.yml Workflow
-
-**Dry-Run Mode:**
-```bash
-node scripts/workflows/podcast-update/update-doag.mjs --dry-run
-```
-- Validiert Metadaten und ID-Generierung
-- Aktualisiert doag.md temporär
-- Kein Git Commit
-- Nützlich für Tests und Validierung
-
----
-
-## Installation & Wartung
-
-### Automatische Installation nach npm install
-
-```bash
-npm install  # Führt postinstall-Hook aus
-```
-
-Dies führt automatisch aus:
-```bash
-npm run prose-install       # Vale installieren
-npm run install-gh-copilot  # GitHub Copilot installieren
-```
-
-### Manuelle Re-Installation
-
-```bash
-# Vale Prose Checker neu installieren
-npm run prose-install --force
-
-# GitHub Copilot CLI neu installieren
-npm run install-gh-copilot
-```
+- **Keine Secrets im Repository.** `.env` bleibt lokal (siehe `.env.example`); Tokens kommen in
+  Workflows aus Repository-Secrets.
+- **Skripte statt Ad-hoc-Shell.** Automatisierung, Validierung und Hilfswerkzeuge gehören nach
+  `scripts/`, nicht in einmalige Befehlszeilen.
+- **Branch- und Commit-Konventionen** für Skript-Änderungen stehen in
+  [Richtlinien für Commit-Messages](../docs/12-dev-messages.md) und
+  [Branching- und Naming-Strategie](../docs/13-dev-branch-naming-strategy.md).
+- **Release-Weg** ist in [FR006](../docs/features/fr006-autodeploy.md) beschrieben; `main` wird nur
+  über `fd-promote-prd` und `fd-deploy-prd` aktualisiert.

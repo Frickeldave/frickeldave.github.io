@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Cross-platform Vale prose checker
+ * Plattformübergreifender Vale-Prosa-Checker
  *
- * Runs Vale on the src/content directory with the configured .vale.ini.
- * Uses the Vale binary from .vale/ (platform-specific).
+ * Führt Vale über das Verzeichnis src/content mit der konfigurierten .vale.ini aus.
+ * Nutzt die Vale-Binary aus .vale/ (plattformspezifisch).
  *
- * Usage:
+ * Aufruf:
  *   npm run prose
  */
 
@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 
-// Detect platform and Vale binary path
+// Plattform und Pfad der Vale-Binary ermitteln
 const isWindows = process.platform === "win32";
 const valePath = path.resolve(
   rootDir,
@@ -28,7 +28,7 @@ const valePath = path.resolve(
 const contentDir = "src/content";
 const configPath = ".vale.ini";
 
-// Run Vale
+// Vale ausführen
 execFile(
   valePath,
   ["--config=" + configPath, contentDir],

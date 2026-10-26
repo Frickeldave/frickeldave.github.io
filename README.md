@@ -13,64 +13,65 @@
 
 # Frickeldave
 
-The frickeldave site is a mix of personal blog, portfolio, IT topics, diy topics and everything else
-i want to write about. Also it's a place for experimenting with astro and starlight.
+Die Seite frickeldave ist eine Mischung aus persönlichem Blog, Portfolio, IT-Themen, DIY-Themen und
+allem anderen, worüber ich schreiben möchte. Außerdem ist sie der Ort, an dem ich mit Astro und
+Starlight experimentiere.
 
-### Tech Stack
+### Tech-Stack
 
-This blog is built with modern web technologies:
+Dieser Blog basiert auf modernen Web-Technologien:
 
-- **[Astro](https://astro.build/)** - A lightweight static site generator that ships zero JavaScript
-  by default
-- **[Tailwind CSS](https://tailwindcss.com/)** - A utility-first CSS framework for rapid UI
-  development
-- **[TypeScript](https://www.typescriptlang.org/)** - Adds static typing to JavaScript for better
-  code quality
-- **[Astrogon Theme](https://github.com/astrogon/astrogon)** - A clean and minimal theme for
-  Starlight documentation
+- **[Astro](https://astro.build/)** – Ein leichtgewichtiger Static-Site-Generator, der standardmäßig
+  kein JavaScript ausliefert
+- **[Tailwind CSS](https://tailwindcss.com/)** – Ein Utility-first-CSS-Framework für schnelle
+  UI-Entwicklung
+- **[TypeScript](https://www.typescriptlang.org/)** – Ergänzt JavaScript um statische Typen für
+  bessere Codequalität
+- **[Astrogon Theme](https://github.com/astrogon/astrogon)** – Ein klares, minimalistisches Theme für
+  die Starlight-Dokumentation
 
 ### Onboarding & Setup
 
-- [Installation Guide](./docs/10-dev-install.md)
-- [Usage Guide](./docs/11-dev-usage.md)
-- [Commit Message Guidelines](./docs/12-dev-messages.md)
-- [Branching and Naming Strategy](./docs/13-dev-branch-naming-strategy.md)
-- [Categories and Tags](./docs/14-write-categories-and-tags.md)
-- [Project Structure](./docs/15-write-structure.md)
-- [Architecture Decisions](./docs/40-arch-architecture-decisions.md)
-- [Agent Setup](./docs/50-agent-setup.md)
+- [Installationsanleitung](./docs/10-dev-install.md)
+- [Nutzung](./docs/11-dev-usage.md)
+- [Richtlinien für Commit-Messages](./docs/12-dev-messages.md)
+- [Branching- und Naming-Strategie](./docs/13-dev-branch-naming-strategy.md)
+- [Kategorien und Tags](./docs/14-write-categories-and-tags.md)
+- [Projektstruktur](./docs/15-write-structure.md)
+- [Architekturentscheidungen](./docs/40-arch-architecture-decisions.md)
+- [Agent-Setup](./docs/50-agent-setup.md)
 
 ### Design
 
-- [Design System](./docs/20-arch-design-system.md)
+- [Design-System](./docs/20-arch-design-system.md)
 
-### Development
+### Entwicklung
 
-- [Docker Setup](./docs/10-dev-install-docker.md)
-- [Scripts Overview](./scripts/README.md)
+- [Docker-Setup](./docs/10-dev-install-docker.md)
+- [Skript-Übersicht](./scripts/README.md)
 
-### Custom Features
+### Eigene Features
 
-- [Redirects System](./docs/features/fr001-redirects.md)
-- [Product catalog](./docs/features/fr003-catalog.md)
-- [Automated Podcast Sync](./docs/features/fr005-podcast-sync.md)
-- [Automated Dev Deployment](./docs/features/fr006-autodeploy.md)
+- [Redirect-System](./docs/features/fr001-redirects.md)
+- [Produktkatalog](./docs/features/fr003-catalog.md)
+- [Automatisierter Podcast-Sync](./docs/features/fr005-podcast-sync.md)
+- [Automatisiertes Dev-Deployment](./docs/features/fr006-autodeploy.md)
 
-### Linting & Code Quality
+### Linting & Codequalität
 
-- [Linter Setup](./docs/linter/01-linter-start.md)
-- [Husky Integration](./docs/linter/02-linter-husky.md)
-- [ESLint Configuration](./docs/linter/03-linter-eslint.md)
-- [Prettier Formatting](./docs/linter/04-linter-prettier.md)
-- [Vale Linter](./docs/linter/05-linter-vale.md)
+- [Linter-Setup](./docs/linter/01-linter-start.md)
+- [Husky-Integration](./docs/linter/02-linter-husky.md)
+- [ESLint-Konfiguration](./docs/linter/03-linter-eslint.md)
+- [Prettier-Formatierung](./docs/linter/04-linter-prettier.md)
+- [Vale-Linter](./docs/linter/05-linter-vale.md)
 
-## License
+## Lizenz
 
-The frickeldave website and Astrogon is licensed under the [MIT License](LICENSE).
+Die Website frickeldave und Astrogon sind unter der [MIT License](LICENSE) lizenziert.
 
-### Used fonts
+### Verwendete Schriften
 
-This project uses the following fonts:
+Dieses Projekt verwendet die folgenden Schriften:
 
 - **Cormorant** © Catharsis Fonts –
   [SIL Open Font License, Version 1.1](https://scripts.sil.org/OFL)
@@ -81,4 +82,4 @@ This project uses the following fonts:
 - **Open Sans** © Steve Matteson –
   [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-For details, please refer to the respective license links above.
+Details stehen in den jeweiligen Lizenzlinks oben.

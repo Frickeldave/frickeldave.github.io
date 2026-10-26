@@ -8,7 +8,7 @@ Terminologie-Konsistenz überprüft.
 - **Syntax-Aware**: Versteht Markdown, reStructuredText, AsciiDoc etc.
 - **Anpassbare Regeln**: Unterstützt verschiedene Style Guides (Google, Microsoft, etc.)
 
-\*\*Beispiele für Vale-Regeln
+**Beispiele für Vale-Regeln:**
 
 ```markdown
 ❌ Vale würde warnen:
@@ -17,7 +17,7 @@ Terminologie-Konsistenz überprüft.
 - "The API is very easy to use" (subjektive Sprache)
 - "Click here for more info" (nicht-deskriptive Links)
 
-✅ Vale approved:
+✅ Von Vale akzeptiert:
 
 - "We should have implemented this differently"
 - "The API provides a straightforward interface"
@@ -40,11 +40,14 @@ und bereinigt:
 
 ```json
 "scripts": {
-  "postinstall": "npm run prose-install && npm run install-gh-copilot",
+  "postinstall": "npm run prose-install && npm run scad:install",
   "prose-install": "node scripts/prose-install.mjs",
   "prose": "node scripts/prose-check.mjs"
 }
 ```
+
+Der zweite Teil des Hooks (`scad:install`) installiert OpenSCAD für den 3D-Build; er hat nichts mit
+Vale zu tun, läuft aber im selben `postinstall`.
 
 **Warum dieser Ansatz?**
 
@@ -58,12 +61,12 @@ und bereinigt:
 ## Vale-Konfiguration erstellen
 
 Vale wird über `.vale.ini` und Style-Dateien im `.vale/` Verzeichnis konfiguriert. Über die
-`.vale.ini` im Projekt-Root wird die Konfiguration vorgenommen. Folgend ist eine simple start
-Konfiguration ohen erwiterte Regelsätze dargestellt (Bitte die `.vale.ini` im Projektverzeichnis für
-die letzte gültige Konfiguration einsehen)
+`.vale.ini` im Projekt-Root wird die Konfiguration vorgenommen. Folgend ist eine einfache
+Start-Konfiguration ohne erweiterte Regelsätze dargestellt; die letzte gültige Konfiguration steht
+in der `.vale.ini` im Projektverzeichnis.
 
-Viele Regeln werden automatisch von vale geprüft oder sind in den rules definiert. Darüber hinaus Die
-Base-Vokabular-Datei prüft darauf, ob Wörter korrekt geschrieben sind.
+Viele Regeln prüft Vale automatisch, weitere sind in den Style-Dateien definiert. Zusätzlich prüft
+die Base-Vokabular-Datei, ob Wörter korrekt geschrieben sind.
 
 **Base Vocabulary** (`.vale/styles/Base/accept.txt`):
 
@@ -184,10 +187,14 @@ automatischer Bereinigung wurde hier als soliderer Ansatz gewählt.
 
 **Empfohlene Vale-Einstellungen für technische Dokumentation:**
 
-Siehe aktuelle Konfiguration in [`.vale.ini`](../../.vale.ini) - die Einstellungen sind bereits für
+Siehe aktuelle Konfiguration in [`.vale.ini`](../../.vale.ini) – die Einstellungen sind bereits für
 technische Inhalte optimiert:
 
-- `MinAlertLevel = warning` - weniger streng für technische Inhalte
-- `Microsoft.FirstPerson = NO` - "We" und "I" sind in Tutorials OK
-- `Microsoft.Passive = suggestion` - Passive Voice manchmal notwendig
-- `write-good.Weasel = suggestion` - "Easy", "simple" sind in Erklärungen OK
+- `MinAlertLevel = error` – nur Fehler werden gemeldet, Warnungen und Hinweise erscheinen nicht im
+  Output
+- `Vale.Spelling = NO` – Rechtschreibprüfung aus, weil die Inhalte gemischtsprachig sind
+- `Vale.Repetition = NO` – vermeidet Falschmeldungen in langen deutschen Texten
+- `Microsoft.PassiveVoice = YES` – Passive Voice wird gemeldet
+- `write-good.Weasel = YES` – Weasel-Wörter werden gemeldet
+- `Microsoft.Contracting`, `Microsoft.Contractions` und `Microsoft.Quotes = NO` – deutsche
+  Anführungszeichen und fehlende Kontraktionen sind korrekt

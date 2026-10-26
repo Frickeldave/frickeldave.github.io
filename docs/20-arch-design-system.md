@@ -1,29 +1,29 @@
 # Design-System
 
-Ziel ist ein einheitlich gestalteter Webauftritt ohne gestalterische Inkonsistenzen. Zusaetzlich
+Ziel ist ein einheitlich gestalteter Webauftritt ohne gestalterische Inkonsistenzen. Zusätzlich
 sollen Home, Blog, Downloads, Portfolio, Handmade und News jeweils ein eigenes Teil-Design-System
 erhalten, das auf dem zentralen Design-System der Website basiert.
 
 Allgemeine Design-Vorgaben:
-- Abstaende, Margins, Schatten, abgerundete Ecken usw. bleiben wie im zentralen Design-System der Website.
-- Schriftfamilien, Schriftgroessen, Zeilenhoehen usw. bleiben wie im zentralen Design-System der Website.
+- Abstände, Margins, Schatten, abgerundete Ecken usw. bleiben wie im zentralen Design-System der Website.
+- Schriftfamilien, Schriftgrößen, Zeilenhöhen usw. bleiben wie im zentralen Design-System der Website.
 - Die Farbschemata der einzelnen Teil-Design-Systeme sollen sich klar unterscheiden und trotzdem zusammen harmonieren.
 
 Header und Footer bleiben auf allen Seiten gleich.
 
 Auf jeder Seite sollte eine Glass-Box-Komponente verwendet werden, um Inhalte hervorzuheben.
 
-Auf jeder Seite sollte zuerst eine Glass-Box mit dem Seitentitel erscheinen. Zusaetzlich sollte in
+Auf jeder Seite sollte zuerst eine Glass-Box mit dem Seitentitel erscheinen. Zusätzlich sollte in
 dieser Glass-Box eine Breadcrumb-Navigation integriert sein, die den Pfad zur aktuellen Seite zeigt
 (z. B. `Home / Portfolio`).
 
-## Design-System - Tuerkis - Startseite und Handmade-Seite
+## Design-System - Türkis - Startseite und Handmade-Seite
 
-Die Startseite und die Handmade-Seite verwenden durchgaengig ein **tuerkises** Farbschema fuer
-Highlights und Akzente. Dieses Farbschema muss auch bei kuenftigen Aenderungen erhalten bleiben.
+Die Startseite und die Handmade-Seite verwenden durchgängig ein **türkises** Farbschema für
+Highlights und Akzente. Dieses Farbschema muss auch bei künftigen Änderungen erhalten bleiben.
 
 ### Farbpalette (Tailwind CSS)
-- **Primaerer Verlauf**: `from-cyan-500 to-teal-500` (Buttons, wichtige Akzente)
+- **Primärer Verlauf**: `from-cyan-500 to-teal-500` (Buttons, wichtige Akzente)
 - **Hover-Verlauf**: `from-cyan-600 to-teal-600`
 - **Text-Akzente**: `text-cyan-500`, `text-cyan-600`, `text-cyan-400` (dark)
 - **Badge-Hintergrund**: `from-cyan-500/20 to-teal-500/20`
@@ -35,25 +35,25 @@ Highlights und Akzente. Dieses Farbschema muss auch bei kuenftigen Aenderungen e
 | Element                              | Farbe                                                  |
 | ------------------------------------ | ------------------------------------------------------ |
 | CTA Buttons                          | `bg-gradient-to-r from-cyan-500 to-teal-500`           |
-| Hover Effects                        | `hover:from-cyan-600 hover:to-teal-600`                |
+| Hover-Effekte                        | `hover:from-cyan-600 hover:to-teal-600`                |
 | Badges/Tags                          | `from-cyan-500/20 to-teal-500/20` with `text-cyan-700` |
-| Bullet Points                        | `text-cyan-500`                                        |
-| Companies/Links                      | `text-cyan-600 dark:text-cyan-400`                     |
-| Border-Left (Quote/Education)        | `border-cyan-500`                                      |
-| Social Link Icons                    | `text-cyan-500 group-hover:text-cyan-400`              |
-| Timeline Indicators                  | `from-cyan-500 to-teal-500`                            |
-| Sidebar Icons (Search, Filter, etc.) | `text-cyan-500`                                        |
+| Aufzählungspunkte                   | `text-cyan-500`                                        |
+| Firmen/Links                         | `text-cyan-600 dark:text-cyan-400`                     |
+| Linker Rahmen (Zitat/Bildung)        | `border-cyan-500`                                      |
+| Social-Link-Icons                    | `text-cyan-500 group-hover:text-cyan-400`              |
+| Timeline-Marker                      | `from-cyan-500 to-teal-500`                            |
+| Sidebar-Icons (Suche, Filter usw.)   | `text-cyan-500`                                        |
 
 ### Nicht erlaubte Farben
-- ❌ `orange-500`, `orange-600`, `red-500`, `red-600` fuer Highlights
-- ❌ Keine anderen Primaerfarben ausser Tuerkis fuer Akzente
+- ❌ `orange-500`, `orange-600`, `red-500`, `red-600` für Highlights
+- ❌ Keine anderen Primärfarben ausser Türkis für Akzente
 
 ## Design-System - Lila - Blog-Seite
-Die Blog-Seite verwendet durchgaengig ein **lila/violettes** Farbschema fuer Highlights und
-Akzente. Dieses Farbschema muss auch bei kuenftigen Aenderungen erhalten bleiben.
+Die Blog-Seite verwendet durchgängig ein **lila/violettes** Farbschema für Highlights und
+Akzente. Dieses Farbschema muss auch bei künftigen Änderungen erhalten bleiben.
 
 ### Farbpalette (Tailwind CSS)
-- **Primaerer Verlauf**: `from-purple-500 to-violet-500` (Buttons, wichtige Akzente)
+- **Primärer Verlauf**: `from-purple-500 to-violet-500` (Buttons, wichtige Akzente)
 - **Hover-Verlauf**: `from-purple-600 to-violet-600`
 - **Text-Akzente**: `text-purple-500`, `text-purple-600`, `text-purple-400` (dark)
 - **Badge-Hintergrund**: `from-purple-500/20 to-violet-500/20`
@@ -65,24 +65,24 @@ Akzente. Dieses Farbschema muss auch bei kuenftigen Aenderungen erhalten bleiben
 | Element                              | Farbe                                                        |
 | ------------------------------------ | ------------------------------------------------------------ |
 | CTA Buttons                          | `bg-gradient-to-r from-purple-500 to-violet-500`             |
-| Hover Effects                        | `hover:from-purple-600 hover:to-violet-600`                  |
+| Hover-Effekte                        | `hover:from-purple-600 hover:to-violet-600`                  |
 | Badges/Tags                          | `from-purple-500/20 to-violet-500/20` with `text-purple-700` |
-| Bullet Points                        | `text-purple-500`                                            |
-| Companies/Links                      | `text-purple-600 dark:text-purple-400`                       |
-| Border-Left (Quote/Education)        | `border-purple-500`                                          |
-| Social Link Icons                    | `text-purple-500 group-hover:text-purple-400`                |
-| Timeline Indicators                  | `from-purple-500 to-violet-500`                              |
-| Sidebar Icons (Search, Filter, etc.) | `text-purple-500`                                            |
+| Aufzählungspunkte                   | `text-purple-500`                                            |
+| Firmen/Links                         | `text-purple-600 dark:text-purple-400`                       |
+| Linker Rahmen (Zitat/Bildung)        | `border-purple-500`                                          |
+| Social-Link-Icons                    | `text-purple-500 group-hover:text-purple-400`                |
+| Timeline-Marker                      | `from-purple-500 to-violet-500`                              |
+| Sidebar-Icons (Suche, Filter usw.)   | `text-purple-500`                                            |
 
 ### Nicht erlaubte Farben
-- ❌ `green-500`, `green-600`, `yellow-500`, `yellow-600` fuer Highlights
-- ❌ Keine anderen Primaerfarben ausser Lila/Violett fuer Akzente
+- ❌ `green-500`, `green-600`, `yellow-500`, `yellow-600` für Highlights
+- ❌ Keine anderen Primärfarben ausser Lila/Violett für Akzente
 
-## Design-System - Gruen - Download-Seite
-Die Download-Seite verwendet durchgaengig ein **gruenes** Farbschema fuer Highlights und Akzente.
-Dieses Farbschema muss auch bei kuenftigen Aenderungen erhalten bleiben.
+## Design-System - Grün - Download-Seite
+Die Download-Seite verwendet durchgängig ein **grünes** Farbschema für Highlights und Akzente.
+Dieses Farbschema muss auch bei künftigen Änderungen erhalten bleiben.
 ### Farbpalette (Tailwind CSS)
-- **Primaerer Verlauf**: `from-green-500 to-lime-500` (Buttons, wichtige Akzente)
+- **Primärer Verlauf**: `from-green-500 to-lime-500` (Buttons, wichtige Akzente)
 - **Hover-Verlauf**: `from-green-600 to-lime-600`
 - **Text-Akzente**: `text-green-500`, `text-green-600`, `text-green-400` (dark)
 - **Badge-Hintergrund**: `from-green-500/20 to-lime-500/20`
@@ -94,26 +94,26 @@ Dieses Farbschema muss auch bei kuenftigen Aenderungen erhalten bleiben.
 | Element                              | Farbe                                                    |
 | ------------------------------------ | -------------------------------------------------------- |
 | CTA Buttons                          | `bg-gradient-to-r from-green-500 to-lime-500`            |
-| Hover Effects                        | `hover:from-green-600 hover:to-lime-600`                 |
+| Hover-Effekte                        | `hover:from-green-600 hover:to-lime-600`                 |
 | Badges/Tags                          | `from-green-500/20 to-lime-500/20` with `text-green-700` |
-| Bullet Points                        | `text-green-500`                                         |
-| Companies/Links                      | `text-green-600 dark:text-green-400`                     |
-| Border-Left (Quote/Education)        | `border-green-500`                                       |
-| Social Link Icons                    | `text-green-500 group-hover:text-green-400`              |
-| Timeline Indicators                  | `from-green-500 to-lime-500`                             |
-| Sidebar Icons (Search, Filter, etc.) | `text-green-500`                                         |
+| Aufzählungspunkte                   | `text-green-500`                                         |
+| Firmen/Links                         | `text-green-600 dark:text-green-400`                     |
+| Linker Rahmen (Zitat/Bildung)        | `border-green-500`                                       |
+| Social-Link-Icons                    | `text-green-500 group-hover:text-green-400`              |
+| Timeline-Marker                      | `from-green-500 to-lime-500`                             |
+| Sidebar-Icons (Suche, Filter usw.)   | `text-green-500`                                         |
 
 ### Nicht erlaubte Farben
-- ❌ `purple-500`, `purple-600`, `pink-500`, `pink-600` fuer Highlights
-- ❌ Keine anderen Primaerfarben ausser Gruen fuer Akzente
+- ❌ `purple-500`, `purple-600`, `pink-500`, `pink-600` für Highlights
+- ❌ Keine anderen Primärfarben ausser Grün für Akzente
 
 ## Design-System - Orange/Bernstein - Portfolio-Seite
 
-Die Portfolio-Seite verwendet durchgaengig ein **orange-/bernsteinfarbenes** Farbschema fuer
-Highlights und Akzente. Dieses Farbschema muss auch bei kuenftigen Aenderungen erhalten bleiben.
+Die Portfolio-Seite verwendet durchgängig ein **orange-/bernsteinfarbenes** Farbschema für
+Highlights und Akzente. Dieses Farbschema muss auch bei künftigen Änderungen erhalten bleiben.
 
 ### Farbpalette (Tailwind CSS)
-- **Primaerer Verlauf**: `from-amber-500 to-orange-500` (Buttons, wichtige Akzente)
+- **Primärer Verlauf**: `from-amber-500 to-orange-500` (Buttons, wichtige Akzente)
 - **Hover-Verlauf**: `from-amber-600 to-orange-600`
 - **Text-Akzente**: `text-amber-500`, `text-amber-600`, `text-amber-400` (dark)
 - **Badge-Hintergrund**: `from-amber-500/20 to-orange-500/20`
@@ -125,25 +125,25 @@ Highlights und Akzente. Dieses Farbschema muss auch bei kuenftigen Aenderungen e
 | Element                              | Farbe                                                      |
 | ------------------------------------ | ---------------------------------------------------------- |
 | CTA Buttons                          | `bg-gradient-to-r from-amber-500 to-orange-500`            |
-| Hover Effects                        | `hover:from-amber-600 hover:to-orange-600`                 |
+| Hover-Effekte                        | `hover:from-amber-600 hover:to-orange-600`                 |
 | Badges/Tags                          | `from-amber-500/20 to-orange-500/20` with `text-amber-700` |
-| Bullet Points                        | `text-amber-500`                                           |
-| Companies/Links                      | `text-amber-600 dark:text-amber-400`                       |
-| Border-Left (Quote/Education)        | `border-amber-500`                                         |
-| Social Link Icons                    | `text-amber-500 group-hover:text-amber-400`                |
-| Timeline Indicators                  | `from-amber-500 to-orange-500`                             |
-| Sidebar Icons (Search, Filter, etc.) | `text-amber-500`                                           |
+| Aufzählungspunkte                   | `text-amber-500`                                           |
+| Firmen/Links                         | `text-amber-600 dark:text-amber-400`                       |
+| Linker Rahmen (Zitat/Bildung)        | `border-amber-500`                                         |
+| Social-Link-Icons                    | `text-amber-500 group-hover:text-amber-400`                |
+| Timeline-Marker                      | `from-amber-500 to-orange-500`                             |
+| Sidebar-Icons (Suche, Filter usw.)   | `text-amber-500`                                           |
 
 ### Nicht erlaubte Farben
-- ❌ `blue-500`, `blue-600`, `purple-500`, `purple-600` fuer Highlights
-- ❌ Keine anderen Primaerfarben ausser Orange/Bernstein fuer Akzente
+- ❌ `blue-500`, `blue-600`, `purple-500`, `purple-600` für Highlights
+- ❌ Keine anderen Primärfarben ausser Orange/Bernstein für Akzente
 
 ## Design-System - Rot - News-Seite
-Die News-Seite verwendet durchgaengig ein **rotes** Farbschema fuer Highlights und Akzente. Dieses
-Farbschema muss auch bei kuenftigen Aenderungen erhalten bleiben.
+Die News-Seite verwendet durchgängig ein **rotes** Farbschema für Highlights und Akzente. Dieses
+Farbschema muss auch bei künftigen Änderungen erhalten bleiben.
 
 ### Farbpalette (Tailwind CSS)
-- **Primaerer Verlauf**: `from-red-500 to-pink-500` (Buttons, wichtige Akzente)
+- **Primärer Verlauf**: `from-red-500 to-pink-500` (Buttons, wichtige Akzente)
 - **Hover-Verlauf**: `from-red-600 to-pink-600`
 - **Text-Akzente**: `text-red-500`, `text-red-600`, `text-red-400` (dark)
 - **Badge-Hintergrund**: `from-red-500/20 to-pink-500/20`
@@ -155,35 +155,35 @@ Farbschema muss auch bei kuenftigen Aenderungen erhalten bleiben.
 | Element                              | Farbe                                                |
 | ------------------------------------ | ---------------------------------------------------- |
 | CTA Buttons                          | `bg-gradient-to-r from-red-500 to-pink-500`          |
-| Hover Effects                        | `hover:from-red-600 hover:to-pink-600`               |
+| Hover-Effekte                        | `hover:from-red-600 hover:to-pink-600`               |
 | Badges/Tags                          | `from-red-500/20 to-pink-500/20` with `text-red-700` |
-| Bullet Points                        | `text-red-500`                                       |
-| Companies/Links                      | `text-red-600 dark:text-red-400`                     |
-| Border-Left (Quote/Education)        | `border-red-500`                                     |
-| Social Link Icons                    | `text-red-500 group-hover:text-red-400`              |
-| Timeline Indicators                  | `from-red-500 to-pink-500`                           |
-| Sidebar Icons (Search, Filter, etc.) | `text-red-500`                                       |
+| Aufzählungspunkte                   | `text-red-500`                                       |
+| Firmen/Links                         | `text-red-600 dark:text-red-400`                     |
+| Linker Rahmen (Zitat/Bildung)        | `border-red-500`                                     |
+| Social-Link-Icons                    | `text-red-500 group-hover:text-red-400`              |
+| Timeline-Marker                      | `from-red-500 to-pink-500`                           |
+| Sidebar-Icons (Suche, Filter usw.)   | `text-red-500`                                       |
 
 ### Nicht erlaubte Farben
-- ❌ `cyan-500`, `cyan-600`, `green-500`, `green-600` fuer Highlights
-- ❌ Keine anderen Primaerfarben ausser Rot fuer Akzente
+- ❌ `cyan-500`, `cyan-600`, `green-500`, `green-600` für Highlights
+- ❌ Keine anderen Primärfarben ausser Rot für Akzente
 
-## Richtlinien fuer Button-Design (fuer alle Seiten)
+## Richtlinien für Button-Design (für alle Seiten)
 
 Alle Buttons auf der Website folgen einem einheitlichen Gestaltungsmuster, das je nach
 Seitenkategorie mit dem passenden Farbschema kombiniert wird.
 
 ### Klickbare Buttons (Call-to-Actions)
-Buttons, die eine Aktion ausloesen, etwa Navigation, Formularversand oder externe Links,
-verwenden **gefuellte Farbverlaeufe**:
+Buttons, die eine Aktion auslösen, etwa Navigation, Formularversand oder externe Links,
+verwenden **gefüllte Farbverläufe**:
 
 **Eigenschaften:**
-- **Hintergrund**: Gefuellter Verlauf in der jeweiligen Seitenfarbe (z. B. `bg-gradient-to-r from-cyan-500 to-teal-500` fuer Home/Handmade)
+- **Hintergrund**: Gefüllter Verlauf in der jeweiligen Seitenfarbe (z. B. `bg-gradient-to-r from-cyan-500 to-teal-500` für Home/Handmade)
 - **Text und Icons**: Immer weiss (`text-white`)
 - **Hover-Effekt**: Dunklerer Verlauf (`hover:from-cyan-600 hover:to-teal-600`)
-- **Hover-Animation**: Leichte Vergroesserung (`hover:scale-105`)
-- **Transition**: `transition-all duration-300` fuer weiche Uebergaenge
-- **Schatten**: Optional `hover:shadow-lg` fuer mehr Tiefe
+- **Hover-Animation**: Leichte Vergrößerung (`hover:scale-105`)
+- **Transition**: `transition-all duration-300` für weiche Übergänge
+- **Schatten**: Optional `hover:shadow-lg` für mehr Tiefe
 
 **Beispiele nach Seitenkategorie:**
 ```html
@@ -214,13 +214,13 @@ verwenden **gefuellte Farbverlaeufe**:
 ```
 
 ### Nicht klickbare Elemente und Filter-Buttons
-Elemente mit rein informativem Charakter oder fuer Filterfunktionen, etwa Tags, Skills oder
+Elemente mit rein informativem Charakter oder für Filterfunktionen, etwa Tags, Skills oder
 Kategorien, verwenden **Glass-Design**:
 
 **Eigenschaften:**
 - **Hintergrund**: Glass-Morphism (`glass-t` oder `glass`)
 - **Text**: Standard-Textfarbe (`text-txt-p dark:text-darkmode-txt-p`)
-- **Icons**: Farb-Akzent der jeweiligen Seite (z. B. `text-cyan-500` fuer Handmade)
+- **Icons**: Farb-Akzent der jeweiligen Seite (z. B. `text-cyan-500` für Handmade)
 - **Hover-Effekt**: Leicht aufgehellter Hintergrund (`hover:bg-white/20`)
 - **KEIN Scaling**: Filter-Buttons skalieren nicht bei Hover
 - **Rahmen**: Subtiler Rahmen in der Seitenfarbe (`border-cyan-500/20`)
@@ -245,27 +245,27 @@ Kategorien, verwenden **Glass-Design**:
 ```
 
 ### Komponente `Button.astro`
-Die zentrale Komponente `Button.astro` unterstuetzt beide Varianten:
+Die zentrale Komponente `Button.astro` unterstützt beide Varianten:
 
 **Props:**
 - `label: string` - Button-Text
 - `link: string` - URL/Href
 - `colorScheme: "cyan" | "purple" | "green" | "amber" | "red"` - Farbschema der Seite
-- `glass: boolean` - `true` fuer Glass-Design, `false` fuer gefuellte Buttons (Standard: `false`)
-- `newtab: boolean` - Oeffnet den Link in einem neuen Tab
+- `glass: boolean` - `true` für Glass-Design, `false` für gefüllte Buttons (Standard: `false`)
+- `newtab: boolean` - Öffnet den Link in einem neuen Tab
 
 **Verwendung:**
 ```astro
 <!-- Filled CTA Button -->
 <Button label="Jetzt entdecken" link="/portfolio" colorScheme="amber" />
 
-<!-- Glass-Design fuer nicht-primaere Links -->
+<!-- Glass-Design für nicht-primäre Links -->
 <Button label="Mehr erfahren" link="/about" colorScheme="cyan" glass={true} />
 ```
 
 ### Wichtige Regeln
-1. ✅ **Klickbare CTAs**: Immer gefuellt, mit weissem Text und `hover:scale-105`
+1. ✅ **Klickbare CTAs**: Immer gefüllt, mit weissem Text und `hover:scale-105`
 2. ✅ **Informative Elemente**: Immer im Glass-Design und ohne Skalierung
-3. ✅ **Farbkonsistenz**: Jede Seite verwendet ihr eigenes Farbschema fuer alle Buttons
+3. ✅ **Farbkonsistenz**: Jede Seite verwendet ihr eigenes Farbschema für alle Buttons
 4. ❌ **Nicht mischen**: Beide Stile nicht auf derselben Hierarchieebene vermischen
-5. ❌ **Keine farbigen Icons in gefuellten Buttons**: Icons in gefuellten Buttons sind immer weiss
+5. ❌ **Keine farbigen Icons in gefüllten Buttons**: Icons in gefüllten Buttons sind immer weiss

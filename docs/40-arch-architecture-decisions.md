@@ -12,61 +12,61 @@
 
 - **Randbedingung**: Das Projekt ist als statische Astro-Site mit `output: "static"` in
   `astro.config.mjs` konfiguriert.
-- **Auswirkung**: Es gibt keine Server-Side-Rendering-Funktionalitaet. Das gesamte HTML wird beim
+- **Auswirkung**: Es gibt keine Server-Side-Rendering-Funktionalität. Das gesamte HTML wird beim
   Build erzeugt.
-- **Dynamische Logik**: Funktionen mit Interaktivitaet, etwa Suche oder Redirects, werden per
+- **Dynamische Logik**: Funktionen mit Interaktivität, etwa Suche oder Redirects, werden per
   clientseitigem JavaScript umgesetzt und greifen auf statische JSON-Daten aus dem Build oder aus
   `/public/data` zu.
 
 ## Kerntechnologien
 
 - **Framework**: Astro 7 mit Islands-Architektur.
-- **Templating**: `.astro`-Komponenten fuer Layout und statische Struktur; React fuer interaktive
+- **Templating**: `.astro`-Komponenten für Layout und statische Struktur; React für interaktive
   Islands.
 - **Styling**: Tailwind CSS v4 mit projektspezifischer Konfiguration.
-- **Content**: Markdown/MDX fuer Inhalte; TypeScript fuer Typsicherheit.
+- **Content**: Markdown/MDX für Inhalte; TypeScript für Typsicherheit.
 
 ## Content-Collections
 
-Definiert in `src/content.config.ts` ist dies die zentrale Quelle fuer alle Content-Collections.
+Definiert in `src/content.config.ts` ist dies die zentrale Quelle für alle Content-Collections.
 
 - **Validierung**: Strikte **Zod**-Schemas erzwingen die Datentypen im Frontmatter.
 - **Organisation**: Inhalte sind in typisierte Collections gegliedert, etwa `blog`, `docs`,
   `aboutme` oder `recipes`.
-- **Referenzen**: Mit `reference()` werden relationale Verknuepfungen zwischen Collections
+- **Referenzen**: Mit `reference()` werden relationale Verknüpfungen zwischen Collections
   hergestellt, etwa zwischen `author` und einem `blog`-Beitrag.
 
 ## Styling-System
 
 - **Tailwind-Konfiguration**: `tailwind.config.js` implementiert das projektspezifische
   Design-System.
-  - **Schriften**: Eigene Logik fuer Schriftskalierung und Schriftfamilien (Serif primaer,
-    Sans-Serif sekundaer).
-  - **Grid**: `tailwind-bootstrap-grid` sorgt fuer ein konsistentes 12-Spalten-Layout.
+  - **Schriften**: Eigene Logik für Schriftskalierung und Schriftfamilien (Serif primär,
+    Sans-Serif sekundär).
+  - **Grid**: `tailwind-bootstrap-grid` sorgt für ein konsistentes 12-Spalten-Layout.
   - **Animationen**: Eigene Keyframes und Animation-Utilities, etwa die `intersect`-Variante.
-- **Dark Mode**: Wird ueber die Strategie `darkMode: "class"` erzwungen.
+- **Dark Mode**: Wird über die Strategie `darkMode: "class"` erzwungen.
 
-## Component Islands (Interaktivitaet)
+## Component Islands (Interaktivität)
 
-React ist bewusst auf interaktive Elemente beschraenkt, um die Performance hoch zu halten.
+React ist bewusst auf interaktive Elemente beschränkt, um die Performance hoch zu halten.
 
-- **Strategie fuer die Nutzung**:
-  - `client:load`: Kritische Interaktivitaet im direkt sichtbaren Bereich.
-  - `client:idle`: Nicht kritische Interaktivitaet, etwa Suchfelder oder Tooltips.
-  - `client:only="react"`: Bibliotheken, die sofort Browser-APIs benoetigen, etwa Radix-UI-Komponenten.
+- **Strategie für die Nutzung**:
+  - `client:load`: Kritische Interaktivität im direkt sichtbaren Bereich.
+  - `client:idle`: Nicht kritische Interaktivität, etwa Suchfelder oder Tooltips.
+  - `client:only="react"`: Bibliotheken, die sofort Browser-APIs benötigen, etwa Radix-UI-Komponenten.
 
 ## Suche und Auffindbarkeit
 
-- **Engine**: Das Projekt verwendet **Pagefind** im `postbuild`-Schritt fuer performante statische
+- **Engine**: Das Projekt verwendet **Pagefind** im `postbuild`-Schritt für performante statische
   Indizierung.
-- **Alternative/Bestand**: **Fuse.js** ist weiterhin als Abhaengigkeit vorhanden und wird
-  voraussichtlich fuer spezielle Filter- oder Suchlogik innerhalb einzelner Komponenten genutzt,
+- **Alternative/Bestand**: **Fuse.js** ist weiterhin als Abhängigkeit vorhanden und wird
+  voraussichtlich für spezielle Filter- oder Suchlogik innerhalb einzelner Komponenten genutzt,
   etwa in `EntryLayout`.
 
-## Qualitaetssicherung
+## Qualitätssicherung
 
-- **Code**: ESLint und Prettier sind fuer TypeScript und Astro konfiguriert.
-- **Prosa**: **Vale** ist zur sprachlichen Pruefung von Markdown-Inhalten eingebunden.
+- **Code**: ESLint und Prettier sind für TypeScript und Astro konfiguriert.
+- **Prosa**: **Vale** ist zur sprachlichen Prüfung von Markdown-Inhalten eingebunden.
 
 ## Entscheidungen zur Dateistruktur
 
@@ -74,7 +74,7 @@ React ist bewusst auf interaktive Elemente beschraenkt, um die Performance hoch 
 - **`src/components/base/`**: Basis-Komponenten wie globale Seiten-Wrapper.
 - **`public/`**: Statische Assets, die Astro nicht verarbeitet, etwa generierte JSON-Daten.
 
-## TypeScript-Muster fuer Content Collections
+## TypeScript-Muster für Content Collections
 
 ```typescript
 import { getCollection } from "astro:content";
@@ -87,16 +87,16 @@ const published = entries.filter((e) => !e.data.draft);
 **Wichtig**: Immer auf den spezifischen Typ casten (`BlogEntry`, `DocsEntry` usw.), um
 Typsicherheit zu behalten.
 
-## Algorithmus fuer aehnliche Eintraege
+## Algorithmus für ähnliche Einträge
 
 `src/lib/similarItems.ts` - Content-basierte Empfehlungen:
 
-- Matcht ueber `categories`- und `tags`-Arrays im Frontmatter
-- Zaehlt Ueberschneidungen fuer das Ranking
-- Wird fuer Bereiche wie "Related Posts" oder "You might also like" verwendet
+- Matcht über `categories`- und `tags`-Arrays im Frontmatter
+- Zählt Überschneidungen für das Ranking
+- Wird für Bereiche wie "Related Posts" oder "You might also like" verwendet
 - **Verwendung**: `similerItems(currentItem, allItems, currentItem.id)`
 
-## Muster fuer statische Pfadgenerierung
+## Muster für statische Pfadgenerierung
 
 Alle dynamischen Routen in `src/pages/` verwenden `getStaticPaths()`:
 
@@ -112,9 +112,9 @@ export async function getStaticPaths() {
 
 **Regel**: Kein `export const prerender = false` - alles muss statisch bleiben.
 
-## Verwendung von `BaseLayout` (Standard-Wrapper fuer Seiten)
+## Verwendung von `BaseLayout` (Standard-Wrapper für Seiten)
 
-Alle Seiten verwenden `BaseLayout.astro` fuer konsistente Meta-Tags, SEO und Theme-Switching:
+Alle Seiten verwenden `BaseLayout.astro` für konsistente Meta-Tags, SEO und Theme-Switching:
 
 ```astro
 ---
@@ -133,18 +133,18 @@ const { title, description } = Astro.props;
 
 ## Auto-Import-Komponenten
 
-Diese Komponenten sind in `astro.config.mjs` konfiguriert und MUESSEN NICHT importiert werden:
+Diese Komponenten sind in `astro.config.mjs` konfiguriert und MÜSSEN NICHT importiert werden:
 
 - `<Button>` - Standard UI Button
 - `<Accordion>`, `<Notice>`, `<Tabs>`, `<Tab>` - MDX Shortcodes
-- **Ausnahme**: YouTube-Komponente temporaer deaktiviert (ES-Module-Konflikt mit
+- **Ausnahme**: YouTube-Komponente temporär deaktiviert (ES-Module-Konflikt mit
   `react-lite-youtube-embed`)
 
 ## React-Island-Hydration-Strategie
 
-- `client:load` → Sofort laden (nur fuer kritisch sichtbare UI wie `<Search>`)
-- `client:idle` → Nach Browser-Idle laden (Standard fuer Interaktionen wie `<Swiper>`)
-- `client:only="react"` → Nur clientseitig rendern (fuer Radix UI wie `<ScrollArea>`)
+- `client:load` → Sofort laden (nur für kritisch sichtbare UI wie `<Search>`)
+- `client:idle` → Nach Browser-Idle laden (Standard für Interaktionen wie `<Swiper>`)
+- `client:only="react"` → Nur clientseitig rendern (für Radix UI wie `<ScrollArea>`)
 
 ```astro
 <ScrollArea className="h-full" client:only="react">
@@ -152,9 +152,9 @@ Diese Komponenten sind in `astro.config.mjs` konfiguriert und MUESSEN NICHT impo
 </ScrollArea>
 ```
 
-## Typen fuer Content Collections
+## Typen für Content Collections
 
-`src/types/index.d.ts` exportiert typsichere Wrapper fuer alle Collections:
+`src/types/index.d.ts` exportiert typsichere Wrapper für alle Collections:
 
 ```typescript
 import type { BlogEntry, DocsEntry, AuthorsEntry } from "@/types";
@@ -166,9 +166,9 @@ const posts = (await getCollection("blog")) as BlogEntry[];
 const posts = await getCollection("blog");
 ```
 
-## Generischer Entry-Typ fuer flexible Funktionen
+## Generischer Entry-Typ für flexible Funktionen
 
-Fuer Utilities, die mehrere Collection-Typen unterstuetzen:
+Für Utilities, die mehrere Collection-Typen unterstützen:
 
 ```typescript
 import type { GenericEntry } from "@/types";

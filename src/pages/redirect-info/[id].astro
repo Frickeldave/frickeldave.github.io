@@ -102,7 +102,7 @@ const pageDescription = `Du wirst zu ${link.title} bei ${link.provider} weiterge
   <!-- Auto-redirect Script -->
   <script define:vars={{ targetUrl: link.targetUrl, affiliate: link.affiliate }}
   >
-    // Auto-redirect after 3 seconds for affiliate links, 2 seconds for others
+    // Auto-Redirect nach 3 Sekunden bei Affiliate-Links, nach 2 Sekunden bei anderen
     const redirectDelay = affiliate ? 3000 : 2000;
 
     setTimeout(() => {

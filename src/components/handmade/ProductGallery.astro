@@ -9,7 +9,7 @@ interface Props {
 
 const { images, productName } = Astro.props;
 
-// Use placeholder if no images available
+// Platzhalter nutzen, wenn keine Bilder vorhanden sind
 import placeholderImage from "@/assets/placeholder-product-notfound.png";
 const displayImages = images.length > 0 ? images : [placeholderImage];
 ---
@@ -52,7 +52,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
 </div>
 
 <script>
-  // Gallery interaction functionality
+  // Interaktionslogik der Galerie
   function initGallery() {
     const mainImage = document.getElementById("main-image") as HTMLImageElement;
     const thumbnailButtons = document.querySelectorAll(".thumbnail-btn");
@@ -61,7 +61,7 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
       return;
     }
 
-    // Get all image sources
+    // Alle Bildquellen holen
     const imageSources = Array.from(thumbnailButtons).map((btn) => {
       const img = btn.querySelector("img") as HTMLImageElement;
       return {
@@ -70,20 +70,20 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
       };
     });
 
-    // Add active state to first thumbnail
+    // Erstem Thumbnail den aktiven Zustand geben
     if (thumbnailButtons.length > 0) {
       thumbnailButtons[0].classList.add("border-blue-500");
     }
 
-    // Function to handle image change
+    // Funktion zur Bildumschaltung
     const changeImage = (index: number, btn: Element) => {
-      // Remove active state from all thumbnails
+      // Aktiven Zustand von allen Thumbnails entfernen
       thumbnailButtons.forEach((b) => b.classList.remove("border-blue-500"));
 
-      // Add active state to clicked thumbnail
+      // Angeklicktem Thumbnail den aktiven Zustand geben
       btn.classList.add("border-blue-500");
 
-      // Update main image with fade effect
+      // Hauptbild mit Fade-Effekt aktualisieren
       const imageData = imageSources[index];
       mainImage.style.opacity = "0";
 
@@ -94,29 +94,29 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
       }, 150);
     };
 
-    // Remove any existing listeners before adding new ones
+    // Vorhandene Listener entfernen, bevor neue hinzugefügt werden
     thumbnailButtons.forEach((btn, index) => {
       const handleClick = (e: Event) => {
         e.preventDefault();
         changeImage(index, btn);
       };
 
-      // Remove old listener if it exists
+      // Alten Listener entfernen, falls vorhanden
       (btn as HTMLElement).onclick = null;
 
-      // Add new listener
+      // Neuen Listener hinzufügen
       btn.addEventListener("click", handleClick);
     });
   }
 
-  // Initialize on load
+  // Beim Laden initialisieren
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initGallery);
   } else {
     initGallery();
   }
 
-  // Re-initialize on Astro page transitions
+  // Bei Astro-Seitenübergängen neu initialisieren
   document.addEventListener("astro:page-load", initGallery);
 </script>
 
@@ -140,12 +140,12 @@ const displayImages = images.length > 0 ? images : [placeholderImage];
   .gallery-scroll {
     height: 20rem; /* h-80 equivalent - same as main image */
     @apply overflow-y-auto;
-    /* Hide scrollbars but keep functionality */
+    /* Scrollbars verstecken, Funktion aber erhalten */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* Internet Explorer 10+ */
   }
 
-  /* Hide scrollbars for WebKit browsers (Chrome, Safari, Edge) */
+  /* Scrollbars für WebKit-Browser ausblenden (Chrome, Safari, Edge) */
   .gallery-scroll::-webkit-scrollbar {
     display: none;
   }

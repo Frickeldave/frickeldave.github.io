@@ -9,7 +9,7 @@ import { ClientRouter } from "astro:transitions";
 import Background from "@/components/base/Background.astro";
 import { Tooltips } from "astro-tooltips";
 
-// types for frontmatters
+// Typen für Frontmatter
 export interface Props {
   title?: string;
   description?: string | null;
@@ -122,7 +122,7 @@ const baseUrl = "https://janedoe.com";
           sequence: { useMaxWidth: true },
           themeVariables: isDark
             ? {
-                // Dark mode — site uses #222 bg, #ddd text, #444 border
+                // Dark Mode — die Seite nutzt #222 Hintergrund, #ddd Text, #444 Rahmen
                 background: "transparent",
                 primaryColor: "#383838",
                 primaryTextColor: "#e0e0e0",
@@ -136,7 +136,7 @@ const baseUrl = "https://janedoe.com";
                 edgeLabelBackground: "#2a2a2a",
               }
             : {
-                // Light mode — site uses #fff bg, #222 text, #ddd border
+                // Light Mode — die Seite nutzt #fff Hintergrund, #222 Text, #ddd Rahmen
                 background: "transparent",
                 primaryColor: "#ebebeb",
                 primaryTextColor: "#111",
@@ -153,7 +153,7 @@ const baseUrl = "https://janedoe.com";
       }
 
       function renderMermaid() {
-        // Restore already-rendered diagrams so they can be re-rendered with new theme
+        // Bereits gerenderte Diagramme wiederherstellen, damit sie mit dem neuen Theme neu gerendert werden können
         document
           .querySelectorAll("pre.mermaid[data-processed]")
           .forEach((el) => {
@@ -164,7 +164,7 @@ const baseUrl = "https://janedoe.com";
             }
           });
 
-        // Save original source before mermaid replaces the content
+        // Originalquelle sichern, bevor mermaid den Inhalt ersetzt
         document
           .querySelectorAll("pre.mermaid:not([data-processed])")
           .forEach((el) => {
@@ -177,13 +177,13 @@ const baseUrl = "https://janedoe.com";
         mermaid.run();
       }
 
-      // Initial render
+      // Erstes Rendering
       renderMermaid();
 
-      // Re-render after Astro View Transitions navigation
+      // Nach Astro-View-Transitions-Navigation neu rendern
       document.addEventListener("astro:page-load", renderMermaid);
 
-      // Re-render when dark/light mode toggles (class changes on <html>)
+      // Neu rendern, wenn Dark/Light-Mode umschaltet (Klassenänderung an <html>)
       new MutationObserver(() => renderMermaid()).observe(
         document.documentElement,
         { attributes: true, attributeFilter: ["class"] }

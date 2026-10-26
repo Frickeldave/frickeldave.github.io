@@ -1,20 +1,15 @@
 ---
 import type { HandmadeItem } from "@/types";
 import { getHandmadeCategoryLabel } from "@/lib/handmadeCategoryLabels";
+import { formatPrice } from "@/lib/formatPrice";
+import AddToCartButton from "./AddToCartButton.astro";
+import CartNavLink from "./CartNavLink.astro";
 
 interface Props {
   product: HandmadeItem;
 }
 
 const { product } = Astro.props;
-
-// Format price with German locale
-const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
-  }).format(price);
-};
 ---
 
 <div class="product-info space-y-6">
@@ -38,6 +33,11 @@ const formatPrice = (price: number): string => {
       >
         {formatPrice(product.price)}
       </span>
+    </div>
+
+    <div class="mt-4 space-y-3">
+      <AddToCartButton item={product} variant="detail" />
+      <CartNavLink />
     </div>
   </div>
 

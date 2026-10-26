@@ -27,8 +27,9 @@ function foo() {
 }
 ```
 
-**Konfiguration** ESLint wird über `.eslintrc.js` oder `eslint.config.js` konfiguriert und kann
-projekt-spezifische Regeln definieren.
+**Konfiguration** Dieses Repository nutzt die Flat Config in `eslint.config.mjs`. Ältere Projekte
+können ESLint auch über `.eslintrc.js` konfigurieren; beide Varianten erlauben
+projekt-spezifische Regeln.
 
 **Anwendung während der Entwicklung**
 
@@ -54,12 +55,13 @@ Automatisch gefixed werden kann:
 Installiere ESLint und die benötigten Plugins für TypeScript und Astro:
 
 ```bash
-npm install --save-dev eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser astro-eslint-parser eslint-plugin-astro
+npm install --save-dev eslint @eslint/js typescript-eslint eslint-plugin-astro astro-eslint-parser globals
 ```
 
 ## ESLint-Konfiguration erstellen
 
-Erstelle eine `.eslintrc.js` im Projekt-Root:
+Erstelle im Projekt-Root eine `eslint.config.mjs` (Flat Config). Für ältere ESLint-Versionen zeigt
+das folgende Beispiel die klassische `.eslintrc.js`-Schreibweise:
 
 ```javascript
 module.exports = {
@@ -106,18 +108,18 @@ Füge ein `lint`-Script zu den Scripts in `package.json` hinzu:
 
 ```json
 "scripts": {
-  "lint": "eslint ./src --ext .js,.ts,.jsx,.tsx,.astro --fix",
-  "lint:check": "eslint ./src --ext .js,.ts,.jsx,.tsx,.astro"
+  "lint": "eslint ./src --fix",
+  "lint:check": "eslint ./src"
 }
 ```
 
 Das `--fix` Flag repariert automatisch behebbare Probleme. Mit `lint:check` kannst du nur prüfen,
 ohne automatische Reparaturen.
 
-## ESLint-Ignore-Datei erstellen
+## Ignore-Patterns
 
-Im Projekt-Root ist eine `.eslintignore` gespeichert, um bestimmte Dateien und Ordner vom Linting
-auszuschließen.
+Im Projekt-Root steht kein `.eslintignore` mehr: Seit der Flat Config stehen die Ignore-Patterns im
+`ignores`-Block von `eslint.config.mjs`.
 
 **Wichtige Ignore-Patterns erklärt:**
 
@@ -128,9 +130,8 @@ auszuschließen.
 | `public/`         | Statische Assets brauchen kein Linting              |
 | `*.config.*`      | Konfigurationsdateien haben oft andere Standards    |
 | `.astro/`         | Astro-Build-Cache                                   |
-| `docs/`           | Dokumentation braucht meist kein JavaScript-Linting |
-| `.husky/`         | Shell-Scripts, nicht JavaScript                     |
-| `wrangler.toml`   | Cloudflare-Konfiguration                            |
+| `.cache/`         | Werkzeug-Caches                                     |
+| `.env`, `.env.*`  | Enthalten Secrets und gehören nicht ins Linting     |
 
 ## Hook erweitern für ESLint
 

@@ -69,11 +69,11 @@ const totalDownloads = entry.data.downloads?.length || 0;
 </BaseLayout>
 
 <script>
-  // Wait for DOM and React components to be ready
+  // Auf DOM und React-Komponenten warten
   let isInitialized = false;
 
   function initializeDownloadsSearch() {
-    // Prevent multiple initializations
+    // Mehrfache Initialisierung verhindern
     if (isInitialized) return;
 
     const searchInput = document.getElementById(
@@ -83,12 +83,12 @@ const totalDownloads = entry.data.downloads?.length || 0;
     const clearFiltersBtn = document.getElementById("clear-filters");
 
     if (!searchInput || !resultsCount || !clearFiltersBtn) {
-      // Retry after a short delay if elements aren't ready yet
+      // Nach kurzer Verzögerung erneut versuchen, wenn Elemente noch nicht bereit sind
       setTimeout(initializeDownloadsSearch, 100);
       return;
     }
 
-    // Mark as initialized
+    // Als initialisiert markieren
     isInitialized = true;
 
     function getDownloadCards() {
@@ -128,15 +128,15 @@ const totalDownloads = entry.data.downloads?.length || 0;
       filterDownloads();
     }
 
-    // Event listeners
+    // Event-Listener
     searchInput.addEventListener("input", filterDownloads);
     clearFiltersBtn.addEventListener("click", clearFilters);
 
-    // Initial update
+    // Erste Aktualisierung
     filterDownloads();
   }
 
-  // Start initialization when DOM is ready
+  // Initialisierung starten, sobald das DOM bereit ist
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeDownloadsSearch);
   } else {

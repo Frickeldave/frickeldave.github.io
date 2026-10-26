@@ -66,7 +66,7 @@ const pageDescription = "Du wirst in wenigen Sekunden weitergeleitet...";
       initializeLinkMappings,
     } from "../lib/clientRedirectService";
 
-    // Parse URL parameters
+    // URL-Parameter parsen
     function getUrlParams(): { id: string | null; return: string | null } {
       const urlParams = new URLSearchParams(window.location.search);
       return {
@@ -75,7 +75,7 @@ const pageDescription = "Du wirst in wenigen Sekunden weitergeleitet...";
       };
     }
 
-    // Load link information and display content
+    // Link-Informationen laden und Inhalt anzeigen
     async function loadLinkInfo(): Promise<void> {
       const { id, return: returnUrl } = getUrlParams();
 
@@ -85,10 +85,10 @@ const pageDescription = "Du wirst in wenigen Sekunden weitergeleitet...";
       }
 
       try {
-        // Initialize link mappings
+        // Link-Zuordnungen initialisieren
         await initializeLinkMappings();
 
-        // Get link data
+        // Link-Daten holen
         const link = getLinkById(id);
 
         if (!link) {
@@ -172,27 +172,27 @@ const pageDescription = "Du wirst in wenigen Sekunden weitergeleitet...";
         </div>
       `;
 
-      // Show content and hide loading
+      // Inhalt zeigen und Laden ausblenden
       loading.style.display = "none";
       content.classList.remove("hidden");
 
-      // Set up continue button
+      // Weiter-Button verdrahten
       const continueBtn = document.getElementById("continue-btn");
       if (continueBtn) {
         continueBtn.addEventListener("click", () => redirectToTarget(link, id));
       }
 
-      // Start countdown
+      // Countdown starten
       startCountdown(link, id);
     }
 
     function redirectToTarget(link: LinkMapping, id: string): void {
-      // Increment click count
+      // Klickzahl erhöhen
       incrementClickCount(id);
 
       if (link.openInNewTab) {
         window.open(link.targetUrl, "_blank");
-        // Return to previous page or home
+        // Zur vorherigen Seite oder nach Hause zurückkehren
         const { return: returnUrl } = getUrlParams();
         if (returnUrl) {
           window.location.href = returnUrl;
@@ -229,28 +229,28 @@ const pageDescription = "Du wirst in wenigen Sekunden weitergeleitet...";
       if (error) error.style.display = "block";
     }
 
-    // Load link info when page loads
+    // Link-Info beim Laden der Seite holen
     function initializeRedirect(): void {
-      // Add a small delay to ensure DOM is fully ready
+      // Kurze Verzögerung, damit das DOM vollständig bereit ist
       setTimeout(loadLinkInfo, 100);
     }
 
-    // Handle both fresh loads and cached loads
+    // Sowohl frische als auch gecachte Ladevorgänge behandeln
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", initializeRedirect);
     } else {
       initializeRedirect();
     }
 
-    // Handle browser back/forward navigation (pageshow event)
+    // Browser-Vor-/Zurück-Navigation behandeln (pageshow-Event)
     window.addEventListener("pageshow", function (event) {
       if (event.persisted) {
-        // Page was loaded from cache, reinitialize
+        // Seite kam aus dem Cache, neu initialisieren
         initializeRedirect();
       }
     });
 
-    // Additional fallback
+    // Zusätzlicher Fallback
     setTimeout(() => {
       const loading = document.getElementById("loading");
       if (loading && loading.style.display !== "none") {

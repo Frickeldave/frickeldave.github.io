@@ -1,10 +1,10 @@
 name: fd-ci (Lint, Format, Vale, e2e checks)
 
 on:
-  # Single CI gate. Runs on pull requests targeting `dev`, on pushes to `dev`,
-  # and manually from the Actions tab. The deploy workflows depend on this:
-  #   - fd-deploy-dev listens for a successful FD CI push run on `dev`.
-  #   - fd-deploy-prd dispatches this workflow and waits for its success.
+  # Einziges CI-Gate. Läuft bei Pull Requests gegen `dev`, bei Pushes auf `dev`
+  # und manuell über den Actions-Tab. Die Deploy-Workflows hängen davon ab:
+  # - fd-deploy-dev wartet auf einen erfolgreichen FD-CI-Push-Lauf auf `dev`.
+  # - fd-deploy-prd dispatcht diesen Workflow und wartet auf seinen Erfolg.
   pull_request:
     branches:
       - dev
@@ -18,11 +18,26 @@ permissions:
 
 jobs:
   lint-checks:
-    runs-on: ubuntu-latest
+    # Selbstgehosteter Runner (Label: fd) — 2 Replicas, siehe scripts/bootstrap/README.md
+    # `npm ci` führt auch den `postinstall`-Hook aus, der Vale und OpenSCAD
+    # in den Workspace holt; das Runner-Image bringt die nötigen Compiler mit.
+    runs-on: [self-hosted, fd]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+      # Wächter gegen einen Rückfall: `squad upgrade` kann den früher gelöschten
+      # Label-Workflow aus seiner Vorlage wiederherstellen. `fd-configure` ist die
+      # einzige Quelle für Labels — taucht die alte Datei wieder auf, bricht dieser
+      # Lauf mit einer klaren Meldung ab, statt still zwei Label-Quellen zu haben.
+      - name: Kein zweiter Label-Workflow
+        run: |
+          if [ -f .github/workflows/squad-sync-squad-labels.yml ]; then
+            echo "::error::.github/workflows/squad-sync-squad-labels.yml ist wieder vorhanden (vermutlich durch 'squad upgrade'). fd-configure.yml ist die einzige Label-Quelle - Datei loeschen."
+            exit 1
+          fi
+          echo "OK: nur fd-configure.yml verwaltet Labels."
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
 
@@ -39,11 +54,15 @@ jobs:
         run: npm run prose
 
   scad-smoke-test:
-    runs-on: ubuntu-latest
+    # Selbstgehosteter Runner (Label: fd) — 2 Replicas, siehe scripts/bootstrap/README.md
+    # `install-openscad.mjs` entpackt das Linux-AppImage per
+    # `--appimage-extract`, der Renderer läuft also ohne FUSE und ohne sudo.
+    # Der STL-Export selbst ist headless: kein X-Server, kein xvfb.
+    runs-on: [self-hosted, fd]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
 
@@ -54,25 +73,30 @@ jobs:
         run: node --test test/scad/scad-build.test.cjs
 
   e2e-test:
-    runs-on: ubuntu-latest
+    # Selbstgehosteter Runner (Label: fd) — 2 Replicas, siehe scripts/bootstrap/README.md
+    # Die Playwright-Browser sind im Runner-Image `fd-dev-base` enthalten
+    # (`PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright`, Chromium-Revision passt zu
+    # `@playwright/test` 1.63.0), zur Job-Laufzeit wird also nichts geladen. Auch die
+    # OS-Bibliotheken sind enthalten, und `appuser` hat kein sudo, eine
+    # `--with-deps`-Installation ist weder nötig noch möglich.
+    # Für diesen Job wurden die Runner-Limits erhöht: Der webServer-Build braucht
+    # ~8 GiB und ~6 min bei 3 vCPU (Issue #282, Step 10).
+    runs-on: [self-hosted, fd]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
 
       - name: Install dependencies
         run: npm ci
 
-      # `npm ci` already installs OpenSCAD via `postinstall`; the explicit call
-      # below is a no-op safety net so `npm run build` inside the Playwright
-      # webServer always finds a renderer.
+      # `npm ci` installiert OpenSCAD bereits über `postinstall`; der explizite
+      # Aufruf unten ist ein No-Op-Sicherheitsnetz, damit `npm run build` im Playwright-
+      # webServer immer einen Renderer findet.
       - name: Install OpenSCAD
         run: node scripts/install-openscad.mjs --quiet
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
 
       - name: Run e2e tests
         run: npx playwright test

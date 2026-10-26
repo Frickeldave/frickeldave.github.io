@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Generate episode metadata using GitHub Copilot API
- * Takes missing episode JSON and generates structured metadata
+ * Erzeugt Episoden-Metadaten über die GitHub-Copilot-API
+ * Nimmt das JSON der fehlenden Episode und erzeugt strukturierte Metadaten
  */
 
 import { readFileSync, writeFileSync } from "fs";
@@ -14,7 +14,7 @@ const __dirname = dirname(__filename);
 const WORKSPACE_ROOT = join(__dirname, "..", "..", "..");
 
 /**
- * Build prompt for GitHub Copilot
+ * Baut den Prompt für GitHub Copilot
  */
 function buildCopilotPrompt(episode) {
   return `Analysiere die folgende Podcast-Episode und erstelle daraus strukturierte Metadaten im JSON-Format.
@@ -63,7 +63,7 @@ Gib jetzt NUR das JSON-Objekt aus:`;
 }
 
 /**
- * Call GitHub Copilot API and extract JSON
+ * Ruft die GitHub-Copilot-API auf und extrahiert das JSON
  */
 async function callCopilotAPI(prompt) {
   console.log("🤖 Calling GitHub Copilot API...");
@@ -76,7 +76,7 @@ async function callCopilotAPI(prompt) {
 
     console.log("📤 Sending prompt to Copilot...");
 
-    // Use fetch for API call (available in Node.js 18+)
+    // fetch für den API-Aufruf nutzen (ab Node.js 18 verfügbar)
     const response = await fetch(
       "https://api.github.com/copilot/v1/chat/completions",
       {
@@ -122,10 +122,10 @@ async function callCopilotAPI(prompt) {
       throw new Error("No content in Copilot response");
     }
 
-    // Remove markdown code blocks if present
+    // Markdown-Code-Blöcke entfernen, falls vorhanden
     jsonText = jsonText.replace(/^```json?\n?/gm, "").replace(/\n?```$/gm, "");
 
-    // Try to find JSON object in the output
+    // JSON-Objekt in der Ausgabe suchen
     const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error(
@@ -136,7 +136,7 @@ async function callCopilotAPI(prompt) {
 
     jsonText = jsonMatch[0];
 
-    // Parse JSON
+    // JSON parsen
     const metadata = JSON.parse(jsonText);
 
     console.log("✅ Successfully parsed metadata from Copilot");
@@ -150,7 +150,7 @@ async function callCopilotAPI(prompt) {
 }
 
 /**
- * Validate metadata structure
+ * Validiert die Struktur der Metadaten
  */
 function validateMetadata(metadata) {
   const requiredFields = [
@@ -192,30 +192,30 @@ function validateMetadata(metadata) {
 }
 
 /**
- * Main function
+ * Hauptfunktion
  */
 async function main() {
   try {
-    // Read missing episode from file
+    // Fehlende Episode aus der Datei lesen
     const missingEpisodePath = join(WORKSPACE_ROOT, "missing-episode.json");
     console.log(`📖 Reading missing episode from: ${missingEpisodePath}`);
 
     const episodeData = JSON.parse(readFileSync(missingEpisodePath, "utf-8"));
     console.log(`\n📌 Processing episode: "${episodeData.title}"`);
 
-    // Build prompt
+    // Prompt bauen
     const prompt = buildCopilotPrompt(episodeData);
 
-    // Call Copilot API
+    // Copilot-API aufrufen
     const metadata = await callCopilotAPI(prompt);
 
-    // Validate metadata
+    // Metadaten validieren
     validateMetadata(metadata);
 
-    // Add audioUrl from original episode data
+    // audioUrl aus den Original-Episodendaten ergänzen
     metadata.audioUrl = episodeData.audioUrl;
 
-    // Write metadata to file
+    // Metadaten in eine Datei schreiben
     const metadataPath = join(WORKSPACE_ROOT, "metadata.json");
     writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
     console.log(`\n✅ Metadata written to: ${metadataPath}`);

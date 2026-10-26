@@ -260,8 +260,8 @@ jobs:
         with:
           node-version: 24
 
-      # Board sync runs inline (not via label events) so it works even though
-      # the labels above were added with GITHUB_TOKEN (which does not cascade).
+      # Board-Sync läuft inline (nicht über Label-Events) und funktioniert daher auch,
+      # obwohl die Labels oben mit GITHUB_TOKEN gesetzt wurden (das kaskadiert nicht).
       - name: Sync issue to project board
         continue-on-error: true
         env:

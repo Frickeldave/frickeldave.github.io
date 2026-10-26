@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Generate episode metadata using GitHub Copilot
- * Takes missing episode JSON and generates structured metadata
- * With fallback to API or manual input if CLI fails
+ * Erzeugt Episoden-Metadaten über GitHub Copilot
+ * Nimmt das JSON der fehlenden Episode und erzeugt strukturierte Metadaten
+ * Mit Fallback auf API oder manuelle Eingabe, wenn die CLI scheitert
  */
 
 import { readFileSync, writeFileSync } from "fs";
@@ -17,7 +17,7 @@ const __dirname = dirname(__filename);
 const WORKSPACE_ROOT = join(__dirname, "..", "..", "..");
 
 /**
- * Build prompt for GitHub Copilot CLI
+ * Baut den Prompt für die GitHub-Copilot-CLI
  */
 function buildCopilotPrompt(episode) {
   return `Analysiere die folgende Podcast-Episode und erstelle daraus strukturierte Metadaten als valides JSON.
@@ -64,22 +64,22 @@ Gib JETZT ausschließlich das JSON-Objekt aus, beginnend mit { und endend mit }:
 }
 
 /**
- * Call GitHub Copilot CLI and extract JSON
+ * Ruft die GitHub-Copilot-CLI auf und extrahiert das JSON
  */
 async function callCopilotCLI(prompt) {
   console.log("🤖 Calling GitHub Copilot CLI...");
 
   try {
-    // Write prompt to temporary file to avoid shell escaping issues
+    // Prompt in eine temporäre Datei schreiben, um Shell-Escaping-Probleme zu vermeiden
     const tempPromptFile = join(WORKSPACE_ROOT, ".copilot-prompt.txt");
     writeFileSync(tempPromptFile, prompt, "utf-8");
 
-    // Call gh copilot with the prompt from file using pipe and xargs
+    // gh copilot mit dem Prompt aus der Datei über Pipe und xargs aufrufen
     const command = `cat "${tempPromptFile}" | xargs -0 gh copilot -p`;
 
     console.log("📤 Sending prompt to Copilot...");
 
-    // Prepare environment with Copilot auth token
+    // Umgebung mit Copilot-Auth-Token vorbereiten
     const env = Object.assign({}, process.env);
     if (process.env.COPILOT_GITHUB_TOKEN) {
       env.GITHUB_TOKEN = process.env.COPILOT_GITHUB_TOKEN;
@@ -95,23 +95,23 @@ async function callCopilotCLI(prompt) {
 
     console.log("📥 Received response from Copilot");
 
-    // Clean up temp file
+    // Temporäre Datei aufräumen
     try {
       const { unlinkSync } = await import("fs");
       unlinkSync(tempPromptFile);
     } catch (e) {
-      // Ignore cleanup errors
+      // Aufräumfehler ignorieren
     }
 
     console.log("📥 Received response from Copilot");
 
-    // Extract JSON from output (might be wrapped in code blocks or have extra text)
+    // JSON aus der Ausgabe extrahieren (evtl. in Code-Blöcke oder Zusatztext verpackt)
     let jsonText = output.trim();
 
-    // Remove markdown code blocks if present
+    // Markdown-Code-Blöcke entfernen, falls vorhanden
     jsonText = jsonText.replace(/^```json?\n?/gm, "").replace(/\n?```$/gm, "");
 
-    // Try to find JSON object in the output
+    // JSON-Objekt in der Ausgabe suchen
     const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("Could not find JSON object in Copilot response");
@@ -119,15 +119,15 @@ async function callCopilotCLI(prompt) {
 
     jsonText = jsonMatch[0];
 
-    // Clean up common JSON issues (trailing commas, etc.)
+    // Gängige JSON-Probleme bereinigen (abschließende Kommas usw.)
     try {
-      // Remove trailing commas before closing braces/brackets
+      // Abschließende Kommas vor schließenden Klammern entfernen
       jsonText = jsonText.replace(/,\s*([}\]])/g, "$1");
     } catch (cleanupError) {
-      // Ignore cleanup errors, continue with original text
+      // Bereinigungsfehler ignorieren, mit dem Originaltext weitermachen
     }
 
-    // Parse JSON
+    // JSON parsen
     const metadata = JSON.parse(jsonText);
 
     console.log("✅ Successfully parsed metadata from Copilot");
@@ -142,7 +142,7 @@ async function callCopilotCLI(prompt) {
 }
 
 /**
- * Validate metadata structure
+ * Validiert die Struktur der Metadaten
  */
 function validateMetadata(metadata) {
   const requiredFields = [
@@ -184,30 +184,30 @@ function validateMetadata(metadata) {
 }
 
 /**
- * Main function
+ * Hauptfunktion
  */
 async function main() {
   try {
-    // Read missing episode from file
+    // Fehlende Episode aus der Datei lesen
     const missingEpisodePath = join(WORKSPACE_ROOT, "missing-episode.json");
     console.log(`📖 Reading missing episode from: ${missingEpisodePath}`);
 
     const episodeData = JSON.parse(readFileSync(missingEpisodePath, "utf-8"));
     console.log(`\n📌 Processing episode: "${episodeData.title}"`);
 
-    // Build prompt
+    // Prompt bauen
     const prompt = buildCopilotPrompt(episodeData);
 
-    // Call Copilot CLI
+    // Copilot-CLI aufrufen
     const metadata = await callCopilotCLI(prompt);
 
-    // Validate metadata
+    // Metadaten validieren
     validateMetadata(metadata);
 
-    // Add audioUrl from original episode data
+    // audioUrl aus den Original-Episodendaten ergänzen
     metadata.audioUrl = episodeData.audioUrl;
 
-    // Write metadata to file
+    // Metadaten in eine Datei schreiben
     const metadataPath = join(WORKSPACE_ROOT, "metadata.json");
     writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
     console.log(`\n✅ Metadata written to: ${metadataPath}`);

@@ -4,7 +4,7 @@ import PageHeader from "@components/common/PageHeader.astro";
 import NewsSidebar from "@components/news/Sidebar.astro";
 import { FaRegCalendarAlt } from "react-icons/fa";
 
-// Import news data
+// News-Daten importieren
 import newsDataRaw from "../../public/data/news.json";
 import placeholderNewsImage from "@/assets/placeholder-news.png";
 import { Image, type ImageMetadata } from "astro:assets";
@@ -28,12 +28,12 @@ type NewsData = {
 
 const newsData = newsDataRaw as NewsData;
 
-// Filter visible news and sort by date
+// Sichtbare News filtern und nach Datum sortieren
 const visibleNews = newsData.news
   .filter((item) => item.visible)
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-// Format date helper
+// Helfer zur Datumsformatierung
 const formatNewsDate = (dateString: string): string => {
   const date = new Date(dateString);
   return date.toLocaleDateString("de-DE", {
@@ -43,7 +43,7 @@ const formatNewsDate = (dateString: string): string => {
   });
 };
 
-// Get unique years for filtering
+// Eindeutige Jahre für die Filterung ermitteln
 const years = [
   ...new Set(visibleNews.map((item) => new Date(item.date).getFullYear())),
 ].sort((a, b) => b - a);
@@ -200,13 +200,13 @@ const years = [
   </section>
 
   <script>
-    // Client-side filtering logic for news
+    // Clientseitige Filterlogik für die News
     (() => {
       let selectedYear: number | null = null;
       let searchQuery = "";
       let isInitialized = false;
 
-      // Get news cards (cached after first call)
+      // News-Karten holen (nach dem ersten Aufruf gecacht)
       function getNewsCards() {
         const newsGrid = document.getElementById("news-grid");
         return newsGrid ? newsGrid.querySelectorAll(".news-card") : [];
@@ -223,13 +223,13 @@ const years = [
           const text = cardElement.dataset.text || "";
           const year = parseInt(cardElement.dataset.year || "0");
 
-          // Check search query
+          // Suchbegriff prüfen
           const matchesSearch =
             searchQuery === "" ||
             title.includes(searchQuery.toLowerCase()) ||
             text.includes(searchQuery.toLowerCase());
 
-          // Check year filter
+          // Jahresfilter prüfen
           const matchesYear = selectedYear === null || year === selectedYear;
 
           if (matchesSearch && matchesYear) {
@@ -240,7 +240,7 @@ const years = [
           }
         });
 
-        // Update results count (both desktop and mobile)
+        // Ergebniszähler aktualisieren (Desktop und Mobil)
         const countText = `${visibleCount} von ${totalNews} News`;
         const resultsCount = document.getElementById("results-count");
         const mobileResultsCount = document.getElementById(
@@ -249,7 +249,7 @@ const years = [
         if (resultsCount) resultsCount.textContent = countText;
         if (mobileResultsCount) mobileResultsCount.textContent = countText;
 
-        // Show/hide no results message
+        // „Keine Ergebnisse“-Meldung ein- bzw. ausblenden
         const noResults = document.getElementById("no-results");
         const newsGrid = document.getElementById("news-grid");
         if (noResults) {
@@ -260,7 +260,7 @@ const years = [
         }
       }
 
-      // Update year button styles
+      // Stile der Jahres-Buttons aktualisieren
       function updateYearButtonStyles() {
         document
           .querySelectorAll(".year-filter, .mobile-year-filter")
@@ -274,12 +274,12 @@ const years = [
           });
       }
 
-      // Clear all filters
+      // Alle Filter zurücksetzen
       function clearAllFilters() {
         searchQuery = "";
         selectedYear = null;
 
-        // Clear search inputs
+        // Suchfelder leeren
         const searchInput = document.getElementById(
           "search-input"
         ) as HTMLInputElement;
@@ -289,13 +289,13 @@ const years = [
         if (searchInput) searchInput.value = "";
         if (mobileSearchInput) mobileSearchInput.value = "";
 
-        // Clear year button styles
+        // Stile der Jahres-Buttons zurücksetzen
         updateYearButtonStyles();
 
         filterAndSort();
       }
 
-      // Handle year button click
+      // Klick auf einen Jahres-Button behandeln
       function handleYearClick(target: HTMLElement) {
         const year = parseInt(target.dataset.year || "0");
         console.log(
@@ -316,11 +316,11 @@ const years = [
         filterAndSort();
       }
 
-      // Handle search input
+      // Eingabe im Suchfeld behandeln
       function handleSearchInput(value: string) {
         searchQuery = value;
 
-        // Sync both search inputs
+        // Beide Suchfelder synchron halten
         const searchInput = document.getElementById(
           "search-input"
         ) as HTMLInputElement;
@@ -341,11 +341,11 @@ const years = [
 
         console.log("Setting up news filter event listeners...");
 
-        // Global click handler using event delegation
+        // Globaler Klick-Handler über Event-Delegation
         document.addEventListener("click", (e) => {
           const target = e.target as HTMLElement;
 
-          // Use closest() to find the button even if click is on child element
+          // closest() nutzen, um den Button auch bei Klick auf ein Kindelement zu finden
           const yearButton = target.closest(
             ".year-filter, .mobile-year-filter"
           ) as HTMLElement;
@@ -355,7 +355,7 @@ const years = [
             return;
           }
 
-          // Check for clear filters button
+          // Auf den „Filter zurücksetzen“-Button prüfen
           const clearButton = target.closest(
             "#clear-filters, #mobile-clear-filters"
           );
@@ -366,7 +366,7 @@ const years = [
           }
         });
 
-        // Global input handler for search fields
+        // Globaler Input-Handler für die Suchfelder
         document.addEventListener("input", (e) => {
           const target = e.target as HTMLInputElement;
 
@@ -378,7 +378,7 @@ const years = [
           }
         });
 
-        // Mobile years toggle
+        // Mobile Jahres-Umschaltung
         document.addEventListener("click", (e) => {
           const target = e.target as HTMLElement;
           const toggle = target.closest("#mobile-years-toggle");
@@ -400,14 +400,14 @@ const years = [
         console.log("News filters initialized");
       }
 
-      // Initialize when DOM is ready
+      // Initialisieren, sobald das DOM bereit ist
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initialize);
       } else {
         initialize();
       }
 
-      // Re-run filterAndSort on Astro page transitions (event listeners persist)
+      // filterAndSort bei Astro-Seitenübergängen erneut ausführen (Event-Listener bleiben erhalten)
       document.addEventListener("astro:page-load", () => {
         filterAndSort();
       });

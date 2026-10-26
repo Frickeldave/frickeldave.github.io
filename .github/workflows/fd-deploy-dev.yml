@@ -1,10 +1,28 @@
 name: fd-deploy-dev (Deploy dev on CI success)
 
+# Zwei Jobs nach einem grünen FD-CI-Lauf auf `dev`:
+# build-and-deploy → dispatcht das HomeNet/Ansible-Playbook (Tag `fd`).
+# release          → veröffentlicht das GitHub-Pre-Release `dev-v<version>` für
+# genau den CI-Commit (Version aus der package.json
+# dieses Commits, nicht vom Default-Branch).
+#
+# Release-Semantik:
+# * ein `dev-v<version>`-Pre-Release pro Version; wiederholte dev-Deploys
+# derselben Version sind No-Ops (`::notice::`, grün).
+# * `--latest=false --prerelease` sorgt dafür, dass nur stabile Releases „latest"
+# sind, sodass fd-deploy-prd dagegen vergleichen kann (filtert
+# `isPrerelease == false` und ignoriert `dev-v*`-Tags defensiv).
+# * ein vorhandener Tag auf einem anderen Commit wird nie verschoben: Der Job
+# warnt und überspringt, statt veröffentlichte Historie umzuschreiben.
+#
+# Beide Jobs laufen auf den selbstgehosteten `fd`-Runnern; das Runner-Image
+# bringt node 24, gh, jq und git bereits mit, eine Setup-Action ist nicht nötig.
+
 on:
   workflow_dispatch:
-  # Deploys only after FD CI succeeds on a push to `dev`. Using `workflow_run`
-  # (rather than invoking fd-ci from here) guarantees this workflow can never
-  # deploy a build that hasn't already passed CI.
+  # Deployt nur, nachdem FD CI bei einem Push auf `dev` erfolgreich war. `workflow_run`
+  # (statt fd-ci von hier aufzurufen) stellt sicher, dass dieser Workflow nie einen
+  # Build deployt, der CI nicht bereits bestanden hat.
   workflow_run:
     workflows:
       - "fd-ci (Lint, Format, Vale, e2e checks)"
@@ -16,11 +34,11 @@ permissions:
 
 jobs:
   build-and-deploy:
-    # Deploy when FD CI passed on `dev` after a push (human push) or an
-    # explicit workflow_dispatch (fd-podcast-update / manual CI). Pull_request
-    # runs never trigger a dev deploy.
+    # Deployt, wenn FD CI auf `dev` nach einem Push (menschlicher Push) oder einem
+    # expliziten workflow_dispatch (fd-podcast-update / manuelle CI) grün war.
+    # Pull-Request-Läufe lösen nie ein dev-Deploy aus.
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, fd]
     steps:
       - name: Print branch information
         run: |
@@ -58,3 +76,97 @@ jobs:
           echo "Target: waltraud-dc.yaml playbook"
           echo "Limit: waltraud"
           echo "Variables: homeassistant_reset=false, tag_select=fd, source_branch=${{ github.event.workflow_run.head_branch }}"
+
+  release:
+    name: Publish dev release (dev-v<version>)
+    needs: build-and-deploy
+    # Gleiches Gate wie der Deploy-Job: Nur ein grüner FD-CI-Lauf für `dev`
+    # veröffentlicht ein Release. Ein reiner `workflow_dispatch` dieses Workflows
+    # hat keine workflow_run-Payload, es gäbe also keinen Commit als Ziel.
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
+    runs-on: [self-hosted, fd]
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Die Version muss aus dem von CI geprüften Commit kommen; dev kann
+          # beim Start dieses Jobs bereits einen Commit weiter sein.
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Read version from the deployed commit
+        id: version
+        run: |
+          set -euo pipefail
+          VERSION="$(node -e "console.log(require('./package.json').version)")"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "tag=dev-v${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "📦 dev release tag: dev-v${VERSION} (commit ${COMMIT_SHA})"
+
+      - name: Create or confirm the dev pre-release
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          resolve_tag_commit() {
+            local tag="$1"
+            local ref_json object_sha object_type
+
+            if ! ref_json="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" 2>/dev/null)"; then
+              return 1
+            fi
+
+            object_sha="$(jq -r '.object.sha' <<< "${ref_json}")"
+            object_type="$(jq -r '.object.type' <<< "${ref_json}")"
+
+            case "${object_type}" in
+              commit)
+                printf '%s\n' "${object_sha}"
+                ;;
+              tag)
+                gh api "repos/${GITHUB_REPOSITORY}/git/tags/${object_sha}" --jq '.object.sha'
+                ;;
+              *)
+                echo "::error::Tag ${tag} resolves to unsupported Git object type ${object_type}."
+                exit 1
+                ;;
+            esac
+          }
+
+          # Ein vorhandenes Release bedeutet: Diese Version ist schon veröffentlicht; dev kann
+          # mit unveränderter Version mehrfach neu deployt werden.
+          if gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "::notice::${RELEASE_TAG} already released; skipping."
+            exit 0
+          fi
+
+          if existing_commit="$(resolve_tag_commit "${RELEASE_TAG}")"; then
+            if [ "${existing_commit}" != "${COMMIT_SHA}" ]; then
+              echo "::warning::${RELEASE_TAG} tag exists without a release and points to ${existing_commit}, not ${COMMIT_SHA}; version already released; skipping."
+              exit 0
+            fi
+
+            echo "${RELEASE_TAG} already points to ${COMMIT_SHA}; creating the missing GitHub Release record."
+          fi
+
+          if ! gh release create "${RELEASE_TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${COMMIT_SHA}" \
+            --title "${RELEASE_TAG}" \
+            --generate-notes \
+            --prerelease \
+            --latest=false 2>"${RUNNER_TEMP}/release.err"; then
+            # Zwei parallele Läufe derselben Version können beide die Prüfungen oben
+            # bestehen; der Verlierer erhält 422 „already_exists" — das ist ein Erfolg.
+            if grep -qi "already_exists\|already exists" "${RUNNER_TEMP}/release.err"; then
+              echo "::notice::${RELEASE_TAG} was created by a concurrent run; skipping."
+              exit 0
+            fi
+            cat "${RUNNER_TEMP}/release.err" >&2
+            exit 1
+          fi
+          echo "✅ Created pre-release ${RELEASE_TAG} for ${COMMIT_SHA}"

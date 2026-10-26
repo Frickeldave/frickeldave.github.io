@@ -1,0 +1,110 @@
+# Vorlage für eine Dev-Maschine (einmal pro menschlichem Mitglied gerendert von
+# .github/workflows/fd-bootstrap/dev-machines.mjs, angewendet von .github/workflows/fd-bootstrap.yml).
+# Platzhalter nutzen die Doppel-Unterstrich-Konvention. __SSH_PUBLIC_KEY__ wird
+# durch ein JSON-String-Literal ersetzt; ein leerer String bedeutet „kein Schlüssel": dann
+# läuft der Container ohne sshd und ist nur über `kubectl exec` erreichbar.
+# Es gibt bewusst keine Volumes: Alle Daten liegen im Container
+# und gehen verloren, wenn der Pod neu erzeugt wird.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: __MACHINE_NAME__
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: fd-dev-machine
+    app.kubernetes.io/part-of: fd-dev-machines
+    app.kubernetes.io/managed-by: fd-bootstrap
+    frickeldave.github.io/developer: __DEVELOPER_SLUG__
+  annotations:
+    frickeldave.github.io/developer-name: __DEVELOPER_NAME__
+    frickeldave.github.io/developer-github: __DEVELOPER_GITHUB__
+spec:
+  serviceName: __MACHINE_NAME__
+  replicas: 1
+  # OnDelete: Ein geändertes Pod-Template (Image, Schlüssel, Env) startet eine
+  # laufende Maschine nie neu; es wirkt erst beim bewussten Löschen des Pods.
+  updateStrategy:
+    type: OnDelete
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fd-dev-machine
+      frickeldave.github.io/developer: __DEVELOPER_SLUG__
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: fd-dev-machine
+        app.kubernetes.io/part-of: fd-dev-machines
+        frickeldave.github.io/developer: __DEVELOPER_SLUG__
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: dev
+          image: __IMAGE__
+          imagePullPolicy: Always
+          env:
+            # Leer = kein SSH: Der Entrypoint hält den Container für `kubectl exec` am Leben.
+            - name: FD_SSH_PUBLIC_KEY
+              value: __SSH_PUBLIC_KEY__
+            - name: FD_REPO_URL
+              value: __REPO_URL__
+            - name: FD_REPO_BRANCH
+              value: __REPO_BRANCH__
+          ports:
+            - name: ssh
+              containerPort: 2222
+            - name: squad-rc
+              containerPort: 3000
+          # Readiness-Marker, den der Entrypoint in beiden Modi schreibt (mit und
+          # ohne sshd), damit auch eine Maschine ohne SSH-Schlüssel Ready wird.
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - test -f "${HOME}/.fd-ready"
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          # Cluster-Policy verlangt cpu und memory für Requests und Limits.
+          # 4 CPUs decken die Node-/Playwright-/Test-Runner-Last einer interaktiven Dev-Maschine.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: __MACHINE_NAME__
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: fd-dev-machine
+    app.kubernetes.io/part-of: fd-dev-machines
+    app.kubernetes.io/managed-by: fd-bootstrap
+    frickeldave.github.io/developer: __DEVELOPER_SLUG__
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: fd-dev-machine
+    frickeldave.github.io/developer: __DEVELOPER_SLUG__
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: ssh
+    - name: squad-rc
+      port: 3000
+      targetPort: squad-rc

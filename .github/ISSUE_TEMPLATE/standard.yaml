@@ -1,0 +1,82 @@
+name: Standard-Ticket
+description: Standardvorlage für alle Änderungen an dieser Website
+title: '[FEATURE][BUG][TASK][CHORE] '
+labels: ['go:no', 'squad', 'priority:p1', 'type:feature']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Standardticket für Änderungen an dieser Website (Astro-Site mit Blog, Docs, Rezepten und Downloads).
+  - type: textarea
+    id: goal
+    attributes:
+      label: Ziel
+      description: Was soll die Änderung erreichen, und für wen?
+      placeholder: 'Was soll nach der Änderung anders sein, und für wen?'
+    validations:
+      required: true
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technische Beschreibung
+      description: 'Technische Details der Umsetzung: betroffene Dateien, Komponenten und Abhängigkeiten.'
+      placeholder: 'z. B. src/pages/, neue Astro-Komponente, Update einer Abhängigkeit'
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Akzeptanzkriterien
+      description: Bedingungen, die erfüllt sein müssen, damit die Änderung als korrekt gilt.
+      placeholder: 'z. B. Build läuft ohne Warnungen, Darstellung auf Mobil und Desktop geprüft'
+    validations:
+      required: false
+  - type: textarea
+    id: scope_out_of_scope
+    attributes:
+      label: Umfang / Abgrenzung
+      description: Was ist enthalten und was ist ausdrücklich nicht Teil der Änderung?
+      placeholder: 'z. B. nur die Blog-Übersicht, bestehende Artikel bleiben unverändert'
+    validations:
+      required: false
+  - type: checkboxes
+    id: affected_components
+    attributes:
+      label: Betroffene Komponenten
+      description: Welche Komponenten sind von der Änderung betroffen?
+      options:
+        - label: Website (Astro/Tailwind)
+        - label: Blog
+        - label: Docs
+        - label: Rezepte
+        - label: Downloads
+        - label: Seiteninhalte/Content
+        - label: Styles/Design
+        - label: Scripts/Tooling
+        - label: CI/CD-Workflow
+        - label: Kubernetes/Infrastruktur
+        - label: Squad-Automation
+        - label: Entwicklerdokumentation
+        - label: Nutzerdokumentation
+        - label: Sonstiges
+    validations:
+      required: false
+  - type: textarea
+    id: open_questions
+    attributes:
+      label: Offene Fragen
+      description: Was muss vor dem Start der Umsetzung noch geklärt werden?
+      placeholder: 'z. B. betrifft die Änderung eine bestehende Seite oder kommt eine neue Route hinzu?'
+    validations:
+      required: false
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risiko
+      description: Wie hoch schätzt du das Risiko der Änderung ein?
+      options:
+        - niedrig
+        - mittel
+        - hoch
+    validations:
+      required: false

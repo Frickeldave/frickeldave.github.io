@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * End-to-end smoke test for the built site's docs area.
+ * End-to-End-Smoke-Test für den Docs-Bereich der gebauten Seite.
  *
- * Verifies that the two workshop landing pages are served with HTTP 200 and
- * render the expected main heading (h1). The pages are group index pages
- * rendered by `src/pages/docs/[...id].astro` → `CollectionLayout`.
+ * Prüft, dass die beiden Workshop-Landingpages mit HTTP 200 ausgeliefert werden und
+ * die erwartete Hauptüberschrift (h1) rendern. Die Seiten sind Gruppen-Indexseiten,
+ * gerendert von `src/pages/docs/[...id].astro` → `CollectionLayout`.
  */
 
 const workshopPages = [

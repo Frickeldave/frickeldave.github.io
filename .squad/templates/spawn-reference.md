@@ -24,7 +24,7 @@ When `create_session` is available, spawn commit-producing agents as **sub-sessi
 - **Task** (`task` tool): Pure analysis, coordination, read-only research, or quick one-shot work
 
 **Sub-session parameters:**
-- **`name`**: `"{Name} {verb}ing {noun}"` — 40-char max, sentence case (e.g., "EECOM refactoring auth", "Flight reviewing arch")
+- **`name`**: `"{Name} {verb}ing {noun}"` — 40-char max, sentence case (e.g., "Runtime Engineer refactoring auth", "Lead reviewing architecture")
 - **`coordinate_with_creator`**: `true` (always — enables cross-session messaging)
 - **`notify_on_idle`**: `"once"` (coordinator gets notified when agent finishes)
 - **`kickoff.prompt`**: The full agent prompt (same as task prompt below)
@@ -61,7 +61,7 @@ Standard spawn via `task` tool — used in CLI, or as fallback when `create_sess
 
 - **`agent_type`**: `"general-purpose"` (always — this gives agents full tool access)
 - **`mode`**: `"background"` (default) or `"sync"` — use `"background"` for all parallelizable work; use `"sync"` only when the result is needed before the next step can proceed
-- **`description`**: `"{Name}: {brief task summary}"` (e.g., `"Ripley: Design REST API endpoints"`, `"Dallas: Build login form"`) — this is what appears in the UI, so it MUST carry the agent's name and what they're doing
+- **`description`**: `"{Name}: {brief task summary}"` (e.g., `"Runtime Engineer: Design REST API endpoints"`, `"Experience Engineer: Build login form"`) — this is what appears in the UI, so it MUST carry the agent's name and what they're doing
 - **`prompt`**: The full agent prompt (see below)
 
 **⚡ Inline the charter.** Before spawning, read the agent's `charter.md` (resolve from team root: `{team_root}/.squad/agents/{name}/charter.md`) and paste its contents directly into the spawn prompt. This eliminates a tool call from the agent's critical path. The agent still reads its own `history.md` and `decisions.md`.
@@ -123,6 +123,11 @@ prompt: |
   whenever they are available:
   - `squad_state_read` / `squad_state_list` for decisions, history, logs, and inbox entries
   - `squad_state_write` / `squad_state_append` for durable updates
+  - `squad_state_create_if_absent` when exactly one canonical artifact must exist
+    (retrospectives, session logs, claim markers). It creates the key atomically
+    only when absent and never overwrites; on `error: "conflict"` another agent
+    already won, and on `error: "uncertainty"` the outcome is unknown — do not
+    assume success and do not overwrite in either case.
   - `squad_state_delete` after Scribe merges inbox entries
   - `squad_state_health` when diagnosing backend availability
   - `squad_decide` for team-relevant decisions

@@ -1,20 +1,20 @@
 # FR005: Automatisierter Podcast-Update-Workflow
 
 **Status:** Aktiv  
-**Zuletzt aktualisiert:** 2026-02-26  
+**Zuletzt aktualisiert:** 2026-10-26  
 **Verantwortung:** frickeldave  
 
 ## Übersicht
 
-Der Podcast-Update-Workflow (`podcast-update.yml`) ist eine vollständig automatisierte GitHub Actions Pipeline, die:
+Der Podcast-Update-Workflow (`fd-podcast-update.yml`) ist eine vollständig automatisierte GitHub
+Actions Pipeline, die:
 
 1. **Abruft** neue Episoden vom Acast RSS-Feed (DOAG VOICES)
 2. **Vergleicht** Episoden mit vorhandenen Einträgen in `doag.md`
 3. **Generiert** Episode-Metadaten mittels GitHub Copilot CLI
-4. **Erstellt** ein GitHub Issue für die Nachverfolgung
-5. **Aktualisiert** die doag.md-Datei mit neuen Episoden
-6. **Verwaltet** PRs über dev → main Branches
-7. **Mergt automatisch** mit Squash-Commits sobald CI-Checks bestanden
+4. **Committet** die neue Episode direkt auf `dev`
+5. **Stößt** `fd-ci` auf `dev` an, das bei Erfolg `fd-deploy-dev` auslöst
+6. **Aktualisiert** bei `target=all` oder im Scheduler-Lauf zusätzlich `main` und deployt die Seite
 
 ## Architektur
 
@@ -44,21 +44,24 @@ Acast RSS-Feed
     ├─→ Push zu origin/dev
     │       ↓
     │   Deployment-Trigger (via workflow_dispatch API)
-    │   └─→ deploy-dev.yml auf 'dev' triggern
+    │   └─→ fd-ci.yml auf 'dev' triggern
+    │       └─→ erfolgreicher Lauf startet fd-deploy-dev.yml (workflow_run)
     │
     ├─→ Checkout main Branch (bei target='all' oder schedule)
     ├─→ Mit --no-verify committen
     └─→ Push zu origin/main
             ↓
-    Deployment-Trigger (via workflow_dispatch API)
-    └─→ deploy-prd.yml auf 'main' triggern
+    Job deploy-main im selben Workflow
+    ├─→ withastro/action baut die Site
+    └─→ actions/deploy-pages veröffentlicht GitHub Pages
             ↓
     Erfolgsmeldung
     ├─→ Episode-Details anzeigen
     └─→ Branch-Status bestätigen
 ```
 
-> **Hinweis:** Das Diagramm zeigt den aktuellen direkten Push-Workflow. Die Dokumentation in den Workflow-Schritten beschreibt teilweise noch den älteren PR-basierten Ansatz.
+> **Hinweis:** Der Workflow committet direkt auf `dev` (und bei Bedarf auf `main`), er erzeugt keine
+> Pull Requests mehr.
 
 ### Content-Struktur
 
@@ -91,11 +94,10 @@ episodes:
 ## Workflow-Schritte
 
 ### 1. Verfügbarkeitsprüfungen
-- **GitHub CLI prüfen** - Verifiziert ob `gh` Befehl verfügbar ist
-- **GitHub Authentication prüfen** - Validiert `GH_TOKEN` Secret
-- **GitHub Copilot CLI prüfen** - Verifiziert `gh copilot` Erweiterung
-- **Repository auschecken** - Klont Repo mit vollständigem Verlauf
-- **Node.js-Version prüfen** - Stellt sicher, dass v24 installiert ist (via NVM)
+- **Repository auschecken** - Klont das Repo mit vollständigem Verlauf
+- **Git-Konfiguration setzen** - hinterlegt `github-actions[bot]` als Autor
+- **Node.js-Version prüfen** - stellt sicher, dass der Runner v24 mitbringt; der Job bricht hart ab,
+  wenn das Image davon abweicht
 
 ### 2. Episode-Erkennung
 - **Acast RSS abrufen** - HTTP-Abruf vom RSS-Feed
@@ -119,30 +121,28 @@ episodes:
   - Validiere erforderliche Felder (Titel, Edition, Gäste, Datum, Beschreibung, Links)
   - Speichere als `metadata.json`
 
-### 4. Issue & PR-Erstellung
-- **GitHub Issue erstellen** - Tracker mit Label `podcast-update`
-- **Feature-Branch erstellen** - Format: `podcast-update-{TIMESTAMP}-{SLUG}`
-- **doag.md aktualisieren** - Neue Episode in Frontmatter-Array einfügen
+### 4. Commit auf `dev`
+- **doag.md aktualisieren** - Neue Episode in das Frontmatter-Array einfügen
 - **Mit --no-verify committen** - Husky Pre-Commit-Hooks (Linting) überspringen
-- **Branch pushen** - Zu Origin hochladen
+- **Nach `dev` pushen** - `git push origin dev`
 
-### 5. PR-Verwaltung (dev Branch)
-- **PR zu dev erstellen** - Base: dev, Head: Feature-Branch
-- **Auto-Merge mit Copilot** - `gh pr merge --auto --squash`
-  - Wartet auf alle CI-Checks
-  - Erfordert "Allow auto-merge" auf dev Branch aktiviert
-  - Verwendet Squash-Strategie für sauberen Verlauf
-- **PR-Merge verifizieren** - Prüfe finalen Status
+### 5. CI und Dev-Deployment anstoßen
+- **`fd-ci` auf `dev` dispatchen** - `workflow_dispatch` auf `fd-ci.yml` mit `ref: dev`
+- **Weiterer Ablauf** - Ein erfolgreicher `fd-ci`-Lauf auf `dev` startet `fd-deploy-dev`, das
+  HomeNet deployt und das Pre-Release `dev-v<version>` setzt
 
-### 6. Deployment zu main
-- **Dev Branch auschecken** - Wechsel zu aktualisiertem dev
-- **PR zu main erstellen** - Base: main, Head: dev
-- **Auto-Merge zu main** - Gleiche Merge-Strategie wie dev
-- **PR-Merge verifizieren** - Bestätige erfolgreiches Merge
+### 6. Update von `main` (nur bei `target=all` oder im Scheduler-Lauf)
+- **`main` auschecken** - `git checkout main` und `git pull origin main`
+- **doag.md aus `dev` übernehmen** - `git checkout dev -- src/content/aboutme/doag.md`, damit die
+  Episode-ID identisch bleibt
+- **Mit --no-verify committen und pushen** - `git push origin main`
+- **Deployment im selben Workflow** - Der Job `deploy-main` baut die Site mit `withastro/action` und
+  veröffentlicht sie mit `actions/deploy-pages`
 
-> **Hinweis:** Die aktuelle Implementierung verwendet direktes Pushing statt PRs. Schritte 4-6 beschreiben den ursprünglichen PR-basierten Workflow und sind teilweise veraltet.
+> **Hinweis:** Frühere Fassungen dieses Workflows erzeugten Issues und Pull Requests. Der aktuelle
+> Stand committet direkt auf die Branches.
 
-### 7. Automated Deployments
+### 7. Automatisierte Deployments
 
 **WARUM manuelle Deployment-Trigger notwendig sind:**
 
@@ -158,57 +158,46 @@ GitHub Actions hat ein bewusst eingebautes Sicherheits-Feature: Workflows, die m
   - ❌ **Sicherheitsrisiko**: PAT hat breitere Permissions als nötig
   - ❌ **Wartungsaufwand**: Token müssen regelmäßig rotiert werden
 
-**WIE die expliziten Deployment-Trigger funktionieren:**
+**WIE der Dev-Trigger funktioniert:**
 
-Statt auf automatische Push-Trigger zu warten, verwendet der Workflow explizite `workflow_dispatch` API-Calls:
+Statt auf einen automatischen Push-Trigger zu warten, verwendet der Workflow einen expliziten `workflow_dispatch`-API-Call auf `fd-ci`:
 
-1. **Dev-Deployment-Trigger** (nach erfolgreichem dev-Update):
-   ```yaml
-   - name: Trigger dev deployment
-     if: steps.update_dev.outcome == 'success' && 
-         steps.check_episodes.outputs.missing_episode != '' && 
-         github.event.inputs.dryRun != 'true'
-     continue-on-error: true
-     uses: actions/github-script@v7
-     with:
-       script: |
-         await github.rest.actions.createWorkflowDispatch({
-           owner: context.repo.owner,
-           repo: context.repo.repo,
-           workflow_id: 'deploy-dev.yml',
-           ref: 'dev'
-         });
-   ```
+```yaml
+- name: Trigger dev CI & deployment
+  if: steps.update_dev.outcome == 'success' &&
+      steps.check_episodes.outputs.missing_episode != '' &&
+      github.event.inputs.dryRun != 'true'
+  continue-on-error: true
+  uses: actions/github-script@v7
+  with:
+    script: |
+      await github.rest.actions.createWorkflowDispatch({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        workflow_id: 'fd-ci.yml',
+        ref: 'dev'
+      });
+```
 
-2. **Main-Deployment-Trigger** (nach erfolgreichem main-Update):
-   ```yaml
-   - name: Trigger production deployment
-     if: steps.update_main.outcome == 'success' && 
-         steps.check_episodes.outputs.missing_episode != '' && 
-         github.event.inputs.dryRun != 'true'
-     continue-on-error: true
-     uses: actions/github-script@v7
-     with:
-       script: |
-         await github.rest.actions.createWorkflowDispatch({
-           owner: context.repo.owner,
-           repo: context.repo.repo,
-           workflow_id: 'deploy-prd.yml',
-           ref: 'main'
-         });
-   ```
+Ein erfolgreicher `fd-ci`-Lauf auf `dev` startet über `workflow_run` automatisch `fd-deploy-dev`.
+
+**Warum `main` keinen Trigger mehr braucht:**
+
+Der frühere „Trigger production deployment“-Schritt entfällt. Wenn der Workflow `main` aktualisiert,
+baut und veröffentlicht der Job `deploy-main` die Seite im selben Lauf. `fd-deploy-prd` bleibt als
+eigenständiger Produktions-Deploy verfügbar.
 
 **Trigger-Conditions:**
 
-Die Deployment-Workflows werden nur getriggert wenn **alle** folgenden Bedingungen erfüllt sind:
+Der Dev-Trigger läuft nur, wenn **alle** folgenden Bedingungen erfüllt sind:
 
-- ✅ `steps.update_*.outcome == 'success'` - Branch-Update war erfolgreich
+- ✅ `steps.update_dev.outcome == 'success'` - Branch-Update war erfolgreich
 - ✅ `steps.check_episodes.outputs.missing_episode != ''` - Eine fehlende Episode wurde gefunden
 - ✅ `github.event.inputs.dryRun != 'true'` - Workflow läuft nicht im Dry-Run-Modus
 
 **Error-Handling:**
 
-Beide Deploy-Trigger verwenden `continue-on-error: true`. Das stellt sicher, dass:
+Der Dev-Trigger verwendet `continue-on-error: true`. Das stellt sicher, dass:
 - Deploy-Fehler den Podcast-Update-Workflow nicht komplett blockieren
 - Episode-Updates als kritischer eingestuft werden (können nicht manuell nachgeholt werden)
 - Deployments bei Bedarf manuell nachgetriggert werden können
@@ -221,7 +210,7 @@ Beide Deploy-Trigger verwenden `continue-on-error: true`. Das stellt sicher, das
 - ✅ Einfache Wartung und Debugging
 
 ### 8. Erfolgsmeldung
-- Zeige Episode-Titel, Issue-Link und PR-Links
+- Zeigt Episode-Titel und die aktualisierten Branches
 - Bestätigungsmeldung
 
 ## Konfiguration
@@ -240,26 +229,10 @@ Beide Deploy-Trigger verwenden `continue-on-error: true`. Das stellt sicher, das
 
 ### Erforderliche Branch-Einstellungen
 
-Beide `dev` und `main` Branches benötigen Schutzregeln mit Auto-Merge aktiviert:
-
-**GitHub Einstellungen → Branches → Branch protection rules:**
-
-Für jeden von `dev` und `main`:
-```
-✅ Einen Pull Request vor dem Zusammenführen erforderlich
-✅ Stale Pull-Request-Genehmigungen verwerfen bei neuen Commits
-✅ Auto-Merge zulassen
-  └─ ☑ Squash-Zusammenführung zulassen
-```
-
-⚠️ **Wichtig:** Stelle zusätzlich sicher, dass die Repository-Option "Allow auto-merge" in den allgemeinen Settings aktiviert ist:
-
-**GitHub Einstellungen → General → Pull Requests:**
-```
-✅ Allow auto-merge
-```
-
-Ohne diese Repository-Level-Einstellung funktioniert `gh pr merge --auto` nicht, auch wenn die Branch-Regel aktiviert ist!
+Der Workflow committet und pusht direkt auf `dev` und `main`. Branch-Protection-Regeln dürfen diese
+Pushes deshalb nicht blockieren; ein Pflicht-PR-Gate oder eine aktive Auto-Merge-Konfiguration ist
+für diesen Workflow nicht nötig. Benötigt werden die Workflow-Permissions `contents: write`,
+`actions: write`, `pages: write` und `id-token: write`.
 
 ### Scheduler
 
@@ -271,7 +244,7 @@ schedule:
 
 Kann auch manuell ausgelöst werden mit:
 ```bash
-gh workflow run podcast-update.yml
+gh workflow run fd-podcast-update.yml
 ```
 
 ## Helper-Skripte

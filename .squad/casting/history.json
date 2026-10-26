@@ -1,46 +1,67 @@
 {
-  "universe_usage_history": [
-    {
-      "assignment_id": "2026-06-30-frickeldave-mcu-001",
-      "universe": "Marvel Cinematic Universe",
-      "created_at": "2026-06-30"
-    },
-    {
-      "assignment_id": "2026-06-30-frickeldave-mcu-002",
-      "universe": "Marvel Cinematic Universe",
-      "created_at": "2026-06-30"
-    }
-  ],
   "assignment_cast_snapshots": {
     "2026-06-30-frickeldave-mcu-001": {
+      "agents": [
+        "stark",
+        "peter",
+        "banner",
+        "romanoff",
+        "strange",
+        "scribe",
+        "ralph",
+        "rai"
+      ],
       "universe": "Marvel Cinematic Universe",
-      "created_at": "2026-06-30",
-      "members": [
-        "Stark",
-        "Peter",
-        "Banner",
-        "Romanoff",
-        "Strange",
-        "Scribe",
-        "Ralph",
-        "Rai"
-      ]
+      "created_at": "2026-06-30"
     },
     "2026-06-30-frickeldave-mcu-002": {
+      "agents": [
+        "tony",
+        "bruce",
+        "natasha",
+        "clint",
+        "maria",
+        "nick",
+        "jennifer",
+        "scribe",
+        "ralph",
+        "rai"
+      ],
       "universe": "Marvel Cinematic Universe",
-      "created_at": "2026-06-30",
-      "members": [
-        "Tony",
-        "Bruce",
-        "Natasha",
-        "Clint",
-        "Maria",
-        "Nick",
-        "Jennifer",
-        "Scribe",
-        "Ralph",
-        "Rai"
-      ]
+      "created_at": "2026-06-30"
+    },
+    "2026-10-25-frickeldave-mcu-003": {
+      "agents": [
+        "tony",
+        "pepper",
+        "bruce",
+        "natasha",
+        "clint",
+        "maria",
+        "nick",
+        "jennifer",
+        "scribe",
+        "ralph",
+        "rai"
+      ],
+      "universe": "Marvel Cinematic Universe",
+      "created_at": "2026-10-25"
     }
-  }
+  },
+  "universe_usage_history": [
+    {
+      "universe": "Marvel Cinematic Universe",
+      "used_at": "2026-06-30"
+    },
+    {
+      "universe": "Marvel Cinematic Universe",
+      "used_at": "2026-06-30"
+    },
+    {
+      "universe": "Marvel Cinematic Universe",
+      "used_at": "2026-10-25"
+    }
+  ],
+  "transaction_id": "21a3a310-39e8-4066-a04b-3fe375c4c9fe",
+  "registry_revision": 1
 }

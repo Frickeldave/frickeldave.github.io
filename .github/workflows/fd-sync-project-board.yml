@@ -1,10 +1,10 @@
 name: fd-sync-project-board (Labels → project board)
 
-# One-way projection: GitHub labels are the source of truth, the
-# frickeldave.de Projects V2 board mirrors them. See docs/features/fr007-project-board-sync.md.
+# Einweg-Projektion: GitHub-Labels sind die Quelle der Wahrheit, das
+# Projects-V2-Board von frickeldave.de spiegelt sie. Siehe docs/features/fr007-project-board-sync.md.
 #
-# Requires the repository secret SQUAD_PROJECT_TOKEN (a PAT with `project`
-# scope). GitHub's built-in GITHUB_TOKEN cannot access Projects V2.
+# Benötigt das Repository-Secret SQUAD_PROJECT_TOKEN (ein PAT mit `project`-
+# Scope). GitHubs eingebautes GITHUB_TOKEN kann nicht auf Projects V2 zugreifen.
 
 on:
   issues:
