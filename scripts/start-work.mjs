@@ -40,7 +40,11 @@ import { isWindows, prepareSpawn } from './platform-shared.mjs';
 import { prepareCopilotEnvironment } from './copilot-environment.mjs';
 import {
   assignIssueToUser,
+  buildCopilotArgs,
+  buildCopilotChildEnv,
+  buildCopilotShellCommand,
   buildTmuxSessionName,
+  COPILOT_COMMAND,
   ensureProjectPropertyAccess,
   resolveIssueWorktreePath,
   requestPullRequestReviewers,
@@ -50,9 +54,11 @@ import {
   ensureTmuxSessionAvailable,
   launchInNewTmuxSession,
   parseFlowFlags,
+  reportCopilotLaunchPlan,
   resolveAdditionalPrompt,
   trustWorktreeFolder,
 } from './flow-shared.mjs';
+import { resolveCopilotLaunchPlan } from './copilot-provider.mjs';
 
 const WORKFLOW_PROMPT_RELATIVE_PATH = '.github/prompts/startwork.prompt.md';
 const HELP_TEXT = `Usage:
@@ -89,6 +95,8 @@ Flow flags:
   --prompt "<text>"   Start directly with this additional prompt (skips the question).
   --noprompt          Skip the question for an additional prompt.
   --prompt and --noprompt are mutually exclusive.
+  --model <id>        Copilot provider model for this run (deepseek-v4-flash|deepseek-v4-pro).
+  --no-provider       Ignore the DeepSeek provider configuration for this run.
 
 Outside tmux, the script creates the session IS<n> (aborts if it already exists,
 e.g. attach with: tmux attach -t IS202) and continues there. Created sessions use
@@ -99,8 +107,6 @@ Windows has no tmux build: use --notmux, or let the script fall back to the
 foreground automatically when tmux is missing.
 `;
 
-const COPILOT_COMMAND = 'copilot';
-const COPILOT_ARGS = ['--agent', 'Squad', '--yolo'];
 const PORT_ENV_NAMES = ['DEV_SERVER_PORT'];
 
 export async function main() {
@@ -110,6 +116,11 @@ export async function main() {
   }
 
   const flowFlags = parseFlowFlags(process.argv.slice(2));
+  // Der Plan wird genau einmal pro Lauf aufgelöst; ein ungültiges --model bricht hier ab.
+  const copilotPlan = resolveCopilotLaunchPlan({
+    modelFlag: flowFlags.model,
+    noProvider: flowFlags.noProvider,
+  });
   const cliSelection = parseCliSelection(flowFlags.rest);
   console.log('Checking GitHub authentication and project access...');
   ensureProjectPropertyAccess(runCommand);
@@ -193,7 +204,7 @@ export async function main() {
   }
 
   preparedWorkContext.dispatchContext = dispatchContext;
-  await launchPreparedWork(preparedWorkContext, issueContext, initialCopilotPrompt);
+  await launchPreparedWork(preparedWorkContext, issueContext, initialCopilotPrompt, copilotPlan);
 }
 
 /**
@@ -480,7 +491,12 @@ export async function prepareWorktreeRuntime(
   console.log('Workflow prompt and dependencies ready.');
 }
 
-async function launchPreparedWork(preparedWorkContext, issueContext, initialCopilotPrompt) {
+async function launchPreparedWork(
+  preparedWorkContext,
+  issueContext,
+  initialCopilotPrompt,
+  copilotPlan = null
+) {
   const { dispatchContext, tmuxAvailable, tmuxContext, worktreeContext, portEnv } =
     preparedWorkContext;
   const sessionName = issueContext.tmuxSessionName;
@@ -489,6 +505,7 @@ async function launchPreparedWork(preparedWorkContext, issueContext, initialCopi
     dispatchContext
   );
 
+  reportCopilotLaunchPlan(copilotPlan);
   trustWorktreeFolder(worktreeContext.worktreePath);
   prepareCopilotEnvironment(worktreeContext.worktreePath, {
     tmuxAvailable,
@@ -497,10 +514,14 @@ async function launchPreparedWork(preparedWorkContext, issueContext, initialCopi
 
   if (!tmuxAvailable) {
     console.log(`Starting Copilot in ${worktreeContext.worktreePath} (tmux unavailable)...`);
-    const exitCode = await runForegroundCommand(COPILOT_COMMAND, buildCopilotArgs(copilotPrompt), {
-      cwd: worktreeContext.worktreePath,
-      env: { ...process.env, ...portEnv },
-    });
+    const exitCode = await runForegroundCommand(
+      COPILOT_COMMAND,
+      buildCopilotArgs(copilotPrompt, copilotPlan),
+      {
+        cwd: worktreeContext.worktreePath,
+        env: buildCopilotChildEnv(process.env, copilotPlan, portEnv),
+      }
+    );
     process.exitCode = exitCode;
     return;
   }
@@ -512,7 +533,8 @@ async function launchPreparedWork(preparedWorkContext, issueContext, initialCopi
       sessionName,
       worktreeContext.worktreePath,
       portEnv,
-      copilotPrompt
+      copilotPrompt,
+      copilotPlan
     );
     selectTmuxWindow(sessionName, windowId);
     console.log(`Copilot window ${windowId} selected in tmux session ${sessionName}.`);
@@ -523,7 +545,7 @@ async function launchPreparedWork(preparedWorkContext, issueContext, initialCopi
   process.exitCode = launchInNewTmuxSession(
     sessionName,
     worktreeContext.worktreePath,
-    buildCopilotShellCommand(portEnv, copilotPrompt)
+    buildCopilotShellCommand(portEnv, copilotPrompt, copilotPlan)
   );
 }
 
@@ -1962,7 +1984,13 @@ function setTmuxSessionEnvironment(sessionName, portEnv) {
   }
 }
 
-function createCopilotWindow(sessionName, worktreePath, portEnv, initialCopilotPrompt) {
+function createCopilotWindow(
+  sessionName,
+  worktreePath,
+  portEnv,
+  initialCopilotPrompt,
+  copilotPlan = null
+) {
   // Copilot startet als Fensterkommando, statt nach dem Attach Tastendrücke zu senden;
   // so startet die Session deterministisch, ohne Race mit Shell-Start oder History-Zustand.
   const result = runCommand(
@@ -1978,7 +2006,7 @@ function createCopilotWindow(sessionName, worktreePath, portEnv, initialCopilotP
       'copilot',
       '-c',
       worktreePath,
-      buildCopilotShellCommand(portEnv, initialCopilotPrompt),
+      buildCopilotShellCommand(portEnv, initialCopilotPrompt, copilotPlan),
     ],
     {
       description: `creating Copilot tmux window for session ${sessionName}`,
@@ -1992,10 +2020,6 @@ function selectTmuxWindow(sessionName, windowId) {
   runCommand('tmux', ['select-window', '-t', `${sessionName}:${windowId}`], {
     description: `selecting tmux window ${sessionName}:${windowId}`,
   });
-}
-
-function buildCopilotArgs(initialCopilotPrompt) {
-  return [...COPILOT_ARGS, '-i', initialCopilotPrompt];
 }
 
 function buildInitialCopilotPrompt(additionalPrompt, issueContext) {
@@ -2015,16 +2039,6 @@ function buildInitialCopilotPromptWithDispatchContext(initialCopilotPrompt, disp
     `Vorbereiteter Branch: ${dispatchContext.branchName}`,
     `Draft-PR: #${dispatchContext.prNumber}`,
   ].join('\n');
-}
-
-function buildCopilotShellCommand(portEnv, initialCopilotPrompt) {
-  const envAssignments = PORT_ENV_NAMES.map(
-    (envName) => `${envName}=${shellQuote(portEnv[envName])}`
-  ).join(' ');
-  const command = [COPILOT_COMMAND, ...buildCopilotArgs(initialCopilotPrompt)]
-    .map(shellQuote)
-    .join(' ');
-  return `exec env ${envAssignments} ${command}`;
 }
 
 function readGhJson(args) {
@@ -2068,10 +2082,6 @@ function slugifyTitle(title) {
 
 function stripIssueTitleLabels(title) {
   return title.replace(/^(?:\s*\[[^\]]+\]\s*)+/u, '').trim();
-}
-
-function shellQuote(value) {
-  return `'${String(value).replaceAll("'", `'\\''`)}'`;
 }
 
 /**
@@ -2182,6 +2192,8 @@ export {
   activateActiveIssueMarker,
   attachCanonicalNames,
   buildActiveIssueMarkerContent,
+  buildCopilotArgs,
+  buildCopilotChildEnv,
   buildCopilotShellCommand,
   createPortEnvironment,
   createCopilotWindow,
