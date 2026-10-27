@@ -43,6 +43,10 @@ Versionsvergleich.
 `release:no` heißt nicht "nicht deployen", sondern nur: dieser PR
 ändert die Version nicht, es gibt also nichts Neues zu veröffentlichen.
 
+Scharf wird das Gate erst mit `check-release-label` als Pflicht-Check im
+Ruleset für `dev` — anlegen per `gh api -X POST repos/<owner>/<repo>/rulesets`
+nach dem Merge, JSON-Beispiel in `docs/old/18-dev-release-gate.md`.
+
 ## Nach dem Merge auf `dev`
 
 1. `fd-ci` läuft: Lint, Format, Prosa, 3D-Smoke-Test, e2e.
