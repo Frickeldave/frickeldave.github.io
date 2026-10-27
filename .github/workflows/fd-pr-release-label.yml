@@ -1,0 +1,65 @@
+name: fd-pr-release-label (Release-Label und Version)
+
+# Siehe docs/18-dev-release-gate.md.
+#
+# Bindendes Gate für jeden Pull Request gegen `dev` — dieselben Regeln wie der
+# Husky-Hook `.husky/pre-push`, gemeinsame Logik in `scripts/release-gate.mjs`:
+#   - genau eines der Labels `release:yes` / `release:no` am PR;
+#   - `release:yes` → Version in `package.json` strikt größer als das höchste
+#     `dev-v*`-Release (ohne vorhandenes Dev-Release entfällt der Vergleich);
+#   - `release:no`  → Version exakt die Version an der Merge-Base mit dem
+#     Basisbranch, der PR fasst die Version also nicht an.
+# Der Job heißt `check-release-label` und ist der Required-Status-Check des
+# `dev`-Rulesets; ein Push auf `dev` löst ihn nicht aus, weil nur `dev` selbst
+# geschützt wird.
+#
+# Bewusst ohne `npm ci`: `check-release-label.mjs` und `release-gate.mjs`
+# importieren ausschließlich `node:`-Module (plus das lokale `versionbump.mjs`).
+# `npm ci` würde über den `postinstall`-Hook Vale und OpenSCAD herunterladen und
+# den Lauf nur teurer machen. Nötig sind Node (im Runner-Image), `git` für die
+# Merge-Base und `gh` für die Release-Liste.
+
+on:
+  pull_request:
+    branches:
+      - dev
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: read
+
+jobs:
+  check-release-label:
+    name: check-release-label
+    runs-on: [self-hosted, fd]
+    steps:
+      # PR-Head auschecken, nicht den Merge-Ref: Die Versionsprüfung vergleicht die
+      # Version des PRs mit der Merge-Base, damit parallele Bumps auf `dev` einen
+      # unberührten `release:no`-PR nicht rot machen. Volle Historie ist für
+      # `git merge-base` nötig.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      # Das Auschecken eines Commit-SHA legt keinen Remote-Tracking-Ref für den
+      # Basisbranch an; `readBaseVersion` liest `origin/<base>` und braucht ihn.
+      - name: Basisbranch für die Merge-Base holen
+        run: |
+          git fetch --no-tags origin \
+            "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+
+      - name: Release-Label und Version prüfen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          node scripts/check-release-label.mjs --ci \
+            --repo "${{ github.repository }}" \
+            --base "${{ github.base_ref }}"
