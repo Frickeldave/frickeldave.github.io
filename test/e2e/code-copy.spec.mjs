@@ -25,8 +25,21 @@ const STATUS = "[data-code-copy-status]";
 const IDLE_LABEL = "Kopieren";
 const COPIED_LABEL = "Kopiert!";
 
-/** Implementierung wartet 2000 ms; die Obergrenze deckt Timer-/Rendering-Jitter. */
-const FEEDBACK_MIN_MS = 2000;
+/**
+ * Untergrenze mit Toleranz: die Implementierung wartet exakt 2000 ms, `copiedAt`
+ * wird aber erst im `MutationObserver`-Callback erfasst – also nach dem
+ * `await clipboard.writeText` und einen Microtask-Tick versetzt zur eigentlichen
+ * Mutation. Die gemessene Dauer ist damit strukturell `2000 ms - Callback-Latenz`
+ * und kann unter Last einige Millisekunden (CI: 1999,3 ms) unter der harten
+ * Timer-Grenze liegen. 1900 ms prüft weiterhin, dass das Feedback nicht
+ * abgeschnitten wird, ohne an der Beobachtungs-Granularität zu scheitern.
+ */
+const FEEDBACK_MIN_MS = 1900;
+
+/**
+ * Obergrenze inklusive Reserve darüber, dass der Browser den Timer verzögert
+ * ausführt oder das Rendering hinterherhängt.
+ */
 const FEEDBACK_MAX_MS = 4000;
 
 /** Wartet, bis das Kopier-Skript gebunden hat (Flag aus `code-copy.ts`). */
@@ -257,7 +270,7 @@ test.describe("code copy button", () => {
     expect(timing.resetAt, "Kopieren must come back").not.toBeNull();
     expect(
       timing.resetAt - timing.copiedAt,
-      "feedback must last at least 2000 ms"
+      `feedback must last at least ${FEEDBACK_MIN_MS} ms`
     ).toBeGreaterThanOrEqual(FEEDBACK_MIN_MS);
     expect(
       timing.resetAt - timing.copiedAt,
