@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-10-27
+
 ### Added
 
 - Globaler Kopierknopf für Codeblöcke: `src/lib/code-copy.ts` bindet sich idempotent auf `astro:page-load` (Muster wie `cart-dom.ts`), `src/components/base/CopyCode.astro` liefert Markup und Script, `src/components/base/BaseLayout.astro` bindet beides einmalig ein; einen Knopf bekommt nur `pre > code`, ausgenommen sind `pre.mermaid`, Inline-Code und Blöcke mit `[data-no-copy]`; ohne `navigator.clipboard` (unsicherer Kontext) blendet sich der Knopf aus, das Feedback läuft über `role="status"` mit `Kopiert!` für 2000 ms (#260).
