@@ -14,6 +14,7 @@ direkte `node`-Aufruf daneben. Externe Werkzeuge, die einzelne Skripte erwarten:
 - [Build und 3D-Modelle](#build-und-3d-modelle)
 - [Prosa-Prüfung mit Vale](#prosa-prüfung-mit-vale)
 - [Issue- und Branch-Workflows](#issue--und-branch-workflows)
+- [Release-Gate für Pull Requests](#release-gate-für-pull-requests)
 - [Gemeinsame Module](#gemeinsame-module)
 - [Projekt-Board synchronisieren](#projekt-board-synchronisieren)
 - [Übersetzung von Inhalten](#übersetzung-von-inhalten)
@@ -184,6 +185,27 @@ Hebt `version` in `package.json` und `package-lock.json` an und verschiebt die E
 verlangt `fd-deploy-prd` vor einem Promote. Das Skript committet und pusht nicht — Commit und Push
 bleiben ein bewusster eigener Schritt.
 
+## Release-Gate für Pull Requests
+
+Zwei Skripte, ein Regelwerk. `release-gate.mjs` ist rein (keine Seiteneffekte, kein `git`/`gh`) und
+exportiert `evaluateReleaseGate()`, `extractDevReleaseVersion()`, `findHighestDevReleaseVersion()`
+und `readRootVersion()`. `check-release-label.mjs` ist die CLI davor; sie wird vom PR-Check
+`fd-pr-release-label` und vom Husky-Hook `.husky/pre-push` aufgerufen.
+
+```bash
+# CI-Modus (bindend): Labels aus LABELS-Env oder GitHub-API
+node scripts/check-release-label.mjs --ci --repo Frickeldave/frickeldave.github.io --base dev
+
+# Lokaler Modus (Husky-Hook): liest den offenen PR zum aktuellen Branch über gh
+node scripts/check-release-label.mjs
+```
+
+Regeln: genau eines von `release:yes` / `release:no`; `release:yes` verlangt eine strikt höhere
+Version als das höchste `dev-v*`-Release, `release:no` exakt die Version an der Merge-Base mit
+`origin/dev`. Der lokale Modus blockiert nur bei einem offenen `dev`-PR mit Regelverstoß — fehlt
+`gh`, gibt es keinen PR oder ist etwas nicht lesbar, endet er grün. Details in
+[Release-Gate für Pull Requests](../docs/18-dev-release-gate.md).
+
 ## Gemeinsame Module
 
 Diese Dateien werden von den Start-Flow-Skripten importiert und haben keinen eigenen npm-Aufruf:
@@ -321,8 +343,8 @@ Fügt die neue Episode mit einer eindeutigen fünfstelligen ID am Anfang des Epi
 - `npm run test:scripts` — Tests der Start-Flow- und Release-Skripte:
   `start-work.test.mjs`, `start-reqeng.test.mjs`, `start-review.test.mjs`, `start-flow-flags.test.mjs`,
   `flow-shared.test.mjs`, `platform-shared.test.mjs`, `copilot-environment.test.mjs`,
-  `ensure-issue-branch.test.mjs`, `versionbump.test.mjs`. Der Lauf braucht
-  `--experimental-test-module-mocks`.
+  `ensure-issue-branch.test.mjs`, `versionbump.test.mjs`, `release-gate.test.mjs`,
+  `check-release-label.test.mjs`. Der Lauf braucht `--experimental-test-module-mocks`.
 - `npm run test:bootstrap` — Tests des Bootstrap-Skripts.
 - `test-mock-support.mjs` — Adapter, der die für vitest geschriebenen Tests auf `node --test`
   lauffähig macht (`vi.fn`, `vi.spyOn`, `vi.stubEnv`, `expect`-Teilmenge).

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Release-Gate für Pull Requests nach `dev`: `scripts/release-gate.mjs` bündelt die Regeln (genau eines von `release:yes` / `release:no`, Versionsvergleich gegen das höchste `dev-v*`-Release bzw. gegen die Merge-Base) und `scripts/check-release-label.mjs` liefert dazu den CI- und den lokalen Modus (#282).
+- Workflow `fd-pr-release-label` mit dem Required-Status-Check `check-release-label` für Pull Requests nach `dev`; der Job läuft ohne `npm ci`, weil die Skripte nur `node:`-Module importieren (#282).
+- Neue Seite `docs/18-dev-release-gate.md` zu Label-Modell, Regeln, lokalem Hook und der Einrichtung des Required-Status-Checks (#282).
+
+### Changed
+
+- Das Label-Modell trennt Issue-Triage und Release-Schalter: `release:yes` / `release:no` hängen jetzt am Pull Request und werden von `fd-configure` verwaltet; der Husky-Hook `.husky/pre-push` ruft das Gate zusätzlich zum Branch-Namens-Check auf und blockiert nur, wenn ein offener PR gegen `dev` die Regeln verletzt (#282).
+- `docs/11-dev-usage.md` und `docs/features/fr006-autodeploy.md` beschreiben den PR-Schalter und den Versionsvergleich; `npm run test:scripts` führt die beiden neuen Testdateien mit aus (#282).
+
+### Removed
+
+- Die Issue-Ziel-Labels `release:v0.4.0`, `release:v0.5.0`, `release:v0.6.0`, `release:v1.0.0` und `release:backlog` ersatzlos — der Präfix `release:` gehört ausschließlich dem PR-Schalter, und `squad-label-enforce` setzt oder entfernt auf Issues keine `release:`-Labels mehr (#282).
+
 ## [1.0.6] - 2026-10-26
 
 ### Added

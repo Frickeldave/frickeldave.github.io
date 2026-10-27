@@ -37,6 +37,12 @@ Der `postinstall`-Hook besteht aus `npm run prose-install && npm run scad:instal
 | `npm run versionbump`              | Hebt die Version in `package.json` und ergänzt den `CHANGELOG.md`-Eintrag |
 | `npm run test:scripts`             | Führt die Tests der Start-Flow- und Release-Skripte aus                |
 
+Das Release-Gate hat keinen eigenen npm-Aufruf; es läuft im Husky-Hook und im PR-Check:
+
+```bash
+node scripts/check-release-label.mjs --ci --repo Frickeldave/frickeldave.github.io --base dev
+```
+
 ### Copilot-Provider (optional)
 
 Die Start-Flows nutzen standardmäßig die GitHub-Copilot-Modelle. Optional lässt sich ein
@@ -78,16 +84,25 @@ Typischer Ablauf für eine Änderung:
 # 1. Issue-Branch, Worktree und Draft-PR gegen dev
 npm run start-work -- IS_123
 
-# 2. Nach Review: Squash-Merge des Issue-Branches in dev und Push
+# 2. Release-Entscheidung am PR setzen: release:no ohne Versionsänderung,
+#    release:yes mit angehobener Version (Prüfung: check-release-label)
+gh pr edit 282 --add-label release:no
+
+# 3. Nach Review: Squash-Merge des Issue-Branches in dev und Push
 git push origin dev
 
-# 3. fd-ci läuft auf dev, danach deployt fd-deploy-dev automatisch
+# 4. fd-ci läuft auf dev, danach deployt fd-deploy-dev automatisch
 
-# 4. Produktion: Versionsbump, Push auf dev, dann Promote auslösen
+# 5. Produktion: Versionsbump, Push auf dev, dann Promote auslösen
 npm run versionbump
 git commit -am "chore(release): bump version" && git push origin dev
 gh workflow run fd-promote-prd.yml
 ```
+
+Ein Pull Request gegen `dev` trägt genau eines der Labels `release:yes` oder `release:no`. Der
+Check `check-release-label` prüft das Label und den Versionsvergleich; Regeln, lokaler Hook und die
+Einrichtung des Required-Status-Checks stehen in [Release-Gate für Pull
+Requests](./18-dev-release-gate.md).
 
 Ein Promote ohne neue Version ist ein No-Op: `fd-deploy-prd` erkennt, dass `main` bereits dem
 letzten stabilen Release entspricht, und beendet sich grün.
