@@ -158,13 +158,42 @@ die Ressourcentypen.
 
 **Troubleshooting**
 
-| Symptom | Mögliche Ursache | Lösung |
-| --- | --- | --- |
-| Completion bleibt leer, `kubectl` selbst funktioniert | kubectl liegt nicht im `PATH` von Git Bash (z. B. weil nur die PowerShell-Installation aktiv ist) | `command -v kubectl` prüfen; Git Bash neu starten; sonst den WinGet-Links-Pfad in `~/.bashrc` ergänzen: `export PATH="$PATH:$HOME/AppData/Local/Microsoft/WinGet/Links"` |
-| `__start_kubectl: command not found` | Die zwischengespeicherte Completion-Datei fehlt oder ist leer | `kubectl completion bash > ~/.bash_completion.d/kubectl` erneut ausführen, danach `source ~/.bashrc` |
-| `_get_comp_words_by_ref: command not found` | Zu altes kubectl (nutzt die alte Completion) oder bash-completion fehlt in Git Bash | Git for Windows aktualisieren; bei sehr alten Installationen bash-completion nachziehen und vor dem kubectl-Block laden |
-| `k: command not found` | Der Alias-Block fehlt in `~/.bashrc`, oder du sitzt in PowerShell | `grep -n 'alias k=kubectl' ~/.bashrc` prüfen und in VS Code das Standard-Terminalprofil auf Git Bash stellen |
-| `kubectl` vervollständigt, `k` nicht | `complete` wurde nicht ausgeführt, weil `__start_kubectl` beim Einlesen noch nicht definiert war | Reihenfolge prüfen: erst die Completion-Datei sourcen, dann `complete -o default -F __start_kubectl k` ausführen |
+**Completion bleibt leer, `kubectl` funktioniert aber**
+
+- **Ursache:** kubectl liegt nicht im `PATH` von Git Bash, etwa weil nur die PowerShell-Installation
+  aktiv ist.
+- **Lösung:** `command -v kubectl` prüfen und Git Bash neu starten. Fehlt kubectl weiterhin, den
+  WinGet-Links-Pfad in `~/.bashrc` ergänzen:
+
+  ```bash
+  export PATH="$PATH:$HOME/AppData/Local/Microsoft/WinGet/Links"
+  ```
+
+**`__start_kubectl: command not found`**
+
+- **Ursache:** Die zwischengespeicherte Completion-Datei fehlt oder ist leer.
+- **Lösung:** `kubectl completion bash > ~/.bash_completion.d/kubectl` erneut ausführen, danach
+  `source ~/.bashrc`.
+
+**`_get_comp_words_by_ref: command not found`**
+
+- **Ursache:** kubectl ist zu alt und nutzt noch die alte Completion, oder bash-completion fehlt in
+  Git Bash.
+- **Lösung:** Git for Windows aktualisieren. Bei sehr alten Installationen bash-completion
+  nachziehen und vor dem kubectl-Block laden.
+
+**`k: command not found`**
+
+- **Ursache:** Der Alias-Block fehlt in `~/.bashrc`, oder du sitzt in PowerShell.
+- **Lösung:** `grep -n 'alias k=kubectl' ~/.bashrc` prüfen und in VS Code das
+  Standard-Terminalprofil auf Git Bash stellen.
+
+**`kubectl` vervollständigt, `k` nicht**
+
+- **Ursache:** `complete` wurde nicht ausgeführt, weil `__start_kubectl` beim Einlesen noch nicht
+  definiert war.
+- **Lösung:** Reihenfolge prüfen: erst die Completion-Datei sourcen, dann
+  `complete -o default -F __start_kubectl k` ausführen.
 
 ### Optional: Tuning Windows
 
@@ -465,6 +494,14 @@ Diese Tabelle zeigt, ob ein **Ingress Controller** im Cluster installiert ist �
 
 ### api-resources
 
+```bash
+kubectl api-resources | grep -E "(pods|services|deployments|ingress)"
+```
+
+Der Befehl listet alle Ressourcentypen deines Clusters auf und filtert auf die vier, die du in der
+Schulung brauchst. Unter PowerShell filterst du mit
+`Select-String -Pattern "(pods|services|deployments|ingress)"` in derselben Pipe.
+
 ```text
 pods                                         po                    v1                                     true    Pod
 services                                     svc                   v1                                     true    Service
@@ -472,7 +509,7 @@ deployments                                  deploy                apps/v1      
 ingresses                                    ing                   networking.k8s.io/v1                   true    Ingress
 ```
 <br />
-Dieser Befehl prüft, ob du die **wichtigsten Ressourcentypen** in deinem Namespace verwenden darfst. Die Tabelle zeigt dir, welche Bausteine dir zur Verfügung stehen:
+Die gefilterte Ausgabe zeigt dir, ob du die **wichtigsten Ressourcentypen** in deinem Namespace verwenden darfst. Die Tabelle zeigt dir, welche Bausteine dir zur Verfügung stehen:
 
 | Spalte | Beispiel | Einfach erklärt |
 |---|---|---|
@@ -513,4 +550,4 @@ Dieser Befehl prüft, ob du die **wichtigsten Ressourcentypen** in deinem Namesp
 - [ ] DNS-Einträge oder `/etc/hosts`-Einträge für Schulungs-URLs konfiguriert
 
 <br />
-Weiter: [Ziele und Methoden](/docs/kubernetes-basis/10-tag-1.mdx)
+Weiter: [Tag 1](/docs/kubernetes-basis/10-tag-1)

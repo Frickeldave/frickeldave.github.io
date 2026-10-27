@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Git-Bash-Troubleshooting: die breite Drei-Spalten-Tabelle ist durch eine Definitionsliste aus Symptom, Ursache und Lösung ersetzt und passt damit in die rund 667 px breite Prose-Spalte (#260).
+- § „api-resources“ der Vorbereitungsseite nennt den Befehl `kubectl api-resources | grep -E "(pods|services|deployments|ingress)"` samt Kurzerklärung über der Ausgabe (#260).
+
+### Fixed
+
+- Der „Weiter“-Link der Vorbereitungsseite zeigt jetzt auf `/docs/kubernetes-basis/10-tag-1` statt auf den `.mdx`-Pfad und trägt das Label „Tag 1“ (#260).
+
 ## [1.0.8] - 2026-10-27
 
 ### Added
