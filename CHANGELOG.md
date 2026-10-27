@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Release-Gate für Pull Requests nach `dev`: `scripts/release-gate.mjs` bündelt die Regeln (genau eines von `release:yes` / `release:no`, Versionsvergleich gegen das höchste `dev-v*`-Release bzw. gegen die Merge-Base) und `scripts/check-release-label.mjs` liefert dazu den CI- und den lokalen Modus (#282).
 - Workflow `fd-pr-release-label` mit dem Required-Status-Check `check-release-label` für Pull Requests nach `dev`; der Job läuft ohne `npm ci`, weil die Skripte nur `node:`-Module importieren (#282).
-- Neue Seite `docs/18-dev-release-gate.md` zu Label-Modell, Regeln, lokalem Hook und der Einrichtung des Required-Status-Checks (#282).
+- Neue Seite `docs/workflow/versionierung und release.md` zu Label-Modell, Regeln, Deploy/Release und Promote; die ausführliche Fassung liegt unter `docs/old/18-dev-release-gate.md` (#282).
 - Release-Version in der Fußzeile: `src/components/base/Footer.astro` rendert `v<version>` zur Build-Zeit aus `package.json` und verlinkt auf die GitHub-Releases (#282).
 
 ### Changed
