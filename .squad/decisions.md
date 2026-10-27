@@ -2,6 +2,7 @@
 
 ## Aktive Entscheidungen
 
+- Archivierte Einträge (älter als 30 Tage, Stand 2026-10-27): siehe [`decisions-archive.md`](decisions-archive.md).
 - 2026-07-28: OpenSCAD Phase 1 — Output nach `dist/3dmodels/`, keine generierten Dateien im Git, `models.json` wird vom Build-Script erzeugt. WASM-basierter Live-Editor zurückgestellt.
 - 2026-06-30: Squad-Roster neu zusammengestellt mit Marvel Cinematic Universe-Namensgebung und persistenten Namen (Stark, Peter, Banner, Romanoff, Strange).
 - 2026-06-30: Team-Roster auf Anrede mit Vornamen für aktive Agenten umgestellt (Tony, Bruce, Natasha, Clint, Maria, Nick, Jennifer).
@@ -12,57 +13,6 @@
 - 2026-08-28: Issue #267 ("[Feature] AI-Transparenz-Skill: KI-Anteil-Bewertung mit Tabelle & Diagramm in Blog-Artikeln") von Tony (Lead) triagiert und sync-gated — Verdict: APPROVE (no changes required). Scope: Pflicht-Skill `.squad/skills/ai-content-score/SKILL.md` (immer letzter Schritt nach Blog-Artikel-Anpassungen), KI-Anteil-Transparenztabelle am Ende jedes Blog-Eintrags (KI-Anteil %, bewertendes LLM, Konfidenz, Link zur Erklärseite), neue Blog-Seite + Kategorie "AI", horizontale Balken-Diagramm-Komponente (grün >70 %, gelb 30–70 %, rot <30 % menschlich), Anpassung von Marias Charter und `.squad/routing.md`.
 - 2026-08-28: Issue #267 Scope-Klarstellungen (non-blocking, vom Nutzer bestätigt): Transparenz-Tabelle rückwirkend auf alle bestehenden Blog-Posts; Konfidenz-Format qualitativ — hoch | mittel | niedrig.
 - 2026-09-25 (Nutzerdirektive, via David Koenig): Agenten (inkl. Maria) dürfen GitHub-Issues nach Abschluss der Arbeit NICHT mehr eigenständig via `gh issue close` schließen. Der Abschluss-Kommentar (`## ✅ Abschluss-Zusammenfassung`) wird weiterhin gepostet, das eigentliche Schließen erfolgt erst nach explizitem Kommando des Nutzers. Gilt ab sofort für alle künftigen Issue-Abschlüsse.
-
-#### 2026-09-10: Deployment-Workflow-Strategie (Nutzerdirektive)
-
-**By:** David Koenig (via Copilot)
-**What:**
-- `squad-release.yml` behalten (Versionierung + Release-Bau). `deploy-prd.yml` künftig über den Success-Lauf von `squad-release` triggern statt direkt über push auf `main`.
-- `test/`-Ordner anlegen (Tests werden noch gebaut) und `CHANGELOG.md` einführen.
-- `squad-ci.yml` behalten; ein erster simpler Test wird eingebaut.
-- `squad-promote.yml`, `squad-preview.yml`, `squad-insider-release.yml`, `squad-docs.yml` löschen.
-- Triage-Gruppe (`squad-triage`, `squad-issue-assign`, `squad-label-enforce`, `sync-squad-labels`, `squad-heartbeat`) bleibt.
-- Offene Frage: Bauen der 3D-Modelle in `squad-ci` integrieren (bzw. indirekt den Deploy-Flow triggern)?
-**Why:** Nutzerentscheidung zur Workflow-Konsolidierung — Squad-Release-Pipeline beibehalten statt entfernen.
-
-#### 2026-09-11: Branch- und Commit-Naming-Konvention (Nutzerdirektive)
-
-**By:** David Koenig (via Copilot)
-**What:**
-- Branch-Namen nach Conventional Branch Names vergeben: `<type>/<description>` — NICHT `squad/{issue}-{slug}` (der Husky-Pre-Push-Hook akzeptiert nur `<type>/<description>`; das ist gewollt).
-- Commit-Messages nach Conventional Commits verfassen: `type(scope): description`.
-- In die Charter von Nick (DevOps) aufgenommen.
-**Why:** Husky-Pre-Push-Hook ist gewollt; Branch-/Commit-Namen sollen zur Conventional-Commits-Konvention passen.
-
-#### 2026-09-13: Issue #267 — aiTransparency um `comment` erweitert & Box kompakter
-
-**By:** Copilot Coding Agent
-**What:**
-- `aiTransparency`-Schema in `src/content.config.ts` um optionales Feld `comment: z.string().optional()` erweitert.
-- `src/components/blog/AiTransparency.astro` zeigt `comment` als Text in der KI-Transparenz-Box an und reduziert Zeilenabstände/Paddings (Box kompakter).
-- Für alle Blog-Artikel 2019-03-08 bis 2024-09-14 `comment: "Migration von Wordpress mit Hilfe KI"` gesetzt (38 Dateien).
-- Für `2026-08-03-agile-coaches-in-der-ki-aera.mdx` und `2026-08-23-souveränität-jenseits-cloud-washing.mdx` `comment: "erstellt mit KI HIlfe"` gesetzt.
-**Why:** Nutzeranforderung zu Ticket #267 — KI-Transparenz-Box schlanker machen und einen Kommentar-Eintrag als fünftes Frontmatter-Feld ergänzen.
-
-#### 2026-09-14: CHANGELOG-Pflicht bei Issue-Abschluss (Issue #275)
-
-**By:** David Koenig (via Copilot)
-**What:**
-- `CHANGELOG.md` muss beim Abschluss jedes Issues aktualisiert werden, das Code oder die Site verändert.
-- Neuer Eintrag unter `## [Unreleased]` im Keep-a-Changelog-Format, Kategorien: `Added`, `Changed`, `Fixed`, `Removed`, `Security`.
-- Jeder Eintrag referenziert das Issue als `(#123)`.
-**Why:** Änderungen sollen für Nutzer und Team nachvollziehbar dokumentiert sein.
-
-#### 2026-09-25: Issue #281 — Humanizer-Nacharbeit „Dark Software Factory“ (unabhängige KI-Anteil-Bewertung + Revision)
-
-**By:** David Koenig (via Copilot Squad)
-**What:**
-- Tony triagiert Issue #281 ("Humanizer-Nacharbeit: Dark Software Factory Artikel"), Label `squad:maria` gesetzt, als "Ready to implement" freigegeben.
-- Maria führte unabhängige KI-vs-Mensch-Autorenschafts-Bewertung von `src/content/blog/2026-09-25-dark-software-factory.md` durch (Ergebnis ~45–60 % Mensch vs. deklarierten 85 %).
-- Nach Nutzerfreigabe überarbeitet: 2 Anapher-Ketten behoben, 6 von 7 „X, nicht Y"-Hedge-Wiederholungen variiert, ein LLM-schablonenhafter Satz umformuliert.
-- `ai-content-score`-Skill erneut ausgeführt; `aiTransparency`-Frontmatter aktualisiert (`humanShare` 85 → 92, `confidence` mittel → hoch).
-- Commit `0caa9e9` auf `dev`; Issue #281 geschlossen.
-**Why:** Deklarierter KI-Anteil im Frontmatter wich signifikant von einer unabhängigen Bewertung ab — Nacharbeit zur Angleichung von Anspruch und tatsächlichem Text.
 
 #### 2026-10-25: User directive — Branch/PR-Modell gilt
 
@@ -138,6 +88,115 @@ SDK-Support für deutsche Headings warten. `team.md` wurde hier bewusst nicht ve
 3. **Merge/Deploy:** Squash-Merge `feat/issue-285-deepseek-integration-in-github-copilot-cli` → `dev` als `63c04e3`; Promote `dev` → `main` als `e01a623` über `fd-promote-prd` → `fd-deploy-prd`; Release `v1.0.6` veröffentlicht.
 
 **Why:** Das Gate-Marker-Protokoll braucht eine belastbare Spur, wer die Ausnahme autorisiert hat. Die Versionswahl folgt der menschlichen Vorgabe (Patch statt Minor), angepasst an den real belegten Versionsstand. Squash-Merge und Promote-Weg entsprechen `.squad/routing.md` und `.github/pull_request_template.md`.
+
+
+### 2026-10-27T12-21-13: IS_289 integration MVP scaffold in frickeldave.home.net
+**By:** Bruce
+**What:** IS_289 integration MVP scaffold in frickeldave.home.net
+**Why:**
+#### Was gebaut wurde
+
+Phase-1-Slice der HACS-Custom-Integration `frickeldave_store` im Repository
+`Frickeldave/frickeldave.home.net` (Commit 05edd71, direkt auf `main` gepusht).
+
+- Repo-Gerüst: `custom_components/frickeldave_store/`, `manifest.json` (0.1.0,
+  domain frickeldave_store, dependencies http/panel_custom/websocket_api,
+  iot_class local_polling), `hacs.json`, MIT-Lizenz, README (deutsch),
+  CHANGELOG (`## [Unreleased]`, Refs #289), pyproject (ruff+mypy+pytest),
+  CI-Workflow mit getrennten Jobs für ruff, mypy, pytest, hassfest und hacs/action.
+- Datenschicht: HA-`Store` (Key `frickeldave_store.data`, Version 1/Minor 1) unter
+  `config/frickeldave_store/`, Bilder unter
+  `config/frickeldave_store/images/<artikelnummer>/`, atomare Writes, Executor-I/O,
+  Snapshot vor Migration, `async_migrate_func` + `async_migrate_entry`.
+- Produktdomain: eindeutige Artikelnummern (Kategorie + 4 Zeichen, Lock-geschützt),
+  unveränderliche Kategorie, ausschließlich Soft-Delete, Tags, Bestandsbuchungen,
+  Filter (Kategorie ODER, Tags UND, Rest UND), stabile Sortierung.
+- Config-/Options-Flow (keine YAML), deutsche und englische Übersetzungen.
+- Berechtigungen: Rollen product/finance/app_admin, Default Deny, Prüfung je
+  HTTP-/WebSocket-Anfrage, sofortiger Entzug; `GET /me` liefert nur eigene Rechte.
+- Panel via `panel_custom` (`frickeldave-store`, `embed_iframe=False`,
+  `require_admin=False`), statische Assets unter `/frickeldave_store_frontend`.
+  Das Verzeichnis `frontend/` bleibt Natasha vorbehalten.
+- HTTP-API `/api/frickeldave_store/*` exakt nach dem mit Natasha abgestimmten
+  Vertrag inkl. `image_limit` (409, keine Teilpersistenz) und Settings ohne API-Key.
+- KI-Dienst mit Anbieter-Abstraktion, DeepSeek `deepseek-flash`, EXIF/GPS-Strip,
+  Timeouts, lesbaren 429/5xx-Meldungen, Vorschlag ohne Persistenz.
+- Export im Live-Schema der Website (idempotent, ohne archivierte Produkte) plus CLI.
+- Dokumentation `docs/architecture.md`, `data-model.md`, `permissions.md`,
+  `backup-restore.md`; 68 Tests.
+
+#### Validierung
+
+- `python3 -m compileall custom_components` → OK
+- `.venv/bin/ruff check .` → All checks passed
+- `.venv/bin/ruff format --check .` → 27 files already formatted
+- `.venv/bin/mypy custom_components` → no issues in 12 source files
+- `.venv/bin/pytest -q` → 68 passed
+- `python3 -m json.tool` für manifest.json, hacs.json, translations/*.json, strings.json → OK
+- Smoke-Test Export gegen `public/data/handmade.json`: 63 Produkte, identische Feldnamen
+
+#### Abweichung von der Spezifikation
+
+Repository-Name weicht auf ausdrückliche Anweisung von `Frickeldave/frickeldave-store`
+ab: `Frickeldave/frickeldave.home.net`. Manifest, HACS-Metadaten, README und Doku
+verweisen durchgehend auf dieses Repository.
+
+#### Grenzen
+
+PayPal, Kundenverwaltung, Website-Publish-Workflow, HACS-Default-Katalog und produktive
+Migration sind bewusst nicht in diesem Slice (Roadmap im README). Restore-Test gegen eine
+produktive Instanz steht noch aus.
+
+### 2026-10-27T12-16-39: IS_289 panel: Lit web component with HA tokens
+**By:** Natasha
+**What:** IS_289 panel: Lit web component with HA tokens
+**Why:** Deliverable: custom_components/frickeldave_store/frontend/frickeldave-store-panel.js (single file, `frickeldave-store-panel`, Shadow DOM, Lit via bare "lit" import, HA design tokens + --fd-* layer, German UI).
+
+Implemented views:
+1. Access gate: GET /me on first hass assignment, default deny, dedicated "Kein Zugriff" and connection-error states, revalidation on visibilitychange and HA user change; no protected fetch without can.product / can.app_admin.
+2. Product list: search (debounced), category multi-select (OR), tag multi-select (AND), personalisierbar, Auf Lager, Im Schrank, Sichtbarkeit, "Nur archivierte", sort name/price with asc/desc that survives filter changes, result count, loading/empty/error states, pagination 24.
+3. Create/edit dialog: name, description, price (EUR decimal with comma), size, tags (add/remove/free text), visible/customizable switches, category select only on create (disabled and explained afterwards), German validation, buttons disabled while saving.
+4. Image management: max 10, count-aware rejection message before any upload, per-file multipart upload, move left/right (order endpoint), set main, two-step delete, main badge, alt text; images require the bearer token, so they are fetched once and rendered as object URLs.
+5. Stock booking: Zugang/Abgang/Umlagerung/Korrektur, quantity, note, current stock/salesCabinet.
+6. Archive confirmation dialog (soft delete only, no hard-delete UI).
+7. AI description suggestion: suggestion shown in an editable textarea, "Übernehmen" only changes the local form value (saved by the normal PATCH), "Verwerfen" leaves the description untouched; loading and 429/timeout messages.
+8. Tag management dialog (list/create/delete).
+9. Settings (app_admin): KI-Endpunkt, Modell, Prompt, API-Key only as api_key_set plus write-only field; key is never rendered back.
+
+API contract used: /me, /products (+ search/category/tags/customizable/in_stock/in_cabinet/visibility/archived/sort/order/limit/offset), /products POST, /products/{articleNumber} PATCH, /archive, /images GET/POST/order/main/DELETE, /tags GET/POST/DELETE, /stock, /description/suggest, /settings GET/PATCH. All requests send "Authorization: Bearer <access_token>" with base URL from hass.auth.data.hassUrl.
+
+Assumptions recorded:
+- Backend settings payload is nested as {"ai": {endpoint, model, prompt, api_key_set}}; PATCH sends {"ai": {...}} (aligned with the work-tree implementation; flat shapes are tolerated on read).
+- Image upload uses one request per file with multipart field "file" (backend reads exactly one file per request).
+- archived=true means "only archived"; label is "Nur archivierte anzeigen".
+- Correction requires quantity >= 1 (backend rejects 0).
+- Image URLs returned by the API are bearer-protected; HA has no cookie auth for /api, so previews are loaded via fetch + object URLs rather than plain img src.
+- Tag catalog (/tags) and free-form product tags are separate; product tags are not auto-created in the catalog.
+
+Validation: node --check passes; no browser/DOM test possible in this environment.
+
+### 2026-10-27T12-13-24: IS_289 website docs: fr008 + fr003 update + types
+**By:** Maria
+**What:** IS_289 website docs: fr008 + fr003 update + types
+**Why:** Doku-Paket für #289 (nur Website-Repo, keine Implementierung) abgeschlossen.
+
+Geänderte Dateien:
+- NEU docs/features/fr008-ha-manager.md: Zweck/Umfang, Architektur (HACS-Custom-Integration custom_components/frickeldave_store, panel_custom + Lit, HA-Store unter config/frickeldave_store/, Bilder unter config/frickeldave_store/images/<artikelnummer>/), Installation über HACS, Config-/Options-Flow, Datenmodell mit schemaVersion 1, Rollen (Produktpflege/Finanzen/Anwendungsverwaltung, Default Deny, serverseitige Prüfung), Backup/Restore, Website-Export, DeepSeek-Vorschläge, Bestandsmodell, Non-Goals, offene Fragen.
+- docs/old/features/fr003-catalog.md: fünf Kategorien inkl. SB (Steinmasse) samt Codes und Label-Mapping, stock/salesCabinet als vorhandene, nicht ausgewertete Felder, Link auf fr008.
+- src/types/index.d.ts: HandmadeItem um stock?: number und salesCabinet?: number ergänzt; zusätzlich die veraltete category-Union auf die fünf Live-Codes 3D/EP/LA/SB/WO korrigiert (eng mit der fr003-Korrektur verbunden, keine Vergleichsstellen im Code betroffen).
+- CHANGELOG.md: ein Eintrag unter [Unreleased] mit (#289).
+
+Abweichung: Repository der Integration ist laut Nutzerentscheidung vom 27.10.2026 Frickeldave/frickeldave.home.net, nicht Frickeldave/frickeldave-store; im Dokument einmal sachlich vermerkt.
+
+Validierung:
+- npm run format:check: "All matched files use Prettier code style!"
+- npx prettier --check auf den drei geänderten Dateien: clean
+- npm run lint:check: exit 0, keine Ausgabe
+- npx markdownlint-cli@0.44.0: fr008 ohne Befund; fr003 nur die zwei vorbestehenden Befunde MD040 (Zeile 167) und MD031 (Zeile 437), Baseline identisch
+- npx astro check: 51 errors / 0 warnings / 184 hints, exakt identisch zur Baseline ohne die Änderungen (vorbestehend, u. a. fehlendes Pflichtfeld picture im JSON)
+- npm run build nicht ausgeführt: reine Doku-/Deklarationsänderung, Typprüfung über astro check abgedeckt.
+
+Offen: Export-Transport zur Website, PayPal-Kunden-API-Umfang, Aufbewahrungsfrist, Rechnungsauswirkung, HA-Benutzer-IDs.
 
 ## Governance
 

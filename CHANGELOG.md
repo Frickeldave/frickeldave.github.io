@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Dokumentation des geplanten Verwaltungswerkzeugs in Home Assistant: `docs/features/fr008-ha-manager.md` beschreibt Architektur, Installation, Datenmodell, Rechte, Backup und Website-Export der Integration `frickeldave_store`; `docs/old/features/fr003-catalog.md` nennt jetzt fünf Kategorien inklusive `SB` und die vorhandenen Bestandsfelder, `src/types/index.d.ts` ergänzt `stock` und `salesCabinet` als optionale Felder (#289).
+
 ## [1.0.7] - 2026-10-27
 
 ### Added
