@@ -10,6 +10,9 @@ Produkte informieren, jedoch keine direkten Käufe tätigen.
 **Erstellt:** November 2025  
 **Status:** Implementiert
 
+Verwandt:
+[FR008 - Verwaltung der Handmade-Produkte in Home Assistant](../../features/fr008-ha-manager.md).
+
 ## Architektur
 
 ### Datenquelle
@@ -17,6 +20,10 @@ Produkte informieren, jedoch keine direkten Käufe tätigen.
 - **Datei:** `public/data/handmade.json`
 - **Format:** JSON mit Array von Produktobjekten
 - **Eigenschaften:** Englische Keys, deutsche Anzeige auf der Website
+- **Kategorien:** fünf Codes, die die Website über `src/lib/handmadeCategoryLabels.ts` auf deutsche
+  Labels abbildet
+- **Bestände:** `stock` und `salesCabinet` sind im Live-Katalog vorhanden, werden von der Website
+  aber nicht ausgewertet
 
 ### Seiten & Routen
 
@@ -58,12 +65,14 @@ type HandmadeItem = {
   name: string; // Produktname (Deutsch)
   description: string; // Beschreibung (Deutsch)
   picture: string; // Bildpfad (nicht mehr verwendet, Legacy)
-  category: "3D-Druck" | "Holz" | "Laser" | "Epoxidharz";
+  category: "3D" | "EP" | "LA" | "SB" | "WO"; // Code, Anzeige über handmadeCategoryLabels
   tags: string[]; // Array von Tags
   price: number; // Preis in Euro
   size?: string; // Optionale Größenangabe
   visible: boolean; // Sichtbarkeit (nur visible=true werden angezeigt)
   customizable: boolean; // Personalisierbar (zeigt ✨-Symbol)
+  stock?: number; // Lagerbestand (vorhanden, von der Website nicht ausgewertet)
+  salesCabinet?: number; // Bestand im Verkaufsschrank (vorhanden, nicht ausgewertet)
 };
 ```
 
@@ -74,26 +83,29 @@ type HandmadeItem = {
   "articleNumber": "3DA8F3",
   "name": "Weihnachtsbaum Deko",
   "description": "Festlicher 3D-gedruckter Weihnachtsbaum mit LED-Beleuchtung. Perfekt für die Weihnachtsdekoration.",
-  "category": "3D-Druck",
+  "category": "3D",
   "tags": ["Weihnachten", "Dekoration", "LED"],
   "price": 15.99,
   "size": "15cm x 10cm",
   "visible": true,
-  "customizable": false
+  "customizable": false,
+  "stock": 1,
+  "salesCabinet": 0
 }
 ```
 
 ## Kategorien
 
-Das System unterstützt **vier feste Kategorien**, die die verschiedenen Herstellungsverfahren
-repräsentieren:
+Das System unterstützt **fünf feste Kategorien**, die die verschiedenen Herstellungsverfahren
+repräsentieren. Im Katalog steht der Code, die Website zeigt das deutsche Label:
 
-| Kategorie      | Beschreibung                | Beispiele                                          |
-| -------------- | --------------------------- | -------------------------------------------------- |
-| **3D-Druck**   | 3D-gedruckte Produkte       | Weihnachtsbaum Deko, Geschenkboxen, Namensschilder |
-| **Holz**       | Handgefertigte Holzprodukte | Schneidebretter, Schmuckkästchen                   |
-| **Laser**      | Lasergeschnittene Produkte  | Osterhasen, Weihnachtsanhänger                     |
-| **Epoxidharz** | Epoxidharz-Produkte         | River Tables, Untersetzer                          |
+| Code   | Kategorie  | Beschreibung                | Beispiele                                          |
+| ------ | ---------- | --------------------------- | -------------------------------------------------- |
+| **3D** | 3D-Druck   | 3D-gedruckte Produkte       | Weihnachtsbaum Deko, Geschenkboxen, Namensschilder |
+| **EP** | Epoxidharz | Epoxidharz-Produkte         | River Tables, Untersetzer                          |
+| **LA** | Laser      | Lasergeschnittene Produkte  | Osterhasen, Weihnachtsanhänger                     |
+| **SB** | Steinmasse | Steinmasse-Produkte         | Steineier, Hasenfiguren, Teelichthalter            |
+| **WO** | Holz       | Handgefertigte Holzprodukte | Schneidebretter, Schmuckkästchen                   |
 
 ## Tags
 
@@ -138,6 +150,7 @@ Die ersten 2-3 Zeichen sind ein **Kategoriepräfix**:
 | **WO** | Holz (Woodwork)    | WO52K9, WOT3P5, WON4C6 |
 | **LA** | Laser              | LAH7M4, LAW9X2         |
 | **EP** | Epoxidharz (Epoxy) | EPR6N8, EPQ8D6         |
+| **SB** | Steinmasse         | SBYI3C, SBU7JW         |
 
 Die restlichen Zeichen sind **zufällige alphanumerische Zeichen** zur eindeutigen Identifikation.
 
@@ -354,11 +367,13 @@ zeigt die Seite deshalb statt des Links einen kopierbaren Text an (`MAILTO_LENGT
 | `articleNumber` | string   | ✓       | Eindeutige 6-stellige ID            |
 | `name`          | string   | ✓       | Produktname (Deutsch)               |
 | `description`   | string   | ✓       | Produktbeschreibung (Deutsch)       |
-| `category`      | string   | ✓       | Eine von 4 Kategorien               |
+| `category`      | string   | ✓       | Eine von 5 Kategorien               |
 | `tags`          | string[] | ✓       | Array von Tags (kann leer sein)     |
 | `price`         | number   | ✓       | Preis in Euro (Decimal)             |
 | `visible`       | boolean  | ✓       | Sichtbarkeit (false = ausgeblendet) |
 | `customizable`  | boolean  | ✓       | Personalisierbar (zeigt ✨)         |
+| `stock`         | number   | -       | Lagerbestand (nicht ausgewertet)    |
+| `salesCabinet`  | number   | -       | Bestand im Verkaufsschrank          |
 | `size`          | string   | -       | Größenangabe (optional)             |
 | `picture`       | string   | -       | Legacy-Feld (nicht mehr verwendet)  |
 
@@ -407,12 +422,14 @@ zeigt die Seite deshalb statt des Links einen kopierbaren Text an (`MAILTO_LENGT
      "articleNumber": "NEW123",
      "name": "Neues Produkt",
      "description": "Beschreibung...",
-     "category": "3D-Druck",
+     "category": "3D",
      "tags": ["Tag1", "Tag2"],
      "price": 29.99,
      "size": "20cm x 10cm",
      "visible": true,
-     "customizable": false
+     "customizable": false,
+     "stock": 1,
+     "salesCabinet": 0
    }
    ```
 
@@ -427,16 +444,23 @@ zeigt die Seite deshalb statt des Links einen kopierbaren Text an (`MAILTO_LENGT
 
    ```typescript
    // src/types/index.d.ts
-   category: "3D-Druck" | "Holz" | "Laser" | "Epoxidharz" | "Neue Kategorie";
+   category: "3D" | "EP" | "LA" | "SB" | "WO" | "NEU";
    ```
 
-2. **Ordnerstruktur anlegen:**
+2. **Label-Mapping erweitern:**
+
+   ```typescript
+   // src/lib/handmadeCategoryLabels.ts
+   NEU: "Neue Kategorie",
+   ```
+
+3. **Ordnerstruktur anlegen:**
 
    ```bash
    mkdir -p src/assets/handmade/neue-kategorie/
    ```
 
-3. **Artikelnummer-Präfix definieren:** (optional, aber empfohlen)
+4. **Artikelnummer-Präfix definieren:** (optional, aber empfohlen)
    - Z.B. `NC` für "Neue Kategorie"
 
 ### Neue Tags hinzufügen
@@ -459,4 +483,8 @@ zeigt die Seite deshalb statt des Links einen kopierbaren Text an (`MAILTO_LENGT
 3. **Manuelle Bildverwaltung**
    - Bilder müssen manuell in Ordnerstruktur abgelegt werden
    - Keine automatische Bildoptimierung außer Astro's Image-Komponente
-   -
+
+4. **Bestände nicht ausgewertet**
+   - `stock` und `salesCabinet` stehen im Katalog, die Website zeigt sie nicht an und filtert nicht
+     danach; die Pflege übernimmt künftig die HA-Integration (siehe
+     [FR008](../../features/fr008-ha-manager.md))
