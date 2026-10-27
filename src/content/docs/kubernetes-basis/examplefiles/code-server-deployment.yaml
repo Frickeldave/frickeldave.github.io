@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: code-server
-  namespace: kw-b2824a-default
+  namespace: k8s-training
   labels:
     app: code-server
 spec:
@@ -20,17 +20,14 @@ spec:
           image: lscr.io/linuxserver/code-server:latest
           ports:
             - containerPort: 8443
+          envFrom:
+            - configMapRef:
+                name: linuxserver-common
+            - configMapRef:
+                name: code-server-config
           env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
             - name: PASSWORD
               value: "trainingk8s"
-            - name: DEFAULT_WORKSPACE
-              value: "/config/workspace"
           volumeMounts:
             - name: config
               mountPath: /config

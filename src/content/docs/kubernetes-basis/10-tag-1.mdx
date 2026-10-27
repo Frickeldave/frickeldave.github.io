@@ -32,12 +32,12 @@ Browser (Chromium) und eine Entwicklungsumgebung (Code-Server) -- direkt im Clus
 | 10:45 – 11:30   | Theorie              | Kubernetes-Objekte: Pod, Deployment, Service, Namespace |
 | 11:30 – 12:30   | Erste Schritte       | Cluster erkunden, kubectl Basics, Namespace anlegen     |
 | 12:30 – 13:30   | **Mittagspause**     |                                                         |
-| 13:30 – 14:30   | Chromium deployen    | Erstes Deployment (imperativ), Pods beobachten          |
+| 13:30 – 14:30   | Chromium deployen    | Erstes Deployment (imperativ), Pods beobachten, Port-Forwarding |
 | 14:30 – 15:15   | Theorie              | YAML-Grundlagen, Imperativ vs. Deklarativ               |
 | 15:15 – 15:30   | **Pause**            |                                                         |
 | 15:30 – 16:15   | Chromium deklarativ  | Deployment & Service per YAML, /dev/shm-Volume          |
 | 16:15 – 17:00   | Code-Server deployen | Deployment & Service per YAML (deklarativ)              |
-| 17:00 – 17:30   | Services & Abschluss | NodePort, Port-Forwarding, Ingress, Zusammenfassung     |
+| 17:00 – 17:30   | Services & Abschluss | NodePort, Ingress, Zusammenfassung                       |
 
 ---
 
@@ -564,7 +564,20 @@ kubectl delete deployment chromium
 
 > ⚠️ **WICHTIG:** `kubectl delete deployment` löscht auch alle Pods, die von diesem Deployment verwaltet wurden! Die Daten in den Pods gehen verloren (außer wenn Volumes verwendet werden).
 
+**Schnellzugriff: Port-Forwarding**
 
+Bevor wir einen Service bauen, kannst du Chromium schon im Browser öffnen. `kubectl port-forward`
+holt einen Container-Port direkt auf deinen Rechner -- ohne Service, ohne NodePort, ohne
+Firewall-Freigabe:
+
+```bash
+kubectl port-forward deployment/chromium 4000:3000
+```
+
+Der Befehl adressiert das Deployment und damit genau einen Pod: `4000` ist der Port auf deinem
+Rechner, `3000` der Port im Container. Öffne `http://localhost:4000`, und beende die Weiterleitung
+später mit `Ctrl+C`. Ein Service ist dafür nicht nötig -- der kommt erst weiter unten in
+§ "Service einrichten".
 
 ### Status prüfen
 
@@ -716,7 +729,7 @@ kubectl get service chromium
 curl -L http://<Node-IP>:<NodePort> # Linux
 Invoke-WebRequest -Uri http://<Node-IP>:<NodePort> -Method Head # Windows
 ``` 
-Hier gibt es eine schlechte Nachricht, in vielen k8s Umgebungen kann auf diese Weise nicht auf den NodePort zugegriffen werden, da die Firewall oder das Netzwerk dies blockiert. In diesem Fall muss ein Ingress eingerichtet werden, was wir in Tag 2 behandeln. Aber das soll uns echte Broffis ja nicht aufhalten. 
+Hier gibt es eine schlechte Nachricht, in vielen k8s Umgebungen kann auf diese Weise nicht auf den NodePort zugegriffen werden, da die Firewall oder das Netzwerk dies blockiert. In diesem Fall hilft ein Ingress -- den bauen wir später an diesem Tag. Aber das soll uns echte Broffis ja nicht aufhalten. 
 
 Wir basteln uns nun einen kleinen Container im Cluster, von dem aus wir den Chromium-Container erreichen können. 
 
@@ -861,6 +874,17 @@ kubectl get pods
 
 Jetzt erstellen wir Chromium **deklarativ** mit einer YAML-Datei. Das ist deutlich wartbarer,
 weil die Konfiguration versioniert und im Team geteilt werden kann.
+
+**Eine Datei pro Objekt -- und bitte den Namen prüfen.** Die Dateien in dieser Schulung heißen
+`<app>-<kind>.yaml`: lowercase, kebab-case, `<kind>` ist das Kubernetes-Kind (`deployment`,
+`service`, `config-map` -- nicht `configmap`). Varianten desselben Kinds bekommen ein Suffix
+(`chromium-deployment-liveness.yaml`), Objekte ohne App-Bezug heißen nur `<kind>.yaml`
+(`limitrange.yaml`).
+
+> ⚠️ **Warnung:** `kubectl apply -f <alter-name>.yaml` wendet **still** das alte Manifest an --
+> kein Fehler, keine Warnung, nur ein Pod, der anders aussieht als erwartet. Prüf es vorher mit
+> `kubectl diff -f <datei>.yaml` und schau nach dem Apply mit
+> `kubectl get deployment chromium -n k8s-training -o yaml` nach, was wirklich im Cluster steht.
 
 Datei `chromium-deployment.yaml`:
 
@@ -1076,32 +1100,129 @@ Es gibt verschiedene Möglichkeiten, wie du die beiden Container nun von außen 
 
 ### Port-Forwarding
 
-Für lokale schnelle Tests kannst du Port-Forwarding nutzen. Damit leitest du einen Port auf deinem lokalen Rechner direkt an den Service im Cluster weiter. So kannst du Chromium und Code-Server bequem im Browser öffnen, ohne die Node-IP und den NodePort zu kennen.
+Das Prinzip kennst du schon aus § "Chromium deployen" → § "Imperativ": `kubectl port-forward` legt
+eine Leitung von deinem Rechner direkt in einen Pod. Für einen Service lautet die Form
+`kubectl port-forward -n k8s-training svc/chromium 4000:4000`, für Code-Server entsprechend
+`svc/code-server 8443:8443`. Praktisch ist das für schnelle Tests und für alles, was nur lokal
+erreichbar sein soll -- dauerhaft erreichbar wird eine Anwendung damit nicht.
 
-```shell
-# Terminal 1: Chromium (läuft dann auf http://localhost:4000)
-kubectl port-forward -n k8s-training svc/chromium 4000:4000
+<Notice type="info">
 
-# Terminal 2: Code-Server (läuft dann auf http://localhost:8443)
-kubectl port-forward -n k8s-training svc/code-server 8443:8443
+**Beispiel: ein SSH-Container als „Harness“**
+
+Nicht jede Anwendung hat eine Weboberfläche. Ein SSH-Zugang in den Cluster ist der klassische
+„Harness“: Du startest eine Bastion im Namespace, erreichst sie ausschließlich über
+`port-forward` -- und hast damit eine Shell für alles, was im Cluster läuft.
+
+Datei `ssh-bastion-deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh-bastion
+  namespace: k8s-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssh-bastion
+  template:
+    metadata:
+      labels:
+        app: ssh-bastion
+    spec:
+      containers:
+        - name: sshd
+          image: lscr.io/linuxserver/openssh-server
+          ports:
+            - containerPort: 2222
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Berlin"
+            - name: USER_NAME
+              value: "training"
+            - name: PUBLIC_KEY
+              value: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... hier euren eigenen öffentlichen Schlüssel einsetzen"
 ```
 
+Datei `ssh-bastion-service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh-bastion
+  namespace: k8s-training
+spec:
+  type: ClusterIP          # nur clusterintern erreichbar
+  selector:
+    app: ssh-bastion
+  ports:
+    - port: 22
+      targetPort: 2222
+```
+
+```bash
+kubectl apply -f ssh-bastion-deployment.yaml
+kubectl apply -f ssh-bastion-service.yaml
+kubectl port-forward svc/ssh-bastion 2222:22 -n k8s-training
+```
+
+Auf der Client-Seite genügt ein Eintrag in `~/.ssh/config`:
+
+```text
+Host ssh-bastion
+  HostName 127.0.0.1
+  Port 2222
+  User training
+  IdentityFile ~/.ssh/id_ed25519_training
+  StrictHostKeyChecking accept-new
+  UserKnownHostsFile ~/.ssh/known_hosts_training
+```
+
+Danach reicht `ssh ssh-bastion`. Der Schlüssel bleibt ein Platzhalter: Dort steht euer eigener
+**öffentlicher** Schlüssel, niemals der private.
+
+</Notice>
+
 ### Ingress route via Rancher dashboard
+
+Wenn dein Cluster ein Rancher-Dashboard mitbringt, kannst du die Route dort zusammenklicken. Die
+folgende Anleitung zeigt das Ergebnis, das du anschließend für den Code-Server nachbaust: eine
+Route vom Host `chrome.k8s-training.frickeldave.de` auf den Chromium-Service.
 
 - Service Discovery -> Ingresses -> Create
   - Namespace: k8s-training
   - Name: chromium-ingress
   - Rules:
-    - Request Host: chromium-*.*.com
-      - Muss wahrscheinlich gemäß von Regeln erweitert werden, z. B. [hostname]-[namespace].[clustername].[dnsdomainname]
-      - Versuchs einfach anzulegen -> Wird schon meckern ;-)
+    - Request Host: chrome.k8s-training.frickeldave.de
+      - Der Host ist frei wählbar, muss aber ein gültiger DNS-Name sein -- Wildcards nur als linkes
+        Whole-Label (`*.k8s-training.frickeldave.de`), nie mitten im Namen.
     - Path Prefix: /
     - Target Service: chromium
     - Port: 4000
 
-Ist die ingress route angelegt, kannst du im Browser die URL aufrufen, die du in der Ingress-Regel als Request-Host angegeben hast.
-Es sollte nun ein chrome-browser im tab erscheinen. Dieser chrome Browser bietet dir die Möglichkeit Websiten zu öffnen, die nur innerhalb
-des Clusters erreichbar sind.
+Ist die Route angelegt, rufst du sie im Browser über genau diesen Host auf. Es erscheint ein
+Chromium-Fenster, in dem du Seiten öffnen kannst, die nur innerhalb des Clusters erreichbar sind.
+
+So sieht das Ergebnis aus -- du kannst es dir jederzeit ausgeben lassen und als Vorlage für den
+Code-Server nehmen:
+
+```bash
+kubectl get ingress chromium-ingress -o yaml
+```
+
+Ohne Dashboard kommst du mit einem Trockenlauf an dasselbe YAML. `--dry-run=client` baut das
+Manifest nur, ohne es anzuwenden:
+
+```bash
+kubectl create ingress chromium-ingress --rule="chrome.k8s-training.frickeldave.de/*=chromium:4000" --dry-run=client -o yaml
+```
 
 ### Ingress route über kubectl anlegen
 
@@ -1109,13 +1230,26 @@ Alternativ zum Rancher-Dashboard kannst du die Ingress-Route auch direkt per `ku
 
 #### Imperativ
 
+Welche **IngressClass** dein Cluster benutzt, hängt von der Installation ab. Üblich sind `nginx`,
+`traefik` und -- je nach Installation -- `traefik-ingress-controller`; laufende Instanzen auf der
+OASIS-Plattform können davon abweichen. Rate nicht, sondern frag den Cluster:
+
+```bash
+kubectl get ingressclass
+```
+
 ```bash
 # Code-Server Ingress anlegen
-kubectl create ingress code-server-ingress --rule="code-server-*.*.com/*=code-server:8443"
+kubectl create ingress code-server-ingress --rule="code.k8s-training.frickeldave.de/*=code-server:8443"
 
-# Ingress-Class nachträglich setzen 
+# Ingress-Class nachträglich setzen -- Wert aus `kubectl get ingressclass`
+# Kandidaten: nginx, traefik, traefik-ingress-controller
 kubectl patch ingress code-server-ingress --type=merge -p '{"spec":{"ingressClassName":"nginx"}}'
 ```
+
+Wer die Zertifikate für diese Hosts nicht selbst ausstellt, landet schnell bei
+[ACME](/docs/kubernetes-basis/90-glossar#acme): dem Protokoll, mit dem der Ingress Controller
+Let's-Encrypt-Zertifikate automatisch beantragt und erneuert.
 
 <Notice type="info">
   **Gateway API – der Nachfolger von Ingress**
@@ -1125,15 +1259,8 @@ kubectl patch ingress code-server-ingress --type=merge -p '{"spec":{"ingressClas
 
 #### Deklarativ
 
-Die YAML-Datei für die bestehende chromium route lässt sich wie folgt auslesen: 
-
-```shell
-
-kubectl get ingress chromium-ingress -o yaml
-
-```
-
-Hier eine fertige ausgestaltete Datei `code-server-ingress.yaml`:
+Hier eine fertige ausgestaltete Datei `code-server-ingress.yaml` -- dieselbe Form, die du oben mit
+`kubectl get ingress chromium-ingress -o yaml` gesehen hast:
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -1144,7 +1271,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: code-server-*.*.com
+  - host: code.k8s-training.frickeldave.de
     http:
       paths:
       - path: /
@@ -1155,6 +1282,9 @@ spec:
             port:
               number: 8443
 ```
+
+Steht in `kubectl get ingressclass` ein anderer Name (`traefik`, `traefik-ingress-controller`),
+passe `ingressClassName` an -- sonst nimmt der Controller die Route nicht an.
 
 ```bash
 kubectl apply -f code-server-ingress.yaml
@@ -1175,13 +1305,44 @@ kubectl apply -f code-server-ingress.yaml
   **Faustregel:** Eine YAML-Datei pro Kubernetes-Ressource (Deployment, Service, Ingress, ConfigMap, …). Das hält alles sauber getrennt und erleichtert die Arbeit im Team.
 </Notice>
 
-### Status prüfen
+### Ingress-URL ermitteln
 
 ```bash
-kubectl get ingress
+# Alle Routen im Namespace
+kubectl get ingress -n k8s-training
+
+# Zusätzlich mit Host und Ports in einer Zeile
+kubectl get ingress -n k8s-training -o wide
+
+# Details: HOST, ADDRESS, Default-Backend, Events
+kubectl describe ingress code-server-ingress -n k8s-training
 ```
 
-Nach dem Anlegen ist der Code-Server unter der angegebenen Host-URL erreichbar – z. B. `code-server-*.*.com`.
+Zwei Spalten entscheiden, ob der Aufruf klappt:
+
+| Spalte      | Bedeutung                                                                                                                                    |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **HOST**    | Der Name, den du im Browser aufrufst -- hier `code.k8s-training.frickeldave.de`. Er muss per DNS oder `/etc/hosts` auf den Controller zeigen. |
+| **ADDRESS** | IP oder Hostname, unter dem der Ingress Controller den Traffic annimmt. Das Feld bleibt leer, bis der Controller die Route gesehen hat.       |
+
+In Clustern, die ihre Hostnamen selbst vergeben, folgt der HOST oft dem Schema
+`[hostname]-[namespace].[cluster].[domain]`. In dieser Schulung ist es umgekehrt: Der Host steht in
+der Regel, die du geschrieben hast, und lautet `code.k8s-training.frickeldave.de`.
+
+**ADDRESS bleibt leer?** Dann prüfe, ob überhaupt ein Ingress Controller läuft
+(`kubectl get ingressclass`) und ob `ingressClassName` zu ihm passt. Ein leerer ADDRESS heißt nicht
+automatisch, dass die Route kaputt ist -- häufig fehlt nur der DNS-Eintrag.
+
+Ohne DNS-Eintrag testest du die Route direkt gegen den Controller. `-H 'Host: …'` schickt den
+Hostnamen im Header mit, `--resolve` löst den Namen lokal auf die Controller-IP auf:
+
+```bash
+# Variante 1: Host-Header setzen
+curl -H 'Host: code.k8s-training.frickeldave.de' http://<ADDRESS>/
+
+# Variante 2: Namen lokal auf die Controller-IP auflösen
+curl --resolve code.k8s-training.frickeldave.de:80:<ADDRESS> http://code.k8s-training.frickeldave.de/
+```
 
 ## Zusammenfassung
 
@@ -1244,9 +1405,10 @@ kubectl get all -n <namespace>                # Alle Ressourcen im Namespace
 Morgen machen wir eure Deployments **produktionsreif**: [Resource Limits](/docs/kubernetes-basis/90-glossar#resource-limits), Health Checks und
 [Rolling Updates](/docs/kubernetes-basis/90-glossar#rollingupdate). Dann lagern wir Konfiguration in
 [**ConfigMaps**](/docs/kubernetes-basis/90-glossar#configmap) und [**Secrets**](/docs/kubernetes-basis/90-glossar#secret) aus, schauen uns
-**Security-Grundlagen** an, deployen Home Assistant und Nextcloud mit
-[**persistentem Speicher** (PVCs)](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) und richten
-[**Ingress-Routing**](/docs/kubernetes-basis/90-glossar#ingress) für alle vier Anwendungen ein.
+**Security-Grundlagen** an und geben dem Code-Server mit einem
+[**PersistentVolumeClaim**](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) einen Workspace,
+der Pod-Neustarts überlebt. Wer danach noch Luft hat, deployt **MariaDB und phpMyAdmin** -- mit PVC
+und Init-Container als Vertiefung.
 
 <br />
 Weiter: [Tag 2](/docs/kubernetes-basis/20-tag-2)

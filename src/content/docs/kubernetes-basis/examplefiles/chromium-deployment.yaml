@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: chromium
-  namespace: kw-b2824a-default
+  namespace: k8s-training
   labels:
     app: chromium
 spec:
