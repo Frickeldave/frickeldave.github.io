@@ -47,34 +47,124 @@ Im Falle einer lokalen Installation mit k3d siehe unten.
 ### Optional: Tuning Linux
 
 Das folgende Skript richtet den `k`-Alias für kubectl sowie die Bash-Autovervollständigung
-dauerhaft in deiner `.bashrc` ein. Es prüft, ob die Einträge bereits existieren, und fügt sie
-nur bei Bedarf hinzu – mehrfaches Ausführen ist also unschädlich. Nach einem Neustart des
-Terminals oder `source ~/.bashrc` kannst du `k get pods` statt `kubectl get pods` nutzen und
-mit Tabulator durch die Ressourcen navigieren.
+dauerhaft in deiner `.bashrc` ein. Es arbeitet mit einem Marker-Block: Ein bereits vorhandener
+Block wird ersetzt, nicht ein zweites Mal angehängt – mehrfaches Ausführen ist damit
+unschädlich. Fehlt die `.bashrc`, legt das Skript sie an. Die Completion wird außerdem genau
+einmal erzeugt und unter `~/.bash_completion.d/kubectl` zwischengespeichert, statt bei jedem
+Shell-Start neu berechnet zu werden. Nach einem Neustart des Terminals oder
+`source ~/.bashrc` kannst du `k get pods` statt `kubectl get pods` nutzen und mit Tabulator
+durch die Ressourcen navigieren.
 
-``` bash
+```bash
+# Richtet den Alias `k` und die Bash-Completion für kubectl dauerhaft ein.
+# Idempotent: Ein vorhandener Marker-Block wird ersetzt, nicht dupliziert.
 
-BASHRC="$HOME/.bashrc"
+setup_kubectl_shell() {
+    if ! command -v kubectl >/dev/null 2>&1; then
+        echo "kubectl ist nicht im PATH – bitte zuerst kubectl installieren (siehe oben)." >&2
+        return 1
+    fi
 
-# Alias hinzufügen (nur wenn nicht vorhanden)
-if ! grep -q "alias k=kubectl" "$BASHRC" 2>/dev/null; then
-    echo 'alias k=kubectl' >> "$BASHRC"
-fi
+    start_marker="# >>> kubectl completion >>>"
+    end_marker="# <<< kubectl completion <<<"
+    bashrc="$HOME/.bashrc"
+    completion_file="$HOME/.bash_completion.d/kubectl"
 
-# Completion laden (für aktuelle Session)
-source <(kubectl completion bash 2>/dev/null || true)
+    # .bashrc und Completion-Verzeichnis anlegen, falls noch nicht vorhanden
+    mkdir -p "$HOME/.bash_completion.d"
+    touch "$bashrc"
 
-# Complete-Zeile hinzufügen (nur wenn nicht vorhanden)
-if ! grep -q "complete -o default -F __start_kubectl k" "$BASHRC" 2>/dev/null; then
-    echo 'complete -o default -F __start_kubectl k' >> "$BASHRC"
-fi
+    # Completion einmalig erzeugen und cachen – nicht bei jedem Shell-Start neu
+    if [ ! -s "$completion_file" ]; then
+        kubectl completion bash > "$completion_file"
+    fi
 
-echo "✓ .bashrc gepatcht und Completion aktiviert!"
-echo "  Neuen Terminal starten oder 'source ~/.bashrc'"
+    # Vorhandenen Marker-Block entfernen – bis zum End-Marker oder bis zum Dateiende
+    if grep -qF "$start_marker" "$bashrc"; then
+        awk -v start="$start_marker" -v end="$end_marker" '
+            index($0, start) { skip = 1 }
+            !skip { print }
+            index($0, end) { skip = 0 }
+        ' "$bashrc" > "$bashrc.new" && mv "$bashrc.new" "$bashrc"
+    fi
 
+    # Sicherstellen, dass die Datei mit einem Zeilenumbruch endet
+    if [ -s "$bashrc" ] && [ -n "$(tail -c 1 "$bashrc")" ]; then
+        echo "" >> "$bashrc"
+    fi
+
+    # Block genau einmal anhängen; `complete` läuft nur, wenn __start_kubectl existiert
+    {
+        echo "$start_marker"
+        echo 'alias k=kubectl'
+        echo 'if [ -f "$HOME/.bash_completion.d/kubectl" ]; then'
+        echo '    . "$HOME/.bash_completion.d/kubectl"'
+        echo 'fi'
+        echo 'if declare -F __start_kubectl >/dev/null 2>&1; then'
+        echo '    complete -o default -F __start_kubectl k'
+        echo 'fi'
+        echo "$end_marker"
+    } >> "$bashrc"
+
+    # Aktuelle Session direkt mitnehmen
+    alias k=kubectl
+    if [ -s "$completion_file" ]; then
+        . "$completion_file"
+    fi
+    if declare -F __start_kubectl >/dev/null 2>&1; then
+        complete -o default -F __start_kubectl k
+    fi
+
+    echo "✓ Alias und Completion eingerichtet – Block in ~/.bashrc aktualisiert."
+    echo "  Neues Terminal starten oder 'source ~/.bashrc' ausführen."
+}
+
+setup_kubectl_shell
 ```
 
 Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#enable-shell-autocompletion" target="_blank" rel="noopener noreferrer">kubectl auf Linux</a>.
+
+### Optional: Tuning Git Bash (Windows)
+
+Wer auf Windows mit **Git Bash** arbeitet, bleibt in der Bash – das Skript aus
+§ "Optional: Tuning Linux" funktioniert dort unverändert. Git Bash liest beim Start `~/.bashrc`
+ein (über die Systemdatei `/etc/profile`), deshalb landen Alias und Completion automatisch in
+jedem neuen Git-Bash-Fenster. Für PowerShell und die Windows-Eingabeaufforderung gilt das
+nicht – dort greift § "Optional: Tuning Windows".
+
+Falls du Alias und Completion lieber selbst pflegst, reichen zwei Befehle für den Cache:
+
+```bash
+mkdir -p ~/.bash_completion.d
+kubectl completion bash > ~/.bash_completion.d/kubectl
+```
+
+und dieser Block in `~/.bashrc`. Die `source`-Zeile läuft nur, wenn die zwischengespeicherte
+Datei wirklich existiert:
+
+```bash
+alias k=kubectl
+if [ -f "$HOME/.bash_completion.d/kubectl" ]; then
+    . "$HOME/.bash_completion.d/kubectl"
+fi
+if declare -F __start_kubectl >/dev/null 2>&1; then
+    complete -o default -F __start_kubectl k
+fi
+```
+
+Danach `source ~/.bashrc` oder ein neues Git-Bash-Fenster öffnen. Die Prüfung ist unspektakulär:
+`type k` zeigt den Alias, `k get pods` funktioniert, und nach `k get ` liefert die Tabulatortaste
+die Ressourcentypen.
+
+**Troubleshooting**
+
+| Symptom | Mögliche Ursache | Lösung |
+| --- | --- | --- |
+| Completion bleibt leer, `kubectl` selbst funktioniert | kubectl liegt nicht im `PATH` von Git Bash (z. B. weil nur die PowerShell-Installation aktiv ist) | `command -v kubectl` prüfen; Git Bash neu starten; sonst den WinGet-Links-Pfad in `~/.bashrc` ergänzen: `export PATH="$PATH:$HOME/AppData/Local/Microsoft/WinGet/Links"` |
+| `__start_kubectl: command not found` | Die zwischengespeicherte Completion-Datei fehlt oder ist leer | `kubectl completion bash > ~/.bash_completion.d/kubectl` erneut ausführen, danach `source ~/.bashrc` |
+| `_get_comp_words_by_ref: command not found` | Zu altes kubectl (nutzt die alte Completion) oder bash-completion fehlt in Git Bash | Git for Windows aktualisieren; bei sehr alten Installationen bash-completion nachziehen und vor dem kubectl-Block laden |
+| `k: command not found` | Der Alias-Block fehlt in `~/.bashrc`, oder du sitzt in PowerShell | `grep -n 'alias k=kubectl' ~/.bashrc` prüfen und in VS Code das Standard-Terminalprofil auf Git Bash stellen |
+| `kubectl` vervollständigt, `k` nicht | `complete` wurde nicht ausgeführt, weil `__start_kubectl` beim Einlesen noch nicht definiert war | Reihenfolge prüfen: erst die Completion-Datei sourcen, dann `complete -o default -F __start_kubectl k` ausführen |
 
 ### Optional: Tuning Windows
 
@@ -267,11 +357,20 @@ Wer in der eigenen Firma bereits Zugang zu einem Kubernetes-Cluster hat, kann di
 
 <br />
 
+**LimitRange (Tag 2)**
+
+Eine LimitRange ist namespace-scoped – Namespace-Admin-Rechte genügen. Auf Firmen-Clustern ist das
+Anlegen häufig per RBAC oder ResourceQuota gesperrt; dann überspringst du diesen Schritt und setzt
+die `resources` direkt im Deployment. Ein ResourceQuota kann mit `exceeded quota` ablehnen;
+`kubectl describe limitrange default-container-resources` zeigt die wirksamen Defaults.
+
+<br />
+
 **Einschränkungen und Hinweise**
 
 - Firmen-Cluster haben oft eingeschränkte NetworkPolicies oder Pod Security Standards. Sollten einzelne Übungen daran scheitern, kann lokal auf die WSL-Variante gewechselt werden.
 - Image-Pull-Secrets für private Registries sind in Firmen-Umgebungen häufig notwendig – das Setup wird in diesen Fällen kurz abweichen.
-- Produktions-Namespaces sind tabu. Nutze ausschließlich einen dedizierten Schulungs-Namespace.
+- Produktions-Namespaces sind tabu. Nutze ausschließlich einen dedizierten Schulungs-Namespace – in dieser Schulung `k8s-training`.
 
 <br />
 
@@ -282,6 +381,7 @@ Wer in der eigenen Firma bereits Zugang zu einem Kubernetes-Cluster hat, kann di
 | `pods is forbidden` | Fehlende RBAC-Rechte im Namespace | Administrator um Namespace-Admin-Rechte bitten |
 | Image-Pull schlägt fehl | Externes Internet gesperrt | Image-Pull-Secret für interne Registry oder Mirror konfigurieren |
 | PVC bleibt in `Pending` | Keine Default-StorageClass | Administrator nach der verfügbaren StorageClass fragen |
+| LimitRange anlegen schlägt fehl (`limitranges is forbidden`) | RBAC verbietet das Anlegen, oder ein ResourceQuota lehnt mit `exceeded quota` ab | Schritt überspringen und `resources` direkt im Deployment setzen; `kubectl describe limitrange default-container-resources` zeigt die wirksamen Defaults |
 | Ingress antwortet nicht | Kein Ingress Controller installiert | `kubectl get ingressclass` prüfen; ggf. eigenen Nginx-Ingress deployen |
 | NetworkPolicy blockiert | Restriktive Netzwerkregeln | Administrator kontaktieren oder auf WSL-Option wechseln |
 

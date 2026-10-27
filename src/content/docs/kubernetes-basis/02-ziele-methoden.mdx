@@ -54,9 +54,8 @@ Nach dem zweiten Schulungstag können die TeilnehmerInnen:
 - Konfiguration mit ConfigMaps auslagern und sensible Daten in Secrets verwalten
 - SecurityContext-Einstellungen (runAsNonRoot, readOnlyRootFilesystem, capabilities.drop) anwenden
 - PersistentVolumeClaims anlegen, an Deployments binden und den Unterschied zu emptyDir erklären
-- Ingress-Ressourcen für host-basiertes Routing mehrerer Anwendungen erstellen
-- Alle vier Schulungsanwendungen (Chromium, Code-Server, Home Assistant, Nextcloud) vollständig
-  deployen und über Ingress erreichbar machen
+- Chromium und Code-Server produktionsreif betreiben sowie optional MariaDB und phpMyAdmin mit
+  PersistentVolumeClaim deployen
 
 ---
 
@@ -103,8 +102,8 @@ Eine formale Prüfung ist nicht vorgesehen. Der Lernerfolg zeigt sich praktisch:
 
 - **Tag 1 -- Checkpoint**: Chromium und Code-Server laufen im eigenen Namespace und sind über
   NodePort erreichbar
-- **Tag 2 -- Checkpoint**: Alle vier Anwendungen laufen produktionsreif (Resource Limits, Probes,
-  PVCs, Ingress) und sind über individuelle Hostnamen erreichbar
+- **Tag 2 -- Checkpoint**: Chromium und Code-Server laufen produktionsreif (Resource Limits, Probes,
+  PVCs); optional kommt MariaDB mit phpMyAdmin dazu
 
 <br />
 Weiter: [Vorbereitung](./03-vorbereitung)

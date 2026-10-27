@@ -1,8 +1,8 @@
 # Alter Weg (deprecated)
-kubectl create ingress code-server-ingress --rule="code-server-kw-b2824a.dev001.k8s.adesso-projects.com/*=code-server:8443" --annotation="kubernetes.io/ingress.class=nginx" --namespace=kw-b2824a-default
+kubectl create ingress code-server-ingress --rule="code.k8s-training.frickeldave.de/*=code-server:8443" --annotation="kubernetes.io/ingress.class=nginx" --namespace=k8s-training
 
 # Neuer Weg (nerviges escaping issue)
-kubectl create ingress code-server-ingress --rule="code-server-kw-b2824a.dev001.k8s.adesso-projects.com/*=code-server:8443" --namespace=kw-b2824a-default
+kubectl create ingress code-server-ingress --rule="code.k8s-training.frickeldave.de/*=code-server:8443" --namespace=k8s-training
 kubectl patch ingress code-server-ingress --type=merge -p '{"spec":{"ingressClassName":"nginx"}}'
 
 # Ingress route löschen

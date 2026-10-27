@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+  namespace: k8s-training
+  labels:
+    app: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      initContainers:
+        - name: wait-for-mariadb
+          image: mariadb:11
+          command:
+            - sh
+            - -c
+            - |
+              echo "Warte auf MariaDB auf localhost:3306 ..."
+              until mysqladmin ping -h localhost -u root -ptrainingk8s --silent; do
+                echo "MariaDB noch nicht bereit - warte 2s ..."
+                sleep 2
+              done
+              echo "MariaDB ist bereit!"
+      containers:
+        - name: mariadb
+          image: lscr.io/linuxserver/mariadb:latest
+          ports:
+            - containerPort: 3306
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Berlin"
+            # Schulungswert im Klartext; in Produktion per secretKeyRef aus einem Secret
+            - name: MYSQL_ROOT_PASSWORD
+              value: "trainingk8s"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+        - name: phpmyadmin
+          image: lscr.io/linuxserver/phpmyadmin:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Berlin"
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: mariadb-config
