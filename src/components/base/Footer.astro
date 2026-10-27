@@ -1,5 +1,10 @@
 ---
 import Social from "@components/common/Social.astro";
+import pkg from "../../../package.json";
+
+const version = `v${pkg.version}`;
+const releasesUrl =
+  "https://github.com/Frickeldave/frickeldave.github.io/releases";
 ---
 
 <footer
@@ -17,7 +22,18 @@ import Social from "@components/common/Social.astro";
         <li class="m-2 inline-block">
           <a href="/datenschutz">Datenschutz</a>
         </li>
-        <!-- Version removed -->
+        <li class="m-2 inline-block">
+          <a
+            href={releasesUrl}
+            class="text-txt-s dark:text-darkmode-txt-s text-sm"
+            title={`Version ${version} – Releases auf GitHub`}
+            aria-label={`Version ${version}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {version}
+          </a>
+        </li>
       </ul>
     </div>
     <div

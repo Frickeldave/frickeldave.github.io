@@ -1,2 +1,9 @@
 # Use Node.js to validate branch name (cross-platform)
 node "$(dirname "$0")/pre-push-validate.js"
+
+# Release-Gate: dasselbe Regelwerk wie der PR-Check `check-release-label`
+# (gemeinsame Logik in scripts/release-gate.mjs). Blockiert nur bei einem offenen PR
+# gegen `dev` mit einem Regelverstoß. Fehlt `gh`, gibt es keinen PR oder ist etwas
+# nicht lesbar, endet der Hook grün — lokal soll er nicht blockieren, wenn die
+# Information fehlt; bindend entscheidet der PR-Check.
+node "$(dirname "$0")/../scripts/check-release-label.mjs"

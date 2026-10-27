@@ -58,44 +58,6 @@ jobs:
                   body: `🏷️ Triage verdict updated → \`${appliedLabel}\``
                 });
               }
-
-              // Auto-apply release:backlog if go:yes and no release target
-              if (appliedLabel === 'go:yes') {
-                const hasReleaseLabel = allLabels.some(l => l.startsWith('release:'));
-                if (!hasReleaseLabel) {
-                  await github.rest.issues.addLabels({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: issue.number,
-                    labels: ['release:backlog']
-                  });
-
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: issue.number,
-                    body: `📋 Marked as \`release:backlog\` — assign a release target when ready.`
-                  });
-
-                  core.info('Applied release:backlog for go:yes issue');
-                }
-              }
-
-              // Remove release: labels if go:no
-              if (appliedLabel === 'go:no') {
-                const releaseLabels = allLabels.filter(l => l.startsWith('release:'));
-                if (releaseLabels.length > 0) {
-                  for (const label of releaseLabels) {
-                    await github.rest.issues.removeLabel({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      issue_number: issue.number,
-                      name: label
-                    });
-                    core.info(`Removed release label from go:no issue: ${label}`);
-                  }
-                }
-              }
             }
 
             // Handle release: namespace (mutual exclusivity)
