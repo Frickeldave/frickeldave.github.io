@@ -28,7 +28,7 @@
     "start-reqeng": "node scripts/start-reqeng.mjs",
     "start-review": "node scripts/start-review.mjs",
     "versionbump": "node scripts/versionbump.mjs",
-    "test:scripts": "node --experimental-test-module-mocks --test scripts/start-work.test.mjs scripts/start-reqeng.test.mjs scripts/start-review.test.mjs scripts/start-flow-flags.test.mjs scripts/flow-shared.test.mjs scripts/copilot-provider.test.mjs scripts/platform-shared.test.mjs scripts/copilot-environment.test.mjs scripts/ensure-issue-branch.test.mjs scripts/versionbump.test.mjs"
+    "test:scripts": "node --experimental-test-module-mocks --test scripts/start-work.test.mjs scripts/start-reqeng.test.mjs scripts/start-review.test.mjs scripts/start-flow-flags.test.mjs scripts/flow-shared.test.mjs scripts/copilot-provider.test.mjs scripts/platform-shared.test.mjs scripts/copilot-environment.test.mjs scripts/ensure-issue-branch.test.mjs scripts/versionbump.test.mjs scripts/release-gate.test.mjs scripts/check-release-label.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

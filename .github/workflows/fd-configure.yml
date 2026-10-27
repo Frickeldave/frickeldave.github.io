@@ -2,8 +2,9 @@ name: fd-configure (Sync all label namespaces)
 
 # Was dieser Workflow tut
 # Einzige Quelle der Wahrheit für jedes Label, das dieses Repo verwaltet:
-# * statische Namespaces: `go:*`, `release:*`, `type:*`, `priority:*`, die
-# aussagekräftigen Labels `bug` / `feedback` und das Basis-Triage-Label `squad`;
+# * statische Namespaces: `go:*`, `release:*` (nur der PR-Schalter `release:yes` /
+# `release:no`), `type:*`, `priority:*`, die aussagekräftigen Labels `bug` /
+# `feedback` und das Basis-Triage-Label `squad`;
 # * Mitglieder-Namespaces: `squad:<member>` für jede Roster-Zeile (Scribe
 # ausgenommen) plus `squad:copilot`, solange ein Coding Agent im Team ist.
 # Der Roster wird aus `.squad/team.md` gelesen; der Lauf schlägt laut fehl, wenn die
@@ -18,8 +19,10 @@ name: fd-configure (Sync all label namespaces)
 # dieselbe statische Payload byte-genau: zwei Läufe für ein Ergebnis, mit dem
 # dauerhaften Risiko auseinanderlaufender Kopien. Jener Workflow ist stillgelegt, damit
 # „wer besitzt Label X" genau eine Antwort hat. `squad-label-enforce.yml` ist
-# unberührt — es erzwingt die Exklusivität von `go:` / `release:` / `type:` / `priority:`
-# auf Issues und erzeugt selbst keine Labels.
+# unberührt — es erzwingt die Exklusivität von `go:` / `type:` / `priority:`
+# auf Issues und erzeugt selbst keine Labels. Der Namespace `release:` gehört
+# seit dem Release-Gate dem PR-Schalter (siehe `fd-pr-release-label.yml`) und wird
+# von `squad-label-enforce.yml` nicht mehr angefasst.
 #
 # Farbstabilität der Mitglieder (warum Farben nicht wandern)
 # Die Farben von `squad:<member>` werden deterministisch abgeleitet: Der Slug-Hash
@@ -220,12 +223,12 @@ jobs:
               { name: 'go:yes', color: '0E8A16', description: 'Ready to implement' },
             ];
 
+            // PR-Schalter des Release-Gates (fd-pr-release-label): genau eines der
+            // beiden Labels pro Pull Request gegen `dev`. Der Namespace `release:`
+            // gehört ausschließlich diesem Schalter — Issue-Ziel-Labels gibt es nicht mehr.
             const RELEASE_LABELS = [
-              { name: 'release:v0.4.0', color: '6B8EB5', description: 'Targeted for v0.4.0' },
-              { name: 'release:v0.5.0', color: '6B8EB5', description: 'Targeted for v0.5.0' },
-              { name: 'release:v0.6.0', color: '8B7DB5', description: 'Targeted for v0.6.0' },
-              { name: 'release:v1.0.0', color: '8B7DB5', description: 'Targeted for v1.0.0' },
-              { name: 'release:backlog', color: 'D4E5F7', description: 'Not yet targeted' },
+              { name: 'release:yes', color: '0E8A16', description: 'Neue Version, dev-Release beim Deploy' },
+              { name: 'release:no', color: 'BFD4F2', description: 'Version bleibt unverändert' },
             ];
 
             const TYPE_LABELS = [

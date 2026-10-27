@@ -23,11 +23,20 @@ Direkte Pushes auf `main` und Pull Requests gegen `main` sind nicht vorgesehen. 
 keinen lokalen Merge-Schritt mehr; die früher dokumentierte VS-Code-Task `Deploy to Main` und
 `scripts/merge-branches.mjs` sind damit kein Bestandteil des Release-Ablaufs.
 
+Vor dem Squash-Merge entscheidet der Release-Schalter am Pull Request, ob der PR die Version
+anhebt. Jeder PR gegen `dev` trägt genau eines der Labels `release:yes` oder `release:no`; der
+Required-Status-Check `check-release-label` prüft das Label und den Versionsvergleich. Regeln und
+Einrichtung stehen in [Versionierung und
+Release](../../workflow/versionierung%20und%20release.md).
+
 ## Architektur
 
 Die Deployments sind bewusst aufgeteilt:
 
 - `fd-ci.yml` prüft Lint, Format, Vale, einen 3D-Smoke-Test und die e2e-Tests.
+- `fd-pr-release-label.yml` ist das Gate jedes Pull Requests gegen `dev`: Es prüft das
+  Release-Label und den Versionsvergleich und meldet den Check `check-release-label`. Die
+  Deploy-Workflows bleiben davon unberührt.
 - `fd-deploy-dev.yml` startet nach einem erfolgreichen `fd-ci`-Lauf auf `dev` das
   HomeNet-Deployment (Tag `fd`) und publiziert das Pre-Release `dev-v<version>` genau für den
   Commit, den CI geprüft hat.
