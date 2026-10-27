@@ -26,7 +26,8 @@ keinen lokalen Merge-Schritt mehr; die früher dokumentierte VS-Code-Task `Deplo
 Vor dem Squash-Merge entscheidet der Release-Schalter am Pull Request, ob der PR die Version
 anhebt. Jeder PR gegen `dev` trägt genau eines der Labels `release:yes` oder `release:no`; der
 Required-Status-Check `check-release-label` prüft das Label und den Versionsvergleich. Regeln und
-Einrichtung stehen in [Release-Gate für Pull Requests](../18-dev-release-gate.md).
+Einrichtung stehen in [Versionierung und
+Release](../../workflow/versionierung%20und%20release.md).
 
 ## Architektur
 

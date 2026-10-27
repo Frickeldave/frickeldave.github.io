@@ -1,6 +1,6 @@
 name: fd-pr-release-label (Release-Label und Version)
 
-# Siehe docs/18-dev-release-gate.md.
+# Siehe docs/workflow/versionierung und release.md.
 #
 # Bindendes Gate für jeden Pull Request gegen `dev` — dieselben Regeln wie der
 # Husky-Hook `.husky/pre-push`, gemeinsame Logik in `scripts/release-gate.mjs`:

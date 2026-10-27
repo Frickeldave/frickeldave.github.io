@@ -204,7 +204,7 @@ Regeln: genau eines von `release:yes` / `release:no`; `release:yes` verlangt ein
 Version als das höchste `dev-v*`-Release, `release:no` exakt die Version an der Merge-Base mit
 `origin/dev`. Der lokale Modus blockiert nur bei einem offenen `dev`-PR mit Regelverstoß — fehlt
 `gh`, gibt es keinen PR oder ist etwas nicht lesbar, endet er grün. Details in
-[Release-Gate für Pull Requests](../docs/18-dev-release-gate.md).
+[Versionierung und Release](../docs/workflow/versionierung%20und%20release.md).
 
 ## Gemeinsame Module
 

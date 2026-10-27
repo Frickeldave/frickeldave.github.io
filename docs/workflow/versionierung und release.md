@@ -1,18 +1,18 @@
 # Versionierung und Release
 
-Diese Seite beschreibt, wie Versionen entstehen, welchen Anteil ein
-Pull Request daran hat und was ein Merge auslöst.
+Wie Versionen gebildet werden, welchen Anteil ein Pull Request daran hat
+und was ein Merge auf `dev` bzw. `main` auslöst.
 
 ## Die eine Quelle: `package.json`
 
-`version` in `package.json` ist die einzige Versionsquelle. Weder die
-Workflows noch die Labels führen eine eigene Version, alles andere
-leitet sich davon ab:
+`version` in `package.json` ist die einzige Versionsquelle. Sie ist
+strikt `X.Y.Z` ohne Pre-Release- oder Build-Suffixe, weil der
+Versionsvergleich dieselbe Funktion wie `versionbump.mjs` nutzt.
+Weder Workflows noch Labels führen eine eigene Version:
 
 - Der Footer der Website zeigt die Version des Builds.
 - `fd-deploy-dev` veröffentlicht daraus `dev-v<version>`.
 - `fd-promote-prd` vergleicht sie mit dem letzten stabilen Release.
-- `fd-deploy-prd` erzeugt daraus den Tag `v<version>`.
 
 Angehoben wird sie nur über `npm run versionbump`; das Skript legt
 zusätzlich den passenden `## [x.y.z]`-Abschnitt in `CHANGELOG.md` an:
@@ -23,29 +23,55 @@ npm run versionbump -- 1.0.7
 
 ## Das Gate: `release:yes` oder `release:no`
 
-Jeder PR gegen `dev` trägt genau eines der beiden Labels. Keins oder
-beide: der PR ist blockiert. Dieselbe Logik läuft zweimal, als
-Pflicht-Check `check-release-label`
-(`.github/workflows/fd-pr-release-label.yml`) und im Husky-Hook
-`pre-push`.
+Der Präfix `release:` gehört ausschließlich dem PR-Schalter; Issues
+tragen keine Release-Zuordnung. Beide Labels verwaltet `fd-configure`.
 
 | Label | Regel | Ergebnis |
 | --- | --- | --- |
 | `release:yes` | Version > höchstes `dev-v*` | neues Release |
 | `release:no` | Version = Merge-Base | Deploy, kein Release |
 
-`release:no` vergleicht gegen die Version an der **Merge-Base** von
-PR-Head und `origin/dev`, nicht gegen die Spitze von `dev`. Ein
-paralleler Bump auf `dev` macht einen unberührten PR also nicht rot.
-Existiert noch kein `dev-v*`-Release, entfällt bei `release:yes` der
-Versionsvergleich.
+Genau eines der beiden Labels hängt am PR; keines oder beide lassen den
+Check mit einer Meldung scheitern, die das fehlende bzw. zu entfernende
+Label nennt. Verglichen wird die Version an der **Merge-Base** von
+PR-Head und `origin/dev`, nicht die Spitze von `dev` — ein paralleler
+Bump macht einen unberührten PR also nicht rot. Existiert noch kein
+`dev-v*`-Release, entfällt bei `release:yes` der Versionsvergleich.
 
 `release:no` heißt nicht "nicht deployen", sondern nur: dieser PR
 ändert die Version nicht, es gibt also nichts Neues zu veröffentlichen.
 
-Scharf wird das Gate erst mit `check-release-label` als Pflicht-Check im
-Ruleset für `dev` — anlegen per `gh api -X POST repos/<owner>/<repo>/rulesets`
-nach dem Merge, JSON-Beispiel in `docs/old/18-dev-release-gate.md`.
+## Der PR-Check `fd-pr-release-label`
+
+`.github/workflows/fd-pr-release-label.yml` läuft bei `opened`,
+`synchronize`, `reopened`, `labeled` und `unlabeled` für PRs gegen
+`dev`.
+
+- Job und Check heißen `check-release-label`, `runs-on: [self-hosted, fd]`,
+  `permissions: contents: read`.
+- Ausgecheckt wird der **PR-Head-SHA** mit `fetch-depth: 0`; danach holt
+  ein Schritt `origin/<base>` nach, weil ein SHA-Checkout keinen
+  Remote-Tracking-Ref für den Basisbranch anlegt.
+- Kein `npm ci`: die Skripte importieren nur `node:`-Module und das
+  lokale `versionbump.mjs`.
+- Labels kommen aus der `LABELS`-Env des Events, sonst über `PR_NUMBER`;
+  die Release-Liste über `gh api --paginate repos/<repo>/releases`.
+
+## Der lokale Hook `.husky/pre-push`
+
+`.husky/pre-push` ruft `pre-push-validate.js` für den Branch-Namen auf
+und danach `scripts/check-release-label.mjs`; der lokale Modus liest
+Labels, Zustand und Basisbranch des offenen PRs über `gh pr view`.
+
+| Situation | Ergebnis |
+| --- | --- |
+| Kein offener PR, PR nicht `OPEN` oder nicht auf `dev` | grün |
+| `gh` fehlt, nicht eingeloggt oder ohne Antwort | grün |
+| Release-Liste oder Merge-Base-Version nicht lesbar | grün |
+| Offener `dev`-PR mit Regelverstoß | Exit 1 |
+
+`git push --no-verify` überspringt den Hook; verbindlich bleibt der
+PR-Check `check-release-label`.
 
 ## Nach dem Merge auf `dev`
 
@@ -72,6 +98,26 @@ Danach wird `dev` nach `main` gemergt und `fd-deploy-prd` gestartet:
 Pages-Deploy, Tag `v<version>`, stabiles Release. Gleiche Version
 bedeutet No-Op (grün), kleinere Version bedeutet Fehler.
 
+## Required-Status-Check einrichten
+
+Erst mit `check-release-label` im Ruleset für `dev` blockiert das Gate
+einen Merge. Der Eintrag erfolgt, nachdem der Workflow auf `dev` liegt:
+`pull_request`-Workflows laufen aus dem PR-Branch, ein PR ohne die
+Datei meldet den Check nicht und bliebe auf "Expected" stehen.
+
+```bash
+gh api -X POST repos/<owner>/<repo>/rulesets --input - <<'JSON'
+{ "name": "dev release gate", "target": "branch",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["refs/heads/dev"] } },
+  "rules": [ { "type": "required_status_checks",
+    "parameters": {
+      "strict_required_status_checks_policy": false,
+      "required_status_checks": [ { "context": "check-release-label" } ]
+    } } ] }
+JSON
+```
+
 ## Wo die Version sichtbar ist
 
 Der Footer der Website zeigt `v<version>` und verlinkt auf die
@@ -79,10 +125,12 @@ Releases-Seite. Die Seite wird aus `dev` gebaut, dort steht also die
 Version des laufenden Dev-Builds; sie ändert sich nur mit
 `release:yes`.
 
-## Häufige Fehler
+## Fehlersuche
 
 | Meldung | Fix |
 | --- | --- |
-| `Missing label` | `release:yes` oder `release:no` setzen |
+| `Missing label` | `gh pr edit <nr> --add-label release:yes` |
+| Beide Labels gesetzt | das nicht gewollte per `--remove-label` |
 | `requires a version greater` | `npm run versionbump -- x.y.z` |
 | `must not change the version` | zurücksetzen oder `release:yes` |
+| Merge-Base-Version nicht lesbar | `fetch-depth: 0` prüfen |

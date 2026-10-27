@@ -101,8 +101,8 @@ gh workflow run fd-promote-prd.yml
 
 Ein Pull Request gegen `dev` trägt genau eines der Labels `release:yes` oder `release:no`. Der
 Check `check-release-label` prüft das Label und den Versionsvergleich; Regeln, lokaler Hook und die
-Einrichtung des Required-Status-Checks stehen in [Release-Gate für Pull
-Requests](./18-dev-release-gate.md).
+Einrichtung des Required-Status-Checks stehen in [Versionierung und
+Release](../workflow/versionierung%20und%20release.md).
 
 Ein Promote ohne neue Version ist ein No-Op: `fd-deploy-prd` erkennt, dass `main` bereits dem
 letzten stabilen Release entspricht, und beendet sich grün.
