@@ -6,17 +6,20 @@ Was ändert sich und warum? Ein bis zwei Sätze reichen – die Begründung geh�
 
 ## Release-Label und Version
 
-- [ ] Das verlinkte Issue trägt genau ein `release:*`-Label: `release:v1.0.0` (oder ein anderes
-      bestehendes Ziel wie `release:v0.6.0`), wenn die Arbeit mit dieser Version ausgeliefert wird,
-      `release:backlog`, solange sie keinem Release zugeordnet ist. Das Label hängt am Issue, nicht an
-      diesem PR, und kein Workflow validiert es.
+- [ ] Dieser PR trägt genau eines der beiden Labels `release:yes` oder `release:no` — keines oder
+      beide lassen den Check `check-release-label` scheitern.
+      - `release:yes` — die Version in `package.json` ist angehoben und strikt größer als das höchste
+        `dev-v*`-Release; der Deploy veröffentlicht beim Merge ein neues `dev-v<version>`.
+      - `release:no` — die Version ist nicht angefasst; sie muss exakt der Version an der Merge-Base
+        mit `dev` entsprechen, sonst wird der PR rot.
 - [ ] `CHANGELOG.md` hat einen Eintrag unter `## [Unreleased]` im Keep-a-Changelog-Format (`Added`,
       `Changed`, `Fixed`, `Removed`, `Security`), der das Issue als `(#123)` referenziert. Pflicht für
       jeden PR, der Code oder die Site ändert.
-- [ ] Nur Release-PRs ändern `version` in `package.json`. Der Promote-Weg (`fd-promote-prd` →
-      `fd-deploy-prd`) führt `dev` → `main` nur aus, wenn diese Version einen eigenen
-      `## [x.y.z]`-Abschnitt in `CHANGELOG.md` hat und höher ist als das letzte GitHub-Release –
-      Einträge nur unter `## [Unreleased]` reichen für einen Promote nicht.
+- [ ] Der Check `check-release-label` (`fd-pr-release-label`) ist grün. Er prüft das Label und den
+      Versionsvergleich; der Promote-Weg (`fd-promote-prd` → `fd-deploy-prd`) führt `dev` → `main`
+      zusätzlich nur aus, wenn die Version einen eigenen `## [x.y.z]`-Abschnitt in `CHANGELOG.md` hat
+      und höher ist als das letzte GitHub-Release — Einträge nur unter `## [Unreleased]` reichen für
+      einen Promote nicht.
 - [ ] Base-Branch ist `dev`. `main` wird ausschließlich über den Promote-Weg aktualisiert
       (`fd-promote-prd` stößt `fd-deploy-prd` an); niemals einen PR gegen `main` öffnen.
 
