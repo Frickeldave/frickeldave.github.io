@@ -125,17 +125,100 @@ HA config pages have a back affordance; a custom config panel must provide its o
 - Return `{"error": {"code", "message"}}`; the panel shows readable German messages.
 - Guard destructive operations: never allow removing the last `app_admin`; confirm deletes.
 
-## Design system
+## Design system (official HA guidance)
 
-- Shadow DOM, no Tailwind, no iframe; HA tokens first
-  (`--primary-color`, `--card-background-color`, `--primary-text-color`,
-  `--secondary-text-color`, `--error-color`, `--divider-color`, `--ha-card-border-radius`),
-  plus a thin `--fd-*` layer for integration-specific values.
-- 8 px spacing scale, 12 px radii, 56 px top bar, 44 px icon/touch targets, 1.5 line height.
-- Dialogs: native `<dialog>` or HA-style modals, focus capture/restore, Esc/backdrop close,
-  `aria-live` for async results.
-- Tab controls: `role="tablist"/"tab"/"tabpanel"`, arrow/Home/End keys, `aria-selected`.
-- Responsive: single column below ~1200 px for filter/field pairs; never hide primary actions.
+Source of truth: <https://contributors.home-assistant.io/design/> — principles, foundations,
+patterns, components and UI text. Read the relevant subpage before inventing a control.
+
+### Principles and UI text
+
+- Personality: welcoming, candid, supportive, generous, independent. Local-first, no dark patterns.
+- Sentence case for titles, buttons, labels; active voice; concise; "you"/"your" (German: "du"/"dein").
+- One thing, one name; say "integration", not "component".
+- **Add** puts an existing thing somewhere; **Create** makes something new. **Remove** keeps it
+  re-addable; **Delete** is permanent. German: Hinzufügen/Erstellen, Entfernen/Löschen.
+- Icon buttons always need a label (`aria-label` + tooltip). A confirmation button says what it
+  does ("Löschen", not "OK"), destructive actions use the danger variant.
+- Field labels are always visible; placeholders are not labels.
+
+### Color, typography, spacing, motion
+
+- Use **semantic tokens** (`--ha-color-text-primary`, `--ha-color-fill-primary-*`, …), never the
+  raw `--ha-color-primary-*` palettes. The semantic tokens switch with dark/light automatically.
+  Map the integration's `--fd-*` layer onto semantic tokens, not hex values.
+- Type scale tokens `--ha-font-size-xs…5xl` (10/12/14/16/20/24/28/32/40 px), weights
+  normal 400 / medium 500 (actions) / bold 700 (headings), line-height 1.2 headings, 1.6 body.
+- Spacing is a 4 px scale `--ha-space-1…20` (4/8/12/16/20/24/…). Radii: `--ha-border-radius-sm`
+  4, `md` 8, `lg` 12, `xl` 16; cards/dialogs generously rounded, buttons/chips pill-shaped.
+- Motion: `--ha-animation-duration-instant` 75 ms, `fast` 150, `normal` 250, `slow` 350.
+  Never animate a loop without a `prefers-reduced-motion: reduce` fallback; tokens collapse to 1 ms.
+
+### Accessibility (WCAG 2.2 AA)
+
+- Text contrast ≥ 4.5:1 (large ≥ 3:1); control borders/icons ≥ 3:1. Never colour alone — pair
+  with icon or text (alerts always have a type icon).
+- Focus ring: 2 px solid `--ha-color-focus`, 2 px offset; visible on every interactive element.
+- Keyboard: logical order, no focus traps, one tab stop per composite widget, arrow keys inside
+  lists/dialogs/menus, Esc closes, focus returns to the trigger.
+- Touch targets ≥ 44×44 px. Labels/`aria-label` for every control; invalid inputs set `aria-invalid`
+  and announce the message; async results use `aria-live`.
+- German UI text but keep token/entity IDs in backticks.
+
+### Header / app bar (pixel metrics from HA source)
+
+HA's `ha-header-bar`: row height `var(--header-height)` (56 px), background
+`var(--app-header-background-color, var(--primary-background-color))`, text
+`var(--app-header-text-color, var(--primary-text-color))`, bottom border
+`var(--app-header-border-bottom)`, sections padding `0 var(--ha-space-3)` (12 px), icon buttons
+48×48 (`--ha-icon-button-size`), title `--ha-font-size-xl` normal weight with
+`padding-inline-start: var(--ha-space-6)` (24 px), line-height = header height.
+Full viewport width, sticky, no content max-width, no coloured text buttons — icons only.
+
+### Buttons
+
+- Appearances: accent (default), filled, outlined, plain (cancel/dismiss). Variants: brand,
+  danger, warning, success, neutral. Sizes: XS 24 px / 8 px padding, S 32/12, **M 40/16 (default)**,
+  L 48/16; font 14 px except L 16 px. Focus ring 2 px + 2 px offset. Loading replaces the label
+  with a spinner and blocks repeat clicks.
+- List rows: 48 px one-line (64 px with second line), 8 px list padding top/bottom, text first,
+  actions at the end, chevron only for navigation.
+
+### Dialogs
+
+- Material 3: scrim, rounded surface, **close button top-left**, title (+ optional subtitle),
+  optional header icon actions top-right, body padding 0 top / 24 px elsewhere, footer buttons
+  bottom-right (12 px gap, 16 px side padding).
+- Destructive confirmation: title asks the question, description explains, buttons Cancel + the
+  verb (danger), focus starts on Cancel, no close button, no Esc/scrim close while running.
+- Unsaved changes: Esc/scrim close is blocked and the dialog shakes; focus returns to the opener.
+
+### Forms
+
+- Visible labels, helper text below the field, `*` for required; validate on submit (or blur),
+  error replaces the helper text and moves focus to the first invalid field; form-level errors
+  at the top. Password fields must not confuse password managers. Dialog forms autofocus.
+- Loading: spinner for unknown areas, busy state on the button that started the action, skeletons
+  for known layouts; loading always ends in content, empty state or a readable error.
+
+### Patterns
+
+- Empty states: heading + description + optional action; distinguish "nothing yet" from
+  "no results" (filters). Never show an empty state while loading.
+- Errors: field error for one field, alert for the page/dialog (icon + message, not colour only),
+  toast for a short success (≥4 s, optional Undo), dialog only when a decision is required.
+- Confirmations: irreversible → confirmation dialog; reversible → do it and offer Undo.
+- Lists: same row anatomy, actions via buttons at the row end or a menu; use `Remove` for grants
+  (re-addable) and `Delete` only for permanent deletions.
+
+### Review checklist for every UI change
+
+1. Full-width 56 px app bar with 48 px icon buttons, HA tokens, no coloured text buttons.
+2. Semantic colour/typography/spacing/radius/motion tokens only; dark and light theme checked.
+3. Focus ring, keyboard order, labels, aria-live, 44 px touch targets, contrast.
+4. Dialog anatomy (close top-left, footer bottom-right, destructive dialog semantics).
+5. Loading/empty/error states for every async surface; no spinner left running.
+6. German UI text follows HA wording rules (Add/Create, Remove/Delete) and sentence case.
+7. `node --check`, bare-import guard, DOM smoke test; both HA versions pass.
 
 ## Brand, HACS and releases
 
