@@ -36,8 +36,8 @@ ausschließlich über HACS verteilt und über die Home-Assistant-Oberfläche ein
 ```mermaid
 flowchart LR
   panel[HA-Panel<br/>panel_custom + Lit] --> api[Integration<br/>frickeldave_store]
-  api --> store[(HA-Store<br/>config/frickeldave_store/)]
-  api --> images[Bilder<br/>config/frickeldave_store/images/]
+  api --> store[(HA-Store<br/>Datenablage/frickeldave_store/)]
+  api --> images[Bilder<br/>Datenablage/frickeldave_store/images/]
   api --> deepseek[DeepSeek<br/>deepseek-flash]
   api --> paypal[PayPal Business API]
   api --> export[Website-Export<br/>JSON + Bilder]
@@ -82,13 +82,27 @@ flowchart LR
 
 ### Datenhaltung
 
-| Inhalt        | Ablage                                                                   |
-| ------------- | ------------------------------------------------------------------------ |
-| Metadaten     | HA-`Store` (JSON, atomar, versioniert) unter `config/frickeldave_store/` |
-| Produktbilder | Dateien unter `config/frickeldave_store/images/<artikelnummer>/`         |
+Standardmäßig liegen die Daten unter `config/frickeldave_store/` und damit im Backup. Die Option
+**Von Backup ausschließen** im Tab [Allgemeine](#tab-allgemeine) verschiebt Store-Datei, Bilder und
+Snapshots nach `/share/frickeldave_store/` oder `/media/frickeldave_store/`.
 
-Bilder gehören bewusst nicht in `.storage`, nicht nach `/media` und nicht nach `/share`. Beide
-Ablagen liegen unter `config/` und sind damit in den Backups des HA-Containers enthalten.
+| Zustand                 | Ablage                      | Backup-Verhalten                                                                         |
+| ----------------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
+| Option aus (Standard)   | `config/frickeldave_store/` | enthalten, weil das HA-Backup das gesamte `config/`-Verzeichnis sichert                  |
+| Option an, Ziel `share` | `/share/frickeldave_store/` | nur enthalten, wenn `share` in einem Teil-Backup ausgewählt oder vom Host gesichert wird |
+| Option an, Ziel `media` | `/media/frickeldave_store/` | nur enthalten, wenn `media` in einem Teil-Backup ausgewählt oder vom Host gesichert wird |
+
+| Inhalt        | Ablage unterhalb des gewählten Speicherorts |
+| ------------- | ------------------------------------------- |
+| Metadaten     | HA-`Store` (JSON, atomar, versioniert)      |
+| Produktbilder | `images/<artikelnummer>/`                   |
+
+Bilder gehören bewusst nicht in `.storage`. Ohne die Option liegen Daten und Bilder unter `config/`
+und sind damit ohne Zusatzschritt im Backup enthalten. Mit **Von Backup ausschließen** lassen sie
+sich aus dem Backup heraushalten: Das eingebaute HA-Backup sichert `config/` vollständig und bietet
+keine Ausnahme für einzelne Unterordner; `share` und `media` sind nur enthalten, wenn der Ordner in
+einem Teil-Backup ausgewählt oder vom Host gesichert wird. Wer Home Assistant Container betreibt,
+muss das gewählte Volume selbst in den Container einhängen.
 
 Datei-, Bild- und Netzwerkoperationen laufen nicht blockierend (Executor beziehungsweise `aiohttp`
 mit Timeouts). Fehler externer Dienste werden abgefangen und dürfen Home Assistant nicht
@@ -113,8 +127,9 @@ Lauf einen Snapshot an.
 
 Updates laufen über HACS: Ein neuer Git-Tag entspricht einer neuen Manifest-Version, HACS bietet das
 Update an, nach der Installation ist ein Neustart von Home Assistant erforderlich. Ein Update
-überlebt den Neustart, weil Daten und Bilder unter `config/` liegen und nicht im
-Integrationsverzeichnis.
+überlebt den Neustart, weil Daten und Bilder außerhalb des Integrationsverzeichnisses liegen —
+standardmäßig unter `config/`, optional unter `/share` oder `/media` (siehe
+[Datenhaltung](#datenhaltung)).
 
 Die Aufnahme in den offiziellen HACS-Katalog ist nicht Teil der ersten Version; ein
 benutzerdefiniertes Repository genügt.
@@ -127,7 +142,8 @@ YAML-Konfiguration gibt es nicht.
 - Der Config Flow legt die Integration an und registriert das Panel.
 - Der Options Flow öffnet das Konfigurationspanel der Integration. Erreichbar ist es über
   **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad**.
-- Das Konfigurationspanel hat zwei Tabs: **Benutzerverwaltung** und **KI-Einstellungen**.
+- Das Konfigurationspanel hat drei Tabs: **Benutzerverwaltung**, **KI-Einstellungen** und
+  **Allgemeine**.
 - Zugangsdaten bleiben serverseitig und erscheinen nicht in Logs, Diagnose oder Export.
 - Jede Option der Konfigurationsdokumentation entspricht genau einem Feld der Oberfläche; weitere
   Felder führt dieses Dokument nicht.
@@ -157,6 +173,22 @@ Der Tab bildet die Rollenfreigaben aus [Berechtigungen](#berechtigungen) ab.
   angezeigt. Gespeichert wird er serverseitig; Logs, Diagnose und Export enthalten ihn nicht.
 - Die Felder entsprechen den Angaben unter
   [KI-Beschreibungsvorschläge](#ki-beschreibungsvorschläge).
+- Der Tab selbst ist nur für die Rolle **Anwendungsverwaltung** zugänglich.
+
+### Tab Allgemeine
+
+Der Tab enthält die allgemeinen Einstellungen der Integration. Erste Option ist **Von Backup
+ausschließen**; die drei Ablagezustände, ihre Pfade und das Backup-Verhalten stehen unter
+[Datenhaltung](#datenhaltung).
+
+- Option aus (Standard): Store, Bilder und Snapshots liegen unter `config/frickeldave_store/` und
+  sind im Backup enthalten.
+- Option an: Dieselben Daten liegen unter `/share/frickeldave_store/` oder
+  `/media/frickeldave_store/` und lassen sich damit aus dem Backup heraushalten.
+- Das Panel listet die betroffenen Pfade auf: Store-Datei, Bilder und Snapshots.
+- Ein Wechsel verschiebt Store-Datei, Bilder und Snapshots an den neuen Ort. Die alte Kopie bleibt
+  für die manuelle Bereinigung liegen; die Integration löscht sie nicht.
+- Nach dem Wechsel lädt Home Assistant die Integration neu, damit alle Pfade neu aufgelöst werden.
 - Der Tab selbst ist nur für die Rolle **Anwendungsverwaltung** zugänglich.
 
 ## Datenmodell (Schema-Version 1)
@@ -289,9 +321,16 @@ Der Transport des Exports zur Website ist noch offen (siehe [Offene Fragen](#off
 
 ## Backup und Wiederherstellung
 
-- Backups des HA-Containers umfassen `config/` inklusive `.storage` und `config/www`.
-- Produktdaten und Bilder liegen bewusst unter `config/` und sind damit ohne Zusatzschritt im Backup
-  enthalten.
+- Ein vollständiges Backup des HA-Containers umfasst `config/` inklusive `.storage` und
+  `config/www`. Eine Ausnahme für einzelne Unterordner von `config/` gibt es nicht.
+- Ohne die Option liegen Produktdaten und Bilder unter `config/frickeldave_store/` und sind damit
+  ohne Zusatzschritt im Backup enthalten.
+- Mit der Option **Von Backup ausschließen** liegen sie außerhalb von `config/`. Sie sind nur im
+  Backup, wenn das Zielverzeichnis gesichert wird: `share` und `media` sind in Teil-Backups als
+  Ganzes auswählbar oder werden von einer Host-Sicherung erfasst, samt aller fremden Daten in diesen
+  Ordnern.
+- Ein Wechsel des Speicherorts verschiebt die Daten und lässt die alte Kopie zur manuellen
+  Bereinigung stehen (siehe [Tab Allgemeine](#tab-allgemeine)).
 - Die Wiederherstellung wird im Integrations-Repository als Runbook dokumentiert und einmal real
   getestet: identische Checksummen und erhaltener Migrationsstand.
 - Ein Backup ersetzt keine Rechteprüfung: Personen mit Zugriff auf HA-Dateien oder Backups können
