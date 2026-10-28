@@ -71,10 +71,12 @@ flowchart LR
 - Das Panel trägt oben eine Leiste im Stil von Home Assistant. Eine Tab-Leiste, die zwischen
   Produkten und Einstellungen wechselt, gibt es nicht mehr.
 - Das Hamburger-Symbol links öffnet die Home-Assistant-Seitenleiste.
-- Das Drei-Punkte-Menü rechts führt zwei Einträge:
-  - **KI**: Dialog für die Einstellungen des KI-Anbieters, sichtbar nur für die Rolle
-    Anwendungsverwaltung.
+- Das Drei-Punkte-Menü rechts führt genau einen Eintrag:
   - **Tags verwalten**: Pflege der Tags, sichtbar für die Rolle Produktpflege.
+- Die Einstellungen der Integration liegen nicht im Panel, sondern in der Integrationsseite von Home
+  Assistant: **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad** öffnet das
+  Konfigurationspanel (siehe [Einrichtung und Optionen](#einrichtung-und-optionen)). Damit gibt es
+  im Panel keinen Eintrag **KI** mehr.
 - Einstellungen und Tag-Verwaltung liegen damit außerhalb der Hauptfläche. Die Hauptfläche bleibt
   der Produktliste und ihren Filtern vorbehalten.
 
@@ -123,12 +125,39 @@ Einrichtung und Optionen erfolgen ausschließlich über Config Flow und Options 
 YAML-Konfiguration gibt es nicht.
 
 - Der Config Flow legt die Integration an und registriert das Panel.
-- Der Options Flow pflegt die Einstellungen, insbesondere die Zugangsdaten und das Modell des
-  KI-Anbieters.
+- Der Options Flow öffnet das Konfigurationspanel der Integration. Erreichbar ist es über
+  **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad**.
+- Das Konfigurationspanel hat zwei Tabs: **Benutzerverwaltung** und **KI-Einstellungen**.
 - Zugangsdaten bleiben serverseitig und erscheinen nicht in Logs, Diagnose oder Export.
-- Jede Option der Konfigurationsdokumentation entspricht genau einem Feld der Oberfläche. Die
-  abschließende Feldliste wird mit der Architektur festgelegt; dieses Dokument führt keine
-  erfundenen Felder.
+- Jede Option der Konfigurationsdokumentation entspricht genau einem Feld der Oberfläche; weitere
+  Felder führt dieses Dokument nicht.
+
+### Tab Benutzerverwaltung
+
+Der Tab bildet die Rollenfreigaben aus [Berechtigungen](#berechtigungen) ab.
+
+- Die Liste zeigt alle freigegebenen Benutzer mit ihrem echten Home-Assistant-Namen und den
+  zugeordneten Rollenbezeichnungen: **Produktpflege**, **Finanzen**, **Anwendungsverwaltung**.
+- Das Zahnrad je Benutzer öffnet den Rolleneditor: zwei Listen stehen nebeneinander, links die
+  verfügbaren Rollen und rechts die zugeordneten Rollen. Die Schaltflächen dazwischen fügen eine
+  markierte Rolle hinzu oder entfernen sie wieder.
+- Das Papierkorb-Symbol je Benutzer entfernt dessen Freigabe vollständig. Der Benutzer verliert
+  damit jeden Zugriff und erhält auf geschützten Routen `403` (Default Deny).
+- **Benutzer hinzufügen** steht oberhalb der Liste: Auswahl eines Home-Assistant-Benutzers und
+  derselbe Rolleneditor wie beim Bearbeiten. Die Zuordnung erfolgt über die stabile HA-Benutzer-ID.
+- Mindestens eine Freigabe mit der Rolle **Anwendungsverwaltung** muss bestehen bleiben. Das
+  Entfernen der letzten Freigabe oder der letzten Anwendungsverwaltung wird abgewiesen, damit sich
+  niemand selbst aussperrt.
+- Der Tab selbst ist nur für die Rolle **Anwendungsverwaltung** zugänglich.
+
+### Tab KI-Einstellungen
+
+- Der Tab pflegt den KI-Anbieter mit genau vier Feldern: Endpunkt, Modell, API-Key und Prompt.
+- Der API-Key ist write-only: Er lässt sich setzen und ersetzen, wird aber nie im Klartext
+  angezeigt. Gespeichert wird er serverseitig; Logs, Diagnose und Export enthalten ihn nicht.
+- Die Felder entsprechen den Angaben unter
+  [KI-Beschreibungsvorschläge](#ki-beschreibungsvorschläge).
+- Der Tab selbst ist nur für die Rolle **Anwendungsverwaltung** zugänglich.
 
 ## Datenmodell (Schema-Version 1)
 
@@ -215,7 +244,8 @@ Der Transport des Exports zur Website ist noch offen (siehe [Offene Fragen](#off
 
 ## KI-Beschreibungsvorschläge
 
-- Der Anbieter ist konfigurierbar: API-Endpunkt, Modell, Zugangsdaten und Prompt.
+- Der Anbieter ist konfigurierbar: API-Endpunkt, Modell, Zugangsdaten und Prompt. Gepflegt werden
+  die Felder im Tab [KI-Einstellungen](#tab-ki-einstellungen).
 - Initial kommt DeepSeek mit dem Modell `deepseek-flash` zum Einsatz. Das Modell akzeptiert Bilder
   (JPEG, PNG, GIF, WebP; Base64, externe URL oder Files API) mit maximal 1024 Tokens je Bild;
   verifiziert unter <https://api-docs.deepseek.com/guides/vision/>.

@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Tags-Filter im HA-Verwaltungspanel: ausgewählte Tags sind jetzt mit ODER verknüpft, wie die Kategorien; alle übrigen Filter bleiben UND-verknüpft (#289).
-- Panel-Navigation in `docs/features/fr008-ha-manager.md`: HA-artige Topbar mit Hamburger-Menü für die Seitenleiste und Drei-Punkte-Menü für „KI“ (Anwendungsverwaltung) und „Tags verwalten“ (Produktpflege) statt einer Tab-Leiste; Kategorien und Tags stehen auf breiten Desktop-Monitoren nebeneinander (#289).
+- Panel-Navigation und Einstellungen in `docs/features/fr008-ha-manager.md`: HA-artige Topbar mit Hamburger-Menü für die Seitenleiste und Drei-Punkte-Menü, das nur noch „Tags verwalten“ (Produktpflege) führt; Kategorien und Tags stehen auf breiten Desktop-Monitoren nebeneinander, und die Einstellungen der Integration liegen vollständig im Konfigurationspanel unter **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad** mit dem Tab „Benutzerverwaltung“ (Freigabeliste mit echten HA-Namen, Rolleneditor, Schutz der letzten Anwendungsverwaltung) und dem Tab „KI-Einstellungen“ (Endpunkt, Modell, write-only API-Key, Prompt); der Eintrag „KI“ im Drei-Punkte-Menü entfällt (#289).
 
 ## [1.0.7] - 2026-10-27
 
