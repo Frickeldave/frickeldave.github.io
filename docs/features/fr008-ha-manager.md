@@ -66,6 +66,18 @@ flowchart LR
 - `require_admin` ist keine Zugangskontrolle, sondern steuert nur die Sichtbarkeit des Panels. Jede
   geschützte Route prüft die Berechtigung serverseitig (siehe [Berechtigungen](#berechtigungen)).
 
+### Navigation
+
+- Das Panel trägt oben eine Leiste im Stil von Home Assistant. Eine Tab-Leiste, die zwischen
+  Produkten und Einstellungen wechselt, gibt es nicht mehr.
+- Das Hamburger-Symbol links öffnet die Home-Assistant-Seitenleiste.
+- Das Drei-Punkte-Menü rechts führt zwei Einträge:
+  - **KI**: Dialog für die Einstellungen des KI-Anbieters, sichtbar nur für die Rolle
+    Anwendungsverwaltung.
+  - **Tags verwalten**: Pflege der Tags, sichtbar für die Rolle Produktpflege.
+- Einstellungen und Tag-Verwaltung liegen damit außerhalb der Hauptfläche. Die Hauptfläche bleibt
+  der Produktliste und ihren Filtern vorbehalten.
+
 ### Datenhaltung
 
 | Inhalt        | Ablage                                                                   |
@@ -167,7 +179,9 @@ Regeln:
 
 - Suche über Name, Beschreibung, Artikelnummer und Tags.
 - Filter: Kategorie, Tags, personalisierbar, auf Lager, im Schrank, sichtbar, unsichtbar.
-- Verknüpfung: Kategorie ODER, Tags UND, alle übrigen Filter UND.
+- Verknüpfung: Kategorie ODER, Tags ODER, alle übrigen Filter UND.
+- Auf breiten Desktop-Monitoren stehen Kategorien und Tags nebeneinander; erklärende Hilfssätze
+  entfallen.
 - Sortierung nach Name und Preis, jeweils auf- und absteigend; die Sortierung bleibt bei
   Filteränderungen erhalten.
 - Bildverwaltung: maximal zehn Bilder je Produkt, Reihenfolge und genau ein Hauptbild. Ein elfter

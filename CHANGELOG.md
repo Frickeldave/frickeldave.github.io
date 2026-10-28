@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dokumentation des geplanten Verwaltungswerkzeugs in Home Assistant: `docs/features/fr008-ha-manager.md` beschreibt Architektur, Installation, Datenmodell, Rechte, Backup und Website-Export der Integration `frickeldave_store`; `docs/old/features/fr003-catalog.md` nennt jetzt fünf Kategorien inklusive `SB` und die vorhandenen Bestandsfelder, `src/types/index.d.ts` ergänzt `stock` und `salesCabinet` als optionale Felder (#289).
 
+### Changed
+
+- Tags-Filter im HA-Verwaltungspanel: ausgewählte Tags sind jetzt mit ODER verknüpft, wie die Kategorien; alle übrigen Filter bleiben UND-verknüpft (#289).
+- Panel-Navigation in `docs/features/fr008-ha-manager.md`: HA-artige Topbar mit Hamburger-Menü für die Seitenleiste und Drei-Punkte-Menü für „KI“ (Anwendungsverwaltung) und „Tags verwalten“ (Produktpflege) statt einer Tab-Leiste; Kategorien und Tags stehen auf breiten Desktop-Monitoren nebeneinander (#289).
+
 ## [1.0.7] - 2026-10-27
 
 ### Added
