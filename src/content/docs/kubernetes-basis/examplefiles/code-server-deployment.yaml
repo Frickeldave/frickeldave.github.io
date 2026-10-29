@@ -18,16 +18,26 @@ spec:
       containers:
         - name: code-server
           image: lscr.io/linuxserver/code-server:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 8443
-          envFrom:
-            - configMapRef:
-                name: linuxserver-common
-            - configMapRef:
-                name: code-server-config
           env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Berlin"
             - name: PASSWORD
               value: "trainingk8s"
+            - name: DEFAULT_WORKSPACE
+              value: "/config/workspace"
           volumeMounts:
             - name: config
               mountPath: /config

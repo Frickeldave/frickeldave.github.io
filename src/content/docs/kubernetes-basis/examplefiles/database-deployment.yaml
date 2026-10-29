@@ -18,6 +18,13 @@ spec:
       initContainers:
         - name: wait-for-mariadb
           image: mariadb:11
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
           command:
             - sh
             - -c
@@ -31,6 +38,13 @@ spec:
       containers:
         - name: mariadb
           image: lscr.io/linuxserver/mariadb:latest
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           ports:
             - containerPort: 3306
           env:
@@ -48,6 +62,13 @@ spec:
               mountPath: /config
         - name: phpmyadmin
           image: lscr.io/linuxserver/phpmyadmin:latest
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
           ports:
             - containerPort: 80
           env:

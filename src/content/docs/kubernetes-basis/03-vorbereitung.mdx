@@ -44,6 +44,9 @@ Windows in der Datei ```%USERPROFILE%\.kube\config``` abgelegt, unter Linux und 
 Eine korrekt konfigurierte kubeconfig bekommst du im Falle eines Firmencluster aus deinem k8s Portal (Rancher, AWS, Azure, ...).
 Im Falle einer lokalen Installation mit k3d siehe unten. 
 
+Du kannst mehrere configs speichern und entweder mit dem Parameter `--kubeconfig=<Pfad zur Datei>` oder mit der Umgebungsvariablen 
+`KUBECONFIG` (Pfad zur config) referenzieren. 
+
 ### Optional: Tuning Linux
 
 Das folgende Skript richtet den `k`-Alias für kubectl sowie die Bash-Autovervollständigung
@@ -123,77 +126,6 @@ setup_kubectl_shell
 ```
 
 Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#enable-shell-autocompletion" target="_blank" rel="noopener noreferrer">kubectl auf Linux</a>.
-
-### Optional: Tuning Git Bash (Windows)
-
-Wer auf Windows mit **Git Bash** arbeitet, bleibt in der Bash – das Skript aus
-§ "Optional: Tuning Linux" funktioniert dort unverändert. Git Bash liest beim Start `~/.bashrc`
-ein (über die Systemdatei `/etc/profile`), deshalb landen Alias und Completion automatisch in
-jedem neuen Git-Bash-Fenster. Für PowerShell und die Windows-Eingabeaufforderung gilt das
-nicht – dort greift § "Optional: Tuning Windows".
-
-Falls du Alias und Completion lieber selbst pflegst, reichen zwei Befehle für den Cache:
-
-```bash
-mkdir -p ~/.bash_completion.d
-kubectl completion bash > ~/.bash_completion.d/kubectl
-```
-
-und dieser Block in `~/.bashrc`. Die `source`-Zeile läuft nur, wenn die zwischengespeicherte
-Datei wirklich existiert:
-
-```bash
-alias k=kubectl
-if [ -f "$HOME/.bash_completion.d/kubectl" ]; then
-    . "$HOME/.bash_completion.d/kubectl"
-fi
-if declare -F __start_kubectl >/dev/null 2>&1; then
-    complete -o default -F __start_kubectl k
-fi
-```
-
-Danach `source ~/.bashrc` oder ein neues Git-Bash-Fenster öffnen. Die Prüfung ist unspektakulär:
-`type k` zeigt den Alias, `k get pods` funktioniert, und nach `k get ` liefert die Tabulatortaste
-die Ressourcentypen.
-
-**Troubleshooting**
-
-**Completion bleibt leer, `kubectl` funktioniert aber**
-
-- **Ursache:** kubectl liegt nicht im `PATH` von Git Bash, etwa weil nur die PowerShell-Installation
-  aktiv ist.
-- **Lösung:** `command -v kubectl` prüfen und Git Bash neu starten. Fehlt kubectl weiterhin, den
-  WinGet-Links-Pfad in `~/.bashrc` ergänzen:
-
-  ```bash
-  export PATH="$PATH:$HOME/AppData/Local/Microsoft/WinGet/Links"
-  ```
-
-**`__start_kubectl: command not found`**
-
-- **Ursache:** Die zwischengespeicherte Completion-Datei fehlt oder ist leer.
-- **Lösung:** `kubectl completion bash > ~/.bash_completion.d/kubectl` erneut ausführen, danach
-  `source ~/.bashrc`.
-
-**`_get_comp_words_by_ref: command not found`**
-
-- **Ursache:** kubectl ist zu alt und nutzt noch die alte Completion, oder bash-completion fehlt in
-  Git Bash.
-- **Lösung:** Git for Windows aktualisieren. Bei sehr alten Installationen bash-completion
-  nachziehen und vor dem kubectl-Block laden.
-
-**`k: command not found`**
-
-- **Ursache:** Der Alias-Block fehlt in `~/.bashrc`, oder du sitzt in PowerShell.
-- **Lösung:** `grep -n 'alias k=kubectl' ~/.bashrc` prüfen und in VS Code das
-  Standard-Terminalprofil auf Git Bash stellen.
-
-**`kubectl` vervollständigt, `k` nicht**
-
-- **Ursache:** `complete` wurde nicht ausgeführt, weil `__start_kubectl` beim Einlesen noch nicht
-  definiert war.
-- **Lösung:** Reihenfolge prüfen: erst die Completion-Datei sourcen, dann
-  `complete -o default -F __start_kubectl k` ausführen.
 
 ### Optional: Tuning Windows
 
@@ -373,7 +305,7 @@ Wer in der eigenen Firma bereits Zugang zu einem Kubernetes-Cluster hat, kann di
 | [kubectl](/docs/kubernetes-basis/90-glossar#kubectl)-Zugriff | Eine gültige [kubeconfig](/docs/kubernetes-basis/90-glossar#kubeconfig) muss lokal vorliegen (`kubectl get nodes` funktioniert) |
 | Mindestens 2 [Worker Nodes](/docs/kubernetes-basis/90-glossar#worker-node) | Für einige Übungen werden Pod-Scheduling-Entscheidungen auf mehreren Nodes demonstriert |
 | [StorageClass](/docs/kubernetes-basis/90-glossar#storageclass) vorhanden | Für [PersistentVolumeClaims](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) wird eine Default-StorageClass benötigt (`kubectl get storageclass`) |
-| [Ingress Controller](/docs/kubernetes-basis/90-glossar#ingress-controller) | Ein Ingress Controller muss im Cluster laufen (z. B. nginx), damit die Schulungsprojekte per URL erreichbar sind |
+| [Ingress Controller](/docs/kubernetes-basis/90-glossar#ingress-controller) | Ein Ingress Controller muss im Cluster laufen (z. B. nginx oder traefik), damit die Schulungsprojekte per URL erreichbar sind |
 | Internetzugang des Clusters | Die Nodes müssen Images von externen Registries ziehen können (z. B. `lscr.io`, `ghcr.io`)–oder ein lokaler Mirror ist konfiguriert |
 | DNS / Hostnamen | Entweder ein echter DNS-Eintrag für deine Schulungs-URLs oder die Nutzung von `/etc/hosts` auf deinem lokalen Rechner |
 
@@ -383,15 +315,6 @@ Wer in der eigenen Firma bereits Zugang zu einem Kubernetes-Cluster hat, kann di
 
 - `Cluster-Admin-Rechte` sind nicht nötig, `Namespace-Admin-Rechte` reichen für alle Schulungsübungen
 - Eine eigene Control Plane – Ein bestehender Cluster wird genutzt
-
-<br />
-
-**LimitRange (Tag 2)**
-
-Eine LimitRange ist namespace-scoped – Namespace-Admin-Rechte genügen. Auf Firmen-Clustern ist das
-Anlegen häufig per RBAC oder ResourceQuota gesperrt; dann überspringst du diesen Schritt und setzt
-die `resources` direkt im Deployment. Ein ResourceQuota kann mit `exceeded quota` ablehnen;
-`kubectl describe limitrange default-container-resources` zeigt die wirksamen Defaults.
 
 <br />
 
@@ -455,13 +378,18 @@ kubectl api-resources | Select-String -Pattern "(pods|services|deployments|ingre
 
 ### get storageclass
 
+```powershell 
+k get storageclass
+```
+
+Diese Tabelle zeigt dir, welche **Speicherarten** (StorageClasses) in deinem Cluster verfügbar sind – vergleichbar mit verschiedenen Festplatten-Typen in einem PC:
+
 ```text
 NAME                   PROVISIONER           RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 example-examplefs-sc   cephfs.csi.ceph.com   Delete          Immediate           true                   399d
 ex-exrbd-sc (default)  rbd.csi.ceph.com      Delete          Immediate           true                   91d
 ```
 <br />
-Diese Tabelle zeigt dir, welche **Speicherarten** (StorageClasses) in deinem Cluster verfügbar sind – vergleichbar mit verschiedenen Festplatten-Typen in einem PC:
 
 | Spalte | Bedeutung | Einfach erklärt |
 |---|---|---|
@@ -473,24 +401,6 @@ Diese Tabelle zeigt dir, welche **Speicherarten** (StorageClasses) in deinem Clu
 | `AGE` | Seit wann gibt es diese Klasse? | `399d` = fast 400 Tage alt, also kein Neuling. |
 
 **Das Wichtigste für dich:** Die Zeile mit `(default)` – hier `csi-rbd-sc` – wird automatisch verwendet, wenn du einen PersistentVolumeClaim anlegst, ohne eine bestimmte StorageClass zu nennen. Solange mindestens eine StorageClass existiert, ist die Grundvoraussetzung für die Schulungsübungen erfüllt.
-
-### get ingressclass
-
-```text
-NAME    CONTROLLER             PARAMETERS   AGE
-nginx   k8s.io/ingress-nginx   <none>       2y209d
-```
-<br />
-Diese Tabelle zeigt, ob ein **Ingress Controller** im Cluster installiert ist – das ist die Komponente, die später dafür sorgt, dass deine Anwendungen über eine Web-Adresse (URL) von außen erreichbar sind.
-
-| Spalte | Bedeutung | Einfach erklärt |
-|---|---|---|
-| `NAME` | Name des Ingress Controllers | So sprichst du ihn in Konfigurationen an – hier heißt er `nginx`. |
-| `CONTROLLER` | Technische Kennung des Treibers | Sagt, welche Software den Datenverkehr steuert – `k8s.io/ingress-nginx` ist der bekannte **NGINX Ingress Controller**. |
-| `PARAMETERS` | Zusätzliche Konfiguration | `<none>` = es sind keine extra Parameter gesetzt, der Controller läuft mit Standardeinstellungen. |
-| `AGE` | Seit wann ist er installiert? | `2y209d` = über 2 Jahre, also stabil im Einsatz. |
-
-**Das Wichtigste für dich:** Solange hier mindestens ein Eintrag steht (wie `nginx`), ist ein Ingress Controller vorhanden. Das ist die Voraussetzung dafür, dass später in der Schulung Web-URLs für deine Anwendungen funktionieren. Fehlt der Eintrag komplett, müsstest du einen nachinstallieren – das ist aber eher in Firmen-Clustern mit strengen IT-Richtlinien der Fall.
 
 ### api-resources
 
@@ -541,13 +451,7 @@ Die gefilterte Ausgabe zeigt dir, ob du die **wichtigsten Ressourcentypen** in d
 - [ ] Editor/IDE eingerichtet
 - [ ] Internetzugang vorhanden (für Image-Downloads)
 - [ ] Default StorageClass im Cluster vorhanden (`kubectl get storageclass`)
-
-<br />
-**Zusätzlich bei Firmen-Cluster**
-
-- [ ] Namespace mit ausreichenden Rechten vorhanden (`kubectl get pods -n <namespace>` fehlerfrei)
-- [ ] Ingress Controller verfügbar (`kubectl get ingressclass`)
-- [ ] DNS-Einträge oder `/etc/hosts`-Einträge für Schulungs-URLs konfiguriert
+- [ ] Rechte vorhanden (`kubectl get api-resources`)
 
 <br />
 Weiter: [Tag 1](/docs/kubernetes-basis/10-tag-1)

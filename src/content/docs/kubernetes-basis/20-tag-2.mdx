@@ -178,6 +178,13 @@ spec:
       containers:
         - name: code-server
           image: lscr.io/linuxserver/code-server:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 8443
           envFrom:                          # zwei ConfigMaps als Umgebungsvariablen
@@ -187,12 +194,12 @@ spec:
                 name: code-server-config
           env:
             - name: PASSWORD                # Secret bleibt vorerst hart codiert
-              value: "training2024"
+              value: "trainingk8s"
 ```
 
 <br/>
 ```bash
-kubectl apply -f code-server-deployment.yaml
+kubectl apply -f code-server-deployment-configmap.yaml
 ```
 
 **Wichtig:** `envFrom` importiert **alle** Keys einer ConfigMap als Umgebungsvariablen.
@@ -335,7 +342,7 @@ Wer `kubectl get secret` ausführen darf, kommt auch an die Werte – und genau 
 
 **3. Secret im Deployment verwenden**
 
-Statt `value: "training2024"` referenzieren wir den Wert aus dem Secret:
+Statt `value: "trainingk8s"` referenzieren wir den Wert aus dem Secret:
 
 ```yaml
 env:
@@ -347,7 +354,7 @@ env:
 ```
 <br/>
 ```bash
-kubectl apply -f code-server-deployment.yaml
+kubectl apply -f code-server-deployment-configmap-secret.yaml
 ```
 
 **Wichtig:** Das Secret muss **im gleichen Namespace** wie der Pod erstellt werden. Bei
@@ -512,6 +519,13 @@ spec:
       containers:
         - name: chromium
           image: lscr.io/linuxserver/chromium:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 3000
             - containerPort: 3001
@@ -529,6 +543,13 @@ spec:
               mountPath: /config/log
         - name: vector                     # NEU: Sidecar-Container
           image: timberio/vector:0.42.0-alpine
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
           command:
             - vector
             - --config
@@ -551,7 +572,7 @@ spec:
 ```
 <br/>
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-sidecar.yaml
 ```
 <br/>
 
@@ -702,7 +723,7 @@ spec -> templates -> spec -> containers -> volumeMounts:
 ```
 <br/>
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-sidecar-wrapped.yaml
 ```
 <br/>
 
@@ -1146,7 +1167,7 @@ apiVersion: apps/v1
 <br/>
 
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-all-probes.yaml
 ```
 
 ### Übung: Readiness Probe manipulieren
@@ -1178,7 +1199,7 @@ diesen Pod. Der Pod selbst läuft weiter, er bekommt nur keine Anfragen mehr.
 
 <br/>
 
-2. **Falschen Port eintragen** — Ändere in `chromium-deployment.yaml` den Port der
+2. **Falschen Port eintragen** — Ändere in `chromium-deployment-all-probes.yaml` den Port der
    `readinessProbe` von `3000` auf einen nicht existierenden Port, Bsp. `3005`:
 
 ```yaml
@@ -1193,7 +1214,7 @@ diesen Pod. Der Pod selbst läuft weiter, er bekommt nur keine Anfragen mehr.
 3. **Deployen und beobachten**:
 
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-all-probes.yaml
 kubectl get pods -n k8s-training -w
 ```
 
@@ -1217,7 +1238,7 @@ Der neue Pod bekommt also Traffic, obwohl Chromium selbst noch nicht bereit ist.
    erneut:
 
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-all-probes.yaml
 kubectl get pods -n k8s-training -w
 ```
 
@@ -1760,6 +1781,13 @@ spec:
       initContainers:                          # ⬅️ NEU: läuft vor den App-Containern
         - name: wait-for-mariadb
           image: mariadb:11
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
           command:
             - sh
             - -c

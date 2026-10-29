@@ -312,7 +312,7 @@ kubectl create namespace k8s-training
 Lege zuerst ein Arbeitsverzeichnis an. Dies kann (muss aber nicht) auch ein git-repository sein. Dieses Arbeitsverzeichnis
 nutzen wir in Zukunft für alle weiteren Übungen. 
 
-Datei `namespace.yaml`:
+Datei `create-namespace.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -357,6 +357,353 @@ einen Namespace zu erstellen. In diesem Fall arbeiten wir in dem Workspace weite
 5. Zeige alle System-Pods im Namespace `kube-system` an: `kubectl get pods -n kube-system`
 
 ---
+
+## Chromium deployen
+
+In diesem Block deployen wir einen vollständigen Browser (Chromium) im Cluster -- imperativ, also
+direkt per Kommandozeile.
+
+### Was ist ein Deployment?
+
+Ein **Deployment** ist eine der wichtigsten Ressourcen in Kubernetes. Es beschreibt den
+**gewünschten Zustand** für eine Anwendung:
+
+- **Wie viele Pods** sollen laufen? (Replicas)
+- **Welches Image** soll verwendet werden?
+- **Wie sollen die Pods** konfiguriert sein? (Umgebungsvariablen, Ports, Volumes)
+
+Das Deployment überwacht ständig den tatsächlichen Zustand und sorgt dafür, dass er mit dem
+gewünschten Zustand übereinstimmt. Wenn ein Pod abstürzt oder gelöscht wird, erstellt das
+Deployment automatisch einen neuen -- das ist **Self-Healing**.
+
+**Analogie zum Logistikzentrum:**
+
+Stell dir ein Deployment wie eine **Arbeitsanweisung im Logistikzentrum** vor:
+*"Im Lager müssen immer 2 fertige Pakete (Pods) bereitliegen. Wenn eines
+versendet wird (ausfällt), muss sofort ein neues gepackt werden."*
+
+Der Lagerleiter (Kubernetes-Control-Plane) überwacht ständig die Anzahl der
+fertigen Pakete. Fällt ein Paket weg, packt er sofort ein neues -- ohne dass
+jemand manuell eingreifen muss.
+
+Zusammengefasst: Ein Deployment ist die "Arbeitsanweisung" für Kubernetes, die sagt:
+*"Ich will, dass diese Anwendung genau so läuft."*
+
+### Imperativ
+
+```bash
+kubectl create deployment chromium --image=lscr.io/linuxserver/chromium:latest --replicas=1
+```
+
+<br/>
+
+<Notice type="warning">
+
+**Fehler `admission webhook ... require-resource-requirements ... denied the request`?** Dein
+Cluster erzwingt per Policy, dass jeder Container `resources.requests` und `resources.limits`
+für CPU und Memory angibt. `kubectl create deployment` kennt dafür keine direkte Option. 
+
+```bash
+
+kubectl -n k8s-training create deployment chromium --image=lscr.io/linuxserver/chromium:latest --replicas=1 --dry-run=client -o json \
+| kubectl set resources --local -f - -c chromium --requests=cpu=250m,memory=512Mi --limits=cpu=1,memory=1Gi -o json \
+| kubectl -n k8s-training apply -f -
+
+```
+
+Was `resources` bedeutet, erfährst du an Tag 2. Die YAML-Beispiele dieser Schulung enthalten
+den `resources`-Block bereits, damit sie auch auf einem solchen Cluster funktionieren.
+
+</Notice>
+
+**Deployment überschreiben (mit neuem Image oder Replicas):**
+
+Wenn du das Deployment ändern möchtest (z. B. anderes Image oder andere Anzahl Replicas), nutze `kubectl set image` oder `kubectl scale`:
+
+```bash
+# Zu anderer Version upgraden (z. B. latest → v2.0)
+kubectl set image deployment/chromium chromium=lscr.io/linuxserver/chromium:v2.0
+
+# Anzahl der Replicas ändern
+kubectl scale deployment chromium --replicas=3
+
+```
+
+Du kannst die Änderungen nach jedem Schritt mit `kubectl get pods`checken. Erkläre das Verhalten im Team. 
+
+**Deployment löschen:**
+
+```bash
+# Deployment + alle dazugehörigen Pods löschen
+kubectl delete deployment chromium
+```
+
+> ⚠️ **WICHTIG:** `kubectl delete deployment` löscht auch alle Pods, die von diesem Deployment verwaltet wurden! Die Daten in den Pods gehen verloren (außer wenn Volumes verwendet werden).
+
+**Schnellzugriff: Port-Forwarding**
+
+Bevor wir einen Service bauen, kannst du Chromium schon im Browser öffnen. `kubectl port-forward`
+holt einen Container-Port direkt auf deinen Rechner -- ohne Service, ohne NodePort, ohne
+Firewall-Freigabe. Erstelle erst das chromium Deployment erneut, dann richte ein Port-Forwarding ein. 
+
+```bash
+kubectl port-forward deployment/chromium 4000:3000
+```
+
+Der Befehl adressiert das Deployment und damit genau einen Pod: `4000` ist der Port auf deinem
+Rechner, `3000` der Port im Container. Öffne `http://localhost:4000`, und beende die Weiterleitung
+später mit `Ctrl+C`. Ein Service ist dafür nicht nötig -- der kommt später.
+
+<br/>
+<Notice type="info">
+  Port forwardings sind vor allem für Tests gut. Aber zum Beispiel auch, wenn du deinen Harness als SSH Container auf dem Cluster betreiben willst. 
+  In diesem Fall wäre ein Proxy Command allerdings besser geeignet: 
+
+  ```bash
+  ssh -t -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=c:\Users\<USER>\.ssh\known_hosts -o HostKeyAlias=fd-dev -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o 'ProxyCommand=kubectl --kubeconfig C:/Users/dakoenig/.kube/MYCLUSTER.yaml --context MYCLUSTER -n fd-infra exec -i fd-dev-container -- nc localhost 2222' -i C:\Users\<USER>\.ssh\mykey.key appuser@localhost
+  ```
+
+  Aufgedröselt:
+  --kubeconfig ... verwendet diese Kubernetes-Konfiguration.
+  -n fd-infra wählt den Namespace fd-infra.
+  exec ... -- führt einen Befehl im Pod aus.
+  -i lässt die Standardeingabe offen, damit du Eingaben an nc weitergeben kannst.
+  nc localhost 2222 baut eine TCP-Verbindung zu Port 2222 innerhalb der Netzwerkumgebung des Pods auf.
+</Notice>
+
+### Status prüfen
+
+```bash
+# Deployment-Status prüfen
+kubectl get deployments
+
+# Pods anzeigen
+kubectl get pods
+kubectl get pods -o wide
+
+# Detaillierte Deployment-Informationen
+kubectl describe deployment chromium
+
+# Prüfen ob der container auf port 3000 lauscht
+kubectl exec -it deploy/chromium -- curl -I http://localhost:3000
+
+```
+
+### Self-Healing Demo
+
+Kubernetes sorgt dafür, dass der gewünschte Zustand (1 Replica) immer eingehalten wird:
+
+```bash
+# Pods beobachten (in einem Terminal)
+kubectl get pods -w
+
+# In einem zweiten Terminal: Pod absichtlich löschen
+kubectl delete pod <pod-name>
+
+# Beobachten: Kubernetes erstellt automatisch einen neuen Pod!
+```
+
+### Service einrichten
+
+Jetzt machen wir Chromium von außen erreichbar. Wir erstellen einen **NodePort-Service** imperativ.
+
+**Analogie zum Logistikzentrum:**
+
+Stell dir den NodePort-Service wie einen **Anruf im Logistikzentrum** vor:
+
+1. **Externer Kunde** ruft das Logistikzentrum an (dein Browser ruft `Node-IP:3xxxx` auf)
+2. **Außennummer (NodePort)**–Der Kunde wählt die öffentliche Durchwahl 3xxxx (der automatisch zugewiesene NodePort)
+3. **Empfang am Node**–Ein Worker-Node nimmt den Anruf entgegen (kube-proxy auf diesem Node)
+4. **Interne Leitstelle (Service/ClusterIP:4000)**–Der Empfang leitet den Anruf an die zentrale Service-Leitstelle weiter
+5. **Mitarbeiter-Zuweisung (Pod)**–Die Leitstelle sucht sich einen freien Mitarbeiter (einen Pod) aus
+6. **Arbeitsplatz (targetPort=3000)**–Der Mitarbeiter wird an seinem Arbeitsplatz (Container-Port 3000) erreicht
+7. **Rückantwort**–Die Antwort des Mitarbeiters geht über die Leitstelle und den Empfang zurück zum Kunden
+
+
+<br/>
+<Image src={knba10040} alt="Node service Kommunikation im Logistikzentrum * Erstellt mit Microsoft Copilot" />
+
+<br/>
+
+> 💡 **Merke:** Genau wie im Logistikzentrum gibt es eine **stabile Durchwahl** (Service), die immer
+> erreichbar ist–egal welcher Mitarbeiter (Pod) gerade die Anfrage bearbeitet!
+
+<br/>
+
+```bash
+kubectl expose deployment chromium \
+  --type=NodePort \
+  --name=chromium \
+  --port=4000 \
+  --target-port=3000
+```
+<br/>
+
+**Wichtige Unterscheidung:**
+
+- **`--port=4000`**: Port, den der Service **im Cluster** anhört (für Pods intern)
+- **`--target-port=3000`**: Port, an dem der **Container** lauscht
+- **NodePort**: Port, der auf den **Nodes** geöffnet wird (externer Zugriff) -- automatisch im 
+  Bereich 30000-32767
+<br/>
+
+
+**Was ist die ClusterIP?**
+
+Die **ClusterIP** ist eine **interne, stabile IP-Adresse** des Service. Sie ist der
+zentrale Endpunkt, der immer gleich bleibt -- egal wie oft Pods neu erstellt werden oder sich ihre
+IP-Adressen ändern.
+
+**Der NodePort leitet an die ClusterIP weiter** -- das ist der "eigentliche" Service. Der NodePort ist
+nur die **externe Eintrittsstelle** für Traffic von außen.
+
+```bash
+kubectl get service chromium
+# Ausgabe: chromium   NodePort   10.43.25.123   3000:30123/TCP   ...
+#                        ^^^^^^^^^^^ Das ist die ClusterIP (intern)
+#                                   ^^^^^^^ Das ist der NodePort (extern)
+```
+
+**Warum braucht man die ClusterIP?**
+
+- **Stabilität:** Die ClusterIP bleibt immer gleich, auch wenn Pods sich ändern
+- **Interne Kommunikation:** Andere Pods im Cluster erreichen den Service über die ClusterIP (ohne NodePort)
+- **Abstraktion:** Der NodePort ist nur ein "Zugangstor" -- die eigentliche Logik liegt in der ClusterIP
+
+**Ohne ClusterIP** müsste jeder externe Client direkt die Pod-IPs kennen -- die sich aber ständig
+ändern! Die ClusterIP ist der **stabile Vermittler**.
+
+Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port.
+
+<Notice type="info">
+  **Vielleicht fragst du dich, wie der Service mit mehreren Pods umgeht und ein Load Balancing macht?**
+
+  Gute Frage! Die Antwort ist: **Der Service verteilt eingehende Anfragen automatisch per Round-Robin auf alle Pods, die zu seinem Label Selector passen** -- und zwar völlig transparent für den Client.
+
+  **Wie funktioniert das genau?**
+
+  1. **kube-proxy auf jedem Node** überwacht ständig den API-Server und erfährt so, welche Pods zu welchem Service gehören und welche IP-Adressen sie haben.
+  2. **iptables/IPVS-Regeln** werden von kube-proxy auf jedem Node geschrieben. Diese Regeln sagen: "Wenn ein Paket an die ClusterIP:Port des Services geht, leite es per Zufall (Round-Robin) an eine der Pod-IPs weiter."
+  3. **Der Client merkt nichts davon** -- er spricht nur die ClusterIP an und bekommt eine Antwort, ohne zu wissen, welcher Pod tatsächlich geantwortet hat.
+
+  **Beispiel:** Dein Chromium-Service hat 3 Replicas (`replicas: 3`). Drei Clients rufen gleichzeitig `http://<ClusterIP>:4000` auf:
+
+  - Client 1 → Pod A (Chromium #1)
+  - Client 2 → Pod B (Chromium #2)
+  - Client 3 → Pod C (Chromium #3)
+  - Client 4 → Pod A (wieder von vorne)
+
+  **Wichtig zu wissen:**
+  - Der Service verteilt **nur neue Verbindungen** (TCP-Verbindungen). Eine einmal aufgebaute Verbindung bleibt bei demselben Pod.
+  - Fällt ein Pod aus, entfernt kube-proxy ihn automatisch aus der Rotation -- neue Anfragen gehen nur noch an die verbleibenden Pods.
+  - Der Service hat **kein Wissen über die Auslastung** der einzelnen Pods. Er verteilt einfach gleichmäßig, ohne zu prüfen, ob ein Pod gerade stark belastet ist. Dafür gibt es dann den **HorizontalPodAutoscaler** (kommt später).
+
+  **Analogie zum Logistikzentrum:** Stell dir vor, die Service-Hotline hat mehrere Mitarbeiter (Pods), die alle denselben Anruf entgegennehmen können. Die Telefonanlage (kube-proxy) nimmt den Anruf entgegen und leitet ihn an den nächsten freien Mitarbeiter weiter -- ohne dass der Anrufer weiß, wer gerade dran ist. Fällt ein Mitarbeiter aus (Pod stirbt), wird er einfach nicht mehr angerufen.
+</Notice>
+
+Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port.
+
+
+<br/>
+<Image src={knba10042} alt="Node service Kommunikation * Erstellt mit Microsoft Copilot" />
+
+<br/>
+
+Nun musst du 3 Dinge tun, um deinen Container zu erreichen: 
+
+1. Finde den node port heraus
+2. Finde die IP-Adresse eines Worker-Nodes heraus
+3. Öffne die URL im Browser (oder curl oder powershell)
+
+```bash
+kubectl get nodes -o wide
+kubectl get service chromium
+curl -L http://<Node-IP>:<NodePort> # Linux
+Invoke-WebRequest -Uri http://<Node-IP>:<NodePort> -Method Head # Windows
+``` 
+Hier gibt es eine schlechte Nachricht, in vielen k8s Umgebungen kann auf diese Weise nicht auf den NodePort zugegriffen werden, da die Firewall oder das Netzwerk dies blockiert. In diesem Fall hilft ein Ingress -- den bauen wir später an diesem Tag. Aber das soll uns echte Broffis ja nicht aufhalten. 
+
+Wir basteln uns nun einen kleinen Container im Cluster, von dem aus wir den Chromium-Container erreichen können. 
+
+```bash
+
+# kubectl run debug – erstellt einen Pod namens debug.
+# -it – hält Eingabe und Terminal offen, damit du darin arbeiten kannst.
+# --rm – löscht den Pod, wenn du die Shell beendest.
+# --image=alpine:latest – verwendet das Alpine-Linux-Image.
+# --restart=Never – erstellt einen einzelnen Pod, keinen Deployment-Controller.
+# --override-type=strategic – wendet die folgenden Pod-Anpassungen als Strategic Merge Patch an.
+# --overrides='…' – setzt die Ressourcen für den Container debug:
+
+# Requests: 100m CPU (0,1 Kern) und 64Mi Speicher als angeforderte Mindestressourcen.
+# Limits: höchstens 200m CPU (0,2 Kern) und 128Mi Speicher.
+# -- sh – führt im Container den Befehl sh aus. Das -- trennt die kubectl-Optionen von diesem Container-Befehl.
+
+kubectl run -it --rm debug --image=alpine:latest --restart=Never --override-type=strategic --overrides='{"spec":{"containers":[{"name":"debug","resources":{"requests":{"cpu":"100m","memory":"64Mi"},"limits":{"cpu":"200m","memory":"128Mi"}}}]}}' -- sh
+
+apk add curl
+curl -L http://chromium:4000
+curl -L http://<Node-IP>:<NodePort>
+exit
+```
+
+Den chromium erreichbar machen, machen wir zum Problem vom "Später-Ich".
+
+### Konfiguration nachbessern
+
+Container von [linuxserver.io](https://www.linuxserver.io/) erwarten bestimmte Umgebungsvariablen
+für Benutzer-ID, Gruppen-ID und Zeitzone. Ohne diese laufen die Container zwar, aber mit
+`root`-Rechten und falscher Zeitzone.
+
+```bash
+kubectl set env deployment/chromium PUID=1000 PGID=1000 TZ=Europe/Berlin
+```
+
+> ⚠️ **WICHTIG:** Dieser Befehl setzt die Umgebungsvariablen **nur für das Deployment `chromium`**,
+> nicht für den gesamten Namespace oder andere Deployments. Jede Anwendung muss separat
+> konfiguriert werden.
+
+Nach dem Setzen der Umgebungsvariablen erstellt Kubernetes automatisch neue Pods mit der
+aktualisierten Konfiguration:
+
+```bash
+# Warte, bis der neue Pod ready ist
+kubectl get pods -w
+```
+
+### Überprüfung
+
+Prüfe, ob die Umgebungsvariablen erfolgreich gesetzt wurden:
+
+```bash
+# Alle Umgebungsvariablen des Deployments anzeigen
+kubectl exec <pod-name> -- env"
+
+# Erwartete Ausgabe:
+# PUID=1000
+# PGID=1000
+# TZ=Europe/Berlin
+```
+
+Jetzt sollte Chromium korrekt funktionieren!
+
+### Übung 2
+
+1. Prüfe den Status des Chromium-Deployments mit `kubectl get deployment chromium`.
+2. Lösche den Pod und beobachte, wie Kubernetes ihn automatisch neu erstellt.
+3. Öffne Chromium im Browser unter `http://<Node-IP>:3xxxx` -- was siehst du?
+4. Setze die Umgebungsvariablen mit `kubectl set env deployment/chromium PUID=1000 PGID=1000 TZ=Europe/Berlin`.
+5. Warte, bis der neue Pod ready ist (`kubectl get pods -w`).
+6. Überprüfe die Umgebungsvariablen mit `kubectl exec <pod-name> -- env | grep -E "PUID|PGID|TZ"`.
+7. Öffne Chromium erneut im Browser -- funktioniert es jetzt?
+
+> Wir haben Chromium erfolgreich imperativ deployed. Das funktioniert gut für schnelle Experimente --
+> aber in der Praxis wird fast ausschließlich deklarativ mit YAML-Dateien gearbeitet. Später
+> siehst du, warum: YAML-Manifeste lassen sich versionieren, wiederverwenden und im Team
+> reviewen.
+
+---
+
 
 ## Labels in Kubernetes
 
@@ -505,301 +852,6 @@ spec:
 
 ---
 
-## Chromium deployen
-
-In diesem Block deployen wir einen vollständigen Browser (Chromium) im Cluster -- imperativ, also
-direkt per Kommandozeile.
-
-### Was ist ein Deployment?
-
-Ein **Deployment** ist eine der wichtigsten Ressourcen in Kubernetes. Es beschreibt den
-**gewünschten Zustand** für eine Anwendung:
-
-- **Wie viele Pods** sollen laufen? (Replicas)
-- **Welches Image** soll verwendet werden?
-- **Wie sollen die Pods** konfiguriert sein? (Umgebungsvariablen, Ports, Volumes)
-
-Das Deployment überwacht ständig den tatsächlichen Zustand und sorgt dafür, dass er mit dem
-gewünschten Zustand übereinstimmt. Wenn ein Pod abstürzt oder gelöscht wird, erstellt das
-Deployment automatisch einen neuen -- das ist **Self-Healing**.
-
-**Analogie zum Logistikzentrum:**
-
-Stell dir ein Deployment wie eine **Arbeitsanweisung im Logistikzentrum** vor:
-*"Im Lager müssen immer 2 fertige Pakete (Pods) bereitliegen. Wenn eines
-versendet wird (ausfällt), muss sofort ein neues gepackt werden."*
-
-Der Lagerleiter (Kubernetes-Control-Plane) überwacht ständig die Anzahl der
-fertigen Pakete. Fällt ein Paket weg, packt er sofort ein neues -- ohne dass
-jemand manuell eingreifen muss.
-
-Zusammengefasst: Ein Deployment ist die "Arbeitsanweisung" für Kubernetes, die sagt:
-*"Ich will, dass diese Anwendung genau so läuft."*
-
-### Imperativ
-
-```bash
-kubectl create deployment chromium --image=lscr.io/linuxserver/chromium:latest --replicas=1
-```
-
-**Deployment überschreiben (mit neuem Image oder Replicas):**
-
-Wenn du das Deployment ändern möchtest (z. B. anderes Image oder andere Anzahl Replicas), nutze `kubectl set image` oder `kubectl scale`:
-
-```bash
-# Zu anderer Version upgraden (z. B. latest → v2.0)
-kubectl set image deployment/chromium chromium=lscr.io/linuxserver/chromium:v2.0
-
-# Anzahl der Replicas ändern
-kubectl scale deployment chromium --replicas=3
-
-```
-
-**Deployment löschen:**
-
-```bash
-# Deployment + alle dazugehörigen Pods löschen
-kubectl delete deployment chromium
-```
-
-> ⚠️ **WICHTIG:** `kubectl delete deployment` löscht auch alle Pods, die von diesem Deployment verwaltet wurden! Die Daten in den Pods gehen verloren (außer wenn Volumes verwendet werden).
-
-**Schnellzugriff: Port-Forwarding**
-
-Bevor wir einen Service bauen, kannst du Chromium schon im Browser öffnen. `kubectl port-forward`
-holt einen Container-Port direkt auf deinen Rechner -- ohne Service, ohne NodePort, ohne
-Firewall-Freigabe:
-
-```bash
-kubectl port-forward deployment/chromium 4000:3000
-```
-
-Der Befehl adressiert das Deployment und damit genau einen Pod: `4000` ist der Port auf deinem
-Rechner, `3000` der Port im Container. Öffne `http://localhost:4000`, und beende die Weiterleitung
-später mit `Ctrl+C`. Ein Service ist dafür nicht nötig -- der kommt erst weiter unten in
-§ "Service einrichten".
-
-### Status prüfen
-
-```bash
-# Deployment-Status prüfen
-kubectl get deployments
-
-# Pods anzeigen
-kubectl get pods
-kubectl get pods -o wide
-
-# Detaillierte Deployment-Informationen
-kubectl describe deployment chromium
-
-# Prüfen ob der container auf port 3000 lauscht
-kubectl exec -it deploy/chromium -- curl -I http://localhost:3000
-
-```
-
-### Self-Healing Demo
-
-Kubernetes sorgt dafür, dass der gewünschte Zustand (1 Replica) immer eingehalten wird:
-
-```bash
-# Pods beobachten (in einem Terminal)
-kubectl get pods -w
-
-# In einem zweiten Terminal: Pod absichtlich löschen
-kubectl delete pod <pod-name>
-
-# Beobachten: Kubernetes erstellt automatisch einen neuen Pod!
-```
-
-### Service einrichten
-
-Jetzt machen wir Chromium von außen erreichbar. Wir erstellen einen **NodePort-Service** imperativ.
-
-**Analogie zum Logistikzentrum:**
-
-Stell dir den NodePort-Service wie einen **Anruf im Logistikzentrum** vor:
-
-1. **Externer Kunde** ruft das Logistikzentrum an (dein Browser ruft `Node-IP:3xxxx` auf)
-2. **Außennummer (NodePort)**–Der Kunde wählt die öffentliche Durchwahl 3xxxx (der automatisch zugewiesene NodePort)
-3. **Empfang am Node**–Ein Worker-Node nimmt den Anruf entgegen (kube-proxy auf diesem Node)
-4. **Interne Leitstelle (Service/ClusterIP:4000)**–Der Empfang leitet den Anruf an die zentrale Service-Leitstelle weiter
-5. **Mitarbeiter-Zuweisung (Pod)**–Die Leitstelle sucht sich einen freien Mitarbeiter (einen Pod) aus
-6. **Arbeitsplatz (targetPort=3000)**–Der Mitarbeiter wird an seinem Arbeitsplatz (Container-Port 3000) erreicht
-7. **Rückantwort**–Die Antwort des Mitarbeiters geht über die Leitstelle und den Empfang zurück zum Kunden
-
-
-<br/>
-<Image src={knba10040} alt="Node service Kommunikation im Logistikzentrum * Erstellt mit Microsoft Copilot" />
-
-<br/>
-
-> 💡 **Merke:** Genau wie im Logistikzentrum gibt es eine **stabile Durchwahl** (Service), die immer
-> erreichbar ist–egal welcher Mitarbeiter (Pod) gerade die Anfrage bearbeitet!
-
-<br/>
-
-```bash
-kubectl expose deployment chromium \
-  --type=NodePort \
-  --name=chromium \
-  --port=4000 \
-  --target-port=3000
-```
-<br/>
-
-**Wichtige Unterscheidung:**
-
-- **`--port=4000`**: Port, den der Service **im Cluster** anhört (für Pods intern)
-- **`--target-port=3000`**: Port, an dem der **Container** lauscht
-- **NodePort**: Port, der auf den **Nodes** geöffnet wird (externer Zugriff) -- automatisch im 
-  Bereich 30000-32767
-<br/>
-
-
-**Was ist die ClusterIP?**
-
-Die **ClusterIP** ist eine **interne, stabile IP-Adresse** des Service. Sie ist der
-zentrale Endpunkt, der immer gleich bleibt -- egal wie oft Pods neu erstellt werden oder sich ihre
-IP-Adressen ändern.
-
-**Der NodePort leitet an die ClusterIP weiter** -- das ist der "eigentliche" Service. Der NodePort ist
-nur die **externe Eintrittsstelle** für Traffic von außen.
-
-```bash
-kubectl get service chromium
-# Ausgabe: chromium   NodePort   10.43.25.123   3000:30123/TCP   ...
-#                        ^^^^^^^^^^^ Das ist die ClusterIP (intern)
-#                                   ^^^^^^^ Das ist der NodePort (extern)
-```
-
-**Warum braucht man die ClusterIP?**
-
-- **Stabilität:** Die ClusterIP bleibt immer gleich, auch wenn Pods sich ändern
-- **Interne Kommunikation:** Andere Pods im Cluster erreichen den Service über die ClusterIP (ohne NodePort)
-- **Abstraktion:** Der NodePort ist nur ein "Zugangstor" -- die eigentliche Logik liegt in der ClusterIP
-
-**Ohne ClusterIP** müsste jeder externe Client direkt die Pod-IPs kennen -- die sich aber ständig
-ändern! Die ClusterIP ist der **stabile Vermittler**.
-
-Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port.
-
-<Notice type="info">
-  **Vielleicht fragst du dich, wie der Service mit mehreren Pods umgeht und ein Load Balancing macht?**
-
-  Gute Frage! Die Antwort ist: **Der Service verteilt eingehende Anfragen automatisch per Round-Robin auf alle Pods, die zu seinem Label Selector passen** -- und zwar völlig transparent für den Client.
-
-  **Wie funktioniert das genau?**
-
-  1. **kube-proxy auf jedem Node** überwacht ständig den API-Server und erfährt so, welche Pods zu welchem Service gehören und welche IP-Adressen sie haben.
-  2. **iptables/IPVS-Regeln** werden von kube-proxy auf jedem Node geschrieben. Diese Regeln sagen: "Wenn ein Paket an die ClusterIP:Port des Services geht, leite es per Zufall (Round-Robin) an eine der Pod-IPs weiter."
-  3. **Der Client merkt nichts davon** -- er spricht nur die ClusterIP an und bekommt eine Antwort, ohne zu wissen, welcher Pod tatsächlich geantwortet hat.
-
-  **Beispiel:** Dein Chromium-Service hat 3 Replicas (`replicas: 3`). Drei Clients rufen gleichzeitig `http://<ClusterIP>:4000` auf:
-
-  - Client 1 → Pod A (Chromium #1)
-  - Client 2 → Pod B (Chromium #2)
-  - Client 3 → Pod C (Chromium #3)
-  - Client 4 → Pod A (wieder von vorne)
-
-  **Wichtig zu wissen:**
-  - Der Service verteilt **nur neue Verbindungen** (TCP-Verbindungen). Eine einmal aufgebaute Verbindung bleibt bei demselben Pod.
-  - Fällt ein Pod aus, entfernt kube-proxy ihn automatisch aus der Rotation -- neue Anfragen gehen nur noch an die verbleibenden Pods.
-  - Der Service hat **kein Wissen über die Auslastung** der einzelnen Pods. Er verteilt einfach gleichmäßig, ohne zu prüfen, ob ein Pod gerade stark belastet ist. Dafür gibt es dann den **HorizontalPodAutoscaler** (kommt später).
-
-  **Analogie zum Logistikzentrum:** Stell dir vor, die Service-Hotline hat mehrere Mitarbeiter (Pods), die alle denselben Anruf entgegennehmen können. Die Telefonanlage (kube-proxy) nimmt den Anruf entgegen und leitet ihn an den nächsten freien Mitarbeiter weiter -- ohne dass der Anrufer weiß, wer gerade dran ist. Fällt ein Mitarbeiter aus (Pod stirbt), wird er einfach nicht mehr angerufen.
-</Notice>
-
-Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port.
-
-
-<br/>
-<Image src={knba10042} alt="Node service Kommunikation * Erstellt mit Microsoft Copilot" />
-
-<br/>
-
-Nun musst du 3 Dinge tun, um deinen Container zu erreichen: 
-
-1: Finde den node port heraus
-2: Finde die IP-Adresse eines Worker-Nodes heraus
-3: Öffne die URL im Browser (oder curl oder powershell)
-
-```bash
-kubectl get nodes -o wide
-kubectl get service chromium
-curl -L http://<Node-IP>:<NodePort> # Linux
-Invoke-WebRequest -Uri http://<Node-IP>:<NodePort> -Method Head # Windows
-``` 
-Hier gibt es eine schlechte Nachricht, in vielen k8s Umgebungen kann auf diese Weise nicht auf den NodePort zugegriffen werden, da die Firewall oder das Netzwerk dies blockiert. In diesem Fall hilft ein Ingress -- den bauen wir später an diesem Tag. Aber das soll uns echte Broffis ja nicht aufhalten. 
-
-Wir basteln uns nun einen kleinen Container im Cluster, von dem aus wir den Chromium-Container erreichen können. 
-
-```bash
-kubectl run -it --rm debug --image=alpine:latest -- sh
-apk add curl
-curl -L http://chromium:4000
-curl -L http://<Node-IP>:<NodePort>
-exit
-```
-
-Den chromium erreichbar machen, machen wir zum Problem vom "Später-Ich".
-
-
-
-### Konfiguration nachbessern
-
-Container von [linuxserver.io](https://www.linuxserver.io/) erwarten bestimmte Umgebungsvariablen
-für Benutzer-ID, Gruppen-ID und Zeitzone. Ohne diese laufen die Container zwar, aber mit
-`root`-Rechten und falscher Zeitzone.
-
-```bash
-kubectl set env deployment/chromium PUID=1000 PGID=1000 TZ=Europe/Berlin
-```
-
-> ⚠️ **WICHTIG:** Dieser Befehl setzt die Umgebungsvariablen **nur für das Deployment `chromium`**,
-> nicht für den gesamten Namespace oder andere Deployments. Jede Anwendung muss separat
-> konfiguriert werden.
-
-Nach dem Setzen der Umgebungsvariablen erstellt Kubernetes automatisch neue Pods mit der
-aktualisierten Konfiguration:
-
-```bash
-# Warte, bis der neue Pod ready ist
-kubectl get pods -w
-```
-
-### Überprüfung
-
-Prüfe, ob die Umgebungsvariablen erfolgreich gesetzt wurden:
-
-```bash
-# Alle Umgebungsvariablen des Deployments anzeigen
-kubectl exec <pod-name> -- env"
-
-# Erwartete Ausgabe:
-# PUID=1000
-# PGID=1000
-# TZ=Europe/Berlin
-```
-
-Jetzt sollte Chromium korrekt funktionieren!
-
-### Übung 2
-
-1. Prüfe den Status des Chromium-Deployments mit `kubectl get deployment chromium`.
-2. Lösche den Pod und beobachte, wie Kubernetes ihn automatisch neu erstellt.
-3. Öffne Chromium im Browser unter `http://<Node-IP>:3xxxx` -- was siehst du?
-4. Setze die Umgebungsvariablen mit `kubectl set env deployment/chromium PUID=1000 PGID=1000 TZ=Europe/Berlin`.
-5. Warte, bis der neue Pod ready ist (`kubectl get pods -w`).
-6. Überprüfe die Umgebungsvariablen mit `kubectl exec <pod-name> -- env | grep -E "PUID|PGID|TZ"`.
-7. Öffne Chromium erneut im Browser -- funktioniert es jetzt?
-
-> Wir haben Chromium erfolgreich imperativ deployed. Das funktioniert gut für schnelle Experimente --
-> aber in der Praxis wird fast ausschließlich deklarativ mit YAML-Dateien gearbeitet. Im nächsten
-> Block siehst du, warum: YAML-Manifeste lassen sich versionieren, wiederverwenden und im Team
-> reviewen.
-
----
-
 ## YAML & Deklarativ
 
 ### Vergleich
@@ -909,6 +961,13 @@ spec:
       containers:
         - name: chromium
           image: lscr.io/linuxserver/chromium:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 3000
             - containerPort: 3001
@@ -1028,6 +1087,13 @@ spec:
       containers:
         - name: code-server
           image: lscr.io/linuxserver/code-server:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 8443
           env:
@@ -1038,7 +1104,7 @@ spec:
             - name: TZ
               value: "Europe/Berlin"
             - name: PASSWORD
-              value: "training2024"
+              value: "trainingk8s"
             - name: DEFAULT_WORKSPACE
               value: "/config/workspace"
           volumeMounts:
@@ -1100,7 +1166,7 @@ Es gibt verschiedene Möglichkeiten, wie du die beiden Container nun von außen 
 
 ### Port-Forwarding
 
-Das Prinzip kennst du schon aus § "Chromium deployen" → § "Imperativ": `kubectl port-forward` legt
+Das Prinzip kennst du schon aus "Chromium deployen" → "Imperativ": `kubectl port-forward` legt
 eine Leitung von deinem Rechner direkt in einen Pod. Für einen Service lautet die Form
 `kubectl port-forward -n k8s-training svc/chromium 4000:4000`, für Code-Server entsprechend
 `svc/code-server 8443:8443`. Praktisch ist das für schnelle Tests und für alles, was nur lokal
@@ -1135,6 +1201,13 @@ spec:
       containers:
         - name: sshd
           image: lscr.io/linuxserver/openssh-server
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
           ports:
             - containerPort: 2222
           env:
@@ -1192,7 +1265,7 @@ Danach reicht `ssh ssh-bastion`. Der Schlüssel bleibt ein Platzhalter: Dort ste
 
 ### Ingress route via Rancher dashboard
 
-Wenn dein Cluster ein Rancher-Dashboard mitbringt, kannst du die Route dort zusammenklicken. Die
+Wenn dein Cluster ein Dashboard (Beispiel Rancher) mitbringt, kannst du die Route dort zusammenklicken. Die
 folgende Anleitung zeigt das Ergebnis, das du anschließend für den Code-Server nachbaust: eine
 Route vom Host `chrome.k8s-training.frickeldave.de` auf den Chromium-Service.
 
