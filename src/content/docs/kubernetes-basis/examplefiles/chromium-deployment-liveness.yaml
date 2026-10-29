@@ -52,6 +52,13 @@ spec:
             failureThreshold: 2
         - name: vector
           image: timberio/vector:0.42.0-alpine
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
           command:
             - vector
             - --config

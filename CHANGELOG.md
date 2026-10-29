@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-10-29
+
 ### Changed
 
 - Git-Bash-Troubleshooting: die breite Drei-Spalten-Tabelle ist durch eine Definitionsliste aus Symptom, Ursache und Lösung ersetzt und passt damit in die rund 667 px breite Prose-Spalte (#260).
@@ -14,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Kubernetes-Schulung: Alle Deployment-Beispiele (`examplefiles/*deployment*.yaml`, die YAML-Blöcke in Tag 1 und Tag 2) setzen `resources.requests` und `resources.limits` und erfüllen damit die Kyverno-Policy `require-resource-requirements` der Firmen-Cluster; `code-server-deployment.yaml` und `code-server-deployment-configmap.yaml` sowie `code-server-pvc.yaml` stimmen wieder mit den Doku-Blöcken überein, das Passwort heißt überall `trainingk8s`; neu sind `create-namespace.yaml`, `ssh-bastion-deployment.yaml` und `ssh-bastion-service.yaml` (#260).
+- Vorbereitungsseite: der LimitRange-Hinweis steht nur noch an Tag 2, wo er auftritt (#260).
 - Der „Weiter“-Link der Vorbereitungsseite zeigt jetzt auf `/docs/kubernetes-basis/10-tag-1` statt auf den `.mdx`-Pfad und trägt das Label „Tag 1“ (#260).
 
 ## [1.0.8] - 2026-10-27
