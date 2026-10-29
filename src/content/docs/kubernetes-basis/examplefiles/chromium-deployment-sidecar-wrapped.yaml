@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: chromium
-  namespace: kw-b2824a-default
+  namespace: k8s-training
   labels:
     app: chromium
 spec:
@@ -18,6 +18,13 @@ spec:
       containers:
         - name: chromium
           image: lscr.io/linuxserver/chromium:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 3000
             - containerPort: 3001
@@ -38,6 +45,13 @@ spec:
               subPath: wrapped-chromium
         - name: vector
           image: timberio/vector:0.42.0-alpine
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
           command:
             - vector
             - --config

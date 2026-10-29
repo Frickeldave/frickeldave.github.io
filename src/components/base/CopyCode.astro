@@ -1,0 +1,54 @@
+---
+/**
+ * Globaler Kopierknopf für Codeblöcke.
+ *
+ * Die Komponente rendert kein sichtbares Markup, sondern ein inertes
+ * `<template>`: die Knöpfe entstehen clientseitig in `src/lib/code-copy.ts` an
+ * jedem `<pre>` mit `<code>`-Kind. So steht das Markup an genau einer Stelle,
+ * das Skript muss es nur klonen.
+ *
+ * Das Template steht bewusst am Anfang des `<body>` und nicht im `<head>`:
+ * Astro hängt den Kopf-Inhalt der Seite (Stylesheets, gehoistete Skripte) an
+ * das erste Element einer Komponente. Innerhalb eines `<template>` wäre dieser
+ * Inhalt inert und die Seite bliebe ungestylt. Im Body ist der Kopf-Inhalt
+ * bereits geschrieben, der Aufruf verpufft folgenlos.
+ *
+ * Der Knopf steht in einer eigenen Zeile über dem Codeblock. `.content pre`
+ * bringt in diesem Projekt kein Padding mit, ein absolut positionierter Knopf
+ * würde sonst die erste Codezeile verdecken. Der Codeblock selbst scrollt
+ * weiterhin nur innerhalb des `<pre>`, der Knopf bleibt dadurch stehen.
+ */
+---
+
+<template data-code-copy-template>
+  <div class="code-copy-wrapper mt-2" data-code-copy-wrapper>
+    <div class="mb-1 flex justify-end">
+      <button
+        type="button"
+        class="code-copy-button inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:focus-visible:ring-offset-gray-900"
+        data-code-copy-button
+        aria-label="Code kopieren"
+      >
+        <svg
+          class="h-4 w-4 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+          <path d="M5 15V5a2 2 0 0 1 2-2h8"></path>
+        </svg>
+        <span data-code-copy-label>Kopieren</span>
+      </button>
+    </div>
+    <span class="sr-only" role="status" data-code-copy-status></span>
+  </div>
+</template>
+
+<script>
+  import { bindCodeCopy } from "../../lib/code-copy";
+
+  bindCodeCopy();
+</script>

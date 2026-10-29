@@ -1,7 +1,7 @@
 ---
 visible: true
 title: 20 Tag 2
-description: "Resources, Probes, Persistent Volumes, Ingress -- die komplette Plattform."
+description: "Resources, Probes, Persistenz und Secrets -- die komplette Plattform."
 draft: false
 image: "@assets/docs/kubernetes-basis/knba-20-000_header.png"
 imageAlt: "Kubernetes Basis - 20 Tag 2"
@@ -22,8 +22,9 @@ import knba20090 from "@assets/docs/kubernetes-basis/knba-20-090-conclusion.png"
 ## Workloads & Networking
 
 Am zweiten Tag machen wir unsere Deployments produktionsreif. Wir fügen Resource Limits, Health
-Checks und Deployment-Strategien hinzu, lagern Konfiguration in ConfigMaps und Secrets aus, deployen
-MariaDB und phpMyAdmin mit persistentem Speicher.
+Checks und Deployment-Strategien hinzu, lagern Konfiguration in ConfigMaps und Secrets aus und geben
+Chromium wie Code-Server mit Persistent Volumes einen Speicher, der Pod-Neustarts überlebt. Wer mag,
+vertieft das anschließend mit MariaDB und phpMyAdmin.
 
 ## Zeitplan
 
@@ -42,9 +43,9 @@ MariaDB und phpMyAdmin mit persistentem Speicher.
 | 14:00 – 14:45  | Secrets & Security   | Passwörter auslagern, SecurityContext      |
 | 14:45 – 15:15  | Sidecar-Container    | Vector als Sidecar für Chromium-Logs       |
 | 15:15 – 15:30  | **Pause**            |                                            |
-| 15:30 – 16:15  | Persistent Volumes   | PVCs + MariaDB + phpMyAdmin deployen       |
-| 16:15 – 17:15  | Ingress              | Services, DNS, Host-basiertes Routing      |
-| 17:15 – 17:30  | Abschluss            | Zusammenfassung + Ausblick                 |
+| 15:30 – 16:15  | Persistent Volumes   | PVCs, StorageClass, Fehlerbild „Pending“   |
+| 16:15 – 17:00  | **[Optional / Vertiefung: MariaDB + phpMyAdmin](#-vertiefung-mariadb--phpmyadmin-deployen-optional)** | Optional – Deployments mit PVC, Init-Container |
+| 17:00 – 17:15  | Abschluss            | Zusammenfassung + Ausblick                 |
 
 ## Recap
 
@@ -82,6 +83,42 @@ Eine **ConfigMap** ist ein Kubernetes-Objekt, das Konfigurationsdaten als Key-Va
 speichert und an Container weitergibt -- entweder als **Umgebungsvariable** oder als **Datei**
 (über ein Volume).
 
+### Zentrale linuxserver-ConfigMap
+
+Die linuxserver.io-Images fragen fast immer dieselben drei Werte ab: Benutzer-ID, Gruppen-ID und
+Zeitzone. Statt sie in jedes Deployment zu tippen, legen wir sie einmal zentral ab -- eine ConfigMap
+für alle Anwendungen, die diese Werte brauchen.
+
+Datei `linuxserver-common-config-map.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linuxserver-common
+  namespace: k8s-training
+data:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Europe/Berlin"
+```
+
+<br/>
+```bash
+kubectl apply -f linuxserver-common-config-map.yaml
+```
+
+Eingebunden wird sie mit `envFrom` -- das importiert alle drei Keys als Umgebungsvariablen:
+
+```yaml
+envFrom:
+  - configMapRef:
+      name: linuxserver-common
+```
+
+Die Reihenfolge zählt: erst die ConfigMap anlegen, dann das Deployment. Ein Pod, der eine fehlende
+ConfigMap referenziert, startet nicht, sondern bleibt mit `CreateContainerConfigError` stehen.
+
 ### Beispiel: Code-Server-Workspace auslagern
 
 Der Code-Server aus Tag 1 hat die Umgebungsvariable `DEFAULT_WORKSPACE` hart im YAML stehen:
@@ -106,10 +143,8 @@ metadata:
   namespace: k8s-training
 data:
   DEFAULT_WORKSPACE: "/config/workspace"
-  PUID: "1000"
-  PGID: "1000"
-  TZ: "Europe/Berlin"
 ```
+
 <br/>
 ```bash
 kubectl apply -f code-server-config-map.yaml
@@ -117,12 +152,15 @@ kubectl apply -f code-server-config-map.yaml
 
 **2. ConfigMap im Deployment verwenden**
 
-Statt einzelner `env`-Einträge binden wir die gesamte ConfigMap mit `envFrom` ein:
+Für den Workspace reicht ein Key. `PUID`, `PGID` und `TZ` stehen in der zentralen ConfigMap
+`linuxserver-common` von oben -- das Deployment bindet beide per `envFrom` ein:
 
 ```yaml
 envFrom:
   - configMapRef:
-      name: code-server-config
+      name: linuxserver-common     # PUID, PGID, TZ
+  - configMapRef:
+      name: code-server-config     # DEFAULT_WORKSPACE
 ```
 
 Das Deployment sieht dann so aus (Auszug):
@@ -140,22 +178,54 @@ spec:
       containers:
         - name: code-server
           image: lscr.io/linuxserver/code-server:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 8443
-          envFrom:                          # ConfigMap als Umgebungsvariablen
+          envFrom:                          # zwei ConfigMaps als Umgebungsvariablen
+            - configMapRef:
+                name: linuxserver-common
             - configMapRef:
                 name: code-server-config
           env:
             - name: PASSWORD                # Secret bleibt vorerst hart codiert
-              value: "training2024"
-```
-<br/>
-```bash
-kubectl apply -f code-server-deployment.yaml
+              value: "trainingk8s"
 ```
 
-**Wichtig:** `envFrom` importiert **alle** Keys der ConfigMap als Umgebungsvariablen.
-Der Key `DEFAULT_WORKSPACE` wird zur Variable `DEFAULT_WORKSPACE` mit Wert `/config/workspace`.
+<br/>
+```bash
+kubectl apply -f code-server-deployment-configmap.yaml
+```
+
+**Wichtig:** `envFrom` importiert **alle** Keys einer ConfigMap als Umgebungsvariablen.
+`DEFAULT_WORKSPACE` wird zur Variable `DEFAULT_WORKSPACE`, `PUID`, `PGID` und `TZ` kommen
+unverändert aus `linuxserver-common`. Steht derselbe Key in beiden ConfigMaps, gewinnt der
+**letzte** Eintrag -- deshalb bleibt die Reihenfolge `linuxserver-common` vor
+`code-server-config`.
+
+<Notice type="info">
+  **ConfigMap geändert, Pod läuft weiter? Dafür gibt es Reloader.**
+
+  Wie oben beschrieben startet ein Deployment nach einer ConfigMap-Änderung nicht von selbst neu.
+  [Reloader](https://github.com/stakater/Reloader) ist ein kleiner Controller, der ConfigMaps und
+  Secrets beobachtet und den betroffenen Workload per Annotation neu ausrollen lässt.
+  Installiert wird er über das Helm-Repository von Stakater oder über das Release-Manifest aus dem
+  Projekt; beides braucht Cluster-Rechte und läuft einmalig. Danach genügt die Annotation am
+  Deployment:
+
+  ```yaml
+  metadata:
+    annotations:
+      reloader.stakater.com/auto: "true"
+  ```
+
+  Ohne Annotation passiert nichts -- Reloader ist opt-in pro Workload.
+</Notice>
 
 ### ConfigMap als Volume (Datei)
 
@@ -186,7 +256,8 @@ Im Container erscheint dann z. B. die Datei `/etc/config/DEFAULT_WORKSPACE` mi
   ```bash
   kubectl rollout restart deployment <deployment-name>
   ```
-  Oder du nutzt Tools wie **Reloader** (externer Controller), der automatisch einen Restart auslöst, wenn sich eine ConfigMap oder ein Secret ändert.
+  Oder du automatisierst den Neustart -- wie das mit Reloader geht, steht weiter oben unter §
+  "Beispiel: Code-Server-Workspace auslagern".
 </Notice>
 
 **Zusammenfassung**
@@ -271,7 +342,7 @@ Wer `kubectl get secret` ausführen darf, kommt auch an die Werte – und genau 
 
 **3. Secret im Deployment verwenden**
 
-Statt `value: "training2024"` referenzieren wir den Wert aus dem Secret:
+Statt `value: "trainingk8s"` referenzieren wir den Wert aus dem Secret:
 
 ```yaml
 env:
@@ -283,7 +354,7 @@ env:
 ```
 <br/>
 ```bash
-kubectl apply -f code-server-deployment.yaml
+kubectl apply -f code-server-deployment-configmap-secret.yaml
 ```
 
 **Wichtig:** Das Secret muss **im gleichen Namespace** wie der Pod erstellt werden. Bei
@@ -396,7 +467,7 @@ und gibt sie als JSON auf der Konsole aus. Beide Container teilen sich ein `empt
 
 **1. ConfigMap für Vector-Konfiguration erstellen**
 
-Datei `vector-config.yaml`:
+Datei `vector-config-map.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -418,7 +489,7 @@ data:
 ```
 <br/>
 ```bash
-kubectl apply -f vector-config.yaml
+kubectl apply -f vector-config-map.yaml
 ```
 <br/>
 
@@ -448,6 +519,13 @@ spec:
       containers:
         - name: chromium
           image: lscr.io/linuxserver/chromium:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 3000
             - containerPort: 3001
@@ -465,6 +543,13 @@ spec:
               mountPath: /config/log
         - name: vector                     # NEU: Sidecar-Container
           image: timberio/vector:0.42.0-alpine
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
           command:
             - vector
             - --config
@@ -487,7 +572,7 @@ spec:
 ```
 <br/>
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-sidecar.yaml
 ```
 <br/>
 
@@ -563,7 +648,7 @@ angepasste Script per ConfigMap mit `subPath` über das originale Script.
 
 **6. Logging aktivieren: Custom Startup-Script**
 
-Datei `chromium-logging-configmap.yaml`:
+Datei `chromium-logging-config-map.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -604,7 +689,7 @@ data:
 ```
 <br/>
 ```bash
-kubectl apply -f chromium-logging-configmap.yaml
+kubectl apply -f chromium-logging-config-map.yaml
 ```
 <br/>
 
@@ -638,7 +723,7 @@ spec -> templates -> spec -> containers -> volumeMounts:
 ```
 <br/>
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-sidecar-wrapped.yaml
 ```
 <br/>
 
@@ -867,14 +952,17 @@ CPU wird gedrosselt, bei Memory-Überschreitung gibt es einen OOM-Kill.
 
 ### LimitRange
 
-Eine [LimitRange](/docs/kubernetes-basis/90-glossar#limitrange) setzt Standardwerte für alle Container, die keine eigenen Resources angeben.
+Eine [LimitRange](/docs/kubernetes-basis/90-glossar#limitrange) setzt Standardwerte für alle
+Container im Namespace, die keine eigenen Resources angeben -- das Sicherheitsnetz gegen vergessene
+`resources`-Blöcke.
 
 <Notice type="warning">
 
-**⚠️ Achtung:** `LimitRange` ist eine administrative Ressource und benötigt **Cluster-Admin-Rechte**.
-In vielen Trainings-Clustern hast du nur Readonly-Zugriff – dann schlägt `kubectl apply` mit
-`Forbidden` fehl. Kein Problem: Die LimitRange ist optional. Du kannst Resources auch direkt
-in jedem Deployment setzen, wie wir es bei Chromium gemacht haben.
+**⚠️ Achtung:** Eine LimitRange ist **namespace-scoped** -- Namespace-Admin-Rechte genügen also.
+Auf Firmen-Clustern ist das Anlegen trotzdem häufig per RBAC oder ResourceQuota gesperrt; dann
+überspringst du diesen Schritt und setzt die Resources direkt im Deployment, wie wir es bei Chromium
+gemacht haben. Ein ResourceQuota kann den Apply mit `exceeded quota` ablehnen.
+`kubectl describe limitrange default-container-resources` zeigt die wirksamen Defaults.
 
 </Notice>
 
@@ -884,28 +972,33 @@ Datei `limitrange.yaml`:
 apiVersion: v1
 kind: LimitRange
 metadata:
-  name: standard-limits
+  name: default-container-resources
   namespace: k8s-training
 spec:
   limits:
-    - default:
-        cpu: "500m"
-        memory: "256Mi"
+    - type: Container
+      default:
+        cpu: "1"
+        memory: "1Gi"
       defaultRequest:
         cpu: "100m"
-        memory: "64Mi"
+        memory: "256Mi"
       max:
         cpu: "2"
         memory: "2Gi"
       min:
         cpu: "50m"
         memory: "32Mi"
-      type: Container
 ```
+
 <br/>
 ```bash
 kubectl apply -f limitrange.yaml
+
+# Wirksame Defaults und Grenzen anzeigen
+kubectl describe limitrange default-container-resources -n k8s-training
 ```
+
 <br/>
 
 ### Übung
@@ -945,10 +1038,10 @@ kubectl delete pod test-pod -n k8s-training
 ```
 
 **Erwartetes Ergebnis:** Der Pod hat keine eigenen `resources`-Angaben, bekommt aber trotzdem
-Limits und Requests zugewiesen – Bsp. `cpu: 500m` / `memory: 512Mi` als Limits und
-`cpu: 250m` / `memory: 256Mi` als Requests. Die LimitRange greift als **Sicherheitsnetz**
-auf Namespace-Ebene: Jeder Pod bekommt automatisch Defaults, auch wenn das Manifest keine
-Angaben enthält. So wird verhindert, dass jemand vergisst, Ressourcen zu begrenzen.
+Limits und Requests zugewiesen: `cpu: 1` / `memory: 1Gi` als Limits und `cpu: 100m` /
+`memory: 256Mi` als Requests. Die LimitRange greift als **Sicherheitsnetz** auf Namespace-Ebene:
+Jeder Pod bekommt automatisch Defaults, auch wenn das Manifest keine Angaben enthält. So wird
+verhindert, dass jemand vergisst, Ressourcen zu begrenzen.
 
 5. Bring chromium zum Absturz, indem du 2-3 4k videos auf einmal abspielst. Prüfe die Logs und den Pod-Status. Was passiert?
 
@@ -1074,7 +1167,7 @@ apiVersion: apps/v1
 <br/>
 
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-all-probes.yaml
 ```
 
 ### Übung: Readiness Probe manipulieren
@@ -1106,7 +1199,7 @@ diesen Pod. Der Pod selbst läuft weiter, er bekommt nur keine Anfragen mehr.
 
 <br/>
 
-2. **Falschen Port eintragen** — Ändere in `chromium-deployment.yaml` den Port der
+2. **Falschen Port eintragen** — Ändere in `chromium-deployment-all-probes.yaml` den Port der
    `readinessProbe` von `3000` auf einen nicht existierenden Port, Bsp. `3005`:
 
 ```yaml
@@ -1121,7 +1214,7 @@ diesen Pod. Der Pod selbst läuft weiter, er bekommt nur keine Anfragen mehr.
 3. **Deployen und beobachten**:
 
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-all-probes.yaml
 kubectl get pods -n k8s-training -w
 ```
 
@@ -1145,7 +1238,7 @@ Der neue Pod bekommt also Traffic, obwohl Chromium selbst noch nicht bereit ist.
    erneut:
 
 ```bash
-kubectl apply -f chromium-deployment.yaml
+kubectl apply -f chromium-deployment-all-probes.yaml
 kubectl get pods -n k8s-training -w
 ```
 
@@ -1307,11 +1400,11 @@ wie MariaDB ist das keine Option. Persistent Volumes (PVs) und Persistent Volume
 
 ### Analogie: Das Logistiklager
 
-Stell dir vor, du betreibst ein Logistiklager mit mehreren Hallen (Nodes). Jede Halle hat
-viel Platz, aber der ist nicht unbegrenzt.
+Stell dir vor, du betreibst ein Logistiklager mit mehreren Hallen (Nodes). Platz ist reichlich da,
+aber nicht jeder Platz ist gleich schnell erreichbar -- und nicht jeder kostet dasselbe. Genau so
+verhält sich Speicher im Cluster.
 
 <Image src={knba20050} alt="PVs und PVCs * Erstellt mit Microsoft Copilot" />
-
 
 - **Ohne Persistent Storage** ist jeder Arbeitsauftrag (Pod) ein Einweg-Tisch: Du stellst
   deine Kisten drauf, aber wenn der Auftrag erledigt ist, wird der Tisch weggeworfen –
@@ -1327,14 +1420,20 @@ viel Platz, aber der ist nicht unbegrenzt.
   (`ReadWriteOnce`)." Der Lagerleiter schaut, ob ein passendes Regal (PV) frei ist, und
   weist es dem Mitarbeiter zu.
 
-- **Die StorageClass** ist der **Katalog mit Regaltypen**: "Standard-Regal (Festplatte)",
-  "Schnell-Regal (SSD)", "Kühl-Regal (Archive)". Der Mitarbeiter sagt nur "Ich brauche
-  ein Standard-Regal" – die StorageClass kümmert sich darum, dass das richtige Regal
-  geliefert und aufgebaut wird.
+- **Die StorageClass** ist der **Katalog mit Regaltypen**: „schlecht erreichbares Regal
+  (Festplatte)“, „Regalplatz auf Schulterhöhe am Eingang (SSD)“, „Kühl-Regal (Archive)“.
+  Der Mitarbeiter sagt nur, welchen Typ er braucht – die StorageClass kümmert sich darum,
+  dass genau so ein Regal geliefert und aufgebaut wird.
 
-**Zusammengefasst:** PV = das Regal in der Halle. PVC = der Zettel, der das Regal reserviert.
-StorageClass = der Katalog, der bestimmt, welches Regal geliefert wird. Der Pod arbeitet
-am Regal – und wenn der Pod weg ist, bleibt das Regal stehen.
+| Regaltyp                              | Weg in der Halle          | Zugriffszeit | Kosten     |
+| ------------------------------------- | ------------------------- | ------------ | ---------- |
+| Schlecht erreichbares Regal (Festplatte) | langer Weg, weit hinten | hoch         | günstig    |
+| Regalplatz auf Schulterhöhe am Eingang (SSD) | kurzer Weg, sofort zur Hand | niedrig | teurer |
+| Kühl-Regal (Archive)                  | selten gebraucht, weit weg | sehr langsam | sehr günstig |
+
+**Zusammengefasst:** PV = das Regal in der Halle. PVC = der Zettel, der es reserviert.
+StorageClass = der Katalog, der entscheidet, welches Regal geliefert wird. Der Pod arbeitet am
+Regal – und wenn der Pod weg ist, bleibt das Regal stehen, samt Inhalt.
 
 ### Konzepte
 
@@ -1343,6 +1442,42 @@ am Regal – und wenn der Pod weg ist, bleibt das Regal stehen.
 | [**PersistentVolume (PV)**](/docs/kubernetes-basis/90-glossar#persistentvolume)       | Ein Stück Storage im Cluster, bereitgestellt von Admin oder dynamisch |
 | [**PersistentVolumeClaim (PVC)**](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) | Anforderung eines Pods an Storage (Größe, Zugriffsart)                |
 | [**StorageClass**](/docs/kubernetes-basis/90-glossar#storageclass)                | Definiert, wie PVs dynamisch erstellt werden (Provisioner, Parameter) |
+
+### StorageClass: Welches Regal wird geliefert?
+
+Bevor du einen PVC schreibst, wirf einen Blick auf die StorageClasses deines Clusters:
+
+```bash
+kubectl get storageclass
+```
+
+Die Zeile mit `(default)` ist die Klasse, die Kubernetes automatisch nimmt, wenn dein PVC keine
+`storageClassName` nennt. Dieselbe Abfrage samt Spaltenerklärung steht in
+[03 Vorbereitung](/docs/kubernetes-basis/03-vorbereitung#get-storageclass) unter §
+"get storageclass". Gibt es keine Default-Klasse, bleibt der PVC in `Pending` -- das ist der
+häufigste Grund, wenn ein Pod ewig auf sein Volume wartet.
+
+Willst du nicht raten, setzt du die Klasse explizit. Der Name muss exakt dem `NAME` aus der Tabelle
+entsprechen:
+
+```yaml
+spec:
+  storageClassName: <name-aus-kubectl-get-storageclass>
+  accessModes:
+    - ReadWriteOnce
+```
+
+**Fehlerbild „PVC bleibt Pending“:** Die drei Befehle zeigen dir, wer blockiert:
+
+```bash
+kubectl get pvc -n k8s-training
+kubectl describe pvc code-server-config -n k8s-training
+kubectl get events -n k8s-training --sort-by=.metadata.creationTimestamp
+```
+
+`describe` nennt unter `Events` den Grund -- meist `no persistent volumes available for this claim`
+oder einen Tippfehler im `storageClassName`. Die Events verraten zusätzlich, ob der Provisioner die
+Anfrage abgelehnt hat.
 
 ### Access Modes
 
@@ -1420,6 +1555,7 @@ metadata:
   name: code-server-config
   namespace: k8s-training
 spec:
+  # storageClassName: <name>   # nur setzen, wenn du bewusst eine andere Klasse willst
   accessModes:
     - ReadWriteOnce
   resources:
@@ -1427,7 +1563,9 @@ spec:
       storage: 1Gi
 ```
 
-
+Ohne `storageClassName` nimmt Kubernetes die Default-Klasse des Clusters. Die Zeile ist deshalb
+auskommentiert -- aktiviere sie nur, wenn du eine bestimmte Klasse brauchst (Namen aus
+`kubectl get storageclass`).
 
 Das Deployment aus Tag 1 (`code-server-deployment.yaml`) bekommt nur eine kleine Änderung:
 Statt `emptyDir: {}` referenzieren wir den PVC. Der Rest bleibt identisch.
@@ -1530,7 +1668,9 @@ Deine Lösung muss folgende Konzepte aus Tag 1 und Tag 2 abdecken:
 - [ ] **Deklaratives Deployment** per YAML (kein `kubectl create deployment`)
 - [ ] **Labels** (`app: database`) für Selektor und Service
 - [ ] **Service (ClusterIP)** für MariaDB (Port `3306`) – damit andere Pods die Datenbank erreichen
-- [ ] **Service (NodePort)** für phpMyAdmin (Port `80`) – damit du im Browser darauf zugreifen kannst
+- [ ] **Service (NodePort)** für phpMyAdmin (Port `80`) – damit du im Browser darauf zugreifen
+      kannst. **Alternative zum Ingress:** dieser Weg genügt für den Browser-Test; eine Ingress-Route
+      ist dafür nicht nötig.
 - [ ] **ConfigMap** für die Umgebungsvariablen (`PUID`, `PGID`, `TZ`)
 - [ ] **Secret** für `MYSQL_ROOT_PASSWORD`
 - [ ] **PersistentVolumeClaim** (1Gi, `ReadWriteOnce`) für MariaDB unter `/config`
@@ -1538,7 +1678,10 @@ Deine Lösung muss folgende Konzepte aus Tag 1 und Tag 2 abdecken:
 - [ ] **Health Checks** – StartupProbe, LivenessProbe, ReadinessProbe (jeweils auf Port `80` für phpMyAdmin)
 - [ ] **RollingUpdate-Strategie** (`maxSurge: 1`, `maxUnavailable: 0`)
 - [ ] **Multi-Container Pod** – MariaDB + phpMyAdmin teilen sich `localhost`
-- [ ] **Ingress route** – PhpMyAdmin ist über eine Ingress-Route erreichbar
+- [ ] **Ingress route (freiwillig)** – PhpMyAdmin ist über eine Ingress-Route erreichbar.
+      **Zusatzaufgabe:** wer die Ingress-Route aus Tag 1 wiederholen möchte, legt zusätzlich eine
+      Ingress-Ressource mit Host `phpmyadmin.k8s-training.frickeldave.de` an; verpflichtend ist der
+      NodePort-Service.
 
 
 ### Tipps
@@ -1607,6 +1750,11 @@ verwendet das offizielle `mariadb:11`-Image und führt `mysqladmin ping` aus.
 
 ### Lösung (Schritt für Schritt)
 
+Das vollständige Manifest liegt als `examplefiles/database-deployment.yaml` im Schulungsmaterial --
+nach der Dateinamen-Konvention `<app>-<kind>.yaml` und mit genau einem Objekt pro Datei. Den PVC
+`mariadb-config` (1Gi, `ReadWriteOnce`) legst du vorher selbst an; er ist bewusst **nicht** Teil der
+Datei, und ohne ihn bleibt der Pod in `Pending`.
+
 **1. Deployment anpassen**
 
 Füge einen `initContainers`-Block in das Deployment ein. Der Init-Container sitzt auf
@@ -1633,6 +1781,13 @@ spec:
       initContainers:                          # ⬅️ NEU: läuft vor den App-Containern
         - name: wait-for-mariadb
           image: mariadb:11
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
           command:
             - sh
             - -c

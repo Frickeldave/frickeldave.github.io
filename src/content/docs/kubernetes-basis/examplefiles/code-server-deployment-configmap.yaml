@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: code-server
-  namespace: kw-b2824a-default
+  namespace: k8s-training
   labels:
     app: code-server
 spec:
@@ -18,9 +18,18 @@ spec:
       containers:
         - name: code-server
           image: lscr.io/linuxserver/code-server:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 8443
-          envFrom:                          # ConfigMap als Umgebungsvariablen
+          envFrom:                          # zwei ConfigMaps als Umgebungsvariablen
+            - configMapRef:
+                name: linuxserver-common
             - configMapRef:
                 name: code-server-config
           env:

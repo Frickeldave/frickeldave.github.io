@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-10-29
+
+### Changed
+
+- Git-Bash-Troubleshooting: die breite Drei-Spalten-Tabelle ist durch eine Definitionsliste aus Symptom, Ursache und Lösung ersetzt und passt damit in die rund 667 px breite Prose-Spalte (#260).
+- § „api-resources“ der Vorbereitungsseite nennt den Befehl `kubectl api-resources | grep -E "(pods|services|deployments|ingress)"` samt Kurzerklärung über der Ausgabe (#260).
+
+### Fixed
+
+- Kubernetes-Schulung: Alle Deployment-Beispiele (`examplefiles/*deployment*.yaml`, die YAML-Blöcke in Tag 1 und Tag 2) setzen `resources.requests` und `resources.limits` und erfüllen damit die Kyverno-Policy `require-resource-requirements` der Firmen-Cluster; `code-server-deployment.yaml` und `code-server-deployment-configmap.yaml` sowie `code-server-pvc.yaml` stimmen wieder mit den Doku-Blöcken überein, das Passwort heißt überall `trainingk8s`; neu sind `create-namespace.yaml`, `ssh-bastion-deployment.yaml` und `ssh-bastion-service.yaml` (#260).
+- Vorbereitungsseite: der LimitRange-Hinweis steht nur noch an Tag 2, wo er auftritt (#260).
+- Der „Weiter“-Link der Vorbereitungsseite zeigt jetzt auf `/docs/kubernetes-basis/10-tag-1` statt auf den `.mdx`-Pfad und trägt das Label „Tag 1“ (#260).
+
+## [1.0.8] - 2026-10-27
+
+### Added
+
+- Globaler Kopierknopf für Codeblöcke: `src/lib/code-copy.ts` bindet sich idempotent auf `astro:page-load` (Muster wie `cart-dom.ts`), `src/components/base/CopyCode.astro` liefert Markup und Script, `src/components/base/BaseLayout.astro` bindet beides einmalig ein; einen Knopf bekommt nur `pre > code`, ausgenommen sind `pre.mermaid`, Inline-Code und Blöcke mit `[data-no-copy]`; ohne `navigator.clipboard` (unsicherer Kontext) blendet sich der Knopf aus, das Feedback läuft über `role="status"` mit `Kopiert!` für 2000 ms (#260).
+- Beispielmanifest `src/content/docs/kubernetes-basis/examplefiles/linuxserver-common-config-map.yaml`: zentrale linuxserver-ConfigMap mit den Keys `PUID`, `PGID` und `TZ` (#260).
+- Beispielmanifest `src/content/docs/kubernetes-basis/examplefiles/database-deployment.yaml`: vollständiges MariaDB-+-phpMyAdmin-Deployment mit Init-Container `wait-for-mariadb`, PVC-Mount `mariadb-config` und den Container-Ports 3306 und 80 (#260).
+- Glossareintrag `ACME` in `90-glossar.mdx` zwischen `Ingress Controller` und `ClusterIP` (#260).
+
+### Changed
+
+- Zeitplan und Rahmen der Kubernetes-Schulung Tag 2: Persistent Volumes (15:30–16:15), optionale Vertiefung MariaDB + phpMyAdmin (16:15–17:00) und Abschluss (17:00–17:15) statt des Ingress-Blocks; Frontmatter-`description` und § „Workloads & Networking“ nennen kein Ingress mehr (#260).
+- Kubernetes-Schulung Tag 1: `kubectl port-forward deployment/chromium 4000:3000` steht jetzt in § „Chromium deployen“ → § „Imperativ“, § „Port-Forwarding“ schrumpft auf Referenzsätze und bekommt ein SSH-Container-Beispiel als „Harness“ mit `ClusterIP`-Service und `ssh_config` (#260).
+- Ingress-Kapitel Tag 1: Hosts `chrome.k8s-training.frickeldave.de` und `code.k8s-training.frickeldave.de` statt der ungültigen `*.*.com`-Platzhalter, `ingressClassName` mit den Kandidaten `nginx`, `traefik` und `traefik-ingress-controller` samt Discovery über `kubectl get ingressclass`, § „Status prüfen“ heißt jetzt § „Ingress-URL ermitteln“ (#260).
+- ConfigMaps Tag 2: neue zentrale ConfigMap `linuxserver-common`, `code-server-config` enthält nur noch `DEFAULT_WORKSPACE`, das Deployment bindet beide per `envFrom` ein; Reloader als kanonischer Link samt Installationssätzen und Annotation `reloader.stakater.com/auto: "true"` (#260).
+- LimitRange Tag 2 und `examplefiles/limitrange.yaml`: Name `default-container-resources`, Defaults `cpu: "1"` / `memory: "1Gi"`, Requests `cpu: "100m"` / `memory: "256Mi"`, `max`/`min` unverändert; Rechte-Aussage auf Namespace-Admin korrigiert, Fehlerfall `exceeded quota` und `kubectl describe limitrange` ergänzt (#260).
+- PV/PVC Tag 2: neue StorageClass-Sektion mit Default-Erkennung und Fehlerbild „PVC bleibt Pending“, auskommentierte `storageClassName` im PVC; § „Analogie: Das Logistiklager“ mit „schlecht erreichbares Regal (Festplatte)“, „Regalplatz auf Schulterhöhe am Eingang (SSD)“ und „Kühl-Regal (Archive)“ neu formuliert (#260).
+- Vertiefung MariaDB + phpMyAdmin: NodePort als Alternative zum Ingress, Ingress-Route als freiwillige Zusatzaufgabe (#260).
+- Ausblick Tag 1, Feinlernziele Tag 2 und Tag-2-Checkpoint: Code-Server mit PVC sowie MariaDB + phpMyAdmin statt Home Assistant, Nextcloud und Ingress-Routing für vier Anwendungen (#260).
+- Beispielmanifests: Namespace `kw-b2824a-default` → `k8s-training`, interner Cluster-FQDN → `code.k8s-training.frickeldave.de` in `code-server-ingress.yaml` und `example_commands.txt` (#260).
+
+### Fixed
+
+- Doku nannte `vector-config.yaml` und `chromium-logging-configmap.yaml`; sie verweist jetzt auf die vorhandenen Dateien `vector-config-map.yaml` und `chromium-logging-config-map.yaml` (#260).
+- `examplefiles/code-server-deployment.yaml` nutzt dieselben zwei `envFrom`-Referenzen wie die Doku und setzt `PUID`/`PGID`/`TZ` nicht mehr inline (#260).
+- Warnhinweis auf die Dateinamen-Konvention `<app>-<kind>.yaml` samt Prüfritual `kubectl diff` vor dem ersten `kubectl apply -f` in § „Chromium deklarativ neu anlegen“ (#260).
+- „Status prüfen“ im Ingress-Kapitel verweist nicht mehr auf den ungültigen Wildcard-Host, sondern auf den tatsächlich gesetzten HOST (#260).
+
 ## [1.0.7] - 2026-10-27
 
 ### Added
