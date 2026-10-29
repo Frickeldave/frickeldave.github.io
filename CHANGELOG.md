@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-10-29
+
 ### Changed
 
 - Git-Bash-Troubleshooting: die breite Drei-Spalten-Tabelle ist durch eine Definitionsliste aus Symptom, Ursache und Lösung ersetzt und passt damit in die rund 667 px breite Prose-Spalte (#260).
