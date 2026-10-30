@@ -8,6 +8,7 @@ imageAlt: "Kubernetes Basis - 20 Tag 2"
 ---
 
 import Notice from "@shortcodes/Notice";
+import InteractiveChecklist from "@components/docs/InteractiveChecklist.astro";
 import { Image } from "astro:assets";
 import knba20010 from "@assets/docs/kubernetes-basis/knba-20-010_init-and-sidecar-container.png";
 import knba20011 from "@assets/docs/kubernetes-basis/knba-20-011_init-and-sidecar-container-logistic.png";
@@ -1658,23 +1659,22 @@ Kubernetes-Secret aus, nicht in die ConfigMap!
 
 Deine Lösung muss folgende Konzepte aus Tag 1 und Tag 2 abdecken:
 
-- [ ] **Deklaratives Deployment** per YAML (kein `kubectl create deployment`)
-- [ ] **Labels** (`app: database`) für Selektor und Service
-- [ ] **Service (ClusterIP)** für MariaDB (Port `3306`) – damit andere Pods die Datenbank erreichen
-- [ ] **Service (NodePort)** für phpMyAdmin (Port `80`) – damit du im Browser darauf zugreifen
-      kannst. **Alternative zum Ingress:** dieser Weg genügt für den Browser-Test; eine Ingress-Route
-      ist dafür nicht nötig.
-- [ ] **ConfigMap** für die Umgebungsvariablen (`PUID`, `PGID`, `TZ`)
-- [ ] **Secret** für `MYSQL_ROOT_PASSWORD`
-- [ ] **PersistentVolumeClaim** (1Gi, `ReadWriteOnce`) für MariaDB unter `/config`
-- [ ] **Resource Limits** für beide Container (`requests: 256Mi/250m`, `limits: 1Gi/1000m`)
-- [ ] **Health Checks** – StartupProbe, LivenessProbe, ReadinessProbe (jeweils auf Port `80` für phpMyAdmin)
-- [ ] **RollingUpdate-Strategie** (`maxSurge: 1`, `maxUnavailable: 0`)
-- [ ] **Multi-Container Pod** – MariaDB + phpMyAdmin teilen sich `localhost`
-- [ ] **Ingress route (freiwillig)** – PhpMyAdmin ist über eine Ingress-Route erreichbar.
-      **Zusatzaufgabe:** wer die Ingress-Route aus Tag 1 wiederholen möchte, legt zusätzlich eine
-      Ingress-Ressource mit Host `phpmyadmin.k8s-training.frickeldave.de` an; verpflichtend ist der
-      NodePort-Service.
+<InteractiveChecklist
+  items={[
+    "Deklaratives Deployment per YAML (kein kubectl create deployment)",
+    "Labels (app: database) für Selektor und Service",
+    "Service (ClusterIP) für MariaDB (Port 3306), damit andere Pods die Datenbank erreichen",
+    "Service (NodePort) für phpMyAdmin (Port 80), damit du im Browser darauf zugreifen kannst. Alternative zum Ingress: dieser Weg genügt für den Browser-Test; eine Ingress-Route ist dafür nicht nötig.",
+    "ConfigMap für die Umgebungsvariablen (PUID, PGID, TZ)",
+    "Secret für MYSQL_ROOT_PASSWORD",
+    "PersistentVolumeClaim (1Gi, ReadWriteOnce) für MariaDB unter /config",
+    "Resource Limits für beide Container (requests: 256Mi/250m, limits: 1Gi/1000m)",
+    "Health Checks – StartupProbe, LivenessProbe, ReadinessProbe (jeweils auf Port 80 für phpMyAdmin)",
+    "RollingUpdate-Strategie (maxSurge: 1, maxUnavailable: 0)",
+    "Multi-Container Pod – MariaDB + phpMyAdmin teilen sich localhost",
+    "Ingress route (freiwillig) – PhpMyAdmin ist über eine Ingress-Route erreichbar. Zusatzaufgabe: wer die Ingress-Route aus Tag 1 wiederholen möchte, legt zusätzlich eine Ingress-Ressource mit Host phpmyadmin.k8s-training.frickeldave.de an; verpflichtend ist der NodePort-Service.",
+  ]}
+/>
 
 
 ### Tipps
