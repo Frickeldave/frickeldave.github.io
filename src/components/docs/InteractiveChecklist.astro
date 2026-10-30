@@ -1,0 +1,23 @@
+---
+interface Props {
+  items: string[];
+}
+
+const { items } = Astro.props;
+---
+
+<ul class="mb-6 space-y-3">
+  {
+    items.map((item) => (
+      <li>
+        <label class="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            class="accent-primary mt-1 h-4 w-4 shrink-0 cursor-pointer"
+          />
+          <span>{item}</span>
+        </label>
+      </li>
+    ))
+  }
+</ul>
