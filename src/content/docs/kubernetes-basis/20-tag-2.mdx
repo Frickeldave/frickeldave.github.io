@@ -208,24 +208,21 @@ unverändert aus `linuxserver-common`. Steht derselbe Key in beiden ConfigMaps, 
 **letzte** Eintrag -- deshalb bleibt die Reihenfolge `linuxserver-common` vor
 `code-server-config`.
 
-<Notice type="info">
-  **ConfigMap geändert, Pod läuft weiter? Dafür gibt es Reloader.**
+### ConfigMapKeyRef für einen einzelnen Wert aus einer ConfigMap
 
-  Wie oben beschrieben startet ein Deployment nach einer ConfigMap-Änderung nicht von selbst neu.
-  [Reloader](https://github.com/stakater/Reloader) ist ein kleiner Controller, der ConfigMaps und
-  Secrets beobachtet und den betroffenen Workload per Annotation neu ausrollen lässt.
-  Installiert wird er über das Helm-Repository von Stakater oder über das Release-Manifest aus dem
-  Projekt; beides braucht Cluster-Rechte und läuft einmalig. Danach genügt die Annotation am
-  Deployment:
+Anstatt eine komplette ConfigMap zu laden, kann auch ein einzelner Wert aus einer ConfigMap geladen werden. 
 
-  ```yaml
-  metadata:
-    annotations:
-      reloader.stakater.com/auto: "true"
-  ```
-
-  Ohne Annotation passiert nichts -- Reloader ist opt-in pro Workload.
-</Notice>
+spec:
+...
+    spec:
+      containers:
+          ...
+          env:
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: LOG_LEVEL
 
 ### ConfigMap als Volume (Datei)
 
@@ -243,21 +240,26 @@ volumes:
 Im Container erscheint dann z. B. die Datei `/etc/config/DEFAULT_WORKSPACE` mit dem Inhalt
 `/config/workspace`. Dieses Pattern werden wir in der Sidecar-Übung direkt anwenden.
 
-
-
 <Notice type="info">
-  **Wird ein Deployment automatisch neu gestartet, wenn sich die ConfigMap ändert?**
+  **ConfigMap geändert, Pod läuft weiter? Dafür gibt es Reloader.**
 
-  **Nein – und das ist eine häufige Fehlerquelle!** Wenn du eine ConfigMap änderst, die per `envFrom` oder `valueFrom.configMapKeyRef` als Umgebungsvariable eingebunden ist, werden die laufenden Pods **nicht automatisch neu gestartet**. Die Umgebungsvariablen sind zum Zeitpunkt des Pod-Starts eingefroren.
+  Ein Deployment startet nach einer ConfigMap-Änderung nicht von selbst neu.
+  [Reloader](https://github.com/stakater/Reloader) ist ein kleiner Controller, der ConfigMaps und
+  Secrets beobachtet und den betroffenen Workload per Annotation neu ausrollen lässt.
+  Installiert wird er über das Helm-Repository von Stakater oder über das Release-Manifest aus dem
+  Projekt; beides braucht Cluster-Rechte und läuft einmalig. Danach genügt die Annotation am
+  Deployment:
 
-  **Anders bei Volume-Mounts:** Wenn die ConfigMap als Volume eingebunden ist, werden die Dateien im Container **automatisch aktualisiert** (mit einer leichten Verzögerung, meist < 1 Minute). Der Pod muss aber auch dann nicht neu starten – die Anwendung muss die Dateiänderung selbst bemerken oder neu einlesen.
-
-  **Praktische Lösung:** Nach einer ConfigMap-Änderung startest du die Pods manuell neu:
-  ```bash
-  kubectl rollout restart deployment <deployment-name>
+  ```yaml
+  metadata:
+    annotations:
+      reloader.stakater.com/auto: "true"
   ```
-  Oder du automatisierst den Neustart -- wie das mit Reloader geht, steht weiter oben unter §
-  "Beispiel: Code-Server-Workspace auslagern".
+
+  Ohne Annotation passiert nichts -- Reloader ist opt-in pro Workload.
+
+  **Anders bei Volume-Mounts:** Wenn die ConfigMap als Volume eingebunden ist, werden die Dateien im Container **automatisch aktualisiert** (mit einer leichten Verzögerung, meist < 1 Minute). Die Anwendung muss die Dateiänderung selbst bemerken oder neu einlesen.
+
 </Notice>
 
 **Zusammenfassung**
@@ -360,7 +362,6 @@ kubectl apply -f code-server-deployment-configmap-secret.yaml
 **Wichtig:** Das Secret muss **im gleichen Namespace** wie der Pod erstellt werden. Bei
 Namespace-Abweichung (z. B. `k8s-prod` statt `k8s-training`) entsprechend anpassen.
 
-
 ## Pods und Container-Typen
 
 Bisher haben wir Pods nur als einfache Container-Wrapper kennengelernt. Tatsächlich können Pods
@@ -379,8 +380,6 @@ Konzept wird genutzt, um eng gekoppelte Prozesse gemeinsam zu deployen und zu ve
 verwenden. Die Container EINER App sind hier NICHT eng gekoppelt, sondern nur lose verbunden über Services und Ingress. Daher deployen wir sie in separaten Pods.
 
 <Image src={knba20010} alt="Multiple container pro Pod * Erstellt mit Microsoft Copilot" />
-
-
 
 ### Analogie: Container-Typen im Logistikunternehmen
 
@@ -410,7 +409,7 @@ Diese Services laufen zeitgleich mit dem Haupttransport und sorgen für Transpar
 
 ### Init-Container
 
-Init-Container laufen sequenziell, bevor die App-Container starten. Jeder muss erfolgreich
+Init-Container laufen sequenziell in der Reihenfolge Ihrer Definition an, bevor die App-Container starten. Jeder muss erfolgreich
 abschließen. Dies dient nur zur Voranschau, dieses Konzept werden wir später verwenden. 
 
 ```yaml
@@ -496,7 +495,9 @@ kubectl apply -f vector-config-map.yaml
 **2. Chromium-Deployment um Sidecar erweitern**
 
 Das bestehende Deployment aus Tag 1 (`chromium-deployment.yaml`) bekommt einen zweiten Container
-und ein gemeinsames Volume. Die Änderungen sind mit `# NEU` markiert:
+und ein gemeinsames Volume. Außerdem ersetzt `envFrom` die drei einzelnen `env`-Einträge
+(`PUID`, `PGID`, `TZ`) durch die ConfigMap `linuxserver-common` von oben. Die Änderungen sind mit
+`# NEU` markiert:
 
 ```yaml
 apiVersion: apps/v1
@@ -529,13 +530,9 @@ spec:
           ports:
             - containerPort: 3000
             - containerPort: 3001
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
+          envFrom:                          # PUID, PGID, TZ
+            - configMapRef:
+                name: linuxserver-common
           volumeMounts:
             - name: shm
               mountPath: /dev/shm
@@ -558,7 +555,6 @@ spec:
             - name: chromium-logs          # NEU: gleiches Volume wie Chromium
               mountPath: /config/log
             - name: vector-config
-              mountPath: /etc/vector
       volumes:
         - name: shm
           emptyDir:
@@ -760,7 +756,7 @@ Log-Level oder Komponenten herausfiltern.
 
 #### Produktiv-Alternativen
 
-Vector ist nur ein Beispiel. In Produktivumgebungen werden häufig diese Tools als Sidecar eingesetzt:
+Vector ist nur ein Beispiel. In Produktivumgebungen werden häufig diese Tools als Logging-Sidecar eingesetzt:
 
 | Tool | Größe | Besonderheit |
 |------|-------|-------------|
@@ -851,7 +847,6 @@ Die QoS-Klasse sagt: "Wie wichtig ist diese Abteilung, wenn der Platz knapp wird
 
 <Image src={knba20021} alt="QoS * Erstellt mit Microsoft Copilot" />
 
-
 - **BestEffort** – eine Abteilung, die nie angemeldet hat, wie viel Platz sie braucht.
   Wenn das Lager voll wird, fliegt sie als Erste raus.
 - **Burstable** – eine Abteilung, die 3 Regalreihen reserviert hat, aber bis zu 6 nutzen
@@ -900,7 +895,7 @@ spec:
     spec:
       containers:
         - name: chromium
-          # ... image, ports, env, volumeMounts (unverändert) ...
+          # ... image, ports, envFrom (linuxserver-common), volumeMounts (unverändert) ...
           resources:                          # ⬅️ NEU
             requests:
               cpu: "250m"
@@ -948,7 +943,6 @@ kubectl top pod -l app=chromium -n k8s-training
 **Merke:** `kubectl top` zeigt den **echten** Verbrauch – der liegt oft unter den Limits.
 Erst wenn Chromium mehr CPU oder RAM will als im `limits`-Block erlaubt, greift Kubernetes ein:
 CPU wird gedrosselt, bei Memory-Überschreitung gibt es einen OOM-Kill.
-
 
 ### LimitRange
 
@@ -1293,8 +1287,8 @@ Wie tauschst du sie aus?
 
 - **Recreate** – *"Alle in die Werkstatt, dann alle neu."*  
   Du holst alle 10 LKWs auf einmal in die Werkstatt. Erst wenn alle umgerüstet sind,
-  gehen sie wieder auf Tour. Kurze Auszeit, aber dafür ist die Umstellung einfacher –
-  ideal, wenn alte und neue LKWs nicht auf derselben Strecke fahren dürfen.
+  gehen sie wieder auf Tour. Kurze Auszeit, aber dafür ist die Umstellung ggf. einfacher, 
+  weil nciht auf die Kompatibilität zwischen alten und neuen LKWs geachtet werden muss.
 
 | Strategie         | Verhalten                                    | Ausfallzeit | Einsatz                                               |
 | ----------------- | -------------------------------------------- | ----------- | ----------------------------------------------------- |
@@ -1621,7 +1615,6 @@ kubectl get pods -l app=code-server -n k8s-training -w
 # Datei prüfen -- sie überlebt!
 kubectl exec $(kubectl get pod -l app=code-server -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- ls /config/workspace/test.txt
 ```
-
 
 **Erkenntnis:** Vorher (Übung "Flüchtigkeit erleben") war die Datei nach dem Pod-Neustart weg -- jetzt, mit PVC, bleibt sie erhalten. PVCs überleben Pod-Neustarts, `emptyDir` nicht.
 
