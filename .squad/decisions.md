@@ -390,6 +390,43 @@ wiederholt, sondern nur korrigiert und auf die Detailabschnitte verwiesen.
 
 **Konsequenz:** Künftige Releases dieses Repos sollten wie bisher erst nach Abnahme erzeugt werden; 0.1.8 ist als Nachzieh-Release Sonderfall (Lücke in der Historie), kein Präzedenzfall für das Veröffentlichen unreifer Versionen.
 
+#### 2026-11-02T09:15:47+0000: Release 0.1.9 veröffentlicht
+
+**By:** Nick (DevOps / Infrastructure)
+
+**What:**
+Version `0.1.9` der Home-Assistant-Integration `Frickeldave Store` wurde als reguläres Release veröffentlicht.
+
+- Annotierter Tag `0.1.9` (Tag-Objekt `8bc736b`) auf Commit `d983f0c01f5d3de3b34bcbf88c4c7863b16635c9` (`main`-HEAD).
+  Annotation: „Frickeldave Store 0.1.9“.
+- GitHub-Release `0.1.9`: https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.1.9
+  - `isDraft: false`, `isPrerelease: false` → `Latest`
+  - Release Notes = CHANGELOG-Abschnitt `## [0.1.9] - 2026-11-02` unverändert übernommen
+    (Struktur `### Added` / `### Changed` beibehalten).
+- Vorher geprüft: weder Tag noch Release `0.1.9` existierten → kein Überschreiben.
+- `0.1.8` (Tag `8c5977d` → Commit `ebb00bd`) bleibt als Vorgänger-Release unangetastet und
+  vollständig erhalten (Release-Datum unverändert `2026-11-02T08:57:13Z`).
+
+**Why:**
+David Koenig hat am 2026-11-02 um 09:15 UTC ausdrücklich entschieden, `0.1.9` **jetzt und als
+reguläres Release** (nicht als Pre-Release) vor der formellen Abnahme zu veröffentlichen. `main`
+enthielt bereits alle acht Detailanforderungen aus #289 (Backend `7aa454c` + UI `d983f0c`) sowie
+den passenden CHANGELOG-Abschnitt; `manifest.json` im Tag führt `"version": "0.1.9"`.
+
+Konsequenz für das Team: HACS-Installationen ziehen ab sofort `0.1.9` als neueste Version. Die
+inhaltliche Abnahme von #289 erfolgt nachgelagert; sollte dabei eine Korrektur nötig werden, ist
+eine neue Patch-Version (`0.1.10`) zu veröffentlichen — `0.1.9` wird nicht rückwirkend verändert
+oder verschoben.
+
+**Verifikation:**
+
+- `git ls-remote --tags origin`: `refs/tags/0.1.9` (annotiert) → `0.1.9^{}` = `d983f0c`
+- `git show 0.1.9:custom_components/frickeldave_store/manifest.json` → `"version": "0.1.9"`
+- `hacs.json` und `custom_components/frickeldave_store/publish.py` im Tag vorhanden
+- CI-Lauf für `d983f0c` (Push auf `main`): **success** —
+  https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41411379649
+  (hassfest, pytest, HACS validation, Frontend, mypy, Ruff jeweils `success`)
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
