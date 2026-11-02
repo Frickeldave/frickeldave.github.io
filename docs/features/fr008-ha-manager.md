@@ -8,7 +8,7 @@ Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
 - Integrations-Repository: <https://github.com/Frickeldave/frickeldave.home.net>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: umgesetzt in Version 0.1.13 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
+- Status: umgesetzt in Version 0.1.14 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
   Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -85,7 +85,7 @@ flowchart LR
   Produkten und Einstellungen wechselt, gibt es nicht mehr.
 - Das Hamburger-Symbol links öffnet die Home-Assistant-Seitenleiste.
 - Das Drei-Punkte-Menü rechts führt den Eintrag **Tags verwalten** (Pflege der Tags, sichtbar für
-  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.13`. Die Version
+  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.14`. Die Version
   bestätigt, welcher Build tatsächlich läuft.
 - Die Einstellungen der Integration liegen nicht im Panel, sondern in der Integrationsseite von Home
   Assistant: **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad** öffnet das
@@ -96,15 +96,16 @@ flowchart LR
 
 ### Datenhaltung
 
-Standardmäßig liegen die Daten unter `config/frickeldave_store/` und damit im Backup. Die Option
-**Von Backup ausschließen** im Tab [Allgemeine](#tab-allgemeine) verschiebt Store-Datei, Bilder und
-Snapshots nach `/share/frickeldave_store/` oder `/media/frickeldave_store/`.
+Standardmäßig liegen die Daten unter `config/frickeldave_store/` und damit im Backup. Die Auswahl des
+Speicherorts im Tab [Allgemeine Einstellungen](#tab-allgemeine-einstellungen) verschiebt Store-Datei,
+Bilder und Snapshots nach `/share/frickeldave_store/` oder `/media/frickeldave_store/`. Ob der
+Katalog im Backup steckt, ist aus dieser Auswahl abgeleitet und nicht getrennt einstellbar.
 
-| Zustand                 | Ablage                      | Backup-Verhalten                                                                         |
-| ----------------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
-| Option aus (Standard)   | `config/frickeldave_store/` | enthalten, weil das HA-Backup das gesamte `config/`-Verzeichnis sichert                  |
-| Option an, Ziel `share` | `/share/frickeldave_store/` | nur enthalten, wenn `share` in einem Teil-Backup ausgewählt oder vom Host gesichert wird |
-| Option an, Ziel `media` | `/media/frickeldave_store/` | nur enthalten, wenn `media` in einem Teil-Backup ausgewählt oder vom Host gesichert wird |
+| Zustand                         | Ablage                      | Backup-Verhalten                                                                         |
+| ------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
+| Speicherort `config` (Standard) | `config/frickeldave_store/` | enthalten, weil das HA-Backup das gesamte `config/`-Verzeichnis sichert                  |
+| Speicherort `share`             | `/share/frickeldave_store/` | nur enthalten, wenn `share` in einem Teil-Backup ausgewählt oder vom Host gesichert wird |
+| Speicherort `media`             | `/media/frickeldave_store/` | nur enthalten, wenn `media` in einem Teil-Backup ausgewählt oder vom Host gesichert wird |
 
 | Inhalt        | Ablage unterhalb des gewählten Speicherorts          |
 | ------------- | ---------------------------------------------------- |
@@ -112,12 +113,12 @@ Snapshots nach `/share/frickeldave_store/` oder `/media/frickeldave_store/`.
 | Produktbilder | `images/<artikelnummer>/`                            |
 | Snapshots     | `backups/<zeitstempel>-<anlass>.json`                |
 
-Bilder gehören bewusst nicht in `.storage`. Ohne die Option liegen Daten und Bilder unter `config/`
-und sind damit ohne Zusatzschritt im Backup enthalten. Mit **Von Backup ausschließen** lassen sie
-sich aus dem Backup heraushalten: Das eingebaute HA-Backup sichert `config/` vollständig und bietet
-keine Ausnahme für einzelne Unterordner; `share` und `media` sind nur enthalten, wenn der Ordner in
-einem Teil-Backup ausgewählt oder vom Host gesichert wird. Wer Home Assistant Container betreibt,
-muss das gewählte Volume selbst in den Container einhängen.
+Bilder gehören bewusst nicht in `.storage`. Beim Speicherort `config` liegen Daten und Bilder unter
+`config/` und sind damit ohne Zusatzschritt im Backup enthalten. Mit dem Speicherort `share` oder
+`media` lassen sie sich aus dem Backup heraushalten: Das eingebaute HA-Backup sichert `config/`
+vollständig und bietet keine Ausnahme für einzelne Unterordner; `share` und `media` sind nur
+enthalten, wenn der Ordner in einem Teil-Backup ausgewählt oder vom Host gesichert wird. Wer Home
+Assistant Container betreibt, muss das gewählte Volume selbst in den Container einhängen.
 
 Datei-, Bild- und Netzwerkoperationen laufen nicht blockierend (Executor beziehungsweise `aiohttp`
 mit Timeouts). Fehler externer Dienste werden abgefangen und dürfen Home Assistant nicht
@@ -197,7 +198,7 @@ Wenn die Oberfläche nach einem Update unverändert wirkt:
 1. Die Seite mit `Strg+Shift+R` hart neu laden (macOS: `Cmd+Shift+R`).
 2. Hilft das nicht, im Browser die Websitedaten für die Home-Assistant-URL löschen.
 3. Die geladene Version prüfen: Sie steht im Drei-Punkte-Menü des Panels und in der Fußzeile des
-   Konfigurationspanels. `v0.1.13` bestätigt den aktuellen Build.
+   Konfigurationspanels. `v0.1.14` bestätigt den aktuellen Build.
 
 ## Einrichtung und Optionen
 
@@ -207,8 +208,8 @@ YAML-Konfiguration gibt es nicht.
 - Der Config Flow legt die Integration an und registriert das Panel.
 - Der Options Flow öffnet das Konfigurationspanel der Integration. Erreichbar ist es über
   **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad**.
-- Das Konfigurationspanel umfasst die Tabs **Benutzerverwaltung**, **KI-Einstellungen**,
-  **Allgemeine**, **Lagerstätten** und **Veröffentlichen**; die Lagerstätten pflegt die
+- Das Konfigurationspanel umfasst die Tabs **Allgemeine Einstellungen**, **Benutzerverwaltung**,
+  **KI-Einstellungen**, **Lagerstätten** und **Veröffentlichen**; die Lagerstätten pflegt die
   Administration im Tab **Lagerstätten** (**Einstellungen → Geräte & Dienste → Frickeldave Store →
   Zahnrad → Tab „Lagerstätten“**, siehe [Lagerstätten](#lagerstätten)).
 - Zugangsdaten bleiben serverseitig und erscheinen nicht in Logs, Diagnose oder Export.
@@ -242,20 +243,26 @@ Der Tab bildet die Rollenfreigaben aus [Berechtigungen](#berechtigungen) ab.
   [KI-Beschreibungsvorschläge](#ki-beschreibungsvorschläge).
 - Der Tab selbst ist nur für die Rolle **Anwendungsverwaltung** zugänglich.
 
-### Tab Allgemeine
+### Tab Allgemeine Einstellungen
 
-Der Tab enthält die allgemeinen Einstellungen der Integration. Erste Option ist **Von Backup
-ausschließen**; die drei Ablagezustände, ihre Pfade und das Backup-Verhalten stehen unter
-[Datenhaltung](#datenhaltung).
+Der Tab steht an erster Stelle des Konfigurationspanels und zeigt, wo der Katalog liegt. Frühere
+Fassungen dieses Dokuments nannten ihn bereits, obwohl er im Code fehlte; seit 0.1.14 beschreiben
+die folgenden Angaben den tatsächlichen Stand.
 
-- Option aus (Standard): Store, Bilder und Snapshots liegen unter `config/frickeldave_store/` und
-  sind im Backup enthalten.
-- Option an: Dieselben Daten liegen unter `/share/frickeldave_store/` oder
-  `/media/frickeldave_store/` und lassen sich damit aus dem Backup heraushalten.
-- Das Panel listet die betroffenen Pfade auf: Store-Datei, Bilder und Snapshots.
+- Ein Schalter zeigt, ob der Produktkatalog im Home-Assistant-Backup enthalten ist. Sein Zustand
+  folgt dem Speicherort und ist kein eigenes Feld: `config` heißt enthalten, `share` und `media`
+  heißen nicht enthalten.
+- Die Auswahl des Speicherorts bietet die angebotenen Optionen mit einer Beschreibung je Option.
+- Schreibgeschützt darunter stehen der effektive Pfad und die drei Unterpfade für Metadaten, Bilder
+  und Snapshots (siehe [Datenhaltung](#datenhaltung)).
+- Gespeichert wird über `PATCH /api/frickeldave_store/settings`.
+- Ein Wechsel des Speicherorts wird erst nach einem Neuladen der Integration wirksam; die
+  Oberfläche teilt das ausdrücklich mit und nennt den Weg **Einstellungen → Geräte & Dienste →
+  Frickeldave Store → Neu laden**.
 - Ein Wechsel verschiebt Store-Datei, Bilder und Snapshots an den neuen Ort. Die alte Kopie bleibt
   für die manuelle Bereinigung liegen; die Integration löscht sie nicht.
-- Nach dem Wechsel lädt Home Assistant die Integration neu, damit alle Pfade neu aufgelöst werden.
+- Ist der Zielordner belegt, antwortet der Server mit `409`, fehlt der Mount, mit `400`. Die
+  Oberfläche zeigt die Servermeldung, und die Auswahl springt zurück.
 - Der Tab selbst ist nur für die Rolle **Anwendungsverwaltung** zugänglich.
 
 ### Lagerstätten
@@ -310,6 +317,9 @@ Regeln:
 - `stock` ist seit Schema-Version 2 ein Objekt Lagerstätten-ID → Stückzahl. Die Migration von
   Version 1 auf 2 erhält bestehende Bestände; Details stehen im
   [Bestandsmodell](#bestandsmodell).
+- Ein Bildeintrag führt `bytes`, `width`, `height`, `content_type` und `oversized`. Die Werte
+  ermittelt die Integration beim Lesen aus den Bilddateien; sie stehen nicht in der Store-Datei
+  (siehe [Bilder](#bilder)).
 
 ### Kategorien
 
@@ -346,7 +356,8 @@ Regeln:
   teilen denselben Zustand. Die Sortierung bleibt bei Filteränderungen erhalten. Details stehen
   unter [Sortierung](#sortierung).
 - Bildverwaltung: maximal zehn Bilder je Produkt, Reihenfolge und genau ein Hauptbild. Ein elfter
-  Upload wird mit Meldung abgelehnt, ohne Teilpersistenz.
+  Upload wird mit Meldung abgelehnt, ohne Teilpersistenz. Der Server verkleinert Uploads (siehe
+  [Bilder](#bilder)).
 
 ## Produktpflege im Panel
 
@@ -384,12 +395,12 @@ Felder. Beide Bedienelemente teilen denselben Sortierzustand.
 **Neues Produkt** und **Produkt bearbeiten** öffnen denselben Dialog mit vier Tabs in dieser
 Reihenfolge:
 
-| Tab          | Inhalt                                                                         |
-| ------------ | ------------------------------------------------------------------------------ |
-| Grunddaten   | Name, Kategorie, Preis, Größe, Tags, Sichtbarkeit und Personalisierbar         |
-| Bilder       | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen           |
-| Beschreibung | Beschreibungsfeld, „Eigene Hinweise“ für die KI und „Beschreibung vorschlagen“ |
-| Bestand      | Bestände je Lagerstätte und Buchungshistorie                                   |
+| Tab          | Inhalt                                                                           |
+| ------------ | -------------------------------------------------------------------------------- |
+| Grunddaten   | Name, Kategorie, Preis, Größe, Tags, Sichtbarkeit und Personalisierbar           |
+| Bilder       | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen, Optimieren |
+| Beschreibung | Beschreibungsfeld, „Eigene Hinweise“ für die KI und „Beschreibung vorschlagen“   |
+| Bestand      | Bestände je Lagerstätte und Buchungshistorie                                     |
 
 - Einen separaten Bilder-Dialog gibt es nicht mehr; die Bildverwaltung liegt vollständig im Tab
   **Bilder**. Einen separaten **Bestand**-Button in der Produktkarte gibt es ebenfalls nicht mehr.
@@ -415,6 +426,49 @@ Reihenfolge:
   deaktiviert. Direkte Zahleneingabe ist möglich, das Minimum ist 0. Gespeichert wird beim Speichern
   des Produkts.
 - Die Buchungshistorie steht als Abschnitt im Tab **Bestand**.
+
+### Bilder
+
+Der Tab **Bilder** des Produktdialogs nimmt Uploads entgegen; der Server verarbeitet jedes Bild und
+legt keine unveränderten Handyfotos mehr ab. Bis 0.1.13 wanderten die Bildbytes in voller Größe in
+Backup und Export, begrenzt nur durch das Upload-Limit von 10 MB.
+
+| Fall                                                          | Ergebnis                                       |
+| ------------------------------------------------------------- | ---------------------------------------------- |
+| Lange Kante über 1600 px                                      | auf 1600 px verkleinert, nie hochskaliert      |
+| JPEG                                                          | Qualität 82, progressiv, EXIF und ICC entfernt |
+| PNG oder WebP mit Transparenz                                 | WebP, Qualität 85, Alpha erhalten              |
+| PNG ohne Transparenz                                          | JPEG, Qualität 82                              |
+| GIF und animiertes WebP                                       | unverändert übernommen                         |
+| Bereits passend (höchstens 1600 px **und** höchstens 400 KiB) | Bytes unverändert, kein Re-Encoding            |
+
+Die Verarbeitung liegt im neuen Modul `imaging.py` und läuft im Executor. Pillow ist in Home
+Assistant enthalten und damit keine zusätzliche Abhängigkeit; gegen Dekomprimierungsbomben gilt eine
+Grenze von 40 Megapixeln. Die Dateiendung folgt dem Ergebnis, ein PNG mit Transparenz wird also
+`.webp`. Die Upload-Antwort nennt Original und Ergebnis (`bytes`, `width`, `height`,
+`content_type`), `resized` und eine deutsche Meldung, etwa „Bild von 12,0 MB auf 278 KB verkleinert
+(4032×3024 → 1600×1200)“.
+
+**Metadaten in der API.** Jedes Bild führt `bytes`, `width`, `height`, `content_type` und
+`oversized` (lange Kante über 1600 px oder mehr als 400 KiB). Die Werte ermittelt die Integration
+beim Lesen aus den Dateien und speichert sie nicht im Store; eine Migration entfällt. Ein
+prozesslokaler LRU-Cache (Schlüssel: Pfad, mtime, Größe) hält die Produktliste schnell — gemessen
+26 ms für 600 Bilder im warmen Zustand, 153 ms kalt.
+
+**Sammel-Optimierung.** `POST /api/frickeldave_store/products/{artikelnummer}/images/optimize`
+verkleinert alle zu großen Bilder eines Produkts nach denselben Regeln. Reihenfolge und Hauptbild
+bleiben erhalten, vor dem Lauf entsteht ein Snapshot, und wiederholte Aufrufe ändern nichts mehr.
+Die Antwort liefert je Bild vorher und nachher sowie eine Statistik (`count`, `bytes_before`,
+`bytes_after`, `saved_percent`); Teilfehler meldet sie je Bild, ohne den Lauf abzubrechen.
+
+**Oberfläche.** Nach jedem Upload erscheint die Verkleinerungsmeldung, bei bereits passenden Bildern
+eine ruhige Bestätigung und bei einem GIF der Hinweis, dass es unverändert übernommen wurde. Im Tab
+**Bilder** steht je Bild „1600 × 1200 · 278 KB“; zu große Bilder tragen ein Warndreieck mit
+Detailhinweis, über der Liste steht ein Warnbanner mit Anzahl und Schwellwerten und darunter der
+Button **Bilder optimieren** — deaktiviert, wenn nichts zu tun ist, sonst mit Ergebnis und Ersparnis
+in Prozent. In der Kachel sitzt das Warndreieck als Badge am Bild, in der Liste in der Statusspalte
+mit dem Text „Bilder zu groß“; sein Tooltip lautet „Mindestens ein Bild ist zu groß. Produkt öffnen
+und Bilder optimieren.“, und ein Klick öffnet den Bilder-Tab.
 
 ### Katalogimport
 
@@ -597,14 +651,14 @@ chunked-Antworten und einen Dry-Run über den echten Client ab.
 
 - Ein vollständiges Backup des HA-Containers umfasst `config/` inklusive `.storage` und
   `config/www`. Eine Ausnahme für einzelne Unterordner von `config/` gibt es nicht.
-- Ohne die Option liegen Produktdaten und Bilder unter `config/frickeldave_store/` und sind damit
-  ohne Zusatzschritt im Backup enthalten.
-- Mit der Option **Von Backup ausschließen** liegen sie außerhalb von `config/`. Sie sind nur im
+- Beim Speicherort `config` liegen Produktdaten und Bilder unter `config/frickeldave_store/` und
+  sind damit ohne Zusatzschritt im Backup enthalten.
+- Mit dem Speicherort `share` oder `media` liegen sie außerhalb von `config/`. Sie sind nur im
   Backup, wenn das Zielverzeichnis gesichert wird: `share` und `media` sind in Teil-Backups als
   Ganzes auswählbar oder werden von einer Host-Sicherung erfasst, samt aller fremden Daten in diesen
   Ordnern.
 - Ein Wechsel des Speicherorts verschiebt die Daten und lässt die alte Kopie zur manuellen
-  Bereinigung stehen (siehe [Tab Allgemeine](#tab-allgemeine)).
+  Bereinigung stehen (siehe [Tab Allgemeine Einstellungen](#tab-allgemeine-einstellungen)).
 - Die Wiederherstellung wird im Integrations-Repository als Runbook dokumentiert und einmal real
   getestet: identische Checksummen und erhaltener Migrationsstand.
 - Ein Backup ersetzt keine Rechteprüfung: Personen mit Zugriff auf HA-Dateien oder Backups können
@@ -623,7 +677,7 @@ Update zurück. Voraussetzung ist, dass ein solches Backup existiert. Reihenfolg
 4. Im Zielordner die aktuelle Store-Datei umbenennen, zum Beispiel in
    `frickeldave_store.data.vor-restore-2026-11-02`. Sie bleibt als Vergleich liegen.
 5. Die Store-Datei aus dem Backup als `frickeldave_store.data` in den Zielordner legen und den
-   Ordner `images/` ergänzen. Bei aktivem **Von Backup ausschließen** liegt der Zielordner unter
+   Ordner `images/` ergänzen. Beim Speicherort `share` oder `media` liegt der Zielordner unter
    `/share/frickeldave_store/` oder `/media/frickeldave_store/`.
 6. Home Assistant starten. Die Integration migriert die ältere `data.schemaVersion` und legt vorher
    einen Snapshot unter `backups/` an.
