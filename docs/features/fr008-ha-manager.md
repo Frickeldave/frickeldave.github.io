@@ -8,8 +8,8 @@ Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
 - Integrations-Repository: <https://github.com/Frickeldave/frickeldave.home.net>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: umgesetzt in Version 0.1.9 (Backend und Oberfläche); Finanz- und Kundenfunktionen bleiben
-  geplant.
+- Status: umgesetzt in Version 0.1.10 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
+  Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 hat David Koenig entschieden, dass die Integration
@@ -66,6 +66,16 @@ flowchart LR
   `--primary-text-color`, `--secondary-text-color`, `--error-color`) und eine eigene
   `--fd-*`-Schicht im Shadow DOM. Daraus folgen Light/Dark und HA-Themes ohne eigene Umschaltung.
 - Die Sprache der Oberfläche ist Deutsch.
+- Panel und Konfigurationspanel laden ihre Module unter einer URL mit Versionsparameter
+  (`?v=<Version>`); die Hilfsfunktion `module_url()` in `const.py` erzeugt ihn für
+  `PANEL_MODULE_URL` und `CONFIG_PANEL_MODULE_URL`. Ein eigener Frontend-View liefert die Dateien
+  zusätzlich mit `Cache-Control: no-cache, must-revalidate`. Beides verhindert, dass nach einem
+  Update alte Module im Browser-Cache liegen (siehe
+  [Aktualisierung und Browser-Cache](#aktualisierung-und-browser-cache)).
+- Panel und Konfigurationspanel zeigen die geladene Version an; dieselbe Information liefert die
+  API: `GET /api/frickeldave_store/me` gibt `version`, `storage_schema_version` und
+  `panel_module_url` zurück, `GET /api/frickeldave_store/settings` und
+  `PATCH /api/frickeldave_store/settings` geben `version` zurück.
 - `require_admin` ist keine Zugangskontrolle, sondern steuert nur die Sichtbarkeit des Panels. Jede
   geschützte Route prüft die Berechtigung serverseitig (siehe [Berechtigungen](#berechtigungen)).
 
@@ -74,8 +84,9 @@ flowchart LR
 - Das Panel trägt oben eine Leiste im Stil von Home Assistant. Eine Tab-Leiste, die zwischen
   Produkten und Einstellungen wechselt, gibt es nicht mehr.
 - Das Hamburger-Symbol links öffnet die Home-Assistant-Seitenleiste.
-- Das Drei-Punkte-Menü rechts führt genau einen Eintrag:
-  - **Tags verwalten**: Pflege der Tags, sichtbar für die Rolle Produktpflege.
+- Das Drei-Punkte-Menü rechts führt den Eintrag **Tags verwalten** (Pflege der Tags, sichtbar für
+  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.10`. Die Version
+  bestätigt, welcher Build tatsächlich läuft.
 - Die Einstellungen der Integration liegen nicht im Panel, sondern in der Integrationsseite von Home
   Assistant: **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad** öffnet das
   Konfigurationspanel (siehe [Einrichtung und Optionen](#einrichtung-und-optionen)). Damit gibt es
@@ -136,6 +147,21 @@ standardmäßig unter `config/`, optional unter `/share` oder `/media` (siehe
 
 Die Aufnahme in den offiziellen HACS-Katalog ist nicht Teil der ersten Version; ein
 benutzerdefiniertes Repository genügt.
+
+### Aktualisierung und Browser-Cache
+
+Nach einem Update startet Home Assistant neu und lädt die Integration frisch; der Browser kann
+trotzdem weiterhin die alten Panel-Module aus seinem Cache verwenden. Genau das trat nach dem
+Update auf 0.1.9 auf: Der Desktop-Browser zeigte die alten Controls, die Android-App bereits die
+neuen. Seit 0.1.10 verhindern der Versionsparameter und der Cache-Header an den Modul-URLs diesen
+Fall dauerhaft (siehe [Oberfläche](#oberfläche)).
+
+Wenn die Oberfläche nach einem Update unverändert wirkt:
+
+1. Die Seite mit `Strg+Shift+R` hart neu laden (macOS: `Cmd+Shift+R`).
+2. Hilft das nicht, im Browser die Websitedaten für die Home-Assistant-URL löschen.
+3. Die geladene Version prüfen: Sie steht im Drei-Punkte-Menü des Panels und in der Fußzeile des
+   Konfigurationspanels. `v0.1.10` bestätigt den aktuellen Build.
 
 ## Einrichtung und Optionen
 
@@ -264,6 +290,12 @@ Regeln:
 - Suche über Name, Beschreibung, Artikelnummer und Tags.
 - Filter: Kategorie, Tags, personalisierbar, Sichtbarkeit sowie Bestand je Lagerstätte.
 - Verknüpfung: Kategorie ODER, Tags ODER, alle übrigen Filter UND.
+- Suchfeld, Umschalter **Kacheln** / **Liste** und **Filter zurücksetzen** stehen auf gemeinsamer
+  Höhe (`--fd-control-height: 48px`); das Suchlabel ist nur für Screenreader sichtbar.
+- Die Filterleiste ist zuklappbar. Der Kopf **Suche und Filter** trägt einen Chevron und steuert den
+  Bereich über `aria-expanded` und `aria-controls`; der Zustand bleibt in `localStorage` unter
+  `fd-store-filters-open` erhalten, Standard ist offen. Zugeklappt bleibt das Badge **Filter aktiv**
+  sichtbar, sobald ein Filter gesetzt ist.
 - Auf breiten Desktop-Monitoren stehen Kategorien und Tags nebeneinander; erklärende Hilfssätze
   entfallen.
 - Sortierung nach Name und Preis, jeweils auf- und absteigend; die Sortierung bleibt bei
@@ -280,7 +312,9 @@ Die Produktliste erscheint wahlweise als Kachel- oder Listenansicht. Der Umschal
 (`localStorage`, Schlüssel `fd-store-view`).
 
 - Beide Ansichten zeigen Bild, Name, Artikelnummer, Kategorie, Preis, Tags, Status und Bestände.
-- Die Listenansicht bietet dieselben Aktionen **Bearbeiten** und **Archivieren** wie die Kacheln.
+- Die Listenansicht ist kompakt: Thumbnail 40 px statt 56 px, Zell-Padding 4 px statt 8 px, Tags
+  einzeilig mit Umbruch. **Bearbeiten** und **Archivieren** sind Icon-Buttons (Stift, Archivbox)
+  nebeneinander, jeweils mit `aria-label` und `title` sowie 44 × 44 px Touch-Ziel.
 - Status und Bestände folgen den konfigurierten Lagerstätten; die Bezeichnungen der Bestandsfilter
   richten sich nach deren Namen (siehe [Lagerstätten](#lagerstätten)).
 
@@ -299,9 +333,10 @@ Die Produktliste erscheint wahlweise als Kachel- oder Listenansicht. Der Umschal
 - Einen separaten **Bestand**-Button in der Produktkarte gibt es nicht mehr.
 - Beim Anlegen wechselt der Dialog nach dem ersten Speichern automatisch in den Bearbeiten-Modus
   und in den Tab **Bilder**.
-- Der Tab **Bestand** zeigt je Lagerstätte eine Nummernbox; darüber und darunter stehen **Anzahl
-  erhöhen** und **Anzahl verringern**. Direkte Zahleneingabe ist möglich, das Minimum ist 0.
-  Gespeichert wird beim Speichern des Produkts.
+- Der Tab **Bestand** zeigt je Lagerstätte eine Spalte mit Plus- und Minus-Symbolschaltfläche um
+  die Nummernbox. Beide Symbole sind gleich breit wie die Nummernbox; **Minus** ist bei Menge 0
+  deaktiviert. Direkte Zahleneingabe ist möglich, das Minimum ist 0. Gespeichert wird beim Speichern
+  des Produkts.
 - Die Buchungshistorie steht als Abschnitt im Tab **Bestand**.
 
 ### Aktualisieren
@@ -345,16 +380,18 @@ Git-Data-API geschrieben, `prod` über den Workflow `fd-deploy-prd`. Siehe
 
 ## Veröffentlichen
 
-Die Karte **Website veröffentlichen** erscheint nur für die Rolle **Anwendungsverwaltung**
-(`app_admin`) und bietet zwei Aktionen:
+Für die Rolle **Anwendungsverwaltung** (`app_admin`) stehen in der Topbar zwei Icon-Buttons neben
+**Aktualisieren**, **Katalog importieren** und **Produkt erstellen**:
 
-- **Nach dev veröffentlichen**: schreibt den Export per Commit über die Git-Data-API in das
-  Website-Repository `Frickeldave/frickeldave.github.io`.
-- **Nach prod veröffentlichen**: löst nach dem Commit den Workflow `fd-deploy-prd` aus. Das ist der
-  einzige Weg, auf dem `main` aktualisiert wird.
+- **Nach dev veröffentlichen** (Branch-Symbol): schreibt den Export per Commit über die Git-Data-API
+  in das Website-Repository `Frickeldave/frickeldave.github.io`.
+- **Nach prod veröffentlichen** (Rakete): löst nach dem Commit den Workflow `fd-deploy-prd` aus. Das
+  ist der einzige Weg, auf dem `main` aktualisiert wird.
 
-Beide Aktionen starten zuerst einen [Dry-Run](#dry-run); veröffentlicht wird erst nach Bestätigung
-im Dialog. Nach Erfolg zeigt das Panel das Ziel, den Commit und ob ein Deployment ausgelöst wurde.
+Eine Karte **Website veröffentlichen** gibt es nicht mehr. Der Ablauf über den
+[Dry-Run](#dry-run)-Dialog bleibt unverändert: Beide Aktionen starten zuerst den Dry-Run;
+veröffentlicht wird erst nach Bestätigung. Nach Erfolg zeigt das Panel das Ziel, den Commit und ob
+ein Deployment ausgelöst wurde.
 
 Voraussetzung ist ein GitHub-Token im Tab **Veröffentlichen** unter **Einstellungen → Geräte &
 Dienste → Frickeldave Store → Zahnrad**.
