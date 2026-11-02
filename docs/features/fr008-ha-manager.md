@@ -8,7 +8,7 @@ Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
 - Integrations-Repository: <https://github.com/Frickeldave/frickeldave.home.net>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: umgesetzt in Version 0.1.11 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
+- Status: umgesetzt in Version 0.1.12 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
   Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -85,7 +85,7 @@ flowchart LR
   Produkten und Einstellungen wechselt, gibt es nicht mehr.
 - Das Hamburger-Symbol links öffnet die Home-Assistant-Seitenleiste.
 - Das Drei-Punkte-Menü rechts führt den Eintrag **Tags verwalten** (Pflege der Tags, sichtbar für
-  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.11`. Die Version
+  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.12`. Die Version
   bestätigt, welcher Build tatsächlich läuft.
 - Die Einstellungen der Integration liegen nicht im Panel, sondern in der Integrationsseite von Home
   Assistant: **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad** öffnet das
@@ -197,7 +197,7 @@ Wenn die Oberfläche nach einem Update unverändert wirkt:
 1. Die Seite mit `Strg+Shift+R` hart neu laden (macOS: `Cmd+Shift+R`).
 2. Hilft das nicht, im Browser die Websitedaten für die Home-Assistant-URL löschen.
 3. Die geladene Version prüfen: Sie steht im Drei-Punkte-Menü des Panels und in der Fußzeile des
-   Konfigurationspanels. `v0.1.11` bestätigt den aktuellen Build.
+   Konfigurationspanels. `v0.1.12` bestätigt den aktuellen Build.
 
 ## Einrichtung und Optionen
 
@@ -304,7 +304,7 @@ Regeln:
   angelegt.
 - Löschen gibt es nur als Soft-Delete über `archived`. Ein Hard-Delete-Pfad existiert nicht.
 - Importquelle ist der bestehende Live-Katalog `public/data/handmade.json` mit 63 Produkten und fünf
-  Kategorien samt Bildordnern.
+  Kategorien samt Bildordnern; der Ablauf steht unter [Katalogimport](#katalogimport).
 - Die Felder `stock` und `salesCabinet` existieren im Live-Katalog bereits, werden von der Website
   aber noch nicht ausgewertet; siehe [FR003](../old/features/fr003-catalog.md).
 - `stock` ist seit Schema-Version 2 ein Objekt Lagerstätten-ID → Stückzahl. Die Migration von
@@ -341,8 +341,10 @@ Regeln:
   sichtbar, sobald ein Filter gesetzt ist.
 - Auf breiten Desktop-Monitoren stehen Kategorien und Tags nebeneinander; erklärende Hilfssätze
   entfallen.
-- Sortierung nach Name und Preis, jeweils auf- und absteigend; die Sortierung bleibt bei
-  Filteränderungen erhalten.
+- Sortierung über fünf Felder: Produkt, Kategorie, Preis, Bestand und Status. In der Listenansicht
+  übernehmen das die Spaltenköpfe, in der Kachelansicht der Umschalter in der Filterleiste; beide
+  teilen denselben Zustand. Die Sortierung bleibt bei Filteränderungen erhalten. Details stehen
+  unter [Sortierung](#sortierung).
 - Bildverwaltung: maximal zehn Bilder je Produkt, Reihenfolge und genau ein Hauptbild. Ein elfter
   Upload wird mit Meldung abgelehnt, ohne Teilpersistenz.
 
@@ -361,26 +363,75 @@ Die Produktliste erscheint wahlweise als Kachel- oder Listenansicht. Der Umschal
 - Status und Bestände folgen den konfigurierten Lagerstätten; die Bezeichnungen der Bestandsfilter
   richten sich nach deren Namen (siehe [Lagerstätten](#lagerstätten)).
 
+### Sortierung
+
+Die Spaltenköpfe **Produkt**, **Kategorie**, **Preis**, **Bestand** und **Status** der Listenansicht
+sind klickbar und zeigen einen Sortierpfeil; `aria-sort` markiert die aktive Spalte und die
+Richtung.
+
+- **Produkt** sortiert nach Name, **Kategorie** nach dem Kategorie-Label, **Preis** nach dem Preis.
+- **Bestand** sortiert nach dem Gesamtbestand über alle Lagerstätten, unabhängig vom
+  Lagerstätten-Filter.
+- **Status** sortiert aktiv vor archiviert und sichtbar vor unsichtbar.
+- Der erste Klick sortiert aufsteigend, ein erneuter Klick dreht die Richtung. `desc` dreht nur das
+  Hauptkriterium; Gleichstände bleiben aufsteigend, zuerst nach Name, dann nach Artikelnummer.
+
+Der Sortier-Umschalter in der Filterleiste bleibt für die Kachelansicht und bietet jetzt alle fünf
+Felder. Beide Bedienelemente teilen denselben Sortierzustand.
+
 ### Produktdialog
 
-**Neues Produkt** und **Produkt bearbeiten** öffnen denselben Dialog mit drei Tabs:
+**Neues Produkt** und **Produkt bearbeiten** öffnen denselben Dialog mit vier Tabs in dieser
+Reihenfolge:
 
-| Tab        | Inhalt                                                               |
-| ---------- | -------------------------------------------------------------------- |
-| Grunddaten | Stammdaten, Beschreibung, Kategorie, Preis, Sichtbarkeit und Tags    |
-| Bilder     | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen |
-| Bestand    | Bestände je Lagerstätte und Buchungshistorie                         |
+| Tab          | Inhalt                                                                         |
+| ------------ | ------------------------------------------------------------------------------ |
+| Grunddaten   | Name, Kategorie, Preis, Größe, Tags, Sichtbarkeit und Personalisierbar         |
+| Bilder       | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen           |
+| Beschreibung | Beschreibungsfeld, „Eigene Hinweise“ für die KI und „Beschreibung vorschlagen“ |
+| Bestand      | Bestände je Lagerstätte und Buchungshistorie                                   |
 
 - Einen separaten Bilder-Dialog gibt es nicht mehr; die Bildverwaltung liegt vollständig im Tab
-  **Bilder**.
-- Einen separaten **Bestand**-Button in der Produktkarte gibt es nicht mehr.
-- Beim Anlegen wechselt der Dialog nach dem ersten Speichern automatisch in den Bearbeiten-Modus
-  und in den Tab **Bilder**.
+  **Bilder**. Einen separaten **Bestand**-Button in der Produktkarte gibt es ebenfalls nicht mehr.
+- Oben links im Dialogkopf steht die Artikelnummer in einem farbigen Badge. Den bisherigen
+  Untertitel „Artikelnummer …“ gibt es nicht mehr.
+- Beim Anlegen schlägt die Oberfläche die Nummer live über
+  `GET /api/frickeldave_store/products/article-number?category=<Code>` vor. Während des Ladens steht
+  der Platzhalter „…“, bei einem Fehler wie fehlender Kategorie „—“.
+- Die Vorschau reserviert nichts. Nach dem Speichern gilt die vom Server vergebene Nummer.
+- Der Footer-Button heißt beim Anlegen auf **Grunddaten**, **Bilder** und **Beschreibung**
+  **Weiter**, auf **Bestand** **Speichern**.
+- **Weiter** auf **Grunddaten** legt das Produkt an, damit Bilder hochgeladen werden können, und
+  wechselt in den Bearbeiten-Modus. Auf den Folgetabs speichert **Weiter** die Änderungen und
+  wechselt zum nächsten Tab.
+- Validierungsfehler blockieren den Tabwechsel und springen zum betroffenen Tab.
+- Nach dem Anlegen weist der Dialog darauf hin, dass das Produkt bereits gespeichert ist und
+  **Schließen** nur den Dialog beendet.
+- Der Tab **Beschreibung** enthält das Beschreibungsfeld, die **Eigenen Hinweise** für die KI und
+  **Beschreibung vorschlagen** samt Übernahme des Vorschlags (siehe
+  [KI-Beschreibungsvorschläge](#ki-beschreibungsvorschläge)).
 - Der Tab **Bestand** zeigt je Lagerstätte eine Spalte mit Plus- und Minus-Symbolschaltfläche um
   die Nummernbox. Beide Symbole sind gleich breit wie die Nummernbox; **Minus** ist bei Menge 0
   deaktiviert. Direkte Zahleneingabe ist möglich, das Minimum ist 0. Gespeichert wird beim Speichern
   des Produkts.
 - Die Buchungshistorie steht als Abschnitt im Tab **Bestand**.
+
+### Katalogimport
+
+**Katalog importieren** öffnet den Importdialog. Beim Öffnen läuft automatisch ein Dry-Run; dabei
+wird nichts geschrieben.
+
+- Die Vorschau nennt, wie viele Produkte neu angelegt, überschrieben, unverändert gelassen und
+  fehlerhaft wären, und wie viele Bilder importiert würden. Eine deutsche Zusammenfassung beschreibt
+  das Ergebnis.
+- Standardmäßig werden vorhandene Produkte nicht verändert: Die Checkbox **Bestehende Produkte
+  überschreiben** ist aus.
+- Ist die Checkbox aktiv, erscheint ein Warnbanner und die Vorschau wird mit `overwrite` neu geladen.
+- Überschrieben werden Name, Beschreibung, Preis, Größe, Tags, Sichtbarkeit, Personalisierbarkeit
+  und Bestand. Erhalten bleiben Artikelnummer, Anlagedatum, Bilder, Buchungen, Archiv-Status und
+  Kategorie.
+- Nach dem Import zeigt der Dialog die angelegten, überschriebenen, übersprungenen und fehlerhaften
+  Produkte, die importierten Bilder und eine Fehlerliste je Artikelnummer.
 
 ### Aktualisieren
 
@@ -426,10 +477,14 @@ Git-Data-API geschrieben, `prod` über den Workflow `fd-deploy-prd`. Siehe
 Für die Rolle **Anwendungsverwaltung** (`app_admin`) stehen in der Topbar zwei Icon-Buttons neben
 **Aktualisieren**, **Katalog importieren** und **Produkt erstellen**:
 
-- **Nach dev veröffentlichen** (Branch-Symbol): schreibt den Export per Commit über die Git-Data-API
-  in das Website-Repository `Frickeldave/frickeldave.github.io`.
-- **Nach prod veröffentlichen** (Rakete): löst nach dem Commit den Workflow `fd-deploy-prd` aus. Das
-  ist der einzige Weg, auf dem `main` aktualisiert wird.
+- **Nach dev veröffentlichen**: schreibt den Export per Commit über die Git-Data-API in das
+  Website-Repository `Frickeldave/frickeldave.github.io`.
+- **Nach prod veröffentlichen**: löst nach dem Commit den Workflow `fd-deploy-prd` aus. Das ist der
+  einzige Weg, auf dem `main` aktualisiert wird.
+
+Beide Buttons tragen dasselbe Branch-Symbol und unterscheiden sich nur durch ein kleines Badge
+`dev` beziehungsweise `prd`. Screenreader-Text und Tooltip nennen weiterhin das Ziel: „Nach dev
+veröffentlichen“ und „Nach prod veröffentlichen“.
 
 Eine Karte **Website veröffentlichen** gibt es nicht mehr. Der Ablauf über den
 [Dry-Run](#dry-run)-Dialog bleibt unverändert: Beide Aktionen starten zuerst den Dry-Run;
