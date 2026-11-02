@@ -2,17 +2,7 @@
 
 ## Aktive Entscheidungen
 
-- Archivierte Einträge (älter als 30 Tage, Stand 2026-10-27): siehe [`decisions-archive.md`](decisions-archive.md).
-- 2026-07-28: OpenSCAD Phase 1 — Output nach `dist/3dmodels/`, keine generierten Dateien im Git, `models.json` wird vom Build-Script erzeugt. WASM-basierter Live-Editor zurückgestellt.
-- 2026-06-30: Squad-Roster neu zusammengestellt mit Marvel Cinematic Universe-Namensgebung und persistenten Namen (Stark, Peter, Banner, Romanoff, Strange).
-- 2026-06-30: Team-Roster auf Anrede mit Vornamen für aktive Agenten umgestellt (Tony, Bruce, Natasha, Clint, Maria, Nick, Jennifer).
-- 2026-06-30: Altes `.github/archive` Agent-Setup wird in `.squad/agents/*/charter.md` und `.squad/skills/*/SKILL.md` umgeschrieben statt wortwörtlich kopiert.
-- 2026-06-30: Anforderungs-Gatekeeping bleibt aktiv durch Lead (Tony)-Workflow und dedizierte Skill-Führung.
-- 2026-08-25: Issue #266 ("Humanizer Skill bauen und vertesten") von Tony (Lead) triagiert und mit 5 Bedingungen freigegeben (Labels `squad:maria` + `go:yes`).
-- 2026-08-25: Humanizer Skill von Maria (Technical Writer) erstellt (`.squad/skills/humanizer/SKILL.md`) und von Tony final freigegeben (keine Änderungen erforderlich).
-- 2026-08-28: Issue #267 ("[Feature] AI-Transparenz-Skill: KI-Anteil-Bewertung mit Tabelle & Diagramm in Blog-Artikeln") von Tony (Lead) triagiert und sync-gated — Verdict: APPROVE (no changes required). Scope: Pflicht-Skill `.squad/skills/ai-content-score/SKILL.md` (immer letzter Schritt nach Blog-Artikel-Anpassungen), KI-Anteil-Transparenztabelle am Ende jedes Blog-Eintrags (KI-Anteil %, bewertendes LLM, Konfidenz, Link zur Erklärseite), neue Blog-Seite + Kategorie "AI", horizontale Balken-Diagramm-Komponente (grün >70 %, gelb 30–70 %, rot <30 % menschlich), Anpassung von Marias Charter und `.squad/routing.md`.
-- 2026-08-28: Issue #267 Scope-Klarstellungen (non-blocking, vom Nutzer bestätigt): Transparenz-Tabelle rückwirkend auf alle bestehenden Blog-Posts; Konfidenz-Format qualitativ — hoch | mittel | niedrig.
-- 2026-09-25 (Nutzerdirektive, via David Koenig): Agenten (inkl. Maria) dürfen GitHub-Issues nach Abschluss der Arbeit NICHT mehr eigenständig via `gh issue close` schließen. Der Abschluss-Kommentar (`## ✅ Abschluss-Zusammenfassung`) wird weiterhin gepostet, das eigentliche Schließen erfolgt erst nach explizitem Kommando des Nutzers. Gilt ab sofort für alle künftigen Issue-Abschlüsse.
+- Archivierte Einträge (älter als 30 Tage, Stand 2026-11-02): siehe [`decisions-archive.md`](decisions-archive.md).
 
 #### 2026-10-25: User directive — Branch/PR-Modell gilt
 
@@ -197,6 +187,181 @@ Validierung:
 - npm run build nicht ausgeführt: reine Doku-/Deklarationsänderung, Typprüfung über astro check abgedeckt.
 
 Offen: Export-Transport zur Website, PayPal-Kunden-API-Umfang, Aufbewahrungsfrist, Rechnungsauswirkung, HA-Benutzer-IDs.
+
+### 2026-11-02T07:24:38+0000: Lagerstätten ersetzen `stock`/`salesCabinet`; Website-Abbildung bleibt stabil
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:**
+Bestände liegen ab Store-Schema 2 als Zuordnung `stock: {"<locationId>": <stueck>}` am
+Produkt; `Product.sales_cabinet` entfällt. Die Lagerstätten selbst stehen als
+`locations: [{"id", "name"}]` im Store-Payload, Standard sind exakt
+`lager`/„Lager“ und `verkaufsschrank`/„Verkaufsschrank“ (bisheriges Verhalten).
+`StockBooking` referenziert mit `locationId` die betroffene Lagerstätte und bei
+`transfer` zusätzlich `targetLocationId`.
+
+IDs sind stabil und werden aus dem Namen abgeleitet (Slug, Umlaute transliteriert,
+Kollisionssuffix). **Umbenennen behält die ID und damit den Bestand.** Löschen ist nur
+erlaubt, wenn dort kein Bestand > 0 gebucht ist; sonst `409 conflict` mit Meldung
+„… kann nicht gelöscht werden: N Produkte haben dort noch M Stück Bestand …“. Der
+Options-Flow ordnet Zeile *n* der bisherigen Lagerstätte *n* zu (Umbenennen), das
+Konfigurationspanel arbeitet über explizite IDs; beide schreiben dieselbe Options-Quelle
+(`stock_locations`).
+
+Die Migration 1→2 bildet verlustfrei ab: `stock` → erste Lagerstätte,
+`salesCabinet` → zweite; bestehende Buchungen erhalten die implizite Lagerstätte
+(Zugang/Abgang/Korrektur → erste, Umlagerung → erste + zweite). Vorher legt die
+Integration einen Snapshot `backups/pre-load-v1-*.json` ab.
+
+Export-Abbildung (Website-Kompatibilität, in `export.py` als
+`export_stock_fields`): **Lagerstätte 1 → `stock`, Lagerstätte 2 → `salesCabinet`**,
+ohne zweite Lagerstätte bleibt `salesCabinet` bei 0. Die Abbildung hängt an der
+Reihenfolge, nicht an den Namen. Der Import liest die Website-Felder entsprechend
+zurück.
+
+API-Vertrag: `GET /locations` (`product`) liefert `{"locations": [{id, name, position,
+stock_total, products_with_stock}]}`; `GET /settings` enthält dieselbe Liste.
+`PATCH /settings` (`app_admin`) akzeptiert `{"locations": [{"id"?: "...", "name": "..."}]}`
+— fehlende IDs legen neu an, fehlende bestehende IDs löschen (nur bei Bestand 0).
+Produktfilter: `in_stock`/`in_cabinet` bleiben als Kompatibilitäts-Aliase für
+Lagerstätte 1/2, neu sind `location=<id>` und `in_location=<bool>`.
+
+**Why:**
+Der Bestand muss beliebig viele Lagerstätten abbilden können, ohne die bestehende
+Website zu brechen: `public/data/handmade.json` kennt nur `stock` und `salesCabinet`.
+Eine reihenfolgeabhängige, namensunabhängige Abbildung hält den Export stabil, wenn
+Lagerstätten umbenannt werden. Stabile IDs verhindern, dass ein Umbenennen Bestände
+verliert; der Löschschutz verhindert stillen Datenverlust. Natasha rendert die
+Nummernboxen aus `GET /locations` und schreibt `stock` als Objekt je `locationId`
+zurück.
+
+### 2026-11-02T07:24:38+0000: Veröffentlichung nach dev und prod läuft ausschließlich über `dev` + `fd-deploy-prd`
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:**
+Der neue Endpunkt `POST /api/frickeldave_store/publish` (`app_admin`) hat genau zwei
+Ziele:
+
+- `target: "dev"` — der Export (Katalog + Bilder) wird über die GitHub-Git-Data-API als
+  **ein** Commit auf den Integrationsbranch `dev` geschrieben. Der Push löst `fd-ci` aus,
+  nach grünem Lauf deployt `fd-deploy-dev` und veröffentlicht das Pre-Release
+  `dev-v<version>`.
+- `target: "prod"` — derselbe Commit auf `dev`, danach `workflow_dispatch` von
+  `fd-deploy-prd.yml` auf `ref: main`. `fd-deploy-prd` ist der einzige Workflow, der
+  `dev` nach `main` merged und Pages deployt.
+
+Die Integration committet **nie** direkt auf `main`. Ist der Dateistand auf `dev`
+unverändert, entsteht kein zweiter Commit (idempotent); `prod` dispatcht trotzdem, damit
+ein bereits gepushter, aber nicht promoteter Stand nachgezogen werden kann — `fd-deploy-prd`
+selbst ist bei Gleichstand ein grüner No-Op.
+
+Dry-Run ist derselbe Endpunkt mit `"dry_run": true`: Er liest Branch/Baum (und bei
+Bedarf den entfernten Katalog), liefert den Datei-Diff, Zählungen für Produkte und
+Bilder, Zielbranch, Deployment-Hinweis und eine deutsche Zusammenfassung — und verlässt
+die Methode vor jedem Commit/Dispatch. Store-Schreibzugriffe gibt es im gesamten Pfad
+nicht.
+
+Konfiguration: `settings.publish` mit `repository`, `dev_branch`, `prod_branch`,
+`prod_workflow`, `token`; in den Optionen `github_repository`, `github_dev_branch`,
+`github_prod_workflow`, `github_token`. Das Token ist write-only (`token_set` in
+`GET /settings`), wird nur im Authorization-Header verwendet und nie geloggt. Fehlt es,
+antwortet der Endpunkt mit `400 publish_token_missing` und deutschem Text statt einer
+Exception.
+
+**Why:**
+Die Website-Repo-Regel erlaubt `main` ausschließlich über `fd-deploy-prd`; ein direkter
+Push würde die Branch-Protection und den Release-Ablauf umgehen. `dev` ist der einzige
+Branch, dessen Push CI und Deployment automatisch auslöst, deshalb ist er für beide
+Ziele der Schreibpunkt. Der Dry-Run teilt sich Code und Antwortformat mit dem echten
+Lauf (nur der Schreibblock entfällt), damit die Vorschau nicht von der Realität
+abweichen kann. Natasha (Frontend) braucht dafür nur `POST /publish` mit
+`{target, dry_run, message}` und die Felder `counts`, `products`, `images`, `files`,
+`deployment`, `summary`.
+
+### 2026-11-02T07:24:38+0000: Ansichtswahl (Kacheln/Liste) liegt in `localStorage`
+
+**By:** Natasha (Frontend / UI)
+
+**What:**
+Der Umschalter in der Filterleiste speichert „grid“ oder „list“ unter dem Schlüssel
+`fd-store-view` in `localStorage`. Beim Initialisieren liest das Panel den Wert; bei
+fehlendem, gesperrtem oder unbekanntem Speicher fällt es auf die Kachelansicht zurück.
+Der Zustand ist bewusst geräte- und browserlokal, nicht Teil der Store-Settings.
+
+**Why:**
+Die Ansicht ist eine reine Darstellungspräferenz, keine fachliche Konfiguration. Sie
+soll Neuladen und Seitenwechsel überleben, aber nicht alle Benutzer oder Geräte
+gleichschalten und keinen zusätzlichen API-Aufruf oder Settings-Patch erzeugen.
+`localStorage` ist dafür ausreichend und funktioniert ohne `app_admin`-Recht.
+
+### 2026-11-02T07:24:38+0000: Buchungshistorie als Abschnitt im Bestand-Tab
+
+**By:** Natasha (Frontend / UI)
+
+**What:**
+Die Buchungshistorie (`GET /products/{article_number}/stock`) erscheint als Abschnitt
+„Buchungshistorie“ unter den Lagerstätten-Nummernboxen im Tab „Bestand“ des
+Produktdialogs. Sie wird beim ersten Öffnen des Tabs geladen (und über „Neu laden“
+aktualisiert) und zeigt Buchungsart, Menge, Zeitpunkt, Lagerstätte(n) und Notiz. Beim
+Anlegen entfällt der Abschnitt mit dem Hinweis, dass die Historie nach dem Erstellen
+verfügbar ist.
+
+**Why:**
+Der bisherige Bestandsdialog entfällt, damit Bestände direkt im Produktformular
+gepflegt werden. Die Historie bleibt fachlich wichtig (Nachvollziehbarkeit), gehört
+aber zum Bestand desselben Produkts. Ein eigener Dialog wäre ein zusätzlicher Einstieg
+und würde die neue Tab-Struktur wieder aufbrechen; der Abschnitt ist ohne Persistenz
+sofort erreichbar und teilt sich den Ladezustand mit dem Tab.
+
+### 2026-11-02T07:24:38+0000: Bilder beim Anlegen über automatischen Tab-Wechsel nach dem ersten Speichern
+
+**By:** Natasha (Frontend / UI)
+
+**What:**
+Der Produktdialog hat die Tabs „Grunddaten“, „Bilder“ und „Bestand“. Beim Anlegen
+existiert noch keine Artikelnummer, deshalb zeigt der Bilder-Tab zunächst nur den
+Hinweis, dass Bilder nach dem ersten Speichern verfügbar sind. Nach erfolgreichem
+`POST /products` bleibt der Dialog offen, wechselt in den Modus „bearbeiten“, übernimmt
+die neue Artikelnummer aus der Antwort und springt automatisch in den Bilder-Tab; die
+Bildliste wird direkt geladen. Ein Toast bestätigt „Produkt wurde erstellt. Du kannst
+jetzt Bilder hinzufügen.“ Erst danach schließt der Nutzer den Dialog selbst.
+
+**Why:**
+Ein eigener Bilder-Dialog vor dem Anlegen hätte eine künstliche Artikelnummer oder
+einen zweiten Speicherschritt gebraucht. Der automatische Wechsel hält den Kontext,
+verhindert verwaiste Uploads und macht die Reihenfolge „erst speichern, dann Bilder“
+explizit. Der separate `#fd-images-dialog` und der Bilder-Button auf der Produktkarte
+entfallen.
+
+### 2026-11-02T08:39:46+0000: FR008-Doku beschreibt Version 0.1.9 als umgesetzt statt als Spezifikation
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin)
+
+**What:**
+`docs/features/fr008-ha-manager.md` führt die acht Funktionen aus Integration 0.1.9 in der
+bestehenden Struktur nach:
+
+- Kopf: Status von „geplant“ auf „umgesetzt in Version 0.1.9 (Backend und Oberfläche)“; der
+  Hinweis auf geplante Finanz- und Kundenfunktionen bleibt.
+- Neuer Abschnitt `## Produktpflege im Panel` mit `### Ansichten und Toolbar` (Kacheln/Liste,
+  `localStorage`-Schlüssel `fd-store-view`), `### Produktdialog` (Tabs Grunddaten, Bilder, Bestand)
+  und `### Aktualisieren` (lädt neu, überträgt nichts, löst kein Deployment aus).
+- Neuer Abschnitt `## Veröffentlichen` samt `### Dry-Run` (dev per Git-Data-API-Commit, prod über
+  `fd-deploy-prd`, Token write-only, Ergebnisanzeige, Zählungen und Dateiliste).
+- `### Lagerstätten` unter Einrichtung und Optionen; Datenmodell auf Schema-Version 2 und
+  `stock` als Objekt Lagerstätten-ID → Stückzahl umgestellt, `salesCabinet` entfällt dort.
+- `## Bestandsmodell`, `## Website-Export`, `## KI-Beschreibungsvorschläge`, `## Berechtigungen`
+  und `## Offene Fragen` an die neuen Fakten angepasst; die Transportfrage gilt als entschieden.
+- `CHANGELOG.md` erhält unter `## [Unreleased]` sechs `### Added`- und eine `### Changed`-Zeile,
+  jeweils mit `(#289)`.
+
+**Why:**
+Das Dokument beschrieb bisher ausdrücklich nur eine Spezifikation und enthielt Aussagen, die nach
+0.1.9 falsch waren (eine Ansicht, ein Bestandsfeld, offener Export-Transport). Wer die Integration
+heute installiert, muss die tatsächlichen Bedienwege und die Trennung zwischen „Aktualisieren“ und
+„Veröffentlichen“ in der Doku finden. Die Struktur bleibt erhalten, das Datenmodell wird nicht
+wiederholt, sondern nur korrigiert und auf die Detailabschnitte verwiesen.
 
 ## Governance
 
