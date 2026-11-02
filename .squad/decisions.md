@@ -2,67 +2,7 @@
 
 ## Aktive Entscheidungen
 
-- Archivierte Einträge (älter als 30 Tage, Stand 2026-11-02): siehe [`decisions-archive.md`](decisions-archive.md).
-
-#### 2026-10-25: User directive — Branch/PR-Modell gilt
-
-**By:** David Koenig (via Copilot)
-**What:** Option **A** aus der Konfliktdarstellung: Das Branch/PR-Modell der portierten Start-Flow-Skripte (`start-work`, `start-reqeng`, `start-review`) wird übernommen. Issue-Branch, Worktree und Draft-PR sind damit der Standardweg für Squad-Arbeit.
-**Konsequenz:** Der Abschnitt "Branching & Commit-Konvention" in `.squad/routing.md` (bisher: "Single-Developer-Workflow — Arbeit passiert direkt in `dev`", kein Feature-Branch, kein PR) widerspricht dem und muss an das Branch/PR-Modell angepasst werden.
-**Why:** User-Entscheidung im Rahmen der Flow-Angleichung an Issue #282.
-
-#### 2026-10-25: Squad-Upgrade auf v1.1.0 — lokale Anpassungen erhalten
-
-**By:** Nick (DevOps / Infrastructure) · **Issue:** #282
-**What:** `squad upgrade` (0.13.1 → 1.1.0) wurde durchgeführt. Der Upgrader clobbert bewusst Squad-eigene Dateien; alles, was Repo-Policy oder lokale Anpassung ist, wurde davor gesichert und danach byte-genau wiederhergestellt.
-**Why:** Upgrade auf Squad v1.1.0 durchführen, ohne Repo-Policy und lokale Anpassungen zu verlieren.
-
-##### Was der Upgrader nicht durfte
-
-1. **Casting-Legacy-Daten normalisiert** (damit die CLI selbst migrieren kann):
-   - `.squad/casting/registry.json`: `retired_at` für die 5 retired Agents ergänzt.
-   - `.squad/casting/history.json`: `members: ["Tony", …]` → `agents: ["tony", …]`
-     (1:1-Mapping Name → Registry-Id, verifiziert). 1.1.0 akzeptiert nur diese Form.
-   - Originale liegen unter `.squad/casting/legacy-archive-*`.
-2. **Workflows auf 0.13.1 zurückgesetzt.** Die 1.1.0-Templates haben `Mitglieder`
-   aus dem `## …`-Regex entfernt; `team.md` ist deutsch, Label-Sync hätte 0 Member
-   gefunden. Die 7 neu hinzugefügten Workflows wurden entfernt (Sicherung außerhalb des Repos).
-3. **Capabilities-Block neu generiert.** 1.1.0 parst nur englische Headings
-   (`## Members`, `## Work Type → Agent`), `team.md`/`routing.md` sind deutsch →
-   Block kam leer (`specialists=0`). Neu erzeugt mit dem SDK-Generator aus echten Daten,
-   nur mit heading-normalisierter Parse-Sicht; Repo-Dateien unverändert.
-
-##### Offener Punkt (bewusst nicht "gefixt")
-
-Englisch-only Parser + deutsche Charter-Prosa ⇒ `Capability boundaries` im generierten
-Block ist konservativ/unvollständig (nennt Doku/CI/Security als "nicht beansprucht").
-Bei jeder künftigen Cast-Änderung wird der Block erneut leer bzw. konservativ erzeugt.
-Empfehlung: `## Members` als zusätzliche Heading-Zeile in `team.md` aufnehmen oder auf
-SDK-Support für deutsche Headings warten. `team.md` wurde hier bewusst nicht verändert.
-
-#### 2026-10-25: Issue #282 Steps 9–16 — CI auf eigene Runner, Bootstrap, Promote
-
-**By:** David Koenig (via Squad) · **Issue:** #282
-**What:**
-- **Alle `fd-ci`-Jobs laufen auf den self-hosted Runnern (`fd`)**. Runner-Limits 3 CPU / 8 GiB bei unveränderten Requests (100m/512Mi), weil die Worker-Nodes geteilt und fast ausreserviert sind; `webServer.timeout` 600 s wegen 376–493 s Cold-Build. Requests steuern das Scheduling, Limits die Nutzung.
-- **Dev-Maschinen werden auch ohne SSH-Key angelegt.** Ohne Key: kein `sshd`, keine `authorized_keys`, PID 1 `sleep infinity`, Zugang `kubectl exec`; Readiness über `$HOME/.fd-ready` statt Port 22. Keys werden nie erfunden, nur eingetragen.
-- **Neue RBAC-Rolle `dev-machines`** in `scripts/bootstrap/k8s/rbac.yaml` (statefulsets, services, pods delete, pods/exec). Ohne sie hätte der Runner 403 bekommen.
-- **Dev-Machine-Manifeste liegen unter `.github/workflows/fd-bootstrap/k8s/`**, nicht in `scripts/bootstrap/k8s/`: dort steht nur, was `bootstrap.mjs` einmalig rendert (Portabilitäts-Guard), Dev-Machines sind Laufzeit-Objekte des Workflows.
-- **`fd-promote-prd` ist in Phase 1 manuell** (`workflow_dispatch`). Ein automatischer Promote (`workflow_run` auf `fd-ci`) ist vorbereitet, aber nicht aktiv — ein Promote nach `main` bleibt eine menschliche Entscheidung, gekoppelt an einen Versions-Bump.
-- **Ein Label-Workflow statt zwei:** `fd-configure` verwaltet seit Step 22 **alle** Labels (statische Namespaces `go:*`, `release:*`, `type:*`, `priority:*`, `bug`, `feedback`, Basis `squad`, dazu `squad:<member>` je Roster-Zeile und `squad:copilot`). `squad-sync-squad-labels.yml` wurde gelöscht; zwei Workflows dürfen nie unterschiedliche Werte für dasselbe Label schreiben. Farbstabilität ist Vertrag: die Roster-Reihenfolge bestimmt über Hash + Linear Probing die Farbe, Umsortieren verschiebt Farben.
-- **PR-Template ohne das Original-Tooling:** keine `release:yes/no`, kein `check-release-label` — das Template verweist auf die echten Gates (`release:*`-Labels, `CHANGELOG.md`-Pflicht, Promote nur über den Workflow). Der Versionsbump läuft über die eigene Implementierung `npm run versionbump` (siehe Step 18), nicht über ein portiertes Fremd-Skript.
-- **Image-Referenzen müssen kleingeschrieben sein.** `ghcr.io/<owner>/…` aus `github.repository_owner` erzeugt Großbuchstaben und damit `InvalidImageName`; Ableitung nur über lowercase + Guard, abgesichert durch Tests.
-**Why:** Nutzerentscheidungen zu #282 (eigene Runner, Dev-Container für David Koenig) plus zwei im Betrieb gefundene Fehlerklassen (Windows-Installer, OCI-Groß-/Kleinschreibung), die ohne Testabdeckung erneut auftreten würden.
-
-#### 2026-10-26T10-22-21: Aktivierungsmarker .frickeldave-active-issue wird vom Launcher geschrieben (Variante A)
-**By:** Squad (Coordinator)
-**What:** Aktivierungsmarker .frickeldave-active-issue wird vom Launcher geschrieben (Variante A)
-**Why:** #### 2026-10-26: Aktivierungsmarker wird vom Launcher aktiviert
-
-**By:** David Koenig (via Copilot), umgesetzt von Nick (DevOps), Issue #282
-**What:** `npm run start-work` schreibt/aktualisiert `.frickeldave-active-issue` im Ziel-Worktree selbst, nachdem `validateIssueStartGate()` grün ist. `tony_approved: true` wird ausschließlich aus dem Gate-Ergebnis (`go:yes`, kein Konflikt-Label) abgeleitet; ohne bestätigte Freigabe wirft die Funktion. Der Schreibvorgang ist idempotent, `session_id` stammt aus der tmux-Session (`--notmux`: `<canonicalName>-notmux`). Agenten schreiben den Marker weiterhin nie; Pepper/`start-reqeng` bleiben ausgeschlossen.
-**Why:** Der Marker wurde bisher von niemandem erzeugt. Das Skript prüfte ihn nicht, die Agent-Prompt verlangte ihn — in einem frischen Worktree fehlte er zwangsläufig (gitignored, worktree-lokal). Jeder `start-work`-Lauf endete im Dead-End „Marker fehlt, obwohl alle anderen Gates grün sind". Die menschliche Bestätigungshandlung (`npm run start-work`) und Tonys Freigabe (`go:yes`) fallen damit in einer Handlung zusammen; die Gate-Semantik bleibt erhalten, weil keine Agent-Rolle den Marker schreiben darf.
-**Refs:** Issue #282, PR #286, `scripts/start-work.mjs`, `.squad/routing.md`, `docs/50-agent-setup.md`
+- Archivierte Einträge (ab 20 KB älter als 30 Tage, ab 50 KB älter als 7 Tage; Stand 2026-11-02): siehe [`decisions-archive.md`](decisions-archive.md).
 
 #### 2026-10-26T15-04-34: Issue #285: Aktivierungsmarker per menschlicher Proxy-Freigabe angelegt; Release 1.0.6 gemergt und promotet
 **By:** Squad Coordinator (via Copilot)
@@ -599,6 +539,195 @@ hatte. Ohne Release mit Latest-Markierung ziehen HACS-Installationen den Fix nic
 der veraltete Modul-Cache bliebe für Nutzer sichtbar. Der Tag-Inhalt wurde vor der
 Freigabe geprüft, damit das ausgelieferte Artefakt die Version im Manifest trägt und die
 Panel-Module tatsächlich mit `?v=0.1.10` ausgeliefert werden.
+
+#### 2026-11-02T11:24:46+0000: Datenverlust bei Update behoben
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:**
+
+Issue #289, Datenverlust beim Einspielen einer neuen Integrationsversion:
+Produkte waren nach jedem Update verschwunden.
+
+- **Ursache:** `HassStoreBackend` las die Store-Datei über
+  `homeassistant.helpers.storage.Store`. Dessen `_StoreManager` cached beim
+  HA-Start die Dateiliste von `<config>/.storage`; für jeden Schlüssel, der dort
+  nicht liegt, antwortet `async_fetch()` mit `(False, None)` — „existiert
+  nicht“. Der Katalog liegt in `<config>/frickeldave_store/frickeldave_store.data`,
+  also außerhalb `.storage`: `Store.async_load()` lieferte `None`,
+  `CatalogStore.async_load()` setzte einen leeren Payload, der nächste
+  `async_save` überschrieb die echte Datei mit `"products": []`. Reproduziert mit
+  echter HA-Instanz inkl. initialisiertem Store-Manager: 2 Produkte auf Platte →
+  0 in Memory → 0 auf Platte.
+- **Fix:** `HassStoreBackend` liest und schreibt die Datei selbst (atomar,
+  identisches HA-Umschlagformat `{"version", "minor_version", "key", "data"}`);
+  keine Abhängigkeit mehr von HA-Storage-Interna. Migration richtet sich nach
+  `data.schemaVersion` statt nach der Envelope-Version.
+- **Sicherheitsnetz:** `CatalogStore.async_save` schreibt niemals einen Stand mit
+  0 Produkten über eine Datei mit > 0 Produkten (`refuse_empty_overwrite`,
+  `allow_empty=True` nur bei bewusstem Leeren). `coerce_payload` verwirft keine
+  Produkte mehr stillschweigend, sondern bricht mit `products_unreadable` ab.
+  Snapshots: `pre-load-v<n>` vor Migrationen, `pre-save` vor dem ersten
+  Schreiben nach dem Laden (dedupliziert).
+- **Version:** 0.1.11 (`const.py`, `manifest.json`, `pyproject.toml`).
+  `STORAGE_VERSION` bleibt 2 — das Dateiformat ist unverändert, eine neue
+  Migrationsstufe wäre unnötiges Risiko.
+- **Tests:** `tests/test_upgrade_paths.py` mit echten HA-Store-Dateien der Tags
+  0.1.7/0.1.8/0.1.9 (inkl. initialisiertem `_StoreManager`-Cache). Alle 10 Tests
+  schlagen auf dem alten Code fehl (0 statt 3 Produkte) und sind mit dem Fix
+  grün. Gesamtsuite: 203 passed.
+
+**Why:**
+
+HACS-Updates lösen einen HA-Neustart aus — der Fehler trat damit bei jedem
+Update auf und kostete David Koenig den kompletten Katalog. Die Regression war
+im Test nicht sichtbar, weil die `hass_storage`-Fixture HA-Storage mockt und den
+Manager-Cache damit umgeht. Der Fix entfernt die Abhängigkeit von diesem
+internen Cache, statt ihn zu umgehen, und baut zwei unabhängige Netze
+(Datei-Snapshot, Leer-Overwrite-Schutz) gegen künftige Varianten desselben
+Fehlers ein.
+
+#### 2026-11-02T12:13:49+0000: Lagerstätten-Filter
+
+**By:** Natasha (Frontend Developer / UI-Spezialistin)
+
+**What:**
+
+Issue #289, Filter „Lagerstätte“ im Store-Panel: Die Auswahl einer Lagerstätte
+filterte nicht, solange die zusätzliche Checkbox „Nur mit Bestand in …“ nicht
+aktiv war. `_loadProducts()` sendete nur `location=<id>`; `in_location=true`
+wurde erst durch die Checkbox gesetzt. Der Hinweistext behauptete dagegen
+bereits eine Bestandsfilterung.
+
+Umsetzung (reiner Frontend-Fix in `frontend/frickeldave-store-panel.js`):
+
+- **Opt-out statt Opt-in.** `_inLocationOnly` → `_includeWithoutStock`. Sobald
+  `_locationFilter` gesetzt ist, wird immer `location=<id>` **und**
+  `in_location` gesendet: `"true"` als Standard, `"false"` nur mit aktivem
+  Opt-out „Auch Produkte ohne Bestand anzeigen“. Die API bleibt unverändert;
+  `ProductFilter`/`product_matches()` konnten das bereits.
+- **Checkbox** sitzt jetzt beim Auswahlfeld „Lagerstätte“ (statt in „Bestand und
+  Status“), ist implizit per `<label>` verknüpft, hat `aria-describedby` auf den
+  Hinweis, ist ohne gewählte Lagerstätte deaktiviert (gedämpft, `not-allowed`)
+  und wird beim Wechsel auf „Alle Lagerstätten“ sowie beim Verschwinden der
+  gewählten Lagerstätte (`_loadLocations`) zurückgesetzt.
+- **Hinweistext** nennt den tatsächlichen Effekt: gewählte Lagerstätte = nur
+  Produkte mit Bestand > 0 in dieser Lagerstätte; der Opt-out erweitert um
+  Produkte ohne Bestand. Kein Versprechen mehr, das der Request nicht einlöst.
+- **Zustand:** `_resetFilters()` setzt `_includeWithoutStock` mit zurück;
+  `_hasActiveFilters()` zählt weiterhin die gewählte Lagerstätte (nicht den
+  Opt-out allein) — damit bleibt „Filter aktiv“ im zugeklappten Filterkopf
+  sichtbar und „Filter zurücksetzen“ korrekt aktiviert.
+- **Konsistenzprüfung:** `in_stock`/`in_cabinet` werden im Panel nicht mehr
+  verwendet (seit der Lagerstätten-Migration in 0.1.10 entfallen); alle übrigen
+  Filter (`customizable`, `visibility`, `archived`, Suche, Kategorie, Tags)
+  senden genau dann einen Parameter, wenn sie aktiv sind — keine weitere
+  Doppel-Logik gefunden, daher keine weiteren Änderungen.
+- **Version:** bleibt 0.1.11 (kein Bump); CHANGELOG-Abschnitt `## [0.1.11]` um
+  einen `### Changed`-Punkt ergänzt.
+
+**Why:**
+
+Der Filter versprach im UI mehr, als der Request tat: „Lager“ oder
+„Verkaufsschrank“ zeigten auch Artikel mit Bestand 0 in dieser Lagerstätte
+(z. B. „Adventskalender personalisiert“), weil der Server ohne `in_location`
+nicht nach Bestand filtert. Eine Lagerstätte ist eine Bestandsfrage — die
+Bestandsbedingung muss der Standard sein, nicht eine zweite Checkbox. Der
+Opt-out deckt den bewusst breiteren Blick („was liegt hier alles im Sortiment?“)
+ab, ohne den häufigen Fall zu verstecken.
+
+#### 2026-11-02T12:13:49+0000: Doku für 0.1.11 (Datenverlust-Fix und Lagerstätten-Filter)
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin)
+
+**What:**
+
+Issue #289, Website-Doku auf Integrationsversion 0.1.11 (02.11.2026) gehoben. Geändert sind nur
+`docs/features/fr008-ha-manager.md` und `CHANGELOG.md` (Abschnitt `## [Unreleased]`, jeweils
+`(#289)`).
+
+`docs/features/fr008-ha-manager.md`:
+
+- Statuszeile auf 0.1.11; Versionsbeispiele im Drei-Punkte-Menü und in der Browser-Cache-Prüfung
+  auf `v0.1.11`.
+- Datenhaltung: Metadaten-Zeile von „HA-`Store`“ auf `frickeldave_store.data` umgestellt, Zeile für
+  `backups/` ergänzt; Mermaid-Knoten heißt „Store-Datei“.
+- Neuer Abschnitt „Persistenz und Datenverlust (bis 0.1.10)“ unter Datenhaltung: eigene,
+  atomare Lese-/Schreiblogik im gleichen Envelope-Format, Migration über `data.schemaVersion`,
+  Symptom, Ursache (`Store`-Cache der `.storage`-Dateiliste), Behebung, Sicherheitsnetze
+  (`refuse_empty_overwrite`, Snapshots, lauter Fehler) und Regressionstests
+  `tests/test_upgrade_paths.py` (0.1.7/0.1.8/0.1.9 → aktuell, 0 statt 3 Produkte auf dem alten Code).
+- „Migrationen“ verweist auf `data.schemaVersion` statt Envelope-Version.
+- „Aktualisierung und Browser-Cache“: Hinweis, dass Updates ab 0.1.11 den Katalog nicht mehr leeren.
+- „Suche, Filter und Sortierung“: Lagerstätten-Auswahl filtert standardmäßig auf Bestand > 0
+  (`in_location=true`), Checkbox „Auch Produkte ohne Bestand anzeigen“ (Standard aus) schaltet auf
+  `in_location=false`; gewählte Lagerstätte zählt als aktiver Filter, der Opt-out allein nicht.
+- „Backup und Wiederherstellung“: neuer Unterabschnitt „Wiederherstellung nach dem
+  Datenverlust-Bug (bis 0.1.10)“ als abarbeitbare Sieben-Schritte-Anleitung (Update auf 0.1.11,
+  Backup-Datei und `images/` entnehmen, HA stoppen, aktuelle Datei als
+  `…data.vor-restore-<Datum>` sichern, Backup-Datei einspielen, HA starten, Produktanzahl und
+  Stichprobenbild prüfen) samt Hinweis auf den automatischen `backups/<zeitstempel>-pre-save.json`.
+
+`CHANGELOG.md` unter `## [Unreleased]`: je ein Eintrag unter Added (Doku 0.1.11), Changed
+(Lagerstätten-Filter) und Fixed (Datenverlust bei jedem Update). Der bestehende 0.1.10-Eintrag
+bleibt unverändert stehen.
+
+Validierung: `npx markdownlint-cli@0.44.0 docs/features/fr008-ha-manager.md CHANGELOG.md` → nur die
+beiden vorbestehenden Befunde im Abschnitt `[1.0.7]` (MD032 auf der `release:`-Zeile, MD022 vor
+`### Fixed`), jetzt bei Zeile 54/55 statt 51/52; keine neuen Befunde, fremde Abschnitte nicht
+umformatiert. `npm run prose` → 0 errors, 0 warnings, 0 suggestions in 104 files.
+`npm run format:check` → „All matched files use Prettier code style!“ (prüft nur `./src`).
+
+**Why:**
+
+Der Fehler hat David bei jedem Update den Katalog gelöscht; ohne dokumentierte Ursache, Sicherheitsnetze
+und Wiederherstellungsanleitung wäre die Wiederholung nur eine Frage der Zeit. Der Filtertext im
+Dokument hätte ohne Anpassung weiter eine Filterung versprochen, die erst über die zweite Checkbox
+aktiv war — genau die Diskrepanz, die Natasha im UI behoben hat. Beides ist versionsabhängiges
+Verhalten und gehört damit in die Doku, nicht nur in den CHANGELOG.
+
+#### 2026-11-02T12:13:49+0000: Release 0.1.11 veröffentlicht
+
+**By:** Nick (DevOps / Infrastruktur)
+
+**What:**
+
+`0.1.11` ist als **kritischer Bugfix-Release sofort** veröffentlicht — ohne
+Wartezeit auf den regulären prd-Deploy-Pfad.
+
+- **Tag:** annotiert `0.1.11` → `f2d39fc32930eb1732ce770bdd56fd09fd14b831`
+  (HEAD von `main`), Annotation „Frickeldave Store 0.1.11“.
+- **Release:** https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.1.11
+  — kein Draft, kein Pre-Release, **Latest**. Notes unverändert aus
+  `CHANGELOG.md`, Abschnitt `## [0.1.11] - 2026-11-02`.
+- **Inhalt:** Datenverlust beim Update behoben (`a61022d`), Lagerstätten-Filter
+  standardmäßig nach Bestand > 0 (`f2d39fc`), Regressionstests in
+  `tests/test_upgrade_paths.py` im Tag enthalten.
+- **CI:** grün für `f2d39fc` —
+  https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41443333213
+- **Ältere Releases** `0.1.8` / `0.1.9` / `0.1.10` unverändert.
+
+**Why:**
+
+`0.1.11` behebt einen Datenverlust: `HassStoreBackend` las den Katalog über
+`homeassistant.helpers.storage.Store`, dessen `_StoreManager` nur
+`<config>/.storage` kennt. Der Katalog liegt in
+`<config>/frickeldave_store/`, `async_load()` lieferte `None` und der nächste
+`async_save` überschrieb die echte Datei mit `"products": []`. Da HACS-Updates
+einen HA-Neustart auslösen, trat der Fehler bei **jedem** Update auf —
+betroffene Installationen haben bereits jetzt leere Kataloge. Jeder weitere Tag
+auf `0.1.10` würde den Schaden bei weiteren Nutzern reproduzieren, deshalb
+sofortige Veröffentlichung statt Einreihung in den normalen Deploy-Zyklus.
+
+**Nutzer-Hinweis (in Release Notes enthalten):**
+
+Bereits verlorene Daten lassen sich **nicht** durch das Update zurückholen. Nach
+dem Update die Produkte **aus dem Home-Assistant-Backup zurückspielen** (HA
+stoppen, `config/frickeldave_store/frickeldave_store.data` aus dem Backup
+wiederherstellen, HA starten). Ab `0.1.11` legt der Store zusätzlich Snapshots
+unter `config/frickeldave_store/backups/` an
+(`*-pre-load-v*.json`, `*-pre-save.json`) und verweigert das Schreiben von null
+Produkten ohne ausdrückliche Bestätigung. Details: `docs/backup-restore.md`.
 
 ## Governance
 
