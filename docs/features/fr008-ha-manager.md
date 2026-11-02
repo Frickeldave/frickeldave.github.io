@@ -8,7 +8,7 @@ Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
 - Integrations-Repository: <https://github.com/Frickeldave/frickeldave.home.net>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: umgesetzt in Version 0.1.12 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
+- Status: umgesetzt in Version 0.1.13 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
   Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -85,7 +85,7 @@ flowchart LR
   Produkten und Einstellungen wechselt, gibt es nicht mehr.
 - Das Hamburger-Symbol links öffnet die Home-Assistant-Seitenleiste.
 - Das Drei-Punkte-Menü rechts führt den Eintrag **Tags verwalten** (Pflege der Tags, sichtbar für
-  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.12`. Die Version
+  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.13`. Die Version
   bestätigt, welcher Build tatsächlich läuft.
 - Die Einstellungen der Integration liegen nicht im Panel, sondern in der Integrationsseite von Home
   Assistant: **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad** öffnet das
@@ -197,7 +197,7 @@ Wenn die Oberfläche nach einem Update unverändert wirkt:
 1. Die Seite mit `Strg+Shift+R` hart neu laden (macOS: `Cmd+Shift+R`).
 2. Hilft das nicht, im Browser die Websitedaten für die Home-Assistant-URL löschen.
 3. Die geladene Version prüfen: Sie steht im Drei-Punkte-Menü des Panels und in der Fußzeile des
-   Konfigurationspanels. `v0.1.12` bestätigt den aktuellen Build.
+   Konfigurationspanels. `v0.1.13` bestätigt den aktuellen Build.
 
 ## Einrichtung und Optionen
 
@@ -503,9 +503,45 @@ Der Dry-Run zeigt vor dem Schreiben:
 - Zählungen für Dateien, Produkte und Bilder, jeweils neu, geändert, entfernt und unverändert.
 - Ob ein Deployment ausgelöst würde — bei `prod` also der Workflow `fd-deploy-prd`.
 - Die betroffene Dateiliste; ab 500 Einträgen ist sie gekürzt und trägt einen Hinweis darauf.
+- Ein Feld `warning` (`string|null`) mit Hinweisen, das das Panel als Warnblock über der Bestätigung
+  zeigt.
 
 Im Dry-Run wird nichts geschrieben: kein Commit, kein Workflow-Dispatch und kein Schreibzugriff auf
 den Store.
+
+### Fehlerbehandlung und leerer Katalog
+
+Fehler erreichen das Panel als strukturierte Antwort mit deutschem Text statt als nackter HTTP 500.
+Jede Publish-Antwort führt zusätzlich `warning` (`string|null`).
+
+Ein leerer Katalog verhindert die Veröffentlichung: Enthält der Store keine veröffentlichbaren
+Produkte, antwortet die Integration mit `publish_empty_catalog` (HTTP 409) und schreibt keinen
+Commit. Als leer zählt auch ein Store, in dem nur archivierte Produkte liegen. Der Notausgang ist
+das Body-Feld `allow_empty` (Standard `false`, nur für die Rolle **Anwendungsverwaltung**): Der
+Dry-Run-Dialog zeigt bei diesem Fehler die Bestätigung **Leeren bestätigen** mit nicht
+vorausgewählter Checkbox und gesperrtem **Trotzdem veröffentlichen**. Erst Häkchen plus Klick senden
+`allow_empty: true`. Fehler-, Abbruch- und Dry-Run-Pfade setzen die Zustimmung zurück, damit sie
+nicht in einen späteren Versuch rutscht.
+
+Fehlt eine lokale Bilddatei oder ist sie unlesbar, antwortet die Integration mit
+`publish_artifacts_unavailable` (HTTP 409); die Meldung nennt Artikelnummer und Datei. Auch dieser
+Fehler verhindert den Commit und lässt den Store unverändert. Ungültiges JSON und 5xx-Antworten von
+GitHub werden zu `github_unavailable`. Jede unerwartete Exception liefert `internal_error` mit
+Traceback im Home-Assistant-Protokoll und einer deutschen Meldung im Panel; die Meldung verweist auf
+das Protokoll, gefiltert auf `frickeldave_store`.
+
+Bis 0.1.12 endete dagegen jeder Veröffentlichungsversuch mit der Panel-Meldung „Der Server hat einen
+Fehler gemeldet. Bitte erneut versuchen.“ Ursache war `GitHubClient._async_json`: Die Methode
+behandelte Antworten ohne `Content-Length` als leer. Bei `Transfer-Encoding: chunked`, das GitHub
+regelmäßig nutzt, ist `response.content_length` `None`, und die Prüfung `not None` traf zu. Der Body
+wurde verworfen, die Methode gab `None` zurück, und der Aufrufer lief in einen `AttributeError` in
+`publish.py:408` (`'NoneType' object has no attribute 'get'`); Home Assistant antwortete mit einem
+nackten HTTP 500. Betroffen war bereits der Lesepfad und damit auch der Dry-Run, das Token war nie
+die Ursache. Die bisherigen Tests verdeckten den Fehler, weil die Fake-Antworten immer ein
+`Content-Length` setzten. Seit 0.1.13 liest `_async_json` den Body immer und verzichtet nur bei
+echten Null-Body-Status (204, 205, 304) auf das Parsen; alle Stellen, die ein Objekt erwarten,
+prüfen den Typ und liefern strukturierte Fehler statt `AttributeError`. Regressionstests decken
+chunked-Antworten und einen Dry-Run über den echten Client ab.
 
 ## KI-Beschreibungsvorschläge
 
