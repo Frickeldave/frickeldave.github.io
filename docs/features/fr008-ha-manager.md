@@ -8,7 +8,7 @@ Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
 - Integrations-Repository: <https://github.com/Frickeldave/frickeldave.home.net>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: umgesetzt in Version 0.1.14 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
+- Status: umgesetzt in Version 0.1.15 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
   Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -522,6 +522,15 @@ Die Integration ist führend, die Website konsumiert den Export.
   `src/assets/handmade/<kategorie>/<artikelnummer>/` nach dem bestehenden Muster
   `<artikelnummer>-NN.jpg` abgelegt. Das erste Bild in Sortierreihenfolge ist das Hauptbild.
 
+**Stabile Bilddateinamen.** Bis 0.1.14 nummerierte der Export die Bilder nach ihrer Position: Das
+Hauptbild bekam `-01`, die übrigen `-02`, `-03` und so weiter. Das Löschen eines Bildes verschob
+damit alle folgenden Nummern, und im Repository erschien eine Umbenennung wie `LAKBCD-08 →
+LAKBCD-04` als `removed` plus `added`, obwohl sich nur die Reihenfolge geändert hatte. Seit 0.1.15
+bleibt das Hauptbild `-01`, und jedes weitere Bild behält seine Store-Nummer, solange sie frei ist.
+Das Löschen eines Bildes erzeugt deshalb nur einen `removed`-Eintrag. Verwenden zwei Produkte
+dasselbe Foto, liegen die Dateien getrennt unter `images/<artikelnummer>/`; identische Bildinhalte
+sind kein Fehler.
+
 Der Transport läuft über die Veröffentlichungs-Aktionen im Panel: `dev` wird per Commit über die
 Git-Data-API geschrieben, `prod` über den Workflow `fd-deploy-prd`. Siehe
 [Veröffentlichen](#veröffentlichen).
@@ -548,6 +557,49 @@ ein Deployment ausgelöst wurde.
 Voraussetzung ist ein GitHub-Token im Tab **Veröffentlichen** unter **Einstellungen → Geräte &
 Dienste → Frickeldave Store → Zahnrad**.
 Das Feld ist write-only; die Oberfläche zeigt nur **Token hinterlegt**.
+
+### Verwaltete Pfade
+
+Die Integration darf im Website-Repository nur anfassen, was sie selbst erzeugt:
+
+- `public/data/handmade.json` — der Katalogexport.
+- Bilder unter `src/assets/handmade/<Kategorie>/<Artikelnummer>/`, deren Dateiname dem Muster
+  `<Artikelnummer>-NN.<Endung>` folgt und deren Kategorie eine der fünf bekannten ist.
+
+Alles andere gilt nie als verwaltet, wird nie überschrieben und nie gelöscht — auch dann nicht, wenn
+es unter `src/assets/handmade/` liegt: `.scad`-Quellen, `3dmodels/`, `.gitkeep` und fremde
+Unterordner bleiben unangetastet. Eine Datei, die keinem der beiden Muster entspricht, kann der
+Export deshalb nicht entfernen; er führt sie nicht als entfernt.
+
+**Der Vorfall, der die Regel verschärft hat.** Bis 0.1.14 stufte `_is_managed_path()` jede Datei
+unterhalb von `src/assets/handmade/` als verwaltetes Produktbild ein. Beim Veröffentlichen aus Home
+Assistant löschte der Commit `d13cb2f` deshalb zwei Dateien, die die Integration nicht verwalten
+darf:
+
+```text
+D src/assets/handmade/3dmodels/includes/roundedcube.scad
+D src/assets/handmade/3dmodels/models/Verteilerdose.scad
+```
+
+Die 3D-Modellquellen existieren nicht im Store und galten damit als „entfernt“. Folge: `build-scad.mjs`
+fand das Modellverzeichnis nicht, `scad-smoke-test` und `e2e-test` scheiterten, `fd-ci` wurde rot und
+`fd-deploy-dev` übersprungen. Commit `57b9d95` stellte die beiden Dateien wieder her; `fd-ci` und
+`fd-deploy-dev` liefen danach grün. Seit 0.1.15 erkennt `_is_managed_path()` nur noch die beiden
+Muster oben. Ein Regressionstest bildet den Vorfall nach und belegt, dass `3dmodels/**` unangetastet
+bleibt.
+
+### Löschschutz
+
+Eine Veröffentlichung entfernt Bilder nur in plausibler Zahl. Sie bricht ab, wenn sie mehr als zehn
+Bilder entfernen würde **oder** mehr als ein Drittel des bestehenden Bildbestands — die zweite Regel
+greift ab drei Löschungen. Ohne Bestätigung schreibt die Integration keinen Commit und lässt den
+Store unverändert.
+
+Der [Dry-Run](#dry-run) zeigt die Warnung über der Bestätigung und liefert sie im Feld
+`removal_guard`; die Antwort auf den abgebrochenen Lauf ist `publish_removals_blocked` (HTTP 409).
+Übergehen lässt sich die Sperre nur mit ausdrücklicher Bestätigung über das Body-Feld
+`confirm_removals` (Standard `false`, nur Rolle **Anwendungsverwaltung**). Die Zustimmung gilt je
+Lauf und wird nicht gespeichert.
 
 ### Dry-Run
 
