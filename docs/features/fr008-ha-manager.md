@@ -8,7 +8,7 @@ Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
 - Integrations-Repository: <https://github.com/Frickeldave/frickeldave.home.net>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: umgesetzt in Version 0.1.15 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
+- Status: umgesetzt in Version 0.1.16 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
   Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -648,6 +648,60 @@ die Ursache. Die bisherigen Tests verdeckten den Fehler, weil die Fake-Antworten
 echten Null-Body-Status (204, 205, 304) auf das Parsen; alle Stellen, die ein Objekt erwarten,
 prüfen den Typ und liefern strukturierte Fehler statt `AttributeError`. Regressionstests decken
 chunked-Antworten und einen Dry-Run über den echten Client ab.
+
+## Erweiterungen
+
+Seit 0.1.16 bringt die Integration einen Erweiterungspunkt mit. Eine zweite Custom Integration kann
+Fähigkeiten beisteuern, ohne dass `frickeldave_store` frickeldave-spezifisches Wissen enthält — die
+Voraussetzung dafür, die Basis als reine Open-Source-Komponente zu verteilen. Der Schritt ist rein
+additiv: Veröffentlichen und Katalogimport laufen unverändert, es wird nichts entfernt, und für
+Bestandsnutzer ändert sich nichts.
+
+### Erweiterungspunkt
+
+- `extension.py` führt `CONTRACT_VERSION = 1`.
+- `async_register_extension(hass, registration)` und `async_unregister_extension(hass, name)` sind
+  idempotent und prüfen den Vertrag. Eine unverträgliche Registrierung endet mit
+  `contract_mismatch`.
+- `async_get_feature_status(hass)` liefert je Fähigkeit `available`, `reason`, `provider` und
+  `contract_version`.
+
+### Was eine Erweiterung bekommt
+
+- `StoreFacade` als schmale Fassade: Produkte, Lagerstätten, Artikelnummern, Rechteprüfung über
+  `can` und `require`, Snapshot, Export bauen und Import-Batch anwenden.
+- Kein Zugriff auf interne Store-Objekte oder Dateipfade.
+
+### Fähigkeiten im Panel
+
+- `GET /api/frickeldave_store/me` und `GET`/`PATCH /api/frickeldave_store/settings` liefern
+  zusätzlich `features`. Je Fähigkeit stehen `available`, `reason`, `provider` und
+  `contract_version` darin:
+
+  ```json
+  {
+    "publish": { "available": true, "reason": "", "provider": "frickeldave_store", "contract_version": 1 },
+    "import": { "available": true, "reason": "", "provider": "frickeldave_store", "contract_version": 1 }
+  }
+  ```
+
+- Nur `GET` und `PATCH /api/frickeldave_store/settings` liefern `feature_details` und nur an die
+  Rolle **Anwendungsverwaltung**: Titel, benötigte Rolle und ob die Fähigkeit eigene Panel-Routen
+  mitbringt.
+- Die generische Route `POST /api/frickeldave_store/features/{feature}` erreicht die Fähigkeit einer
+  registrierten Erweiterung. Ohne Registrierung greift das eingebaute Verhalten; die bestehenden
+  Endpunkte `/publish` und `/import/catalog` bleiben unverändert.
+- Das HA-Event `frickeldave_store_features_changed` meldet Registrierung und Abmeldung mit `changed`
+  und `features`, damit ein offenes Panel nachladen kann.
+- Fehlercodes: `contract_mismatch`, `already_registered`, `not_registered`, `invalid_registration`,
+  `feature_unknown`, `feature_unavailable`, `handler_failed`.
+
+### Geplante Auslagerung
+
+Die Synchronisation nach frickeldave.de und der Katalogimport sollen später in eine eigene
+Integration wandern (`frickeldave_store_syncfd`). Deren Schaltflächen erscheinen im Panel nur, wenn
+diese Erweiterung installiert und registriert ist. Das ist geplant, nicht umgesetzt: 0.1.16 legt nur
+den Erweiterungspunkt an, die vorhandenen Aktionen bleiben Teil der Basisintegration.
 
 ## KI-Beschreibungsvorschläge
 
