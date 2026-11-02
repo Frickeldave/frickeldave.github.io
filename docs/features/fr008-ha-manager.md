@@ -1,15 +1,15 @@
 # FR008: Verwaltung der Handmade-Produkte in Home Assistant
 
-Dieses Dokument beschreibt das geplante Verwaltungswerkzeug für den Handmade-Katalog. Die bisherige
-Verwaltung außerhalb von Home Assistant und die separate Pflege von `public/data/handmade.json` samt
-Bildern im Website-Repository werden durch eine Custom Integration ersetzt. Produktdaten und Bilder
-liegen danach in Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
+Dieses Dokument beschreibt das Verwaltungswerkzeug für den Handmade-Katalog. Die bisherige Verwaltung
+außerhalb von Home Assistant und die separate Pflege von `public/data/handmade.json` samt Bildern im
+Website-Repository sind durch eine Custom Integration ersetzt. Produktdaten und Bilder liegen in
+Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
 
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
 - Integrations-Repository: <https://github.com/Frickeldave/frickeldave.home.net>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: geplant; dieses Dokument beschreibt den Stand der Spezifikation, keine umgesetzte
-  Funktion.
+- Status: umgesetzt in Version 0.1.9 (Backend und Oberfläche); Finanz- und Kundenfunktionen bleiben
+  geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 hat David Koenig entschieden, dass die Integration
@@ -21,11 +21,11 @@ liegen danach in Home Assistant; die Website veröffentlicht den Katalog aus der
 Das Werkzeug führt die bisher getrennten Arbeitsabläufe in einer deutschen Oberfläche innerhalb von
 Home Assistant zusammen:
 
-- Produkte, Bilder, Tags, Sichtbarkeit und Bestände pflegen.
+- Produkte, Bilder, Tags, Sichtbarkeit und Bestände je Lagerstätte pflegen.
 - Bestände als Buchungen nachvollziehen.
 - Beschreibungen per KI vorschlagen lassen und erst nach bewusster Übernahme speichern.
 - Kunden und – nach bestätigtem Schnittstellenumfang – PayPal-Artikel und -Kunden verwalten.
-- Den Katalog für die Website exportieren.
+- Den Katalog für die Website exportieren und nach `dev` beziehungsweise `prod` veröffentlichen.
 
 Der Betrieb muss auf Home Assistant Container funktionieren: ohne Supervisor, ohne Add-on und ohne
 zusätzlichen Anwendungscontainer. Die Integration ist damit eine normale Custom Integration, die
@@ -42,6 +42,9 @@ flowchart LR
   api --> paypal[PayPal Business API]
   api --> export[Website-Export<br/>JSON + Bilder]
   export --> website[Website-Repository]
+  api --> publish[Veröffentlichen<br/>Dry-Run + Bestätigung]
+  publish -->|dev: Commit über Git-Data-API| website
+  publish -->|prod: Workflow fd-deploy-prd| deploy[Deployment]
 ```
 
 ### Integration und Verteilung
@@ -142,8 +145,10 @@ YAML-Konfiguration gibt es nicht.
 - Der Config Flow legt die Integration an und registriert das Panel.
 - Der Options Flow öffnet das Konfigurationspanel der Integration. Erreichbar ist es über
   **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad**.
-- Das Konfigurationspanel hat drei Tabs: **Benutzerverwaltung**, **KI-Einstellungen** und
-  **Allgemeine**.
+- Das Konfigurationspanel umfasst die Tabs **Benutzerverwaltung**, **KI-Einstellungen**,
+  **Allgemeine**, **Lagerstätten** und **Veröffentlichen**; die Lagerstätten pflegt die
+  Administration im Tab **Lagerstätten** (**Einstellungen → Geräte & Dienste → Frickeldave Store →
+  Zahnrad → Tab „Lagerstätten“**, siehe [Lagerstätten](#lagerstätten)).
 - Zugangsdaten bleiben serverseitig und erscheinen nicht in Logs, Diagnose oder Export.
 - Jede Option der Konfigurationsdokumentation entspricht genau einem Feld der Oberfläche; weitere
   Felder führt dieses Dokument nicht.
@@ -191,7 +196,23 @@ ausschließen**; die drei Ablagezustände, ihre Pfade und das Backup-Verhalten s
 - Nach dem Wechsel lädt Home Assistant die Integration neu, damit alle Pfade neu aufgelöst werden.
 - Der Tab selbst ist nur für die Rolle **Anwendungsverwaltung** zugänglich.
 
-## Datenmodell (Schema-Version 1)
+### Lagerstätten
+
+Unter **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad → Tab „Lagerstätten“** pflegt
+die Administration die Lagerstätten: anlegen, umbenennen, löschen. Voreingestellt sind **Lager** und
+**Verkaufsschrank**.
+
+- Mindestens eine Lagerstätte muss bestehen bleiben.
+- Namen sind eindeutig und dürfen nicht leer sein.
+- Das Löschen einer Lagerstätte mit Bestand größer 0 wird mit einer deutschen Fehlermeldung
+  abgelehnt.
+- Bestände werden pro Lagerstätte geführt; die Lagerstätten-IDs bleiben beim Umbenennen stabil.
+- Die Migration von Schema-Version 1 auf 2 erhält die bestehenden Bestände (siehe
+  [Bestandsmodell](#bestandsmodell)).
+- Die Reihenfolge der Lagerstätten bestimmt den Website-Export (siehe
+  [Website-Export](#website-export)).
+
+## Datenmodell (Schema-Version 2)
 
 Ein Produkt besteht aus:
 
@@ -206,13 +227,12 @@ Ein Produkt besteht aus:
 | `tags`          | string[]           | frei wählbare Tags, öffentliche Filter                               |
 | `customizable`  | boolean            | Personalisierbar (Auftragsproduktion)                                |
 | `visible`       | boolean            | Sichtbarkeit auf der Website                                         |
-| `stock`         | integer ≥ 0        | Lagerbestand                                                         |
-| `salesCabinet`  | integer ≥ 0        | Bestand im Verkaufsschrank                                           |
+| `stock`         | Objekt             | Stückzahl je Lagerstätte, Schlüssel ist die Lagerstätten-ID          |
 | `images`        | Liste              | maximal zehn Bilder, geordnet, genau ein Hauptbild                   |
 | `archived`      | boolean            | Soft-Delete                                                          |
 | `createdAt`     | Zeitstempel        | Anlage                                                               |
 | `updatedAt`     | Zeitstempel        | letzte Änderung                                                      |
-| `schemaVersion` | integer            | Schema-Version des Datensatzes, aktuell `1`                          |
+| `schemaVersion` | integer            | Schema-Version des Datensatzes, aktuell `2`                          |
 
 Regeln:
 
@@ -225,6 +245,9 @@ Regeln:
   Kategorien samt Bildordnern.
 - Die Felder `stock` und `salesCabinet` existieren im Live-Katalog bereits, werden von der Website
   aber noch nicht ausgewertet; siehe [FR003](../old/features/fr003-catalog.md).
+- `stock` ist seit Schema-Version 2 ein Objekt Lagerstätten-ID → Stückzahl. Die Migration von
+  Version 1 auf 2 erhält bestehende Bestände; Details stehen im
+  [Bestandsmodell](#bestandsmodell).
 
 ### Kategorien
 
@@ -239,7 +262,7 @@ Regeln:
 ### Suche, Filter und Sortierung
 
 - Suche über Name, Beschreibung, Artikelnummer und Tags.
-- Filter: Kategorie, Tags, personalisierbar, auf Lager, im Schrank, sichtbar, unsichtbar.
+- Filter: Kategorie, Tags, personalisierbar, Sichtbarkeit sowie Bestand je Lagerstätte.
 - Verknüpfung: Kategorie ODER, Tags ODER, alle übrigen Filter UND.
 - Auf breiten Desktop-Monitoren stehen Kategorien und Tags nebeneinander; erklärende Hilfssätze
   entfallen.
@@ -248,23 +271,67 @@ Regeln:
 - Bildverwaltung: maximal zehn Bilder je Produkt, Reihenfolge und genau ein Hauptbild. Ein elfter
   Upload wird mit Meldung abgelehnt, ohne Teilpersistenz.
 
+## Produktpflege im Panel
+
+### Ansichten und Toolbar
+
+Die Produktliste erscheint wahlweise als Kachel- oder Listenansicht. Der Umschalter **Kacheln** /
+**Liste** sitzt in der Toolbar; die Auswahl bleibt über ein Neuladen des Panels erhalten
+(`localStorage`, Schlüssel `fd-store-view`).
+
+- Beide Ansichten zeigen Bild, Name, Artikelnummer, Kategorie, Preis, Tags, Status und Bestände.
+- Die Listenansicht bietet dieselben Aktionen **Bearbeiten** und **Archivieren** wie die Kacheln.
+- Status und Bestände folgen den konfigurierten Lagerstätten; die Bezeichnungen der Bestandsfilter
+  richten sich nach deren Namen (siehe [Lagerstätten](#lagerstätten)).
+
+### Produktdialog
+
+**Neues Produkt** und **Produkt bearbeiten** öffnen denselben Dialog mit drei Tabs:
+
+| Tab        | Inhalt                                                               |
+| ---------- | -------------------------------------------------------------------- |
+| Grunddaten | Stammdaten, Beschreibung, Kategorie, Preis, Sichtbarkeit und Tags    |
+| Bilder     | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen |
+| Bestand    | Bestände je Lagerstätte und Buchungshistorie                         |
+
+- Einen separaten Bilder-Dialog gibt es nicht mehr; die Bildverwaltung liegt vollständig im Tab
+  **Bilder**.
+- Einen separaten **Bestand**-Button in der Produktkarte gibt es nicht mehr.
+- Beim Anlegen wechselt der Dialog nach dem ersten Speichern automatisch in den Bearbeiten-Modus
+  und in den Tab **Bilder**.
+- Der Tab **Bestand** zeigt je Lagerstätte eine Nummernbox; darüber und darunter stehen **Anzahl
+  erhöhen** und **Anzahl verringern**. Direkte Zahleneingabe ist möglich, das Minimum ist 0.
+  Gespeichert wird beim Speichern des Produkts.
+- Die Buchungshistorie steht als Abschnitt im Tab **Bestand**.
+
+### Aktualisieren
+
+Der Button **Aktualisieren** lädt Produkte, Tags und Einstellungen neu aus der Integration. Er
+überträgt nichts an die Website und löst kein Deployment aus. Für beides sind ausschließlich die
+Aktionen unter [Veröffentlichen](#veröffentlichen) zuständig.
+
 ## Bestandsmodell
 
-`stock` (Lager) und `salesCabinet` (Verkaufsschrank) sind getrennte Bestände und getrennt filterbar:
-„Auf Lager“ bedeutet `stock > 0`, „Im Schrank“ bedeutet `salesCabinet > 0`.
+Bestände werden je Lagerstätte geführt. `stock` ist ein Objekt, das jeder Lagerstätten-ID eine
+Stückzahl zuordnet. Kacheln, Liste, Filter, Editor und der Tab **Bestand** verwenden die
+konfigurierten Namen.
 
+- Voreingestellt sind **Lager** und **Verkaufsschrank**; die Administration pflegt sie im
+  Konfigurationspanel (siehe [Lagerstätten](#lagerstätten)).
+- Die Bestandsfilter richten sich nach den konfigurierten Lagerstätten und tragen deren Namen.
 - Bestandsänderungen werden als Buchungen erfasst: Zugang, Abgang, Umlagerung, Korrektur.
 - Jede Buchung trägt einen Zeitstempel und den auslösenden HA-Benutzer.
 - Einzelstücke sind Produkte mit Menge 1.
 - Personalisierbare Produkte sind Auftragsproduktion; Verkäufe buchen sie nicht automatisch ab.
-- Eine Umlagerung ist eine Buchung zwischen `stock` und `salesCabinet`, keine direkte Feldänderung.
+- Eine Umlagerung ist eine Buchung zwischen zwei Lagerstätten, keine direkte Feldänderung.
 
 ## Website-Export
 
 Die Integration ist führend, die Website konsumiert den Export.
 
 - Der Export enthält ein JSON im bestehenden Schema von `public/data/handmade.json`, inklusive
-  `stock` und `salesCabinet`.
+  `stock` und `salesCabinet`. Die erste Lagerstätte wird zu `stock`, die zweite zu `salesCabinet`;
+  ohne zweite Lagerstätte ist `salesCabinet` 0. Maßgeblich ist die Reihenfolge, nicht der Name.
 - Exportiert werden ausschließlich nicht archivierte Produkte. `archived` und `visible` werden
   korrekt abgebildet.
 - Die Artikelnummer bleibt der Schlüssel; wiederholte Exporte sind idempotent.
@@ -272,7 +339,38 @@ Die Integration ist führend, die Website konsumiert den Export.
   `src/assets/handmade/<kategorie>/<artikelnummer>/` nach dem bestehenden Muster
   `<artikelnummer>-NN.jpg` abgelegt. Das erste Bild in Sortierreihenfolge ist das Hauptbild.
 
-Der Transport des Exports zur Website ist noch offen (siehe [Offene Fragen](#offene-fragen)).
+Der Transport läuft über die Veröffentlichungs-Aktionen im Panel: `dev` wird per Commit über die
+Git-Data-API geschrieben, `prod` über den Workflow `fd-deploy-prd`. Siehe
+[Veröffentlichen](#veröffentlichen).
+
+## Veröffentlichen
+
+Die Karte **Website veröffentlichen** erscheint nur für die Rolle **Anwendungsverwaltung**
+(`app_admin`) und bietet zwei Aktionen:
+
+- **Nach dev veröffentlichen**: schreibt den Export per Commit über die Git-Data-API in das
+  Website-Repository `Frickeldave/frickeldave.github.io`.
+- **Nach prod veröffentlichen**: löst nach dem Commit den Workflow `fd-deploy-prd` aus. Das ist der
+  einzige Weg, auf dem `main` aktualisiert wird.
+
+Beide Aktionen starten zuerst einen [Dry-Run](#dry-run); veröffentlicht wird erst nach Bestätigung
+im Dialog. Nach Erfolg zeigt das Panel das Ziel, den Commit und ob ein Deployment ausgelöst wurde.
+
+Voraussetzung ist ein GitHub-Token im Tab **Veröffentlichen** unter **Einstellungen → Geräte &
+Dienste → Frickeldave Store → Zahnrad**.
+Das Feld ist write-only; die Oberfläche zeigt nur **Token hinterlegt**.
+
+### Dry-Run
+
+Der Dry-Run zeigt vor dem Schreiben:
+
+- Ziel und Zielbranch, Repository und eine deutsche Zusammenfassung.
+- Zählungen für Dateien, Produkte und Bilder, jeweils neu, geändert, entfernt und unverändert.
+- Ob ein Deployment ausgelöst würde — bei `prod` also der Workflow `fd-deploy-prd`.
+- Die betroffene Dateiliste; ab 500 Einträgen ist sie gekürzt und trägt einen Hinweis darauf.
+
+Im Dry-Run wird nichts geschrieben: kein Commit, kein Workflow-Dispatch und kein Schreibzugriff auf
+den Store.
 
 ## KI-Beschreibungsvorschläge
 
@@ -283,9 +381,14 @@ Der Transport des Exports zur Website ist noch offen (siehe [Offene Fragen](#off
   verifiziert unter <https://api-docs.deepseek.com/guides/vision/>.
 - Der initiale Prompt lautet: „Generiere mir eine schöne Beschreibung des Artikels für meinen
   Handmade-Shop.“
+- Beim **Beschreibung vorschlagen** kann der Nutzer optional eigene Hinweise mitgeben (bis 2000
+  Zeichen); sie erweitern den konfigurierten Prompt.
 - Eingabe sind Produktbilder und bekannte Produktdaten.
 - Das Ergebnis ist ein Vorschlag: editierbar und wird erst nach bewusster Übernahme gespeichert.
   Bestehende Beschreibungen werden nie automatisch überschrieben; „Verwerfen“ lässt sie unverändert.
+- Die KI schlägt zusätzlich passende Tags vor, ausschließlich aus den bereits vorhandenen Tags.
+  Verworfene Vorschläge zeigt die Oberfläche mit dem Hinweis, dass neue Tags nicht automatisch
+  angelegt werden und der Nutzer sie selbst anlegen muss.
 - Fehler, Timeouts und Nutzungslimits werden verständlich angezeigt und verändern den gespeicherten
   Datenstand nicht.
 - Es werden keine personenbezogenen Daten und keine Kunden- oder Finanzdaten in Prompt, Dateinamen
@@ -301,11 +404,11 @@ Der Transport des Exports zur Website ist noch offen (siehe [Offene Fragen](#off
 - Rollen sind kombinierbar. Finanzrechte folgen nie implizit aus Produktpflege oder
   Anwendungsverwaltung.
 
-| Rolle                | Umfang                                                       |
-| -------------------- | ------------------------------------------------------------ |
-| Produktpflege        | Produkte, Bilder, Tags, Bestände, Sichtbarkeit, Archivierung |
-| Finanzen             | spätere Finanzfunktionen                                     |
-| Anwendungsverwaltung | Einstellungen und Benutzerfreigaben                          |
+| Rolle                | Umfang                                                                    |
+| -------------------- | ------------------------------------------------------------------------- |
+| Produktpflege        | Produkte, Bilder, Tags, Bestände, Sichtbarkeit, Archivierung              |
+| Finanzen             | spätere Finanzfunktionen                                                  |
+| Anwendungsverwaltung | Einstellungen inklusive Lagerstätten, Benutzerfreigaben, Veröffentlichung |
 
 - Neue Funktionsbereiche sind standardmäßig gesperrt (Default Deny). Unbekannte Benutzer erhalten
   auf jeder geschützten Route `403` ohne Dateninhalt.
@@ -353,7 +456,7 @@ Der Transport des Exports zur Website ist noch offen (siehe [Offene Fragen](#off
 
 | Frage                                                                                         | Stand                                                                                        |
 | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Wie wird der Export zur Website transportiert (HTTPS-Pull aus HA oder PR aus einem Workflow)? | offen, Eigentümer Bruce, Entscheidung in der Architekturphase                                |
+| Wie wird der Export zur Website transportiert (HTTPS-Pull aus HA oder PR aus einem Workflow)? | entschieden: `dev` per Commit (Git-Data-API), `prod` per Workflow `fd-deploy-prd`            |
 | Welchen Umfang bietet die PayPal-API für Kunden des Business-Kontos?                          | offen, Eigentümer David Koenig und Bruce, Test mit dem Konto                                 |
 | Wie wirken Artikeländerungen auf bereits erstellte PayPal-Rechnungen?                         | offen, Eigentümer David Koenig                                                               |
 | Welche Aufbewahrungs- und Löschfrist gilt für Kundendaten?                                    | offen, Vorschlag 24 Monate nach der letzten Bestellung, Eigentümer David Koenig und Jennifer |
