@@ -427,6 +427,179 @@ oder verschoben.
   https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41411379649
   (hassfest, pytest, HACS validation, Frontend, mypy, Ruff jeweils `success`)
 
+#### 2026-11-02T09:35:22+0000: Cache-Bust für Panel-Module
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:**
+Die Panel-Module werden wieder mit Versions-Query ausgeliefert — jetzt mit belastbarer
+Begründung, Tests und einer zweiten Absicherung gegen Heuristik-Caching:
+
+- `const.module_url(filename, version=VERSION)` erzeugt `/<FRONTEND_URL_PATH>/<datei>?v=<version>`;
+  `PANEL_MODULE_URL` und `CONFIG_PANEL_MODULE_URL` nutzen sie (Version `0.1.10`).
+- `panel.py` behält `cache_headers=False` bei und registriert zusätzlich `FrontendAssetView`
+  für direkte Dateien des Frontend-Verzeichnisses (`/frickeldave_store_frontend/<filename>`).
+  Der View ist spezifischer als der statische Präfix-Pfad, gewinnt daher für `lit.js` und die
+  Panel-Module und setzt `Cache-Control: no-cache, must-revalidate`.
+- `lit.js` bleibt ohne eigene Query (relativer Import in den Panel-Modulen, Datei gehört dem
+  Frontend-Team), wird durch die no-cache-Kopfzeile aber bei jedem Laden revalidiert. Ein
+  gemischter Zustand „neues Panel + altes Lit-Bundle“ kann damit nicht dauerhaft bestehen.
+- `GET /me` liefert zusätzlich `version`, `storage_schema_version` (= `models.SCHEMA_VERSION`,
+  das persistierte Katalogschema) und `panel_module_url`; `GET`/`PATCH /settings` führen
+  `version`. Rechte und übrige Response-Form sind unverändert.
+- Tests: `?v=<VERSION>` in beiden Modul-URLs, Versionswechsel erzeugt unterschiedliche URL,
+  `Cache-Control` des Asset-Views inklusive Routen-Vorrang, `/me`- und `/settings`-Felder.
+
+**Why:**
+Die Ursache aus #289 ist eine feste Modul-URL ohne Versionsparameter: Browser behalten das
+alte Panel-JS über ein HACS-Update hinweg im HTTP-Cache (die Android-App zeigte die neue
+Oberfläche, weil sie ihren Cache anders verwaltet). `cache_headers=False` allein genügt nicht,
+weil die aiohttp-`StaticResource` dann gar kein `Cache-Control` sendet und Browser heuristisch
+cachen dürfen.
+
+Der Revert `0658381` von `35671fa` enthält keine Begründung. In HA 2025.1.4 (`panel_custom`)
+findet sich kein technisches Hindernis: `module_url` wird unverändert in `config["_panel_custom"]`
+gelegt, das Frontend lädt den Wert als ES-Modul-URL (`import()` bzw. `<script type="module">`),
+und aiohttp ignoriert die Query bei der statischen Pfadauflösung. Die Query erzeugt zusätzlich
+eine eigene Modul-Identität im Modul-Registry-Cache des Frontends (Key = URL). Der Revert-Fall
+wiederholt sich daher nicht; zusätzlich ist die Änderung diesmal durch Tests abgesichert und
+die Version wird separat als `0.1.10` geführt (0.1.9 ist released und bleibt unangetastet).
+
+**Verifikation:**
+`ruff check .`, `ruff format --check .`, `mypy custom_components`, `pytest -q` (193 passed).
+
+#### 2026-11-02T10:54:12+0000: Persistenz des Aufklapp-Zustands der Filterleiste
+
+**By:** Natasha (Frontend / UI)
+
+**What:**
+Die ein- und ausklappbare Such-/Filterleiste speichert ihren Zustand unter dem
+`localStorage`-Schlüssel `fd-store-filters-open` (Werte `open`/`closed`). Voreingestellt
+ist `open`; fehlt der Schlüssel oder ist der Speicher gesperrt (privater Modus), bleibt
+die Leiste offen und der Zustand gilt nur für die Sitzung. Das Muster entspricht dem
+bereits genutzten `fd-store-view` (Kacheln/Liste).
+
+**Why:**
+David will die Leiste dauerhaft zuklappen können, ohne sie nach jedem Neuladen erneut
+schließen zu müssen. Ein Default von „offen“ verhindert, dass Suche und Filter nach dem
+ersten Laden unerwartet fehlen. Das Speichern ist best-effort gekapselt, damit ein
+gesperrter `localStorage` die Oberfläche nie blockiert. Wichtig für alle, die weitere
+Panel-Einstellungen ergänzen: `fd-*`-Schlüssel bleiben panel-lokal und werden nicht
+zwischen Integrationen geteilt.
+
+**Verifikation:**
+DOM-Smoke-Test: Toggle setzt `aria-expanded`, blendet `#fd-filter-panel` aus und schreibt
+`closed` in `localStorage`; erneutes Öffnen schreibt `open`.
+
+#### 2026-11-02T10:54:12+0000: Platzierung der Versionsanzeige
+
+**By:** Natasha (Frontend / UI)
+
+**What:**
+Die von `GET /api/frickeldave_store/me` gelieferte `version` wird als dezente Fußzeile
+am Ende des Panel-Inhalts (`footer.fd-panel-footer`, Text `v0.1.10`) und analog im
+Konfigurationspanel (`footer.fd-config-footer`) angezeigt. Fehlt das Feld in der Antwort,
+wird kein Footer gerendert. Das Drei-Punkte-Menü bleibt unverändert, weil es nur bei
+Produktberechtigung existiert und `app_admin` ohne Produktrolle die Version sonst nicht
+sehen könnte.
+
+**Why:**
+Nach dem Cache-Vorfall in 0.1.9 soll David ohne Inkognito-Tab sofort erkennen, welcher
+Build im Browser geladen ist. Eine Fußzeile ist in beiden Rollen erreichbar, stört die
+Topbar-Metrik (56 px, Icon-Buttons) nicht und kollidiert nicht mit dem Menü, das nur
+Produktverwaltern offensteht. Die Version ist rein informativ; es gibt bewusst keine
+zusätzliche Fehlerbehandlung, wenn `/me` das Feld nicht liefert (ältere Serverstände).
+
+**Verifikation:**
+DOM-Smoke-Test: Panel- und Konfigurations-Fußzeile zeigen `v0.1.10`, wenn `_me.version`
+gesetzt ist; ohne `version` entfällt der Footer.
+
+#### 2026-11-02T10:54:12+0000: Doku für Integration 0.1.10 (Cache-Bust, UI-Korrekturen)
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin)
+
+**What:**
+`docs/features/fr008-ha-manager.md` und `CHANGELOG.md` beschreiben den Stand 0.1.10
+(02.11.2026). Geändert wurden ausschließlich diese beiden Dateien.
+
+- Statuszeile: Version 0.1.10 mit Release-Datum 02.11.2026.
+- Neuer Abschnitt **Aktualisierung und Browser-Cache** (unter Installation): Ursache des
+  Cache-Bugs nach 0.1.9 (Desktop-Browser alt, Android-App neu), die dauerhafte Lösung ab
+  0.1.10 und die praktische Anleitung (`Strg+Shift+R`, Websitedaten löschen, angezeigte
+  Version als Beleg für den geladenen Build).
+- **Oberfläche**: Versionsparameter `?v=<Version>` via `module_url()` in `const.py` für
+  `PANEL_MODULE_URL` und `CONFIG_PANEL_MODULE_URL`, `Cache-Control: no-cache, must-revalidate`
+  durch den Frontend-View, Versionsanzeige in Panel und Konfigurationspanel sowie
+  `version`/`storage_schema_version`/`panel_module_url` in `/me` und `version` in
+  `GET`/`PATCH /settings`. Keine Token-Werte.
+- **Navigation**: Drei-Punkte-Menü führt „Tags verwalten“ und zeigt die geladene Version.
+- **Suche, Filter und Sortierung**: gemeinsame Steuerhöhe `--fd-control-height: 48px`,
+  Screenreader-only-Suchlabel, zuklappbare Filterleiste (`aria-expanded`/`aria-controls`,
+  `localStorage`-Schlüssel `fd-store-filters-open`, Standard offen, Badge „Filter aktiv“
+  bleibt sichtbar).
+- **Ansichten und Toolbar**: kompakte Liste (Thumbnail 40 px, Zell-Padding 4 px, einzeilige
+  Tags), Bearbeiten/Archivieren als Icon-Buttons mit `aria-label`/`title` und 44 × 44 px.
+- **Produktdialog**: Plus/Minus als gleich breite Symbolschaltflächen in einer Spalte je
+  Lagerstätte, Minus bei 0 deaktiviert.
+- **Veröffentlichen**: Icon-Buttons (Branch, Rakete) in der Topbar für Anwendungsverwaltung;
+  die Karte „Website veröffentlichen“ entfällt, Dry-Run-Ablauf unverändert.
+- CHANGELOG unter `## [Unreleased]`: ein Added-Eintrag (Doku), drei Changed-Einträge
+  (Veröffentlichen, Produktliste/Filter, Bestands-Tab) und ein Fixed-Eintrag (Browser-Cache),
+  jeweils mit `(#289)`.
+
+**Why:**
+Nach 0.1.9 zeigte der Desktop-Browser veraltete Panel-Controls; ohne dokumentierten Hard
+Reload und ohne sichtbare Versionsanzeige ist für Anwender nicht unterscheidbar, ob das
+Update wirkte oder der Cache greift. Die fünf UI-Korrekturen und die verlagerte
+Veröffentlichung ändern beschriebene Oberflächenelemente, weshalb die bestehenden Abschnitte
+angepasst statt ergänzt wurden — sonst stünden Karte, Einzel-Buttons und alte
+Bestandsbedienung weiterhin als aktuell im Dokument. Das CHANGELOG bleibt die
+Nutzer-Sicht auf denselben Stand.
+
+**Validierung:**
+`npx markdownlint-cli@0.44.0 docs/features/fr008-ha-manager.md CHANGELOG.md` → Exit 1 mit
+genau zwei Baseline-Befunden im Abschnitt `[1.0.7]` (CHANGELOG.md:51 MD032, CHANGELOG.md:52
+MD022, unverändert vorbestehend, nur durch die neuen Zeilen verschoben); `fr008` ohne Befund.
+`npm run prose` → 0 errors, 0 warnings, 0 suggestions (104 Dateien). `npm run format:check`
+→ „All matched files use Prettier code style!“.
+
+**Offene Punkte:**
+Die beiden MD032/MD022-Befunde in `[1.0.7]` (fehlende Leerzeile vor `### Fixed`) bleiben
+bewusst stehen, um keinen fremden Abschnitt umzuformatieren; ein eigener Aufräum-Commit kann
+sie beheben.
+
+#### 2026-11-02T10:54:12+0000: Release 0.1.10 veröffentlicht
+
+**By:** Nick (DevOps / Infrastruktur)
+
+**What:**
+`Frickeldave/frickeldave.home.net` ist als **0.1.10** veröffentlicht — annotierter Tag
+auf `38f4136` (`feat(ui): kompakte Listen, einklappbare Filter und Publish-Icons`),
+GitHub-Release `0.1.10` (kein Draft, kein Pre-Release, **Latest**) mit den unveränderten
+Notes aus `## [0.1.10] - 2026-11-02`.
+
+- Tag: annotiert (`tag`-Objekt), Annotation „Frickeldave Store 0.1.10“, peeled Commit
+  `38f41369c2e9e9ba83e28f64f59168152eeb72ff` = `main` (unverändert, kein Push auf `main`,
+  keine Commits, Working Tree clean).
+- Release: https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.1.10
+- Release-Inhalt geprüft: `manifest.json` → `"version": "0.1.10"`, `const.py` →
+  `VERSION = "0.1.10"` und `module_url(filename, version=VERSION)` → `?v={version}`
+  (genutzt von `PANEL_MODULE_URL` und `CONFIG_PANEL_MODULE_URL`), `hacs.json` vorhanden,
+  `custom_components/frickeldave_store/publish.py` vorhanden.
+- CI-Lauf zu `38f4136`: **success** —
+  https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41433449800
+- Bestand unangetastet: Releases `0.1.8` (`ebb00bd`) und `0.1.9` (`d983f0c`) weiterhin
+  vorhanden, Flags unverändert (`isDraft=false`, `isPrerelease=false`); `0.1.10` ist das
+  einzige Latest.
+
+**Why:**
+David Koenig hat die Veröffentlichung des Cache-Bust-Fixes (`3906571`) plus der fünf
+UI-Korrekturen (`38f4136`) angeordnet, nachdem er den Cache-Bug im Browser reproduziert
+hatte. Ohne Release mit Latest-Markierung ziehen HACS-Installationen den Fix nicht, und
+der veraltete Modul-Cache bliebe für Nutzer sichtbar. Der Tag-Inhalt wurde vor der
+Freigabe geprüft, damit das ausgelieferte Artefakt die Version im Manifest trägt und die
+Panel-Module tatsächlich mit `?v=0.1.10` ausgeliefert werden.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
