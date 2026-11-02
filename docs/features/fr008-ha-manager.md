@@ -8,7 +8,7 @@ Home Assistant; die Website veröffentlicht den Katalog aus deren Export.
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
 - Integrations-Repository: <https://github.com/Frickeldave/frickeldave.home.net>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: umgesetzt in Version 0.1.10 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
+- Status: umgesetzt in Version 0.1.11 (Backend und Oberfläche, Stand 02.11.2026); Finanz- und
   Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -36,7 +36,7 @@ ausschließlich über HACS verteilt und über die Home-Assistant-Oberfläche ein
 ```mermaid
 flowchart LR
   panel[HA-Panel<br/>panel_custom + Lit] --> api[Integration<br/>frickeldave_store]
-  api --> store[(HA-Store<br/>Datenablage/frickeldave_store/)]
+  api --> store[(Store-Datei<br/>Datenablage/frickeldave_store/)]
   api --> images[Bilder<br/>Datenablage/frickeldave_store/images/]
   api --> deepseek[DeepSeek<br/>deepseek-flash]
   api --> paypal[PayPal Business API]
@@ -85,7 +85,7 @@ flowchart LR
   Produkten und Einstellungen wechselt, gibt es nicht mehr.
 - Das Hamburger-Symbol links öffnet die Home-Assistant-Seitenleiste.
 - Das Drei-Punkte-Menü rechts führt den Eintrag **Tags verwalten** (Pflege der Tags, sichtbar für
-  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.10`. Die Version
+  die Rolle Produktpflege) und zeigt darunter die geladene Version, etwa `v0.1.11`. Die Version
   bestätigt, welcher Build tatsächlich läuft.
 - Die Einstellungen der Integration liegen nicht im Panel, sondern in der Integrationsseite von Home
   Assistant: **Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad** öffnet das
@@ -106,10 +106,11 @@ Snapshots nach `/share/frickeldave_store/` oder `/media/frickeldave_store/`.
 | Option an, Ziel `share` | `/share/frickeldave_store/` | nur enthalten, wenn `share` in einem Teil-Backup ausgewählt oder vom Host gesichert wird |
 | Option an, Ziel `media` | `/media/frickeldave_store/` | nur enthalten, wenn `media` in einem Teil-Backup ausgewählt oder vom Host gesichert wird |
 
-| Inhalt        | Ablage unterhalb des gewählten Speicherorts |
-| ------------- | ------------------------------------------- |
-| Metadaten     | HA-`Store` (JSON, atomar, versioniert)      |
-| Produktbilder | `images/<artikelnummer>/`                   |
+| Inhalt        | Ablage unterhalb des gewählten Speicherorts          |
+| ------------- | ---------------------------------------------------- |
+| Metadaten     | `frickeldave_store.data` (JSON, atomar, versioniert) |
+| Produktbilder | `images/<artikelnummer>/`                            |
+| Snapshots     | `backups/<zeitstempel>-<anlass>.json`                |
 
 Bilder gehören bewusst nicht in `.storage`. Ohne die Option liegen Daten und Bilder unter `config/`
 und sind damit ohne Zusatzschritt im Backup enthalten. Mit **Von Backup ausschließen** lassen sie
@@ -122,11 +123,42 @@ Datei-, Bild- und Netzwerkoperationen laufen nicht blockierend (Executor beziehu
 mit Timeouts). Fehler externer Dienste werden abgefangen und dürfen Home Assistant nicht
 beeinträchtigen.
 
+### Persistenz und Datenverlust (bis 0.1.10)
+
+Seit 0.1.11 liest und schreibt die Persistenzschicht die Store-Datei selbst: atomar, im gleichen
+Envelope-Format (`version`, `minor_version`, `key`, `data`) wie zuvor und ohne Abhängigkeit von
+Home-Assistant-Storage-Interna. Die Migration richtet sich nach `data.schemaVersion` in der
+Store-Datei.
+
+Der Umbau behebt einen Fehler, der bis 0.1.10 bei jedem Update den kompletten Katalog löschte:
+
+- **Symptom:** Nach dem Einspielen einer neuen Integrationsversion waren alle Produkte verschwunden.
+- **Ursache:** Home Assistants `Store`-Helper cached beim Start die Dateiliste von
+  `<config>/.storage`. Der Katalog liegt aber unter
+  `config/frickeldave_store/frickeldave_store.data` und damit außerhalb. `Store.async_load()` meldete
+  deshalb „nicht vorhanden“; die Integration erzeugte einen leeren Store, und der nächste
+  Schreibvorgang überschrieb die echte Datei mit `"products": []`. HACS-Updates lösen einen
+  Home-Assistant-Neustart aus, deshalb trat das bei jedem Update auf.
+- **Behebung:** Die Persistenzschicht liest und schreibt die Store-Datei selbst (atomar, gleiches
+  Envelope-Format, Migration über `data.schemaVersion`), statt den HA-`Store`-Helper zu verwenden.
+- **Sicherheitsnetz:** Ein Store mit Produkten wird nie durch einen Zustand mit 0 Produkten
+  überschrieben (`refuse_empty_overwrite`). Vor Migrationen und vor dem ersten Schreiben nach dem
+  Laden entstehen Snapshots unter `backups/`. Ein nicht lesbarer Store führt zu einem lauten Fehler
+  statt zu einer leeren Liste.
+- **Regressionstests:** `tests/test_upgrade_paths.py` prüft die Upgrade-Pfade 0.1.7 → aktuell,
+  0.1.8 → aktuell und 0.1.9 → aktuell mit echten Store-Dateien. Auf dem alten Code schlugen sie fehl
+  (0 statt 3 Produkte).
+
+Die Anleitung für bereits Geschädigte steht unter
+[Wiederherstellung nach dem Datenverlust-Bug](#wiederherstellung-nach-dem-datenverlust-bug-bis-0110).
+
 ### Migrationen
 
 Schema-Änderungen laufen über `config_flow.VERSION`/`MINOR_VERSION` und `async_migrate_entry`.
 Zusätzlich trägt jeder Datensatz eine Schema-Version. Migrationen sind idempotent und legen vor dem
-Lauf einen Snapshot an.
+Lauf einen Snapshot an. Seit 0.1.11 richtet sich die Migration der Store-Datei nach
+`data.schemaVersion` und nicht nach der Envelope-Version (siehe
+[Persistenz und Datenverlust](#persistenz-und-datenverlust-bis-0110)).
 
 ## Installation
 
@@ -156,12 +188,16 @@ Update auf 0.1.9 auf: Der Desktop-Browser zeigte die alten Controls, die Android
 neuen. Seit 0.1.10 verhindern der Versionsparameter und der Cache-Header an den Modul-URLs diesen
 Fall dauerhaft (siehe [Oberfläche](#oberfläche)).
 
+Seit 0.1.11 überlebt der Katalog auch das Update selbst: Der Datenverlust, der bis 0.1.10 bei jedem
+Einspielen einer neuen Integrationsversion auftrat, ist behoben (siehe
+[Persistenz und Datenverlust](#persistenz-und-datenverlust-bis-0110)).
+
 Wenn die Oberfläche nach einem Update unverändert wirkt:
 
 1. Die Seite mit `Strg+Shift+R` hart neu laden (macOS: `Cmd+Shift+R`).
 2. Hilft das nicht, im Browser die Websitedaten für die Home-Assistant-URL löschen.
 3. Die geladene Version prüfen: Sie steht im Drei-Punkte-Menü des Panels und in der Fußzeile des
-   Konfigurationspanels. `v0.1.10` bestätigt den aktuellen Build.
+   Konfigurationspanels. `v0.1.11` bestätigt den aktuellen Build.
 
 ## Einrichtung und Optionen
 
@@ -289,6 +325,13 @@ Regeln:
 
 - Suche über Name, Beschreibung, Artikelnummer und Tags.
 - Filter: Kategorie, Tags, personalisierbar, Sichtbarkeit sowie Bestand je Lagerstätte.
+- Lagerstätte: Die Auswahl einer Lagerstätte zeigt standardmäßig nur Produkte mit Bestand größer 0
+  in dieser Lagerstätte (`in_location=true`).
+- Die Checkbox **„Auch Produkte ohne Bestand anzeigen“** (Standard aus) erweitert das Ergebnis auf
+  alle Produkte der gewählten Lagerstätte (`in_location=false`). Der Hinweistext unter dem
+  Auswahlfeld beschreibt genau dieses Verhalten.
+- Eine gewählte Lagerstätte zählt als aktiver Filter: Sie setzt das Badge **Filter aktiv** und
+  aktiviert **Filter zurücksetzen**. Der Opt-out allein zählt nicht.
 - Verknüpfung: Kategorie ODER, Tags ODER, alle übrigen Filter UND.
 - Suchfeld, Umschalter **Kacheln** / **Liste** und **Filter zurücksetzen** stehen auf gemeinsamer
   Höhe (`--fd-control-height: 48px`); das Suchlabel ist nur für Screenreader sichtbar.
@@ -475,6 +518,30 @@ den Store.
   getestet: identische Checksummen und erhaltener Migrationsstand.
 - Ein Backup ersetzt keine Rechteprüfung: Personen mit Zugriff auf HA-Dateien oder Backups können
   die anwendungsinternen Sperren umgehen.
+
+### Wiederherstellung nach dem Datenverlust-Bug (bis 0.1.10)
+
+Wer vor 0.1.11 Produkte durch ein Update verloren hat, holt sie aus einem Backup von **vor** dem
+Update zurück. Voraussetzung ist, dass ein solches Backup existiert. Reihenfolge:
+
+1. Die Integration auf 0.1.11 aktualisieren. Erst diese Version schreibt nicht mehr über die
+   vorhandene Datei hinweg.
+2. Ein Home-Assistant-Backup von **vor** dem Update öffnen und daraus zwei Dinge entnehmen:
+   `config/frickeldave_store/frickeldave_store.data` und den Ordner `images/`.
+3. Home Assistant stoppen.
+4. Im Zielordner die aktuelle Store-Datei umbenennen, zum Beispiel in
+   `frickeldave_store.data.vor-restore-2026-11-02`. Sie bleibt als Vergleich liegen.
+5. Die Store-Datei aus dem Backup als `frickeldave_store.data` in den Zielordner legen und den
+   Ordner `images/` ergänzen. Bei aktivem **Von Backup ausschließen** liegt der Zielordner unter
+   `/share/frickeldave_store/` oder `/media/frickeldave_store/`.
+6. Home Assistant starten. Die Integration migriert die ältere `data.schemaVersion` und legt vorher
+   einen Snapshot unter `backups/` an.
+7. Die Produktanzahl im Panel prüfen und ein Stichprobenbild öffnen. Ein fehlendes Bild heißt:
+   `images/` wurde nicht vollständig aus dem Backup übernommen.
+
+Ab 0.1.11 liegt vor dem nächsten Schreiben automatisch ein Snapshot unter
+`backups/<zeitstempel>-pre-save.json`. Diese Datei lässt sich wie die Store-Datei zurückspielen,
+falls ein späterer Schritt doch danebengeht.
 
 ## Nicht Teil dieses Vorhabens
 
