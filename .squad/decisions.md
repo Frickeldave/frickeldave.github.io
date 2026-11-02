@@ -2576,6 +2576,244 @@ Tag-Push und `gh release create` — kein Commit, kein Push auf `main`, keine
 Änderung an bestehenden Tags oder Releases, damit die Release-Historie
 nachvollziehbar und unverändert bleibt.
 
+#### 2026-11-02T17:53:40+0000: Erweiterungsvertrag der Basis
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:** Arbeitspaket 2 des ADR #289 ist in `Frickeldave/frickeldave.home.net`
+umgesetzt (Version `0.1.16`, additive Brücke; `publish.py` und `importer.py` bleiben
+unverändert nutzbar). `custom_components.frickeldave_store/extension.py` ist der
+öffentliche Erweiterungspunkt; alles in `__all__` ist API, alles andere bleibt privat.
+Die endgültige Signatur:
+
+```python
+CONTRACT_VERSION: Final = 1
+BASE_DOMAIN: Final = "frickeldave_store"
+EVENT_FEATURES_CHANGED: Final = "frickeldave_store_features_changed"
+ROLE_PRODUCT / ROLE_FINANCE / ROLE_APP_ADMIN
+FEATURE_PUBLISH = "publish"; FEATURE_IMPORT = "import"
+BUILTIN_FEATURES = (FEATURE_PUBLISH, FEATURE_IMPORT)
+CATALOG_PATH_DEFAULT = "public/data/handmade.json"; IMAGES_PATH_DEFAULT = "src/assets/handmade"
+
+FeatureHandler = Callable[[FeatureRequest], Awaitable[FeatureResponse]]
+
+@dataclass(frozen=True, slots=True)
+class FeatureRequest:      feature: str; payload: Mapping[str, Any]; user_id: str; user_name: str; facade: StoreFacade
+@dataclass(frozen=True, slots=True)
+class FeatureResponse:     payload: Mapping[str, Any]; status: int = 200
+@dataclass(frozen=True, slots=True)
+class FeatureSpec:         name; title; required_role: str | None = None; provides_panel_routes: bool = False; ready: bool = True; reason: str = ""; handler: FeatureHandler | None = None
+@dataclass(frozen=True, slots=True)
+class ExtensionRegistration: name: str; version: str; contract_version: int = CONTRACT_VERSION; features: Mapping[str, FeatureSpec] = {}; panel_actions: Mapping[str, FeatureHandler] = {}
+@dataclass(frozen=True, slots=True)
+class FeatureStatus:       available: bool; reason: str = ""; provider: str = ""; contract_version: int = CONTRACT_VERSION  (+ as_dict())
+
+ProductSnapshot(article_number, name, description, price, size, category, tags, visible,
+                customizable, archived, stock, images, created_at, updated_at)
+ImageSnapshot(name, is_main, order)
+ExportArtifact(path, data, kind: Literal["catalog","image"], article_number="")
+ExportBundle(catalog_path, images_path, catalog_bytes, artifacts, product_count,
+             image_count, empty_catalog, generated_at)
+ImportItemError(article_number, message)
+ImportBatchResult(created, updated, unchanged, skipped, failed, images_written, errors,
+                  snapshot, summary)  (+ as_dict())
+ImageUpload(name, data, is_main=False); ImportItem(article_number, payload, images=())
+
+class StoreFacade:            # je Anfrage an einen HA-Benutzer gebunden
+    contract_version: ClassVar[int]
+    hass, user_id, user_name
+    settings -> Mapping[str, Any]              # nur lesend, ohne Geheimnisse
+    can(role) -> bool; require(role) -> None    # dieselben Rollen wie das Panel
+    async_products() -> tuple[ProductSnapshot, ...]        # inkl. archivierter
+    async_locations() -> tuple[Mapping[str, str], ...]     # id/name, unveränderlich
+    async_article_numbers() -> frozenset[str]
+    async_create_snapshot(reason="manual") -> str | None   # Dateiname, kein Pfad
+    async_build_export(*, catalog_path=CATALOG_PATH_DEFAULT, images_path=IMAGES_PATH_DEFAULT,
+                       visible_only=False) -> ExportBundle
+    async_apply_import_batch(products: Sequence[Mapping[str, Any] | ImportItem],
+                             *, overwrite: bool = False) -> ImportBatchResult
+
+async def async_register_extension(hass, registration) -> ExtensionRegistration
+async def async_unregister_extension(hass, name) -> None
+async def async_get_feature_status(hass) -> dict[str, FeatureStatus]
+async def async_get_facade(hass, *, user_id="") -> StoreFacade | None
+
+class ExtensionError(Exception): code: str; message: str; status: int
+```
+
+Fehlercodes: `contract_mismatch` (400), `already_registered` (409), `not_registered`
+(404), `invalid_registration` (400), `feature_unknown` (404), `feature_unavailable`
+(409), `handler_failed` (502). Zusätzlich dürfen Handler eigene Codes (z. B.
+`invalid_request`, 400) werfen.
+
+API: `features` in `GET /me` und `GET`/`PATCH /settings` als
+`{"<name>": {"available": bool, "reason": str, "provider": str, "contract_version": int}}`;
+`/settings` (nur `app_admin`) liefert zusätzlich `feature_details` (`name`, `title`,
+`required_role`, `provides_panel_routes`, `available`, `reason`, `provider`,
+`contract_version`). Neu: `POST /api/frickeldave_store/features/{feature}` mit
+optionalem JSON-Objekt, Rollenprüfung über `required_role` und strukturierten Fehlern.
+Fallback ohne Erweiterung: `publish` (Rolle `app_admin`) und `import` (Rolle `product`,
+mit eigener `source_url`/`image_base_url` nur `app_admin`) laufen über dieselben
+Helfer wie die Alt-Endpunkte, Antwortformat unverändert. `frickeldave_store_features_changed`
+feuert bei Registrierung und Abmeldung mit `changed` und `features`.
+
+**Why:** Die Basis bleibt für die HA-Community generisch und allein lauffähig, während
+die Frickeldave-Synchronisation (Arbeitspaket 5/6) genau die Fähigkeiten bekommt, die sie
+braucht: Lesen von Produkten/Lagerstätten/Artikelnummern, Rechteprüfung, Snapshot, Export
+im Website-Schema und ein validierter Batch-Schreibpfad. Die eine Import-Richtung
+(Erweiterung → Basis) und die Fassade verhindern, dass die Erweiterung an private Interna
+(`hass.data`, `CatalogStore`, Dateipfade) gebunden wird. `0.1.16` bleibt additiv: die
+Alt-Endpunkte `POST /publish` und `POST /import/catalog` funktionieren unverändert, damit
+der Bestandsnutzer vor dem Wechsel auf die Erweiterung nichts verliert. Die
+Registrierung ist idempotent und unabhängig von der Panel-Reihenfolge, damit ein Reload
+oder ein spät geladener Eintrag nichts bricht. Konsequenz für Natasha: Das Panel kann
+Buttons über `features`/`feature_details` gaten (Fähigkeit, Anbieter, deutsche Begründung)
+und muss bei `frickeldave_store_features_changed` nur `/me` neu laden.
+
+**Betrifft:** `Frickeldave/frickeldave.home.net` (Basis `0.1.16`),
+`Frickeldave/homeassistant-frickeldave-store-syncfd` (Arbeitspakete 5/6),
+Panel-Gating (Natasha), `docs/extension-api.md`.
+
+#### 2026-11-02T18:10:00+0000: Erweiterungs-Repo-Gerüst steht (Arbeitspaket 1)
+
+**By:** Nick (DevOps / Infrastruktur)
+
+**What:** `Frickeldave/homeassistant-frickeldave-store-syncfd` hat das HACS-Skelett
+für Arbeitspaket 1 des ADR #289. `main` = `a38059d`; CI-Lauf `41497608326` ist grün
+(Ruff, mypy, pytest, hassfest, HACS-Validierung).
+
+- Integrationsordner `custom_components/frickeldave_store_syncfd/` mit `manifest.json`,
+  `const.py`, `__init__.py` (Basis-Check, Registrierung bei Contract 1, Abmeldung über
+  `entry.async_on_unload`), `config_flow.py` (Config- und Options-Flow ohne Felder),
+  `strings.json` plus `translations/de.json`/`en.json`, `brand/icon.png` (+ `@2x`,
+  `dark_icon`).
+- `hacs.json` (`name`, `render_readme`, `homeassistant: 2025.1.0`, `country: ["DE"]`),
+  `pyproject.toml` mit denselben Ruff-/mypy-/pytest-Einstellungen wie die Basis,
+  `.gitignore`, Issue-Templates, PR-Template.
+- CI `ci.yml`: `ruff==0.17.3`, `mypy`, `pytest==8.3.4`,
+  `pytest-asyncio==0.24.0`, `pytest-homeassistant-custom-component==0.13.205`,
+  `homeassistant==2025.1.4`, `aiohttp==3.11.11`, `voluptuous==0.15.2`, plus
+  `home-assistant/actions/hassfest@master` und `hacs/action@main` (`category: integration`).
+  Kein Node-Job, weil die Erweiterung kein Frontend mitbringt.
+- Topics gesetzt: `home-assistant`, `homeassistant`, `hacs`, `hacs-integration`,
+  `custom-integration`, `frickeldave-store`.
+
+**Abweichung zum ADR-Text, bewusst:** Die Integrations-Domain heißt
+**`frickeldave_store_syncfd`**, nicht `frickeldave_store_sync`. Der Ordnername muss laut
+hassfest exakt der Manifest-Domain entsprechen, und HACS identifiziert das Repository
+über den Domain-/Repo-Namen `homeassistant-frickeldave-store-syncfd`. Bruce registriert
+die Erweiterung daher als `name="frickeldave_store_syncfd"`; die Feature-Namen bleiben
+`publish` und `import`, die Payloads sind unverändert. Wer den kürzeren Namen will, muss
+Repository und Domain gemeinsam umbenennen — das ist eine eigene Entscheidung, kein
+Nebeneffekt dieses Pakets.
+
+**Manifest:** `dependencies: ["frickeldave_store"]` (harte Voraussetzung),
+`after_dependencies: ["http"]` (nur Reihenfolge; `frickeldave_store` steht bewusst nicht
+in beiden Listen, hassfest wertet das als Fehler), `integration_type: "service"`,
+`iot_class: "cloud_push"` (iot_class ist für dieses Domain pflichtig; GitHub-Push ist
+die einzige Außenwirkung), `version: "0.1.0"`, `codeowners: ["@Frickeldave"]`.
+
+**Registrierung heute:** `ExtensionRegistration(name=DOMAIN, version="0.1.0",
+contract_version=1, features={})`. Ist `extension.py` der Basis nicht vorhanden, startet
+das Gerüst mit Warnung ohne Registrierung; ein Test prüft Registrierung und Abmeldung
+gegen ein Stub-Modul des Vertrags.
+
+**Offene Punkte für Arbeitspaket 9:** HACS meldet (nicht blockierend) „manifest has no
+categories“; hassfest kennt den Schlüssel `categories` noch nicht, deshalb bleibt er
+weg, bis die Basis ihn einführt. Die Erweiterung hat noch keinen Eintrag in
+`home-assistant/brands` (Brand-Assets liegen lokal im Integrationsordner). Die
+Cross-Repo-Matrix (Basis `0.1.15`/`0.1.16`/`0.2.0`) fehlt; `extension.py` existiert
+bislang nur im Arbeitsstand von Bruce (`0.1.16`, noch nicht auf `main` der Basis).
+
+**Why:** Die Struktur muss alle Prüfungen bestehen, bevor Bruce Publish und Import
+einbaut. Deshalb sind Manifest-Reihenfolge und -Schlüssel an hassfest ausgerichtet, die
+Basis-Abhängigkeit doppelt abgesichert (Manifest plus `ConfigEntryNotReady`/`base_missing`)
+und der Vertrag gegen die real implementierte Signatur von `extension.py` gebaut, nicht
+gegen den ADR-Entwurf. Ohne diese Angleichung wäre Arbeitspaket 5 beim ersten Lauf gegen
+die Basis gescheitert.
+
+#### 2026-11-02T18:10:00+0000: Release 0.1.16 veröffentlicht
+
+**By:** Nick (DevOps / Infrastruktur)
+
+**What:** `Frickeldave/frickeldave.home.net` ist mit `0.1.16` veröffentlicht.
+Annotierter Tag `0.1.16` (Tag-Objekt `399692f3e4aba078c2c8c027f3d65ab662452c4b`)
+zeigt auf Commit `50c9b120da8b7db019f7f5166f672b36c3162e56` (= `main`, Titel
+`style(manifest): kompakte JSON-Formatierung beibehalten (#289)`), Annotation
+„Frickeldave Store 0.1.16“. GitHub-Release
+https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.1.16 ist
+**Latest**, weder Draft noch Pre-Release; die Notes sind der Abschnitt
+`## [0.1.16] - 2026-11-02` aus `CHANGELOG.md` und wurden unverändert übernommen.
+Geprüft: `manifest.json` `"version": "0.1.16"` im Tag, `pyproject.toml` `0.1.16`,
+`hacs.json` vorhanden, `custom_components/frickeldave_store/extension.py` im Tag
+vorhanden (`CONTRACT_VERSION = 1`, `StoreFacade`, `async_register_extension`,
+`async_get_feature_status`). CI-Lauf für `50c9b12`:
+https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41497756989 —
+`success` (Ruff, Frontend, hassfest, HACS validation, mypy, pytest alle grün).
+Releases `0.1.8`–`0.1.15` sind unverändert (gleiche Release-IDs und
+`publishedAt`-Zeitstempel wie vor der Veröffentlichung). Kein Push auf `main`,
+keine Commits, keine Dateiänderungen in `frickeldave.home.net`; nur der Tag-Ref
+wurde gepusht. `0.1.16` existierte vorher weder als Tag noch als Release, daher
+kein Abbruch nötig.
+
+**Why:** `0.1.16` ist die additive Brücke zum Erweiterungsvertrag aus
+`bruce-289-extension-contract.md` und muss als installierbare HACS-Version
+verfügbar sein, bevor die zweite Custom Integration (`frickeldave_store_sync`)
+dagegen entwickelt wird. Der annotierte Tag auf dem geprüften `main`-Commit hält
+Release, Changelog und Manifest deckungsgleich und macht `0.1.16` zur
+Referenzversion für die Erweiterung; CI-Grün auf genau diesem SHA belegt, dass
+der veröffentlichte Stand die Prüfungen besteht. Die unveränderten
+Vorgängerreleases sichern Installations- und Rollback-Pfade für Bestandsnutzer.
+
+**Betrifft:** `Frickeldave/frickeldave.home.net` (Release `0.1.16`),
+Arbeitspakete 5/6 in `Frickeldave/homeassistant-frickeldave-store-syncfd`
+(Manifest-Mindestversion `0.1.16`), Squad-Release-Historie.
+
+#### 2026-11-02T18:10:00+0000: FR008 dokumentiert den Erweiterungspunkt 0.1.16
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin)
+
+**What:** `docs/features/fr008-ha-manager.md` beschreibt die additive Brücke der Integration
+`frickeldave_store` 0.1.16 (02.11.2026) und `CHANGELOG.md` führt zwei Einträge unter
+`## [Unreleased]` → `### Added`, beide mit `(#289)`.
+
+- Neuer Abschnitt **Erweiterungen** zwischen „Veröffentlichen“ (inklusive Unterabschnitten zu
+  verwalteten Pfaden, Löschschutz, Dry-Run und Fehlerbehandlung) und „KI-Beschreibungsvorschläge“,
+  gegliedert in „Erweiterungspunkt“, „Was eine Erweiterung bekommt“, „Fähigkeiten im Panel“ und
+  „Geplante Auslagerung“. Inhalte: `CONTRACT_VERSION = 1`, idempotentes
+  `async_register_extension()`/`async_unregister_extension()` mit Vertragsprüfung und
+  `contract_mismatch`, `async_get_feature_status()` mit `available`, `reason`, `provider` und
+  `contract_version`; die `StoreFacade` mit Produkten, Lagerstätten, Artikelnummern,
+  Rechteprüfung über `can`/`require`, Snapshot, Exportbau und Import-Batch, aber ohne Zugriff auf
+  interne Store-Objekte oder Dateipfade; `features` in `GET /me` und `GET`/`PATCH /settings`,
+  `feature_details` nur in `/settings` und nur für Anwendungsverwaltung; die generische Route
+  `POST /api/frickeldave_store/features/{feature}` mit Rückfall auf das eingebaute Verhalten bei
+  unveränderten Endpunkten `/publish` und `/import/catalog`; das Event
+  `frickeldave_store_features_changed`; die Fehlercodes `contract_mismatch`,
+  `already_registered`, `not_registered`, `invalid_registration`, `feature_unknown`,
+  `feature_unavailable` und `handler_failed`.
+- Ein kurzes JSON-Beispiel zeigt die Form von `features` für `publish` und `import`.
+- Die Statuszeile im Kopf nennt jetzt 0.1.16 statt 0.1.15; die Aussage zu Finanz- und
+  Kundenfunktionen bleibt unverändert.
+- Die geplante Auslagerung von Synchronisation und Katalogimport in die eigene Integration
+  `frickeldave_store_syncfd` ist als Vorhaben formuliert, samt dem Hinweis, dass deren
+  Schaltflächen erst bei installierter Erweiterung erscheinen. Ein eigener Absatz sagt ausdrücklich,
+  dass 0.1.16 rein additiv ist und für Bestandsnutzer nichts ändert.
+
+**Validierung:** `npx markdownlint-cli@0.44.0 docs/features/fr008-ha-manager.md CHANGELOG.md`
+meldet weiterhin nur die zwei vorbestehenden Befunde im Abschnitt `[1.0.7]` (`CHANGELOG.md:72`
+MD032, `CHANGELOG.md:73` MD022); die Zeilennummern verschieben sich um die zwei neuen Einträge,
+die Befunde selbst bleiben und fremde Abschnitte sind unformatiert. `npm run prose` meldet
+`0 errors, 0 warnings and 0 suggestions in 104 files`, `npm run format:check` meldet
+`All matched files use Prettier code style!`.
+
+**Why:** Der Erweiterungspunkt ist nur dann als reine Ergänzung erkennbar, wenn das Dokument
+denselben Schnitt beschreibt, den `extension.py` veröffentlicht — Vertrag, Fassade, `features` und
+Fallback. Die Platzierung hinter „Veröffentlichen“ hält den Weg vom bestehenden Verhalten zur
+künftigen Erweiterung kurz, der Standort der Statuszeile bleibt erhalten, und die Auslagerung steht
+als geplant statt als umgesetzt da. So bleibt das Dokument für Bestandsnutzer unmissverständlich:
+Veröffentlichen und Katalogimport laufen unverändert weiter.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
