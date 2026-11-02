@@ -1389,6 +1389,233 @@ Changelog übernommen, damit Release und `CHANGELOG.md` nicht auseinanderlaufen.
 Kein Branch-Push, keine Commits, keine Dateiänderungen im Repo — nur Tag und
 Release.
 
+#### 2026-11-02T15:40:00+0000: Bildverkleinerung und Größenmetadaten
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:** Uploads und Bestandsbilder laufen durch ein neues Modul
+`custom_components/frickeldave_store/imaging.py` (Verkleinerung, Formatwahl,
+Metadaten, Cache). Der Upload verkleinert automatisch, `GET …/images`, die
+Produktliste (HTTP + WebSocket) und das Produktdetail liefern je Bild `bytes`,
+`width`, `height`, `content_type`, `oversized`; neu ist
+`POST /products/{artikelnummer}/images/optimize` für die Sammel-Optimierung.
+Version 0.1.14.
+
+**Why:** Ein 12-MB-Handyfoto im Panel bremst Liste, Detailansicht und Website-
+Export. Ohne Größenangaben konnte das Panel keine Warnung anzeigen. Die
+Entscheidungen im Einzelnen:
+
+**Format- und Qualitätsregeln**
+
+- Lange Kante max. **1600 px**, `Image.thumbnail()` skaliert nie hoch.
+- JPEG → JPEG, Qualität **82**, `optimize=True`, `progressive=True`, `info`
+  wird geleert (kein EXIF/GPS/ICC/Kommentar).
+- PNG/WebP **mit** Transparenz (RGBA/LA/P mit `transparency`) → **WebP**,
+  Qualität **85**, Alpha bleibt erhalten.
+- PNG/WebP **ohne** Transparenz → **JPEG**, Qualität **82**.
+- GIF immer unverändert; animiertes WebP ebenfalls (`is_animated`/`n_frames`).
+- Bereits passend (lange Kante ≤ 1600 px **und** ≤ 400 KiB) → Bytes werden
+  unverändert übernommen, kein Re-Encoding, `resized: false`.
+- Umbenennung: Die Dateiendung folgt dem Ergebnis (`…-03.png` → `…-03.webp`).
+  Die Nummerierung bleibt eindeutig, weil `next_image_name()` nur Stämme zählt.
+- Zusätzliche Idempotenz-Bremse: Liefert ein Re-Encoding byteweise dasselbe
+  Ergebnis, meldet der Optimierer `resized: false` – so ist ein zweiter
+  Optimize-Lauf garantiert ohne Änderung.
+
+**Pillow-Handhabung**
+
+- Pillow ist Core-Abhängigkeit von Home Assistant (11.x) und wird **nicht** in
+  `manifest.json` unter `requirements` eingetragen – sonst installiert HA eine
+  zweite, potenziell inkompatible Version.
+- Kein Import auf Modulebene: `imaging.pillow()` importiert `PIL.Image` erst
+  beim ersten Bild. Fehlt Pillow, antwortet der Upload mit `500
+  pillow_missing` und deutscher Meldung statt mit einem `ImportError` beim
+  Setup. Metadaten-Lesen degradiert dann auf `width/height = null` (Liste
+  bleibt nutzbar).
+- Defekte Dateien: `ValidationError` mit `code="image_invalid"` und deutscher
+  Meldung, nie ein Stacktrace nach außen.
+
+**Schutz vor Dekomprimierungsbomben**
+
+- `MAX_IMAGE_PIXELS = 40_000_000` (40 MP): reicht für jede Kamera, begrenzt
+  aber den Speicher (40 MP × 4 Byte ≈ 160 MB). Die Prüfung läuft nach dem
+  Header-Lesen und **vor** `load()`; zusätzlich wird Pillows
+  `DecompressionBombWarning` im Kontext als Fehler behandelt und
+  `DecompressionBombError` in `image_invalid` übersetzt.
+
+**Cache-Strategie (Metadaten)**
+
+- Prozesslokal, threadsicher, LRU mit **4096 Einträgen**
+  (`imaging.MetadataCache`). Schlüssel: `(Pfad, st_mtime_ns, st_size)` –
+  geänderte oder ersetzte Dateien werden dadurch automatisch neu gelesen,
+  ohne dass jemand den Cache invalidiert.
+- Nur `Image.open()` liest den Header; es wird nie das ganze Bild dekodiert.
+- Begründung Größe: 60 Produkte × 10 Bilder = 600 Einträge, ein Vielfaches
+  davon deckt auch größere Kataloge ab, ohne unbegrenzt zu wachsen.
+- Gemessen (60 Produkte × 10 Bilder, 1600×1200-JPEGs): kalt **153 ms**,
+  warm **26 ms** für die komplette Liste. Kein sekundenlanges Blockieren.
+
+**Schwellwerte**
+
+- `MAX_LONG_EDGE = 1600`, `MAX_IMAGE_BYTES = 400 * 1024` (400 KiB).
+- `oversized` = lange Kante > 1600 px **oder** Datei > 400 KiB. Achtung: Ein
+  bereits auf 1600 px gebrachtes, detailreiches Foto kann weiterhin über
+  400 KiB liegen; es bleibt dann `oversized: true` (die Liste warnt weiter),
+  die Optimierung ändert aber nichts mehr (`resized: false`).
+
+**Metadaten werden nicht persistiert**
+
+- `Image.to_dict()` bleibt unverändert (nur `name`, `is_main`), damit der Store
+  keine veralteten Werte speichert und keine Migration nötig ist. Die Felder
+  entstehen beim Lesen in `ProductService.image_payloads()` /
+  `async_serialise_products()`.
+
+**Sammel-Optimierung**
+
+- `POST /products/{artikelnummer}/images/optimize` (Recht `product`) arbeitet
+  unter der Store-Sperre, damit kein paralleler Upload/Delete dazwischenläuft.
+  Snapshot der Metadaten vor dem ersten Überschreiben über die bestehende
+  Funktion `CatalogStore.async_snapshot("pre-image-optimize")`.
+- Grenze dieser Sicherung: Der vorhandene Snapshot kopiert nur die Store-Datei,
+  **nicht** die Bild-Bytes. Ein absichtlich verkleinertes Original ist damit
+  nicht wiederherstellbar – bewusst akzeptiert, weil ein Bild-Backup pro Lauf
+  bis zu 100 MB kosten würde. Wer das braucht, sichert den Bilderordner
+  extern.
+
+**Allgemeine Einstellungen**
+
+- Kein neuer Mechanismus: `storage_payload()` lieferte bereits
+  `data_path`, `effective_path`, `backup_included`, `exclude_from_backup`,
+  `paths` und `choices` (deutsche Labels/Beschreibungen samt
+  `backup_included` je Wahl). `PATCH /settings` akzeptiert genau
+  `{"storage": {"data_path": "config|share|media"}}`. Für den Tab genügt es,
+  diese Felder anzuzeigen; Backend-Änderungen waren nicht nötig.
+
+#### 2026-11-02T15:40:00+0000: Platzierung des Bild-Warnzeichens in Liste und Kacheln
+
+**By:** Natasha (Frontend / UI)
+
+**What:** Produkte mit mindestens einem `oversized`-Bild tragen ein
+Warndreieck als echten `<button>` mit `title` und `aria-label`
+(„Mindestens ein Bild ist zu groß. Produkt öffnen und Bilder optimieren.“).
+In der **Kachel** liegt es als rundes Badge am Bild oben rechts (44 × 44 px,
+weiße Fläche, Warnrahmen), in der **Listenansicht** in der Statusspalte vor den
+Status-Badges mit sichtbarem Text „Bilder zu groß“ (44 px hoch, Uppercase wie
+die übrigen Badges). Ein Klick öffnet den Produktdialog direkt im Bilder-Tab
+(`_openImagesFor`), damit die Warnung in die Handlung führt.
+
+**Why:** Die Statusspalte ist der Ort, an dem die Liste bereits Zustände
+sammelt; dort überlagert das Zeichen weder Produktname noch Preis und bleibt
+trotzdem bei jeder Zeilenhöhe sichtbar. In der Kachel ist das Bild die einzige
+Stelle, die ohne Scrollen auffällt – ein Badge im Textbereich würde mit
+„Personalisierbar“/„Nicht sichtbar“ konkurrieren. Ein Button statt eines
+bloßen `<span tabindex="0">` gibt Tastaturfokus, Enter/Space und ein
+`stopPropagation`, ohne eine eigene Fokusfalle zu bauen; das Warndreieck ist
+Form **und** Text, die Warnung hängt also nicht an der Farbe allein. Der Sprung
+in den Bilder-Tab spart den Umweg über „Bearbeiten → Bilder“ und macht aus der
+Warnung eine Ein-Klick-Aufgabe.
+
+#### 2026-11-02T15:40:00+0000: Backup-Schalter leitet sich aus dem Speicherort ab
+
+**By:** Natasha (Frontend / UI)
+
+**What:** Der neue Tab „Allgemeine Einstellungen“ (erster Tab des
+Konfigurationspanels, vor „Benutzerverwaltung“) zeigt einen Schalter
+„Produktkatalog im Home-Assistant-Backup enthalten“, dessen Zustand **aus
+`storage.data_path` abgeleitet** wird: `config` = enthalten, `share`/`media` =
+nicht enthalten. Der Schalter ist kein eigenes Feld: Einschalten wählt
+`data_path: "config"`, Ausschalten die erste Wahl mit
+`backup_included: false` (also `share`). Der Hilfetext nennt den Zusammenhang
+explizit (config liegt im Backup, share/media nicht) und wechselt mit der
+Auswahl. Gespeichert wird ausschließlich
+`PATCH /settings {"storage": {"data_path": …}}`; die Antwort aktualisiert
+`effective_path`, `paths[]` und `choices[]`, `reload_required` erzeugt einen
+Warnbanner mit dem Hinweis auf „Einstellungen → Geräte & Dienste →
+Frickeldave Store → Neu laden“. Bei `409`/`400` erscheint die deutsche
+Servermeldung, und die Auswahl springt auf den gespeicherten Speicherort
+zurück.
+
+**Why:** `backup_included` ist serverseitig eine reine Funktion des
+Speicherorts (`storage_payload()`); ein zweiter, unabhängig schaltbarer Wert
+würde eine Wahrheit vortäuschen, die es nicht gibt, und beim nächsten Laden
+verworfen. Indem der Schalter nur den Speicherort setzt, bleiben Switch,
+Auswahl und die angezeigten Pfade immer konsistent. Das Zurückrollen bei
+Fehlern verhindert, dass das Panel einen Speicherort anzeigt, der nie
+gespeichert wurde – besonders wichtig, weil ein Wechsel auf einen belegten
+Ordner (`409`) oder einen fehlenden Mount (`400`) sonst wie eine gültige
+Auswahl aussehen würde.
+
+#### 2026-11-02T16:05:00+0000: Doku 0.1.14 - Bilder, Optimierung und Tab „Allgemeine Einstellungen“
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin)
+
+**What:** `docs/features/fr008-ha-manager.md` beschreibt 0.1.14 und `CHANGELOG.md` führt zwei
+Einträge unter `## [Unreleased]`. Geändert wurden ausschließlich diese beiden Dateien.
+
+- Neuer Abschnitt „Bilder“ in „Produktpflege im Panel“, direkt vor „Katalogimport“: Tabelle der
+  Verkleinerungsregeln (lange Kante max. 1600 px, JPEG 82 progressiv ohne EXIF/ICC, Transparenz als
+  WebP 85, PNG ohne Alpha als JPEG 82, GIF und animiertes WebP unverändert, bereits passende Bytes
+  unverändert), Modul `imaging.py` mit Pillow und 40-MP-Schutz, Endung folgt dem Ergebnis,
+  Upload-Antwort mit `bytes`/`width`/`height`/`content_type`, `resized` und deutscher Meldung;
+  Bild-Metadaten samt `oversized`, Ermittlung beim Lesen ohne Migration und LRU-Cache (26 ms warm,
+  153 ms kalt für 600 Bilder); `POST …/images/optimize` mit Snapshot, erhaltener Reihenfolge und
+  Hauptbild, Idempotenz, Vorher/Nachher je Bild und Statistik; Oberflächenverhalten mit
+  Verkleinerungsmeldung, Bildgröße, Warnbanner, Button „Bilder optimieren“ und Warndreieck samt
+  Tooltip und Sprung in den Bilder-Tab.
+- Tab „Allgemeine“ heißt jetzt „Allgemeine Einstellungen“, steht an erster Stelle und beschreibt
+  den abgeleiteten Backup-Schalter, die Speicherort-Auswahl, den schreibgeschützten effektiven Pfad
+  mit drei Unterpfaden, `PATCH /settings`, den Hinweis auf das Neuladen sowie `409`/`400` mit
+  zurückspringender Auswahl. Alle Querverweise und Anker (`#tab-allgemeine-einstellungen`),
+  „Datenhaltung“ und „Backup und Wiederherstellung“ folgen der neuen Auswahl-Logik statt der
+  früheren Option „Von Backup ausschließen“.
+- Korrigiert: Der Abschnitt sagt jetzt offen, dass frühere Fassungen den Tab nannten, obwohl er im
+  Code fehlte, und dass die Angaben seit 0.1.14 den tatsächlichen Stand beschreiben.
+- Versionsstände im Dokument auf 0.1.14 gezogen (Statuszeile, Versionsanzeige im Drei-Punkte-Menü,
+  Browser-Cache-Prüfung); historische Angaben zu 0.1.10 bis 0.1.13 bleiben unverändert.
+- CHANGELOG: ein `Added`-Eintrag für Version 0.1.14 mit Bildverkleinerung, Metadaten, Endpunkt und
+  Oberfläche, ein `Changed`-Eintrag für den Tab „Allgemeine Einstellungen“ samt Doku-Korrektur,
+  beide mit `(#289)`.
+
+**Why:** Die Regeln der Bildverkleinerung und die Sammel-Optimierung sind ohne Schwellwerte und
+Formattabelle nicht nachvollziehbar, und die Warnzeichen im Panel brauchen eine Erklärung, was sie
+auslöst und wohin der Klick führt. Der Tab „Allgemeine“ war zuvor dokumentiert, obwohl ihn der Code
+nicht hatte; nach der Umsetzung wäre eine bloße Umbenennung zu wenig gewesen, weil der Inhalt von
+einer Option auf eine Speicherort-Auswahl mit abgeleitetem Backup-Zustand wechselt. Die offene
+Korrektur im Text verhindert, dass alte Leser die Abweichung zwischen Doku und Build erneut als
+Fehler melden. Der Abschnitt bleibt im bestehenden Stil (deutsche Prosa, 90-110 Zeichen je Zeile,
+Tabellen für Werte), ohne fremde Abschnitte umzuformatieren; die zwei vorbestehenden
+markdownlint-Befunde im Abschnitt `[1.0.7]` bleiben bewusst unangetastet.
+
+#### 2026-11-02T16:05:00+0000: Release 0.1.14 veröffentlicht
+
+**By:** Nick (DevOps / Infrastructure)
+
+**What:** Version `0.1.14` ist als annotierter Tag auf
+`286096ef878afff0499e43b48655214948141bf0` gesetzt (Tag-Objekt
+`90f148d48c2f2fc10cdc900e6de4ef45bec204ce`, Annotation „Frickeldave Store
+0.1.14“) und als GitHub-Release veröffentlicht – kein Draft, kein
+Pre-Release, `Latest`:
+https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.1.14
+Die Release-Notes stammen unverändert aus dem Abschnitt
+`## [0.1.14] - 2026-11-02` der `CHANGELOG.md` (Markdown-Struktur mit
+`### Added`, `### Changed`, `### Notes` erhalten). Im Tag zeigen
+`manifest.json` `version: 0.1.14`, `hacs.json` und
+`custom_components/frickeldave_store/imaging.py` den erwarteten Stand. Die
+Releases `0.1.8`–`0.1.13` und ihre Tags blieben unverändert
+(`publishedAt`/Remote-Tag-SHAs identisch zur Baseline). Der CI-Lauf für
+`286096e` ist grün:
+https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41477537255
+`main` steht weiterhin auf `286096e`, es gab keine Commits, keinen Push auf
+`main` und keine Dateiänderung im Repository.
+
+**Why:** Release und Tag werden erst nach grünem CI gesetzt, damit ein
+fehlgeschlagener Lauf nicht als veröffentlichter Stand in HACS landet; der
+annotierte Tag (statt lightweight) hält Version, Annotation und Commit
+nachvollziehbar zusammen, und `--verify-tag` verhindert, dass der Release
+einen abweichenden Tag anlegt. Die Notes werden wörtlich aus dem Changelog
+übernommen, damit Release, Changelog und HACS-Update-Notiz dieselbe Quelle
+haben und die bestehende Historie (`0.1.8`–`0.1.13`) unangetastet bleibt.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
