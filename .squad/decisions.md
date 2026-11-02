@@ -729,6 +729,487 @@ unter `config/frickeldave_store/backups/` an
 (`*-pre-load-v*.json`, `*-pre-save.json`) und verweigert das Schreiben von null
 Produkten ohne ausdrückliche Bestätigung. Details: `docs/backup-restore.md`.
 
+#### 2026-11-02T12:35:45+0000: Badges an den Veröffentlichungs-Icons
+
+**By:** Natasha (Frontend Developer / UI-Spezialistin)
+
+**What:**
+
+Issue #289, App-Bar des Store-Panels: Beide Veröffentlichungs-Buttons
+(`_openPublish("dev")` / `_openPublish("prod")`) nutzen jetzt dasselbe
+Branch-Split-Symbol; das Raketen-`<path>` des Prod-Buttons ist entfernt.
+Unterschieden werden sie durch ein rein visuelles Kürzel in der unteren rechten
+Ecke des 48-px-Buttons (`.fd-bar-badge`, `aria-hidden="true"`): „dev“ am
+Dev-Button, „prd“ am Prod-Button. Größe 12 px hoch, `--ha-font-size-xs` (10 px),
+Pill-Radius, Fläche `--fd-surface`, Text `--fd-text`, 1-px-Rahmen `--fd-divider`
+— keine Rohfarbwerte, kein `innerHTML`. Die Badges bleiben innerhalb der
+48 × 48 px, damit Klickziel, Fokusring und das horizontale Scrollen der
+Aktionsgruppe auf schmalen Viewports nichts abschneiden; im `disabled`-Zustand
+werden sie über die Button-Opacity (0.38) mitgedämpft, nicht ausgeblendet.
+Für das Scroll-Verhalten auf ≤ 640 px bekam `.fd-bar-actions` `padding-block:
+5px; margin-block: -5px`, damit der 2-px-Fokusring samt 2-px-Offset nicht
+beschnitten wird. Zugänglichkeit unverändert: `aria-label`/`title` heißen
+weiter „Nach dev veröffentlichen“ bzw. „Nach prod veröffentlichen“, der Badge
+wird von Screenreadern ignoriert.
+
+**Why:**
+
+Der Nutzerwunsch war ausdrücklich „beide Symbole gleich, Unterschied über ein
+Badge dev/prd“. Ein Badge ist reine Dekoration — die Bedeutung muss im
+zugänglichen Namen stehen, sonst liest ein Screenreader „dev dev“ vor und
+Tastatur-/Sprachnutzer verlieren die Unterscheidung. Die Beschriftung trägt die
+Information, nicht die Farbe (WCAG 1.4.1). Ein überstehender Badge hätte im
+horizontal scrollenden Container (`overflow-x: auto`) abgeschnitten werden
+können und den Fokusring überdeckt; die Variante innerhalb der Button-Fläche
+vermeidet beides ohne Einbußen beim Touch-Ziel. Regressionstest
+`tests/test_frontend_assets.py::test_publish_buttons_share_icon_and_differ_by_badge`
+hält Icon-Gleichheit und Badge-Texte fest.
+
+#### 2026-11-02T12:54:51+0000: Sortierschlüssel und Artikelnummer-Vorschlag
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:**
+
+Issue #289, `frickeldave.home.net` (Commit `1b7d63f`, `main`). Zwei Ergänzungen
+am Backend der Integration `frickeldave_store`:
+
+1. **Sortierung.** `sort` kennt neben `name` und `price` jetzt `category`, `stock`
+   und `status` (`SORT_KEYS` in `products.py`); HTTP- und WebSocket-API nutzen
+   denselben `ProductFilter` und akzeptieren die Werte damit automatisch. Die
+   Fehlermeldung nennt alle erlaubten Werte:
+   `sort muss 'name', 'price', 'category', 'stock' oder 'status' sein.`
+   - `category`: nach dem **sichtbaren Label** (alphabetisch, casefold):
+     3D-Druck, Epoxidharz, Holz, Laser, Steinmasse — also `WO` (Holz) vor `LA`
+     (Laser), nicht Rohcode-Reihenfolge. Unbekannte Codes (Altbestände) landen
+     hinter allen bekannten Kategorien und sind dort nach Rohcode stabil.
+   - `stock`: nach **Gesamtbestand** (`Product.total_stock()`, Summe aller
+     Lagerstätten) und damit unabhängig von `location`/`in_location`.
+   - `status`: `(archived, not visible)` als Schlüssel, also **aktiv vor
+     archiviert**, innerhalb aktiv **sichtbar vor unsichtbar**. Die
+     Sichtbarkeit bleibt als zweites Kriterium auch bei archivierten Produkten
+     stehen (schadet nicht, hält die Reihenfolge aber in jeder Kombination
+     deterministisch).
+   - Tiebreaker: bei `category`/`stock`/`status` Name (casefold), dann
+     Artikelnummer; bei `name`/`price` wie bisher nur die Artikelnummer.
+
+2. **Artikelnummer-Vorschlag.** `GET /api/frickeldave_store/products/article-number?category=LA`
+   (Recht `product`) antwortet
+   `{"articleNumber": "LAH3K3", "category": "LA", "reserved": false}`. Die Nummer
+   entsteht über `generate_article_number(category)` (Kategoriepräfix +
+   Zufallszeichen, 6 Zeichen) und wird gegen `store.article_numbers()` geprüft —
+   das umfasst **auch archivierte** Produkte. Unbekannte oder fehlende Kategorie
+   → `ValidationError` (400, `validation_error`) aus der bestehenden
+   Kategorievalidierung. Die Route ist in `VIEWS` **vor** `ProductView`
+   registriert; aiohttp matcht in Registrierungsreihenfolge, der statische Pfad
+   gewinnt also gegen `/products/{article_number}`.
+
+**Why:**
+
+- **Kategorie nach Label, nicht nach Rohcode:** die Rohcodes (`3D`, `EP`, `LA`,
+  `SB`, `WO`) sind Zufallskürzel; eine Sortierung danach wirkt für Nutzer
+  willkürlich. Labels sind das, was im Panel sichtbar ist. Alphabetisch nach
+  Label ist die Erwartung an eine Sortierfunktion und bleibt stabil, wenn später
+  Kategorien dazukommen (keine Pflege einer Ordnungsliste nötig).
+- **Bestand als Gesamtsumme:** die Liste zeigt je Produkt den Gesamtbestand; eine
+  Sortierung nach der gerade gefilterten Lagerstätte würde bei aktivem Filter
+  anders ordnen als die angezeigten Zahlen und wäre nicht nachvollziehbar. Die
+  Summe ist unabhängig vom Filter reproduzierbar.
+- **Status-Reihenfolge aktiv/sichtbar zuerst:** die Standardansicht zeigt aktive,
+  sichtbare Produkte — die „normalen“ Einträge stehen damit oben, Sonderfälle
+  (unsichtbar, archiviert) sammeln sich unten, statt die Liste zu durchmischen.
+- **Tiebreaker bei `desc` bewusst korrigiert:** bisher drehte `reverse=True` auch
+  die Artikelnummer mit, gleiche Namen/Preise waren in `asc` und `desc`
+  gegenläufig sortiert. Jetzt wird zweistufig sortiert (erst Tiebreaker
+  aufsteigend, dann Hauptkriterium mit `reverse`), sodass `desc` ausschließlich
+  das Hauptkriterium dreht. Das ist eine bewusste Verhaltensänderung für
+  `name`/`price` (Dokumentreihenfolge bei Gleichstand), bestehende Tests bleiben
+  gültig, weil sie keine Tiebreaker-Richtung bei `desc` festhielten.
+- **Vorschlag reserviert nicht:** eine Reservierung bräuchte einen
+  Lebenszyklus (TTL, Aufräumen, Konflikte bei abgebrochenen Dialogen) und würde
+  bei mehreren geöffneten Dialogen Nummern verbrauchen. Da die Nummer erst beim
+  Speichern verbindlich ist, bleibt `POST /products` maßgeblich: kollidiert der
+  Vorschlag in der Zwischenzeit, erzeugt der Server eine andere Nummer und die
+  Antwort von `POST` enthält die tatsächlich vergebene. Der Client muss also die
+  Nummer aus der POST-Antwort übernehmen, nicht die angezeigte Vorschau
+  festschreiben.
+- **Routen-Vorrang geprüft:** `tests/test_views.py::test_article_number_route_wins_over_product_route`
+  baut die echte aiohttp-Route-Tabelle in `VIEWS`-Reihenfolge auf und prüft, dass
+  `/products/article-number` auf die statische Ressource und
+  `/products/LA3K3X` auf `{article_number}` matcht.
+
+**Für Frontend (Natasha):** `GET /products/article-number?category=<code>` liefert
+`{"articleNumber", "category", "reserved"}`; nach `POST /products` die
+`articleNumber` aus der Antwort übernehmen. `sort=category|stock|status` sind
+zusätzlich erlaubt, `order=desc` dreht nur das Hauptkriterium. Keine
+`frontend/*.js`-Änderung in diesem Commit.
+
+#### 2026-11-02T13:30:51+0000: Sortier-Umschalter in der Filterleiste bleibt — synchron zu den Spaltenköpfen
+
+**By:** Natasha (Frontend Developer / UI-Spezialistin)
+
+**What:**
+
+Issue #289, Produktliste. Die fünf Datenspaltenköpfe (`Produkt`, `Kategorie`,
+`Preis`, `Bestand`, `Status`) sind jetzt echte Buttons in den `<th>`-Zellen mit
+`aria-sort` (`ascending`/`descending`/`none`) und einem `aria-label` aus
+Spaltenname und aktueller Richtung. Erster Klick auf eine neue Spalte sortiert
+aufsteigend, erneuter Klick dreht nur die Richtung. `Aktionen` bleibt
+unsortierbar und trägt kein `aria-sort`. Der Seitenoffset wird bei jedem
+Sortierwechsel zurückgesetzt.
+
+Der bestehende Sortier-Umschalter in der Filterleiste (`<select>` +
+Richtungs-Button) bleibt erhalten, wird aber auf dieselben fünf Felder
+erweitert und liest/schreibt ausschließlich `_sort`/`_order` — es gibt keinen
+zweiten Zustand. Der Richtungs-Button nennt das aktive Feld im `aria-label`
+(„Sortierrichtung für Preis: aufsteigend. Richtung wechseln.“), und ein Hinweis
+unter der Auswahl erklärt, dass in der Listenansicht auch die Spaltenköpfe
+sortieren.
+
+**Why:**
+
+Der Umschalter ist in der Kachelansicht die einzige Möglichkeit, Sortierfeld
+und -richtung zu ändern — dort gibt es keine Spaltenköpfe. Ihn zu entfernen
+hätte die Sortierung in einer von zwei Ansichten unbrauchbar gemacht. Da beide
+Bedienelemente denselben Zustand verwenden, können sie nicht widersprüchliche
+Anzeigen erzeugen; der `aria-sort`-Wert der Köpfe und der Text des Buttons
+leiten sich aus derselben Quelle ab. Eine zusätzliche Zustandskopie (z. B.
+eigener Spaltensortier-State) wäre die eigentliche Redundanz gewesen.
+
+#### 2026-11-02T13:30:51+0000: „Weiter“-Semantik im Produktdialog (Anlegen beim ersten Schritt)
+
+**By:** Natasha (Frontend Developer / UI-Spezialistin)
+
+**What:**
+
+Issue #289, Produktdialog des Store-Panels. Beim Anlegen heißt der Footer-Button
+auf `Grunddaten`, `Bilder` und `Beschreibung` jetzt „Weiter“ und wechselt zum
+nächsten Tab; auf `Bestand` heißt er „Speichern“ und schließt den Dialog. Damit
+Bilder im Tab `Bilder` überhaupt hochgeladen werden können (die Bild-API braucht
+ein existierendes Produkt), legt „Weiter“ auf `Grunddaten` das Produkt per
+`POST /products` an und wechselt danach in den Bearbeiten-Modus. Der Editor
+führt dafür zwei getrennte Marken: `editor.mode` (`create` nur bis zum ersten
+POST, danach `edit`) und `editor.createFlow` (bleibt für den gesamten
+Anlege-Ablauf `true`). Die Button-Beschriftung hängt an `createFlow` +
+`tab === "stock"`, nicht an `mode` — sonst würde nach dem Anlegen wieder
+„Speichern“ erscheinen und den Dialog schließen.
+
+Auf den Folgetabs speichert „Weiter“ die Änderungen und wechselt weiter. Die
+Bestands-API des Panels nutzt `PATCH /products/{articleNumber}` (nicht `PUT`);
+dieses Verhalten bleibt unverändert, damit die bestehende Teil-Update-Semantik
+erhalten bleibt. Nach dem Anlegen übernimmt das Badge die `articleNumber` aus
+der Server-Antwort, ein laufender Vorschau-Request wird über
+`_articlePreviewRequestId` verworfen. Validierungsfehler verhindern den
+Tabwechsel, wechseln auf den Tab des ersten fehlerhaften Feldes
+(`EDITOR_FIELD_TABS`) und fokussieren das Feld. Ein Hinweis im Footer stellt
+klar, dass das Produkt nach dem ersten Schritt bereits gespeichert ist und
+„Schließen“ nur den Dialog beendet. Im reinen Bearbeiten-Modus bleibt der
+Footer unverändert bei „Speichern“.
+
+**Why:**
+
+Ohne verbindliche Artikelnummer kann die Bild-API nicht angesprochen werden;
+jeder andere Weg hätte einen zweiten Dialog oder ein temporäres Produkt
+gebraucht. Das Anlegen beim ersten Schritt ist der kleinste Ablauf, der die
+vorgegebene Tab-Reihenfolge (Grunddaten → Bilder → Beschreibung → Bestand)
+einhält und Bilder direkt nach dem Anlegen ermöglicht. Die Trennung von `mode`
+und `createFlow` verhindert einen Zustandsfehler genau an der Stelle, an der
+das Produkt schon existiert, der Nutzer aber noch im Anlege-Ablauf ist. Der
+Footer-Hinweis verhindert die falsche Erwartung „Abbrechen = nichts
+gespeichert“ — das Produkt ist ab dem ersten „Weiter“ real vorhanden.
+
+#### 2026-11-02T13:30:51+0000: Katalogimport mit Dry-Run und Überschreiben
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:**
+
+Issue #289, `frickeldave.home.net` (Basis `8c209f2`, `main`). Der bestehende
+Endpunkt `POST /api/frickeldave_store/import/catalog` erhält zwei optionale
+Body-Felder, beide Standard `false`:
+
+| Feld | Typ | Default | Wirkung |
+| --- | --- | --- | --- |
+| `dry_run` | bool | `false` | Katalog wird geladen und geprüft, aber nichts geschrieben; Antwort ist die Vorschau |
+| `overwrite` | bool | `false` | vorhandene, nicht archivierte Produkte werden mit dem Katalogstand überschrieben |
+
+Nicht-boolesche Werte → `ValidationError` (400, `validation_error`) mit
+`dry_run muss ein Wahrheitswert sein.` bzw. `overwrite muss ein Wahrheitswert sein.`
+Die Allowlist der erlaubten Felder umfasst jetzt
+`source_url`, `image_base_url`, `import_images`, `dry_run`, `overwrite`; alles
+andere bleibt „Unbekannte Felder: …“.
+
+**Antwortvertrag** (`ImportResult.to_dict()`):
+
+| Feld | Typ | Bedeutung |
+| --- | --- | --- |
+| `created` | int | tatsächlich neu angelegte Produkte |
+| `skipped` | int | vorhandene Produkte, die unverändert bleiben (inkl. archivierter und inhaltsgleicher) |
+| `failed` | int | ungültige Produkte bzw. doppelte Artikelnummern im Dokument |
+| `images_imported` | int | in diesem Lauf geschriebene Bilddateien; im Dry-Run die Zahl, die geschrieben würde |
+| `products_total` | int | Produkte im gelieferten Dokument |
+| `errors` | list | `{"articleNumber", "message"}` je Fehler |
+| `dry_run` | bool | ob es eine Vorschau war |
+| `would_create` | int | nur Dry-Run: würde angelegt |
+| `would_overwrite` | int | nur Dry-Run: würde überschrieben (Inhalt weicht ab) |
+| `overwritten` | int | nur echter Lauf: tatsächlich überschrieben |
+| `unchanged` | int | nur Dry-Run: vorhandene Produkte, die unverändert blieben (== `skipped`) |
+| `summary` | str | deutsche Zusammenfassung |
+
+Ohne `dry_run`/`overwrite` bleiben `created`, `skipped`, `failed`,
+`images_imported`, `products_total` und `errors` exakt wie bisher; die neuen
+Zähler sind dann `0`. Bestehende Aufrufer (Panel, Skripte) funktionieren
+unverändert; nur exakte Dict-Vergleiche in zwei Tests wurden um die neuen
+Schlüssel ergänzt.
+
+**Schreibfreiheit im Dry-Run (strukturell):**
+
+1. `async_import_catalog` baut zuerst einen `ImportPlan` (nur Lesezugriffe:
+   `article_numbers()`, `get_raw_product()`, `location_ids()`). Es gibt keinen
+   Schreibaufruf im Planungspfad.
+2. Store-Änderungen existieren ausschließlich in `_async_apply_plan` (unter
+   `store.lock`, `put_product`, `add_tag`, `async_save`). Diese Funktion wird nur
+   aufgerufen, wenn `dry_run` falsch ist.
+3. Bildschreiben läuft über einen expliziten `sink`. Im Dry-Run wird
+   `sink=None` übergeben; `_async_product_images` prüft Bildsignatur und Größe,
+   ruft aber kein `async_write` auf. Ohne Sink existiert kein Schreibziel.
+4. Snapshot und `updatedAt` entstehen ausschließlich in `CatalogStore.async_save`;
+   ohne `_async_apply_plan` wird `async_save` nie erreicht.
+5. Netzwerkzugriff bleibt erlaubt und nötig: Katalog und (bei `import_images`)
+   Bilder werden auch im Dry-Run geladen, damit die Vorschau die realen
+   Bildzahlen zeigt.
+
+Nachweis: `tests/test_importer.py::test_dry_run_writes_nothing_and_reports_full_preview`
+hasht vor/nach dem Dry-Run **jede** Datei unter dem Datenordner (Store-Datei,
+Bilder, Snapshots) per SHA-256 und prüft zusätzlich, dass für ein neues Produkt
+kein Bildverzeichnis entsteht und ein frisch geladener Store den alten Stand
+zeigt. `test_dry_run_without_overwrite_never_proposes_overwrites` und
+`test_dry_run_reports_archived_products_as_unchanged` prüfen dasselbe für die
+beiden anderen Vorschau-Varianten.
+
+**Feld-Übernahmeregeln beim Überschreiben** (`OVERWRITE_FIELDS` in
+`importer.py`, zentrale Stelle `_merge_catalog_product`):
+
+| Feld | Quelle | Begründung |
+| --- | --- | --- |
+| `name`, `description`, `price`, `size`, `tags`, `visible`, `customizable`, `stock`/`salesCabinet` | Katalog | fachlich im Website-Katalog gepflegt |
+| `articleNumber` | lokal | stabiler Primärschlüssel, Bilder/Buchungen hängen daran |
+| `createdAt` | lokal | Anlagezeitpunkt im Store bleibt erhalten |
+| `updatedAt` | Zeitpunkt des Überschreibens | `put_product` setzt ihn |
+| `images` | lokal, nur Ergänzung | bestehende Bilder werden nicht gelöscht; fehlende Indizes 01…10 werden nachgeladen, bereits belegte Indizes nicht erneut geholt |
+| `archived` | lokal | archivierte Produkte werden übersprungen, nie reaktiviert |
+| Buchungen (`bookings`) | bleiben | separater Speicher, wird nicht angefasst |
+| `category` | **lokal** | bewusste Ausnahme: die Artikelnummer kodiert die Kategorie, und `validate_update_payload` behandelt sie als unveränderlich. Ein Katalogwechsel der Kategorie würde die Nummer entwerten; das Produkt bleibt deshalb in seiner lokalen Kategorie. |
+| `schemaVersion` | aktuell | Normalisierung auf das Store-Schema |
+
+Ein Produkt gilt nur dann als überschreibbar, wenn sich mindestens eines der
+Katalogfelder (ohne Kategorie) vom lokalen Stand unterscheidet
+(`_catalog_signature`; Tags case-insensitiv, Bestand je Lagerstätte). Inhaltsgleiche
+Produkte zählen als `skipped` und werden nicht geschrieben — ein zweiter Lauf mit
+`overwrite` ist damit idempotent und lässt `updatedAt` unverändert.
+
+Bestände: der Katalogwert ersetzt den lokalen Bestand. Die Buchungshistorie bleibt
+erhalten und kann dadurch vom neuen Bestand abweichen; das ist die vom Nutzer
+gewünschte Semantik („Katalogstand übernehmen“), wird aber in README und
+`docs/data-model.md` ausdrücklich benannt.
+
+**Rechteentscheidung: `overwrite` bleibt bei Rolle `product`.** Überschreiben ist
+kein neuer Berechtigungsumfang, sondern ein Sammel-Update auf genau die Felder,
+die `product` über `PATCH /products/{article_number}` bereits einzeln ändern darf
+(Name, Beschreibung, Preis, Größe, Tags, Sichtbarkeit, Personalisierbarkeit,
+Bestand). Ein `app_admin`-Zwang würde die tägliche Katalogpflege ohne
+Sicherheitsgewinn blockieren. Die bestehenden Schutzlinien bleiben: eigene
+`source_url`/`image_base_url` erfordern weiterhin `app_admin`, es gibt keinen
+Hard-Delete-Pfad, und `CatalogStore.async_save` legt vor dem ersten Schreiben
+einen Snapshot an. `dry_run` ändert die Rechte ohnehin nicht, weil es nichts
+schreibt.
+
+**Why:**
+
+- **Vorschau vor dem Import:** der Import kann hunderte Produkte und Bilder
+  anfassen. Eine Vorschau mit `would_create`/`would_overwrite`/`unchanged` macht
+  die Wirkung vorab sichtbar, ohne dass ein Fehlgriff Daten kostet.
+- **Überschreiben auswählbar, Standard aus:** das bisherige Verhalten bleibt der
+  Default; niemand verliert durch ein Update unerwartet lokale Änderungen. Wer
+  den Katalog als Quelle der Wahrheit will, entscheidet das pro Lauf.
+- **Strukturelle statt nachgelagerte Schreibsperre:** ein „am Ende nicht
+  speichern“ würde Bilddateien und Snapshots trotzdem anlegen. Die Trennung in
+  Plan (nur lesend) und Apply (nur schreibend) plus `sink=None` macht den
+  Dry-Run prüfbar und verhindert Seiteneffekte unabhängig vom weiteren Code.
+- **Artikelnummer/Kategorie stabil:** Artikelnummern sind der Bezug für Bilder,
+  Buchungen und Export; eine Änderung würde Verweise brechen. Die Kategorie ist
+  zudem laut Produktvalidierung unveränderlich.
+- **Archiv bleibt Archiv:** ein Import darf keine bewusst stillgelegten Produkte
+  wieder sichtbar machen. Sie werden als `skipped` gemeldet (in der Vorschau
+  unter `unchanged`) und in der `summary` separat ausgewiesen.
+- **Bilder nur ergänzen:** lokale Bildpflege (Reihenfolge, Hauptbild, Uploads)
+  ist wertvoller als ein erneuter Katalogabruf; Löschen wäre nicht umkehrbar.
+- **Zähler getrennt:** `created` und `overwritten` sind fachlich verschieden; der
+  Nutzer soll in der Antwort sehen, wie viele Produkte neu sind und wie viele
+  bestehende Daten ersetzt wurden.
+
+**Summary-Beispiele:**
+
+```
+Vorschau: 63 Produkte im Katalog, 2 neu, 3 zu überschreiben, 58 unverändert,
+0 fehlerhaft, 4 Bilder würden importiert. Es wurde nichts geschrieben.
+
+Import abgeschlossen: 2 neu angelegt, 3 überschrieben, 58 unverändert,
+0 fehlerhaft, 4 Bilder importiert. Davon archiviert und übersprungen: 1.
+```
+
+**Für Frontend (Natasha):** Vor dem Import `{"dry_run": true}` senden und
+`would_create`/`would_overwrite`/`unchanged` plus `summary` anzeigen; die
+Überschreiben-Checkbox ist standardmäßig aus und sendet `overwrite: true` nur,
+wenn der Nutzer sie aktiviert. Nach dem Lauf `created`, `overwritten`, `skipped`,
+`failed` und `images_imported` getrennt darstellen — `overwritten` ist neu.
+Fehler kommen als `{"error": {"code", "message"}}` mit deutscher Meldung; die
+Vorschau selbst kann `errors` je Artikelnummer enthalten, ohne dass der Lauf
+scheitert.
+
+#### 2026-11-02T13:30:51+0000: Import-Dialog warnt sachlich vor dem Überschreiben
+
+**By:** Natasha (Frontend Developer / UI-Spezialistin)
+
+**What:**
+
+Issue #289, Katalogimport-Dialog. Beim Öffnen läuft automatisch ein Dry-Run
+(`{"dry_run": true}`); angezeigt werden `would_create`, `would_overwrite`,
+`unchanged`, `failed`, `images_imported` und die `summary`. Die neue Checkbox
+„Bestehende Produkte überschreiben“ ist standardmäßig aus; der Hinweis darunter
+sagt korrekt: „Standardmäßig aus. Vorhandene Produkte bleiben dann unverändert.“
+Damit ist die frühere Aussage „wird niemals überschrieben“ ersetzt, die mit der
+neuen Option falsch geworden wäre.
+
+Erst bei aktiver Checkbox erscheint ein Warnbanner (Icon + Text, nicht nur
+Farbe): überschrieben werden Name, Beschreibung, Preis, Größe, Tags,
+Sichtbarkeit, Personalisierbarkeit und Bestand; erhalten bleiben Artikelnummer,
+Anlagedatum, Bilder, Buchungen, Archiv-Status und Kategorie. Beim Umschalten
+wird die Vorschau mit `{"dry_run": true, "overwrite": true}` neu geladen, damit
+die Zahlen zur gewählten Option passen. Der Bestätigungs-Button startet den
+echten Import mit `dry_run: false` und dem gewählten `overwrite`; das Ergebnis
+zeigt `created`, `overwritten`, `skipped`, `failed`, `images_imported` und die
+Fehlerliste je Artikelnummer. Während Vorschau oder Import läuft, sind
+Bestätigungs-Button und Schließen gesperrt (`busy`/`previewLoading`), damit
+Doppelklicks keinen zweiten Lauf starten. API-Fehler erscheinen als deutsche
+Meldung im offenen Dialog, die Vorschau hat einen eigenen Fehlerzustand mit
+„Vorschau erneut laden“.
+
+**Why:**
+
+Die Vorschau zeigt nur dann die Wahrheit, wenn sie mit denselben Optionen
+läuft wie der spätere Import — sonst verspräche „0 zu überschreiben“ etwas,
+das der Import nicht hält. Die Warnung muss die Felder nennen, weil
+„überschreiben“ allein offen lässt, ob Artikelnummer oder Bilder verloren
+gehen; genau diese Angaben stehen auch in der Server-Dokumentation. Ein Banner
+statt einer roten Checkbox erfüllt „nicht nur Farbe“ und bleibt in Light und
+Dark über HA-Tokens lesbar.
+
+#### 2026-11-02T13:30:51+0000: Dokumentation 0.1.12 im Website-Repository
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin)
+
+**What:**
+
+Issue #289, Branch `feat/issue-289-management-tool-in-homeassistant` (Draft-PR
+#296 gegen `dev`). Dokumentiert ist die Integration `frickeldave_store` in
+Version `0.1.12` (02.11.2026). Geändert wurden ausschließlich zwei Dateien:
+
+- `docs/features/fr008-ha-manager.md`
+  - Statuszeile und die beiden Build-Beispiele auf `0.1.12` / `v0.1.12`
+    gehoben; historische Aussagen „seit 0.1.10/0.1.11“ bleiben unverändert.
+  - `Veröffentlichen`: beide Topbar-Buttons tragen dasselbe Branch-Symbol,
+    unterschieden durch das Badge `dev` bzw. `prd`; Screenreader-Text und
+    Tooltip nennen weiterhin das Ziel. Die frühere Rakete ist entfernt.
+  - Neuer Abschnitt `Sortierung` unter `Produktpflege im Panel`: klickbare
+    Spaltenköpfe Produkt, Kategorie, Preis, Bestand, Status samt
+    Zuordnung, `aria-sort`, Aufsteigend/`desc`-Regel und Gleichständen
+    (Name, Artikelnummer). Der Umschalter in der Filterleiste bleibt für die
+    Kachelansicht, bietet alle fünf Felder und teilt den Zustand.
+  - `Produktdialog`: vier Tabs in der Reihenfolge Grunddaten → Bilder →
+    Beschreibung → Bestand, Feldumfang je Tab, Artikelnummern-Badge statt
+    Untertitel, Live-Vorschlag über
+    `GET /api/frickeldave_store/products/article-number?category=<Code>`
+    mit Platzhaltern, „Weiter“/„Speichern“-Ablauf, Validierungssperre und
+    Hinweis nach dem Anlegen.
+  - Neuer Abschnitt `Katalogimport`: automatischer Dry-Run beim Öffnen,
+    Zählungen und deutsche Zusammenfassung, Checkbox „Bestehende Produkte
+    überschreiben“ (Standard aus) mit Warnbanner und `overwrite`-Neuladen,
+    überschriebene gegenüber erhaltenen Feldern, Importergebnis samt
+    Fehlerliste je Artikelnummer.
+  - Datenmodell: Verweis von der Importquelle auf den neuen Abschnitt.
+- `CHANGELOG.md`, unter `## [Unreleased]`: vier `Added`-Einträge
+  (Sortierspalten, Katalogimport, Artikelnummern-Badge, 0.1.12-Doku) und drei
+  `Changed`-Einträge (Produktdialog-Ablauf, Sortier-Umschalter,
+  Veröffentlichungs-Icons). Der bestehende `Changed`-Eintrag zu den
+  Veröffentlichungs-Icons und der `Added`-Eintrag zum Produktdialog wurden auf
+  den 0.1.12-Stand gezogen, damit der Unreleased-Block sich nicht selbst
+  widerspricht. Alle neuen und geänderten Einträge tragen `(#289)`.
+
+Nicht committet.
+
+**Why:**
+
+Die Website ist die Nutzerdokumentation des Werkzeugs; ohne 0.1.12-Stand
+beschreibt sie eine Oberfläche, die es nicht mehr gibt (Rakete,
+Drei-Tab-Dialog, „Artikelnummer …“-Untertitel, Sortierung nur nach Name und
+Preis). Die Sortier- und Importdetails sind verhaltensrelevant und deshalb
+explizit dokumentiert: Bestand sortiert über alle Lagerstätten unabhängig vom
+Filter, `desc` dreht nur das Hauptkriterium, und der Import schreibt ohne
+`overwrite` nichts und überschreibt nie Artikelnummer, Anlagedatum, Bilder,
+Buchungen, Archiv-Status oder Kategorie. Ältere Einträge im selben
+Unreleased-Block zu korrigieren verhindert widersprüchliche Release-Notes beim
+Promote. Validierung: `npx markdownlint-cli@0.44.0 docs/features/fr008-ha-manager.md
+CHANGELOG.md` → nur die zwei vorbestehenden Baseline-Befunde `MD032` und
+`MD022` im Abschnitt `[1.0.7]` (jetzt Zeilen 60/61, vorher 54/55); `npm run
+prose` → 0 Fehler, 0 Warnungen, 0 Hinweise in 104 Dateien; `npm run
+format:check` → „All matched files use Prettier code style!“. Keine Secrets,
+keine Token-Werte. Offen: PR-Beschreibung und Review durch Tony.
+
+#### 2026-11-02T13:30:51+0000: Release 0.1.12 veröffentlicht
+
+**By:** Nick (DevOps / Infrastruktur)
+
+**What:**
+
+Issue #289, `Frickeldave/frickeldave.home.net`. Version `0.1.12` ist als
+annotierter Tag und als GitHub-Release veröffentlicht.
+
+- **Tag:** `0.1.12`, annotiert, Tag-Objekt `2961f30`, zeigt auf Commit
+  `1d1b295cbea896fa1c84ff274be1ac14a2041e64` (`git rev-parse main`, `main`).
+  Annotation: `Frickeldave Store 0.1.12`. Gepusht mit `git push origin
+  refs/tags/0.1.12`; `1d1b295` blieb unverändert (kein Commit, kein Push auf `main`).
+- **Release:** `gh release create 0.1.12 --title 0.1.12 --verify-tag`, kein Draft,
+  kein Pre-Release, Latest (`gh api .../releases/latest` → `0.1.12`).
+  URL: https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.1.12
+- **Notes:** Abschnitt `## [0.1.12] - 2026-11-02` aus `git show
+  1d1b295:CHANGELOG.md` (Zeilen 9–96) unverändert übernommen, inklusive
+  Markdown-Struktur (`### Added`, Listen, Backticks). Unterschied zum
+  Changelog-Text ist nur die von der API ergänzte Leerzeile am Ende.
+- **HACS-Prüfungen am Tag:** `custom_components/frickeldave_store/manifest.json`
+  → `"version": "0.1.12"`; `hacs.json` vorhanden;
+  `custom_components/frickeldave_store/publish.py` vorhanden (26.474 Bytes). CI-Job
+  „HACS validation“ im Lauf zu `1d1b295` grün.
+- **Ältere Releases:** `0.1.8`, `0.1.9`, `0.1.10`, `0.1.11` unverändert — gleiche
+  `publishedAt`-Zeitstempel wie vor der Veröffentlichung, weiterhin kein Draft und
+  kein Pre-Release; `0.1.11` hat den `Latest`-Marker planmäßig an `0.1.12` abgegeben.
+- **CI:** Lauf zu `1d1b295` grün (Ruff, hassfest, Frontend, HACS validation, mypy,
+  pytest):
+  https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41456123525
+
+**Why:**
+
+Das Release schließt die Kette zu Issue #289 ab: Der Stand `1d1b295` enthält alle
+in `0.1.12` dokumentierten Änderungen (gemeinsames Publish-Symbol mit
+dev/prd-Badges, Sortierschlüssel `category`/`stock`/`status`, Artikelnummer-
+Vorschau, Katalogimport mit Dry-Run und Überschreiben, sortierbare Spaltenköpfe,
+überarbeiteter Produktdialog) und ist CI-grün. Der annotierte Tag macht den
+Release-Zeitpunkt reproduzierbar und die Herkunft eindeutig; Changelog-Notes
+unverändert zu übernehmen hält Release-Beschreibung und Repository-Changelog
+deckungsgleich. Die Prüfung der älteren Releases stellt sicher, dass die
+Veröffentlichung keine Historie umgeschrieben hat (keine bestehenden
+Tags/Releases verändert, `Latest` nur weitergereicht).
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
