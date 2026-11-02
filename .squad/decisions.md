@@ -1616,6 +1616,966 @@ einen abweichenden Tag anlegt. Die Notes werden wörtlich aus dem Changelog
 übernommen, damit Release, Changelog und HACS-Update-Notiz dieselbe Quelle
 haben und die bestehende Historie (`0.1.8`–`0.1.13`) unangetastet bleibt.
 
+#### 2026-11-02T16:15:00+0000: ADR #289 — frickeldave-Synchronisation wird eigene HACS-Integration
+
+**By:** Tony (Lead & Requirement Gatekeeper)
+
+**What:** Die frickeldave-spezifische Synchronisation — Veröffentlichen nach `dev`/`prod`, GitHub-Token, Repository-/Workflow-Vorgaben und Katalogimport von `frickeldave.de` — wird in die zweite Custom Integration `frickeldave_store_sync` im Repository `Frickeldave/homeassistant-frickeldave-store-syncfd` ausgelagert. Die Basis `frickeldave_store` erhält dafür einen versionierten, dokumentierten Erweiterungspunkt (`custom_components.frickeldave_store.extension`, Contract 1), Feature-Flags in `GET /api/frickeldave_store/me` und `/settings`, eine generische Export-/Batch-Import-Fassade und verliert alle frickeldave-spezifischen Defaults. Basis `0.2.0` ist der Breaking Release; die Erweiterung startet mit `0.1.0`. Empfohlene Release-Reihenfolge: Basis `0.1.15` (additive Brücke) → Erweiterung `0.1.0` → Basis `0.2.0`. Der GitHub-Token wird nicht automatisch migriert: Der Bestandsnutzer legt einen neuen Fine-grained-Token an, trägt ihn im Options-Flow der Erweiterung ein und widerruft den alten.
+
+**Why:** Die Basis soll für die Home-Assistant-Community generisch, prüfbar und ohne Frickeldave-Geheimnisse nutzbar sein. Ein loser Zugriff über `hass.data` oder ein Service-Aufruf würde die Grenze verwischen und die Erweiterung an private Interna binden. Ein expliziter, versionierter Vertrag mit einer schmalen Fassade hält die Abhängigkeit einseitig (Erweiterung → Basis), erlaubt der Basis, allein zu funktionieren, und gibt der Erweiterung genau die Fähigkeiten, die sie braucht: Export bauen, Produkte/Bilder/Lagerstätten lesen, Snapshot, Rechteprüfung und einen validierten Batch-Schreibpfad für den Import. Der Verzicht auf eine automatische Token-Übernahme ist bewusst: Der Token ist write-only, soll es bleiben, und ein neuer Token mit minimalen Rechten ist sicherer als ein Migrationspfad, der das Geheimnis durch die Basis schleust. Feature-Flags plus Reparatur-Issue verhindern, dass ein Nutzer nach einem halben Update mit sichtbaren, aber funktionslosen Buttons zurückbleibt.
+
+**Status:** Accepted (Architektur). Release-Termine und die Brückenversion `0.1.15` stehen unter dem Vorbehalt der Abnahme durch David Koenig.
+
+**Betrifft:** `Frickeldave/frickeldave.home.net` (Basis, Baseline `286096e`, Version `0.1.14`) und `Frickeldave/homeassistant-frickeldave-store-syncfd` (Erweiterung, Default-Branch `main`, bisher nur LICENSE/README).
+
+**Ablage:** Dieses ADR liegt zunächst nur im Team-Root. Nach Abnahme wird es in beide Repositories als `docs/adr/0001-sync-extension.md` übernommen; die hier beschriebenen Verträge sind dann in der Basis zusätzlich als `docs/extension-api.md` zu dokumentieren.
+
+---
+
+#### 0. Bestehende Entscheidungen, die nicht stillschweigend überschrieben werden
+
+Die folgenden Einträge aus `.squad/decisions.md` bleiben fachlich gültig. Dieses ADR ändert **nicht** ihr Verhalten, sondern nur den Ort der Umsetzung und — wo genannt — den HTTP-Pfad.
+
+| Bestehende Entscheidung | Wirkung dieses ADRs |
+| --- | --- |
+| `2026-11-02T07:24:38+0000: Veröffentlichung nach dev und prod läuft ausschließlich über dev + fd-deploy-prd` | Wird **1:1 übernommen**: `dev` ist der einzige Schreibpunkt, `prod` committet auf `dev` und dispatcht `fd-deploy-prd.yml`; Dry-Run teilt Code und Antwortformat; die Integration committet nie direkt auf `main`. Verschoben werden nur `publish.py`, die Standardwerte und der Endpunkt (neu: `POST /api/frickeldave_store/features/publish`). |
+| `2026-11-02T07:24:38+0000: Lagerstätten ersetzen stock/salesCabinet; Website-Abbildung bleibt stabil` | Bleibt in der Basis: `export.py::export_stock_fields` bildet weiterhin die erste Lagerstätte auf `stock`, die zweite auf `salesCabinet` ab. Die Erweiterung konsumiert dieses Exportformat, sie ersetzt es nicht. |
+| `2026-11-02T13:30:51+0000: Katalogimport mit Dry-Run und Überschreiben` | Wird **1:1 übernommen**: `dry_run`, `overwrite`, die Zähler und die Feld-Übernahmeregeln bleiben. `overwrite` bleibt bei Rolle `product`; eigene `source_url`/`image_base_url` bleiben `app_admin` vorbehalten. Verschoben werden `importer.py`, die Quellen-Allowlist und der Endpunkt (neu: `POST /api/frickeldave_store/features/import`). |
+| `2026-11-02T14:21:10+0000: Veröffentlichen-Fehler eingegrenzt` | Die Fixes (Body immer lesen, `_as_mapping`, `internal_error`, `publish_artifacts_unavailable`, `publish_empty_catalog`, `allow_empty`, `warning`) wandern mit `publish.py` und den Tests. Die Semantik bleibt unverändert. |
+| `2026-11-02T11:24:46+0000: Datenverlust bei Update behoben` | Die Basis bleibt alleinige Eigentümerin von `frickeldave_store.data`, Bildern und Snapshots. Die Erweiterung liest und schreibt **nie** direkt im Datenordner; sie nutzt ausschließlich die Fassade. |
+| `2026-11-02T16:05:00+0000: Doku 0.1.14 …` | `0.1.14` ist die Baseline. Die Panel-Funktionen aus 0.1.14 bleiben erhalten; nur Veröffentlichen/Import werden gegatet und die zugehörigen Einstellungen wandern. |
+
+**Wichtig:** Die bestehende Entscheidung nennt den Endpunkt `POST /api/frickeldave_store/publish` und die Settings `settings.publish`. Dieses ADR ersetzt beides in `0.2.0` bewusst durch den generischen Feature-Endpunkt und den Options-Flow der Erweiterung. Das ist eine angekündigte Breaking Change, kein stiller Widerspruch; die fachlichen Regeln bleiben identisch.
+
+---
+
+#### 1. Erweiterungspunkt-Vertrag
+
+##### 1.1 Entscheidung
+
+Gewählt wird **(a): eine dokumentierte, versionierte Registrierungsfunktion in der Basis**, die die Erweiterung beim Setup aufruft und die eine stabile Fassade auf den Store erhält.
+
+Die Erweiterung importiert ausschließlich `custom_components.frickeldave_store.extension`. Die Basis importiert **nie** die Erweiterung und kennt ihren Domainnamen nicht. Die Registrierung erfolgt in `async_setup_entry` der Erweiterung; die Abmeldung über `entry.async_on_unload`.
+
+##### 1.2 Bewertung der Alternativen
+
+| Variante | Bewertung | Entscheidung |
+| --- | --- | --- |
+| **(a) Dokumentierte Registrierungsfunktion + Fassade** | Klarer, prüfbarer Vertrag; eine Import-Richtung; die Basis kann allein laufen; Rechte, Export und Batch-Schreiben bleiben unter Kontrolle der Basis; versionierbar. | **Gewählt.** |
+| **(b) Nur-lose Kopplung über `hass.data`/`hass.config.components`** | Die Erweiterung müsste private Runtime-Objekte (`FrickeldaveStoreRuntime`, `CatalogStore`) kennen; jede Änderung in der Basis bricht die Erweiterung; keine Rechte-/Snapshot-Garantien; `hass.config.components` sagt nur, dass die Integration geladen ist, nicht dass ein Config Entry eingerichtet ist. | Verworfen. |
+| **(c) Eigener Service-Aufruf** | Services sind für Aktionen gedacht, nicht für das Lesen eines konsistenten Store-Snapshots oder das Schreiben eines validierten Batches. Rückgabewerte sind nicht typisiert, Fehler schwer zuzuordnen, und der Aufruf wäre ein zweiter, unversionierter Vertrag. | Verworfen. |
+
+##### 1.3 Öffentliche Signatur (Contract 1)
+
+`custom_components/frickeldave_store/extension.py` ist die einzige öffentliche Schnittstelle. Alle Namen in `__all__` sind Vertrag; alles andere ist privat.
+
+```python
+# custom_components/frickeldave_store/extension.py  — öffentlich, Contract 1
+
+CONTRACT_VERSION: Final = 1
+BASE_DOMAIN: Final = "frickeldave_store"
+
+ROLE_PRODUCT: Final = "product"
+ROLE_FINANCE: Final = "finance"
+ROLE_APP_ADMIN: Final = "app_admin"
+
+FEATURE_PUBLISH: Final = "publish"   # reservierter Feature-Name
+FEATURE_IMPORT: Final = "import"     # reservierter Feature-Name
+
+FeatureHandler = Callable[["FeatureRequest"], Awaitable["FeatureResponse"]]
+
+
+@dataclass(frozen=True, slots=True)
+class FeatureSpec:
+    handler: FeatureHandler
+    required_role: str | None = None   # None = jeder authentifizierte HA-Benutzer
+    ready: bool = True                 # False = installiert, aber nicht eingerichtet
+    reason: str = ""                   # maschinenlesbar, z. B. "token_missing"
+
+
+@dataclass(frozen=True, slots=True)
+class ExtensionRegistration:
+    extension_id: str                  # HA-Domain, z. B. "frickeldave_store_sync"
+    version: str                       # "0.1.0"
+    contract_version: int              # 1
+    features: Mapping[str, FeatureSpec]
+
+
+@dataclass(frozen=True, slots=True)
+class FeatureRequest:
+    feature: str
+    payload: Mapping[str, Any]
+    user_id: str
+    user_name: str
+    facade: "StoreFacade"
+
+
+@dataclass(frozen=True, slots=True)
+class FeatureResponse:
+    payload: Mapping[str, Any]
+    status: int = 200
+
+
+@dataclass(frozen=True, slots=True)
+class FeatureStatus:
+    available: bool
+    configured: bool
+    extension_id: str
+    extension_version: str
+    reason: str
+
+
+async def async_register_extension(
+    hass: HomeAssistant, registration: ExtensionRegistration
+) -> Callable[[], None]:
+    """Registriert eine Erweiterung; gibt eine idempotente Abmeldefunktion zurück."""
+
+
+def async_get_facade(hass: HomeAssistant) -> "StoreFacade | None":
+    """Fassade der aktuell eingerichteten Basis oder None."""
+
+
+def async_feature_status(hass: HomeAssistant) -> Mapping[str, FeatureStatus]:
+    """Status aller Features für /settings und die Repair-Logik."""
+```
+
+Die Fassade ist ein `Protocol`; die konkrete Implementierung bleibt privat:
+
+```python
+@dataclass(frozen=True, slots=True)
+class ImageSnapshot:
+    name: str
+    is_main: bool
+    order: int
+
+
+@dataclass(frozen=True, slots=True)
+class ProductSnapshot:
+    article_number: str
+    name: str
+    description: str
+    price: float
+    size: str
+    category: str
+    tags: tuple[str, ...]
+    visible: bool
+    customizable: bool
+    archived: bool
+    stock: Mapping[str, int]           # location_id -> Menge
+    images: tuple[ImageSnapshot, ...]
+    created_at: str
+    updated_at: str
+
+
+@dataclass(frozen=True, slots=True)
+class ExportArtifact:
+    path: str                          # POSIX, relativ zum Ziel-Repository
+    data: bytes
+    kind: Literal["catalog", "image"]
+    article_number: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class ExportBundle:
+    catalog_path: str
+    artifacts: tuple[ExportArtifact, ...]
+    product_count: int
+    image_count: int
+    empty_catalog: bool
+    generated_at: str
+
+
+@dataclass(frozen=True, slots=True)
+class ImageUpload:
+    name: str
+    data: bytes
+
+
+@dataclass(frozen=True, slots=True)
+class ImportItem:
+    article_number: str | None         # None = neu anlegen
+    payload: Mapping[str, Any]         # Felder wie POST/PATCH /products
+    images: tuple[ImageUpload, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ImportItemError:
+    article_number: str
+    message: str
+
+
+@dataclass(frozen=True, slots=True)
+class ImportBatchResult:
+    created: tuple[str, ...]
+    updated: tuple[str, ...]
+    errors: tuple[ImportItemError, ...]
+    images_written: int
+    snapshot: str | None
+
+
+class StoreFacade(Protocol):
+    contract_version: int
+    hass: HomeAssistant
+
+    async def async_products(self) -> tuple[ProductSnapshot, ...]: ...
+    async def async_locations(self) -> tuple[Mapping[str, str], ...]: ...
+    async def async_article_numbers(self) -> frozenset[str]: ...
+
+    def can(self, user_id: str, role: str) -> bool: ...
+    def require(self, user_id: str, role: str) -> None: ...
+
+    async def async_create_snapshot(self, reason: str) -> str | None: ...
+    async def async_build_export(
+        self,
+        *,
+        catalog_path: str,
+        images_path: str,
+        visible_only: bool = False,
+    ) -> ExportBundle: ...
+    async def async_apply_import_batch(
+        self,
+        items: Sequence[ImportItem],
+        *,
+        reason: str,
+    ) -> ImportBatchResult: ...
+
+
+class ExtensionError(Exception):
+    """Vom Handler geworfener, strukturierter Fehler."""
+
+    code: str
+    status: int
+    message: str
+```
+
+##### 1.4 Feature-Namen und Payloads
+
+Die Basis interpretiert Feature-Namen nicht. `publish` und `import` sind für die Panel-Integration reserviert; ihre Payloads sind der Vertrag zwischen Basis-Panel und Erweiterung und werden in beiden Repositories dokumentiert.
+
+| Feature | `required_role` | Request-Payload | Response-Payload |
+| --- | --- | --- | --- |
+| `publish` | `app_admin` | `{"target": "dev"\|"prod", "dry_run": bool, "message": str, "allow_empty": bool}` | Wie bisher: `counts`, `products`, `images`, `files`, `deployment`, `summary`, `warning`, `target`, `dry_run` |
+| `import` | `product`; bei eigener `source_url`/`image_base_url` zusätzlich `app_admin` | `{"source_url"?: str, "image_base_url"?: str, "import_images": bool, "dry_run": bool, "overwrite": bool}` | Wie bisher: `created`, `overwritten`, `skipped`, `failed`, `images_imported`, `products_total`, `errors`, `dry_run`, `would_create`, `would_overwrite`, `unchanged`, `summary` |
+
+Die Basis validiert nur, dass der Body ein JSON-Objekt ist. Die fachliche Validierung (erlaubte Felder, Typen, Werte) bleibt beim Handler der Erweiterung, damit die Basis keine frickeldave-Kenntnis enthält.
+
+##### 1.5 Stabilitätszusage
+
+**Öffentlicher Vertrag:**
+
+- das Modul `custom_components.frickeldave_store.extension` und alle Namen in `__all__`;
+- `CONTRACT_VERSION` und die Bedeutung der Datentypen/ Felder;
+- die reservierten Feature-Namen `publish` und `import` samt Request-/Response-Payloads (dokumentiert in `docs/extension-api.md` und im Extension-README);
+- `POST /api/frickeldave_store/features/{feature}`;
+- `features` in `GET /api/frickeldave_store/me` und `/settings`;
+- `feature_details` in `/settings` (nur `app_admin`);
+- das Event `frickeldave_store_features_changed`.
+
+**Privat:**
+
+- alles andere unter `custom_components.frickeldave_store`, insbesondere `store.py`, `products.py`, `views.py`, `permissions.py`, `models.py`, `const.py`, `export.py`, `panel.py`, `frontend/`;
+- die Runtime (`FrickeldaveStoreRuntime`), `runtime_for`, `hass.data[DOMAIN]`, der Datenordner, `frickeldave_store.data`, Bilder, Snapshots;
+- die konkrete Implementierung der Fassade.
+
+**Regeln für die Erweiterung:**
+
+- Imports nur aus `custom_components.frickeldave_store.extension`. Keine Imports aus `const`, `models`, `store`, `products`, `views`, `permissions`, `export`.
+- Kein Zugriff auf `hass.data["frickeldave_store"]`, keine Dateipfade, kein Monkeypatching.
+- Keine eigenen HTTP-Views unter `/api/frickeldave_store/*`; die Erweiterung liefert Feature-Handler, die Basis routet und authentifiziert.
+- Keine Persistenz der Store-Daten; die Basis bleibt alleinige Eigentümerin.
+
+**Versionierung:**
+
+- `CONTRACT_VERSION` ist eine Ganzzahl und wird bei jeder inkompatiblen Änderung erhöht. Additive, optionale Felder erhöhen sie nicht.
+- Die Basis akzeptiert `registration.contract_version <= CONTRACT_VERSION` und lehnt neuere Verträge mit `contract_too_new` ab.
+- Die Erweiterung deklariert `MIN_CONTRACT_VERSION = 1` und verweigert den Start, wenn die Basis älter ist.
+- Offiziell getestet werden der aktuelle und der vorherige Vertrag (N und N-1); ein älterer Vertrag wird nur mit Warnung akzeptiert. Die Entfernung eines öffentlichen Namens erfolgt erst mit einem Contract-Bump und einer Deprecation über mindestens ein Minor-Release.
+
+##### 1.6 Abhängigkeitsrichtung und Lebenszyklus
+
+**Manifest der Erweiterung:** `dependencies: ["frickeldave_store"]`.
+
+Begründung: Die Erweiterung ist ohne Basis funktionslos. `dependencies` stellt sicher, dass die Basis vor der Erweiterung eingerichtet wird, und macht die fehlende Installation zu einem klaren Fehler. `after_dependencies` allein garantiert nur die Reihenfolge, wenn die Basis vorhanden ist, und würde die Erweiterung halb funktionsfähig starten. Falls die Ziel-HA-Version eine Custom-zu-Custom-`dependencies` nicht auflöst, ist der Rückfall `after_dependencies: ["frickeldave_store"]` plus ein harter Runtime-Check in `async_setup_entry` (`ConfigEntryNotReady` mit klarer Meldung). HACS löst keine Abhängigkeiten auf; deshalb sind README, Release Notes und das Repair-Issue Teil des Vertrags.
+
+**Import-Richtung:** Erweiterung → Basis. Die Basis importiert die Erweiterung nie. Die Basis kennt auch den Domainnamen der Erweiterung nicht; sie speichert nur, was registriert wurde.
+
+**Registry-Lebenszyklus:**
+
+- Die Registry liegt unter `hass.data[f"{DOMAIN}_extensions"]` und wird in `async_setup` der Basis angelegt. Sie wird beim Unload eines Config Entry **nicht** gelöscht, damit ein Basis-Reload die Registrierung der Erweiterung nicht verliert.
+- Die Fassade löst die Runtime bei jedem Aufruf neu auf. Ein Basis-Reload macht eine gehaltene Fassade nicht ungültig; fehlt die Runtime, wirft sie `ExtensionError(code="base_unavailable")`.
+- Registrierung derselben `extension_id` ersetzt atomar; die zurückgegebene Abmeldefunktion entfernt nur, wenn die aktuelle Registrierung dieselbe Identität hat.
+- Ein Feature-Name darf nur von einer Erweiterung registriert werden. Ein zweiter Provider führt zu `ExtensionConflict` und wird abgelehnt. Die Built-in-Provider der Brückenversion `0.1.15` liegen in einer separaten Fallback-Map und werden von Erweiterungs-Providern überstimmt.
+- Beim Unload der Basis-Instanz werden die Features nicht verfügbar; die Registry bleibt. Die Basis feuert das Feature-Event.
+- Beim HA-Neustart richtet die Basis zuerst ein, dann die Erweiterung; die Erweiterung registriert in `async_setup_entry`.
+
+**Fehlervertrag:**
+
+- Der Handler darf `ExtensionError` werfen; die Basis antwortet mit `{"error": {"code", "message"}}` und `status`.
+- Jede andere Exception wird mit Traceback geloggt und als `500 extension_error` mit generischer deutscher Meldung beantwortet. Der Request-Body wird nie geloggt.
+- Ist das Feature nicht registriert oder `ready=false`, antwortet die Basis mit `409 feature_unavailable` und einer Meldung, die auf Installation/Konfiguration der Erweiterung verweist.
+- Fehlt die Basis-Runtime, antwortet die Basis wie bisher mit `503 not_loaded`.
+
+**Event:**
+
+`frickeldave_store_features_changed` auf dem HA-Bus, Payload `{"features": {"publish": bool, "import": bool}}` (plus optional `extension_id`). Es wird bei Registrierung, Abmeldung, Statuswechsel und Basis-Unload gefeuert.
+
+---
+
+#### 2. Capability-Anzeige
+
+##### 2.1 Entscheidung
+
+Der Vorschlag wird übernommen, aber geschärft:
+
+- `GET /api/frickeldave_store/me` liefert **nur Booleans**: `"features": {"publish": bool, "import": bool}`.
+- `GET /api/frickeldave_store/settings` liefert dieselben Booleans **plus** `feature_details` für `app_admin`:
+
+```json
+{
+  "features": {"publish": true, "import": true},
+  "feature_details": {
+    "publish": {
+      "extension": "frickeldave_store_sync",
+      "version": "0.1.0",
+      "available": true,
+      "configured": true,
+      "reason": ""
+    },
+    "import": {
+      "extension": "frickeldave_store_sync",
+      "version": "0.1.0",
+      "available": true,
+      "configured": true,
+      "reason": ""
+    }
+  }
+}
+```
+
+`features` ist eine **Fähigkeitsanzeige, keine Rechteanzeige**. Die Basis meldet, ob ein Feature bereitsteht; die Rolle prüft weiterhin das Panel bzw. die Route.
+
+##### 2.2 Semantik
+
+- `available = provider_registered AND base_runtime_ready AND spec.ready`.
+- `configured = spec.ready` (die Erweiterung meldet, ob ihre Voraussetzungen erfüllt sind).
+- Kein Provider → `available=false`, `configured=false`, `extension=""`, `reason="not_installed"`.
+- Provider vorhanden, aber nicht eingerichtet → `available=false`, `configured=false`, `reason` z. B. `"token_missing"` oder `"invalid_source_url"`.
+- Provider vorhanden und eingerichtet → `available=true`.
+- In der Brückenversion `0.1.15` können die Built-in-Provider der Basis als Fallback zählen; `feature_details.extension` ist dann `"frickeldave_store"` und `feature_details.version` die Basisversion. Ein Erweiterungs-Provider mit `ready=true` hat Vorrang; ein Erweiterungs-Provider mit `ready=false` verdrängt einen ready Built-in-Fallback nicht.
+- Die strenge Anforderung „Buttons nur bei installierter und eingerichteter Erweiterung“ gilt ab Basis `0.2.0`. Die Brücke `0.1.15` ist die einzige, befristete Ausnahme: Dort bleiben die Buttons über den Built-in-Fallback auch ohne Erweiterung sichtbar, damit Bestandsnutzer vor dem Breaking Update weiterarbeiten und die Erweiterung in Ruhe verifizieren können.
+
+##### 2.3 Panel-Gating
+
+| UI-Element | Sichtbar, wenn | Verhalten bei Klick |
+| --- | --- | --- |
+| Topbar-Button „Katalog importieren“ | `can.product && features.import` | `POST /features/import` |
+| Topbar-Buttons „Nach dev/prod veröffentlichen“ | `can.app_admin && features.publish` | `POST /features/publish` |
+| Import-Dialog | nur über den Button; zusätzlich Guard in `_openImport()` | Bei `feature_unavailable`: schließen, Banner, `/me` neu laden |
+| Publish-Dialog | nur über die Buttons; zusätzlich Guard in `_openPublish()` | Bei `feature_unavailable`: schließen, Banner, `/me` neu laden |
+| Config-Panel-Tab „Veröffentlichen“ | entfällt in der Basis `0.2.0` | Einstellungen liegen im Options-Flow der Erweiterung |
+| Config-Panel-Tab „Erweiterungen“ | immer für `app_admin` | Zeigt `features`/`feature_details`, Extension-Version, Grund und den Hinweis auf „Einstellungen → Geräte & Dienste → Frickeldave Store Sync → Konfigurieren“ |
+
+Der Import-Dialog verliert den hartcodierten Satz „Der aktuelle Katalog von **frickeldave.de** …“ und spricht neutral von „dem konfigurierten Katalog“. Die übrigen Dialoginhalte (Dry-Run, Überschreiben, Dateiliste, Fehler) bleiben; sie sind bereits generisch.
+
+##### 2.4 Erweiterung wird deinstalliert/deaktiviert, während das Panel offen ist
+
+Drei Ebenen:
+
+1. **Event:** Die Basis feuert `frickeldave_store_features_changed` bei Abmeldung/Unload. Das Panel abonniert das Event über `hass.connection.subscribeEvents` und lädt `/me` (debounced) neu. Wird ein Feature `false`, werden die Buttons entfernt und ein offener Dialog geschlossen.
+2. **Fehlerpfad:** Ein veraltetes Panel, das noch einen Button zeigt, erhält beim Aufruf `409 feature_unavailable` (Code). Das Panel schließt den Dialog, setzt das Feature lokal auf `false`, zeigt einen Banner („Die Erweiterung ist nicht mehr installiert oder nicht eingerichtet. Bitte Installation prüfen.“) und lädt `/me` neu. Kein automatischer Retry.
+3. **Revalidierung:** Das bestehende `_revalidateAccess` (bei `visibilitychange` und HA-Benutzerwechsel) liest `features` mit. Damit ist der Zustand spätestens beim nächsten Sichtbarwerden korrekt.
+
+Ein HA-Neustart nach dem Entfernen der Integrationsdateien lädt das Panel ohnehin neu; der Event-Pfad deckt den Fall ab, dass nur der Config Entry deaktiviert oder die Erweiterung neu geladen wird. In-flight-Anfragen können nach der Abmeldung noch zu Ende laufen; die nächste Anfrage erhält `409`. Es gibt keinen Datenverlust, weil die Erweiterung den Store nicht besitzt.
+
+##### 2.5 Warum keine losen Checks im Panel
+
+`hass.config.components` oder ein direktes `hass.data`-Lesen im Panel wäre ein zweiter, unversionierter Vertrag und würde Installiert-Sein mit Eingerichtet-Sein verwechseln. Die Basis ist die einzige Stelle, die Provider, Runtime und `ready` kennt; das Panel konsumiert nur `features`.
+
+---
+
+#### 3. Aufteilung des Codes
+
+##### 3.1 Dateien/Module: Basis `0.1.14` → Ziel
+
+Die Tabelle beschreibt den **Zielzustand `0.2.0`**. In der Brückenversion `0.1.15` bleiben `publish.py` und `importer.py` vorübergehend in der Basis und werden dort als Built-in-Feature-Provider registriert; die Erweiterung kann sie überstimmen. Erst `0.2.0` entfernt die Dateien und die Built-in-Provider.
+
+| Datei/Modul (Basis 0.1.14) | Ziel | Anmerkung |
+| --- | --- | --- |
+| `custom_components/frickeldave_store/publish.py` | Erweiterung: `custom_components/frickeldave_store_sync/publish.py` | 1:1 portieren. `build_artifacts` wird durch `facade.async_build_export(...)` ersetzt; `GitHubClient`, `PublishService`, `PublishSettings` und alle Fehlerklassen bleiben in der Erweiterung. |
+| `custom_components/frickeldave_store/importer.py` | Erweiterung: `.../importer.py` | 1:1 portieren. Store-Zugriffe werden zu `facade.async_products()/async_locations()/async_article_numbers()`; Schreiben wird `facade.async_apply_import_batch(...)`. URL-Allowlist, Quell-URLs und Bildbasis wandern in die Extension-`const.py`. |
+| `tests/test_publish.py` | Erweiterung: `tests/test_publish.py` | `FakeGitHub` bleibt; statt `CatalogStore` eine Fake-Fassade mit `async_build_export`. Die bestehenden Fälle (Dry-Run, dev/prod, leerer Katalog, chunked HTTP, Artefaktfehler) bleiben. |
+| `tests/test_importer.py` | Erweiterung: `tests/test_importer.py` | Fake-Fetcher bleibt; Store-Assertions werden zu Fassaden-Assertions. Dry-Run-/Overwrite-/Bildfälle bleiben. |
+| `views.py::PublishView` | Erweiterung: Feature-Handler `publish` | Kein eigener HTTP-View in der Erweiterung; die Basis routet. |
+| `views.py::CatalogImportView` | Erweiterung: Feature-Handler `import` | Dito. |
+| `views.py::ExportView` | Basis | Lokaler Export bleibt; er ist generisch und nicht frickeldave-spezifisch. |
+| `views.py::MeView` | Basis | `features` ergänzen. |
+| `views.py::SettingsView` | Basis | `publish` aus erlaubten Feldern entfernen; `features`/`feature_details` ergänzen; `_persist_publish_options` entfernen. |
+| `const.py::DEFAULT_PUBLISH_REPOSITORY`, `DEFAULT_PUBLISH_DEV_BRANCH`, `DEFAULT_PUBLISH_PROD_BRANCH`, `DEFAULT_PUBLISH_PROD_WORKFLOW` | Erweiterung: `const.py` | Frickeldave-Defaults (`Frickeldave/frickeldave.github.io`, `dev`, `main`, `fd-deploy-prd.yml`). |
+| `const.py::DEFAULT_CATALOG_URL`, `DEFAULT_IMAGE_BASE_URL`, `IMPORT_ALLOWED_HOSTS` | Erweiterung: `const.py` | `https://frickeldave.de/data/handmade.json`, `raw.githubusercontent.com/.../frickeldave.github.io`, Allowlist `frickeldave.de`/`raw.githubusercontent.com`. |
+| `const.py::ISSUE_URL` | Basis: `const.py` | Auf `f"{REPOSITORY_URL}/issues"` umstellen; kein `#289` mehr. |
+| `const.py::DEFAULT_AI_PROMPT` | Basis: `const.py` | Generischer Prompt, z. B. `"Write a concise, appealing product description for an online shop."`; bestehende gespeicherte Prompts bleiben unverändert. |
+| `publish.py::build_artifacts` (aktuell in `publish.py`) | Basis: `export.py::async_build_export` | Generischer Export-Bundle-Builder; die Erweiterung ruft ihn über die Fassade. |
+| `export.py::CATALOG_RELATIVE_PATH`, `IMAGES_RELATIVE_PATH` | Aufteilen | Basis: konfigurierbare Exportpfade mit generischen Defaults (`data/catalog.json`, `images`); Erweiterung: Website-Pfade (`public/data/handmade.json`, `src/assets/handmade`). |
+| `config_flow.py`-Felder `github_repository`, `github_dev_branch`, `github_prod_workflow`, `github_token` | Erweiterung: `config_flow.py` | Basis entfernt die Felder; bestehende Optionswerte bleiben unangetastet (Rollback). |
+| `frontend/frickeldave-store-config-panel.js` Tab „Veröffentlichen“ | Erweiterung: Options-Flow | Basis entfernt den Tab; der Options-Flow der Erweiterung ersetzt ihn. |
+| `frontend/frickeldave-store-panel.js` Publish-/Import-Endpunkte | Basis, gegatet | URLs auf `/features/publish` und `/features/import` umstellen; Feature-State und Gating ergänzen. Die Dialoge bleiben in der Basis. |
+| `translations/de.json`, `translations/en.json`, `strings.json` Publish-/Import-Schlüssel | Erweiterung: `translations/`, `strings.json` | Basis entfernt die Schlüssel; Erweiterung bringt eigene de/en-Übersetzungen mit. |
+| `docs/*` Publish-/Import-Abschnitte | Erweiterung: README/Docs; Basis: Migrationsleitfaden | Basis-README wird generisch; die frickeldave-Spezifika stehen nur noch in der Erweiterung. |
+
+**Neu in der Basis:**
+
+- `custom_components/frickeldave_store/extension.py` (Contract, Registry, Fassade, Fehler);
+- `tests/test_extension.py`, `tests/test_extension_facade.py`, `tests/test_legacy_settings.py`, `tests/test_no_extension_imports.py`;
+- `docs/extension-api.md`, `docs/migration-0.2.md`;
+- Repair-Issue-Übersetzungen.
+
+**Neu in der Erweiterung:**
+
+- `custom_components/frickeldave_store_sync/__init__.py`, `manifest.json`, `const.py`, `config_flow.py`, `publish.py`, `importer.py`, `strings.json`, `translations/de.json`, `translations/en.json`, `brand/icon.png`;
+- `hacs.json`, `README.md`, `CHANGELOG.md` (MIT-Lizenz vorhanden), `.github/workflows/ci.yml`, Issue-Templates, `tests/`.
+
+##### 3.2 Was in der Basis bleibt
+
+`models.py`, `store.py`, `storage.py`, `products.py`, `permissions.py`, `ai.py`, `imaging.py`, `export.py` (generisch), `panel.py`, `websocket_api.py`, `config_flow.py` (ohne GitHub), `views.py` (ohne Publish/Import), `frontend/` (ohne Publish-Settings-Tab, mit Gating), `strings.json`/`translations/` (ohne Publish/Import), `docs/` (generisch), `tests/` (ohne die verschobenen Publish-/Import-Tests).
+
+Die Basis bleibt damit ein vollständiges, eigenständig nutzbares Produkt-/Lagerverwaltungswerkzeug mit Panel, Rechten, KI, Bildoptimierung, lokalem Export und Backup.
+
+##### 3.3 Generische Fähigkeiten der Basis (ohne Privatzugriff)
+
+Die Erweiterung braucht genau diese Fassadenmethoden:
+
+1. **Export bauen:** `async_build_export(catalog_path, images_path, visible_only=False) -> ExportBundle`.
+   - Liefert den Katalog als Bytes und alle Bilder als `ExportArtifact` mit Zielpfad, inklusive `article_number` und `kind`.
+   - Wirft `ExtensionError(code="export_artifacts_unavailable")` mit gesammelter Liste, wenn eine Bilddatei fehlt oder nicht lesbar ist — dieselbe Sicherheitslinie wie heute.
+   - Setzt `empty_catalog=True`, wenn kein nicht-archiviertes Produkt existiert; die Publish-Politik (`allow_empty`, `warning`) bleibt bei der Erweiterung.
+2. **Produkte lesen:** `async_products() -> tuple[ProductSnapshot, ...]` (konsistent unter dem Store-Lock, inklusive Bilder, Beständen je Lagerstätte, Archiv-Status, Zeitstempeln).
+3. **Lagerstätten lesen:** `async_locations() -> tuple[Mapping[str, str], ...]`.
+4. **Artikelnummern lesen:** `async_article_numbers() -> frozenset[str]` (inklusive archivierter Produkte).
+5. **Snapshot:** `async_create_snapshot(reason) -> str | None`; der Batch legt zusätzlich automatisch einen Snapshot vor dem ersten Schreiben an.
+6. **Rechteprüfung:** `can(user_id, role)` und `require(user_id, role)` mit denselben Rollen (`product`, `finance`, `app_admin`) und Default Deny.
+7. **Validierter Batch-Schreibpfad für den Import:** `async_apply_import_batch(items, reason) -> ImportBatchResult`.
+   - Validiert **alle** Items zuerst mit denselben Regeln wie `POST`/`PATCH /products` (Artikelnummer, Kategorie, Preise, Bestände, Bilder).
+   - Legt bei gültigen Items **einen** Snapshot an, schreibt alle Produkte und Bilder unter dem Store-Lock und speichert **einmal**.
+   - Ungültige Items landen in `errors` und werden übersprungen; gültige werden angewendet. Das entspricht der heutigen Import-Semantik (Fehler je Produkt sammeln, Lauf nicht abbrechen).
+   - Bestehende Produkte werden nur aktualisiert, wenn das Item eine `article_number` trägt; Kategorie ist unveränderlich; archivierte Produkte werden nicht reaktiviert; `createdAt` bleibt, `updatedAt` wird gesetzt; Tags werden global ergänzt.
+   - Bilder: maximal `MAX_IMAGES`, erlaubte Suffixe, Größenlimit, Signaturprüfung; Schreiben über `ImageStorage`.
+   - Kein `dry_run` in der Fassade: Der Aufrufer (Erweiterung) ist für die Vorschau verantwortlich und ruft den Batch im Dry-Run **nicht** auf. Das verhindert versehentliche Schreibvorgänge.
+
+**Nicht** Teil der Fassade: `CatalogStore`, `ProductService`, `ImageStorage`, `store.lock`, `data_dir`, `frickeldave_store.data`, `settings`, direkte Dateipfade, HTTP-Views, Panel-Interna.
+
+##### 3.4 Was die Erweiterung nicht darf
+
+- Keine Imports aus der Basis außer `extension`.
+- Kein `hass.data["frickeldave_store"]`, kein `runtime_for`, kein `CatalogStore`.
+- Keine direkten Dateizugriffe auf den Datenordner, Bilder, Snapshots oder die Store-Datei.
+- Keine eigenen HTTP-Views unter dem Basis-API-Prefix; Feature-Handler genügen.
+- Keine Persistenz von Produkten/Beständen; die Basis ist die einzige Quelle der Wahrheit.
+- Kein Lesen oder Migrieren des Basis-Tokens. Die Erweiterung hat ihr eigenes Token.
+
+##### 3.5 Tests, die die Grenze absichern
+
+**Basis:**
+
+- `test_extension.py`: Registrierung/Abmeldung, doppelte `extension_id`, doppelter Feature-Name, `contract_too_new`, `feature_unavailable`, Rollenprüfung, `ExtensionError`-Mapping, unerwartete Exception → 500, Event-Payload.
+- `test_extension_facade.py`: `async_build_export` ist byte-identisch zum bisherigen `build_artifacts` (Golden-Test mit Fixture); fehlendes/unlesbares Bild → `export_artifacts_unavailable`; `async_apply_import_batch` validiert, snapshotet einmal, speichert einmal, sammelt Fehler, lehnt archivierte Updates/Kategorieänderungen ab, erzwingt Bildgrenzen.
+- `test_legacy_settings.py`: Altbestand mit `settings.publish` lädt, `/settings` gibt `publish` nicht mehr aus, Speichern erhält den Schlüssel, `github_*`-Options bleiben.
+- `test_no_extension_imports.py`: Die Basis importiert nie `frickeldave_store_sync`; im Paket `custom_components/frickeldave_store` kommen `frickeldave.de`, `frickeldave.github.io`, `fd-ci`, `fd-deploy-dev`, `fd-deploy-prd`, `raw.githubusercontent.com/Frickeldave` nicht mehr vor (Allowlist: Basis-Repo-URL, Markenname, Doku).
+- `test_frontend_assets.py`: Gating-Markup verwendet `features.publish`/`features.import`; kein unbedingter Publish-/Import-Button; `feature_unavailable`-Behandlung vorhanden; Import-Dialog enthält kein `frickeldave.de`.
+
+**Erweiterung:**
+
+- Portierte `test_publish.py`/`test_importer.py` mit Fake-Fassade.
+- `test_config_flow.py`: Basis fehlt/zu alt/nicht eingerichtet → Abbruch; Token write-only; `ready`-Flags; Options-Reload; unbekannte Options bleiben.
+- `test_contract.py`: Registrierung mit Contract 1, Feature-Payloads, Fehler-Mapping.
+- `test_compat.py`: läuft gegen Basis `0.1.15` und `0.2.0` (CI-Matrix, Base-Repo als Checkout).
+
+**Querschnitt:** Installationsmatrix Basis-only, Erweiterung-only (muss klar fehlschlagen), beide, Basis `0.1.15` + Extension `0.1.0`, Basis `0.2.0` + Extension `0.1.0`, Rollback `0.2.0` → `0.1.14`.
+
+---
+
+#### 4. Einstellungen und Migration
+
+##### 4.1 Neuer Config-/Options-Flow in der Erweiterung
+
+Die Erweiterung ist eine zweite Custom Integration mit eigenem Config Entry. Sie hat **kein** Panel; die Einstellungen liegen im Standard-HA-Flow (Einrichtung + Optionen). Ein einziger Eintrag pro Instanz (`async_set_unique_id(DOMAIN)`).
+
+**Einrichtung (`async_step_user`):**
+
+| Feld | Pflicht | Default | Bedeutung |
+| --- | --- | --- | --- |
+| `repository` | ja | `Frickeldave/frickeldave.github.io` | Ziel-Repository (`owner/name`) |
+| `dev_branch` | ja | `dev` | Integrationsbranch; Push löst CI/Dev-Deploy aus |
+| `prod_branch` | ja | `main` | Produktionsbranch (nur Workflow schreibt) |
+| `prod_workflow` | ja | `fd-deploy-prd.yml` | Workflow, der `dev` nach `main` promotet |
+| `github_token` | nein | `""` | Fine-grained PAT; leer = Publish noch nicht bereit |
+| `catalog_url` | nein | `https://frickeldave.de/data/handmade.json` | Importquelle |
+| `image_base_url` | nein | `https://raw.githubusercontent.com/Frickeldave/frickeldave.github.io/dev/src/assets/handmade` | Bildbasis |
+
+Vor dem Anlegen prüft der Flow:
+
+- Basis vorhanden (`async_get_facade(hass) is not None`), sonst Abbruch `base_missing` / `base_not_configured`;
+- Basis-Vertrag ausreichend (`CONTRACT_VERSION >= MIN_CONTRACT_VERSION`), sonst `base_too_old`;
+- URLs sind `https` und liegen in der festen Allowlist der Erweiterung; sonst `invalid_source_url`.
+
+**Optionen (`async_step_init`):** dieselben Felder. Ein leeres Token-Feld behält das gespeicherte Token; die UI zeigt `token_set` statt des Werts. Speichern schreibt die Optionen und lädt den Entry neu. Die Erweiterung registriert danach ihre Features neu (`ready` aktualisiert).
+
+**Token-Speicherung:** Im Config Entry der Erweiterung (`.storage/core.config_entries`), wie bei HA-Integrationen üblich. Das Token wird nie über die API zurückgegeben, nie geloggt, nie in Fehlermeldungen oder Exporte geschrieben. Die UI zeigt nur `token_set`.
+
+**`ready`-Definitionen:**
+
+- `publish` ist bereit, wenn `repository`, `prod_workflow` und `token` gesetzt sind (Branches haben Defaults).
+- `import` ist bereit, wenn `catalog_url` und `image_base_url` gültige `https`-URLs in der Allowlist sind (Defaults sind gültig).
+- Ist ein Feature nicht bereit, wird es trotzdem mit `ready=false` und `reason` registriert, damit `/settings` den Grund zeigt und die Erweiterung ein Repair-Issue anlegen kann. Die Basis meldet `features.* = false`; die Buttons bleiben verborgen.
+
+##### 4.2 Token-Migration: warum neu eingeben?
+
+Der Token ist write-only und über die API nicht auslesbar. Dieses ADR führt **keinen** Migrationspfad ein, der das Geheimnis durch die Basis an die Erweiterung reicht. Begründung:
+
+- Ein solcher Pfad wäre ein neuer, dauerhafter Secret-Exfiltrationspunkt in der Basis und würde die Open-Source-Hygiene untergraben.
+- Ein neuer Fine-grained-Token mit minimalen Rechten ist sicherer als ein alter Token, dessen tatsächlicher Umfang unbekannt ist.
+- Der Aufwand für den Bestandsnutzer ist einmalig: Repository/Branches/Workflow sind bekannt oder vorbelegt; nur der Token wird neu erzeugt.
+
+**Empfohlene Token-Rechte:** Repository access nur `Frickeldave/frickeldave.github.io`; `Contents: Read and write` (Commit über die Git-Data-API), `Actions: Read and write` (Workflow-Dispatch), `Metadata: Read`. Keine Organisationsweite Freigabe.
+
+**Optionaler Komfort (nicht Teil von Contract 1):** Ein „Verbindung testen“-Button im Options-Flow, der `GET /repos/{repository}` aufruft und die Push-/Actions-Rechte prüft. Er ist optional und blockiert die Einrichtung nicht.
+
+##### 4.3 Was passiert mit den bisherigen Publish-Settings in der Basis?
+
+**Entscheidung: ignorieren und unangetastet lassen, in `0.3.0` entfernen.**
+
+- `settings.publish` bleibt im Datenfile erhalten. `coerce_payload` darf unbekannte Settings-Schlüssel nicht mehr verwerfen; `default_settings()` erzeugt für neue Stores kein `publish` mehr.
+- `public_settings()` gibt `publish` nicht mehr aus; `SettingsView` akzeptiert `publish` nicht mehr; `_persist_publish_options` entfällt; `_async_apply_entry_config` wendet `settings.publish` nicht mehr an.
+- Die alten Config-Entry-Options `github_repository`, `github_dev_branch`, `github_prod_workflow`, `github_token` bleiben in `.storage/core.config_entries` stehen. Der Options-Flow der Basis muss unbekannte Optionsschlüssel **erhalten** (Options-Dict kopieren und nur eigene Keys aktualisieren), damit ein Rollback auf `0.1.14` sie wiederfindet.
+- Kein Store-Schema-Bump nur wegen des entfallenden `publish`-Blocks; `SCHEMA_VERSION` bleibt 2. Die Config-Entry-Version wird in `0.2.0` auf 2 erhöht, um die neuen Exportpfad-Optionen einmalig zu migrieren.
+- In `0.3.0` kann ein expliziter Cleanup die veralteten Schlüssel entfernen; bis dahin sind sie inert. Die Migrationsanleitung empfiehlt, den alten PAT zu widerrufen; damit ist ein zurückbleibender Token wertlos.
+
+##### 4.4 Nutzeranleitung (Schritt für Schritt)
+
+1. **Vor dem Update:** In der Basis unter Einstellungen → Frickeldave Store → Veröffentlichen das Repository, die Branches und den Workflow notieren. Der Token wird nicht angezeigt; das ist beabsichtigt.
+2. **Neuen Token erzeugen:** GitHub → Settings → Developer settings → Fine-grained tokens → Repository `Frickeldave/frickeldave.github.io`, Rechte `Contents: Read and write`, `Actions: Read and write`, `Metadata: Read`.
+3. **Basis auf `0.1.15` aktualisieren** (Brückenversion, sofern freigegeben), neu starten. Veröffentlichen/Import funktionieren unverändert.
+4. **Erweiterung installieren:** HACS → Integrationen → Benutzerdefinierte Repositories → `https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd`, Kategorie Integration → installieren → HA neu starten.
+5. **Erweiterung einrichten:** Einstellungen → Geräte & Dienste → Integration hinzufügen → „Frickeldave Store Sync“. Repository/Branches/Workflow eintragen, neuen Token einfügen, speichern.
+6. **Verifizieren:** Im Panel erscheinen die Veröffentlichungs-Buttons (wenn `app_admin`) und der Import-Button (wenn `product`). Zuerst Dry-Run für `dev`; Dateiliste und Zählungen prüfen. Danach optional echt veröffentlichen; Import ebenfalls zuerst als Dry-Run.
+7. **Basis auf `0.2.0` aktualisieren**, neu starten. Die Features bleiben sichtbar, weil die Erweiterung registriert ist.
+8. **Alten Token widerrufen.** Optional nach der Rollback-Frist `settings.publish` aus der Basis-Store-Datei entfernen (nur mit Backup; die Basis liest es nicht mehr).
+9. **Wenn etwas fehlt:** Siehe 4.6 und Abschnitt 7.
+
+**Wenn der Nutzer zuerst `0.2.0` installiert:** Veröffentlichen/Import-Buttons verschwinden, ein Repair-Issue erklärt den Schritt. Es geht kein Datenverlust einher; die Erweiterung kann jederzeit nachgezogen werden. Der alte Token wird nicht mehr verwendet.
+
+##### 4.5 Repair-Issue statt stiller Degradierung
+
+Die Basis legt nach `EVENT_HOMEASSISTANT_STARTED` (und erneut bei `frickeldave_store_features_changed`) ein Repair-Issue an, wenn:
+
+- `settings.publish` einen `token_set` oder ein `repository` enthält **und**
+- kein `publish`-Provider registriert ist (weder Erweiterung noch Built-in-Fallback).
+
+Issue-ID: `publish_moved_to_extension`; `is_fixable=False`, `severity=WARNING`, `translation_key` in `strings.json`/`translations`. Text: Veröffentlichen/Import wurden in die Erweiterung ausgelagert; Installation über HACS; neuen Token anlegen; alten widerrufen. Das Issue wird gelöscht, sobald ein `publish`-Provider registriert ist oder die Legacy-Settings entfernt wurden.
+
+Die Erweiterung legt ein eigenes Issue `publish_not_configured` an, wenn ihr Entry ohne Token läuft; es wird gelöscht, sobald `publish` bereit ist. So gibt es keine doppelten Issues: Die Basis meldet nur „kein Provider“, die Erweiterung meldet „Provider, aber unkonfiguriert“.
+
+##### 4.6 Rollback
+
+- Basis `0.1.14` über HACS installieren (Version auswählen), Erweiterung vorher deaktivieren/deinstallieren, HA neu starten.
+- `settings.publish` und `github_*`-Options sind in `0.2.0` erhalten geblieben; `0.1.14` liest sie wieder. Ist der alte Token widerrufen, muss im alten Options-Flow ein gültiger Token eingetragen werden.
+- Kein Store-Schema-Bump; die Store-Datei ist mit `0.1.14` kompatibel. Die neuen Exportpfad-Options werden von `0.1.14` ignoriert.
+- Die Erweiterung kann installiert bleiben, ist mit Basis `0.1.14` aber funktionslos (kein `extension`-Modul); sie sollte deaktiviert werden, um Fehlermeldungen zu vermeiden.
+
+---
+
+#### 5. Versionierung und Verteilung
+
+##### 5.1 Versionen
+
+| Repository | Version | Charakter | Inhalt |
+| --- | --- | --- | --- |
+| Basis | `0.1.15` | Minor, additiv (Brücke) | Contract 1, Feature-Route, `features` in `/me`/`/settings`, Fassade, Built-in-Fallback für Publish/Import; bestehende Endpunkte bleiben vorerst |
+| Erweiterung | `0.1.0` | Erstrelease | Verschobenes Publish/Import, Config-/Options-Flow, Token write-only |
+| Basis | `0.2.0` | Major, breaking | Entfernt Publish/Import, Publish-Settings, GitHub-Options, frickeldave-Defaults; generische Basis |
+| Basis | `0.3.0` (perspektivisch) | Minor/Major | Entfernt Legacy-Settings-Keys, ggf. Contract 2, ggf. Repo-/Produkt-Rename |
+
+SemVer: Die Basis folgt SemVer; `0.2.0` ist der Breaking Release. Die Erweiterung startet bei `0.1.0` und bleibt in `0.x`, bis der Vertrag stabil ist. Git-Tag = Manifest-Version ohne `v`; HACS-Release ist kein Draft und kein Pre-Release.
+
+##### 5.2 HACS-Metadaten
+
+**Basis `Frickeldave/frickeldave.home.net`:**
+
+- `manifest.json`: `domain: frickeldave_store`, `version: 0.2.0`, `config_flow: true`, `dependencies: [http, panel_custom, websocket_api]`, `documentation`/`issue_tracker` auf die Basis-URLs, `codeowners: ["@Frickeldave"]`.
+- `hacs.json`: `name: "Frickeldave Store"`, `render_readme: true`, `homeassistant: "2024.6.0"`; `country` entfernen (Community-neutral).
+- Release `0.2.0`, Notes aus `CHANGELOG.md`, Breaking-Hinweis mit Migrationslink.
+
+**Erweiterung `Frickeldave/homeassistant-frickeldave-store-syncfd`:**
+
+- `custom_components/frickeldave_store_sync/manifest.json`:
+  - `domain: "frickeldave_store_sync"`, `name: "Frickeldave Store Sync"`, `version: "0.1.0"`;
+  - `config_flow: true`, `integration_type: "service"`, `iot_class: "cloud_polling"`;
+  - `dependencies: ["frickeldave_store"]`;
+  - `documentation`/`issue_tracker` auf das Extension-Repo, `codeowners: ["@Frickeldave"]`;
+  - `requirements: []`.
+- `hacs.json`: `name: "Frickeldave Store Sync"`, `render_readme: true`, `homeassistant: "2024.6.0"`; kein `country`.
+- Release `0.1.0`, Notes aus `CHANGELOG.md`, Installationsreihenfolge und Basis-Mindestversion (`>= 0.1.15`, kompatibel mit `0.2.0`).
+
+Beide Repos: `brand/icon.png`, `LICENSE` (MIT), `README`, `CHANGELOG`, Topics (`home-assistant`, `hacs`, `integration`), Issue-Templates, PR-Template, CI mit `hassfest`, HACS-Action, `ruff`, `mypy`, `pytest`.
+
+##### 5.3 Release-Reihenfolge (empfohlen, mit Brücke)
+
+1. **Basis `0.1.15`** — additiv. Enthält Contract 1, Feature-Route, `features`-Flags und die Built-in-Fallback-Provider. Die bestehenden Endpunkte `/publish` und `/import/catalog` bleiben für externe Skripte vorerst erhalten (deprecated). Die Basis funktioniert allein unverändert.
+2. **Erweiterung `0.1.0`** — nach grüner CI gegen Basis `0.1.15` und `0.2.0`. Der Nutzer kann sie installieren, konfigurieren und vor dem Breaking Update verifizieren. Wo die Erweiterung `ready` ist, übernimmt sie die Features; wo nicht, nutzt die Basis den Built-in-Fallback.
+3. **Basis `0.2.0`** — entfernt Publish/Import, die alten Endpunkte, die Publish-Settings und die Built-in-Provider. Die Erweiterung ist bereits verfügbar; bestehende Installationen wechseln ohne Feature-Lücke.
+
+Diese Reihenfolge verhindert das Zeitfenster, in dem Veröffentlichen/Import weder in der Basis noch in der Erweiterung verfügbar sind.
+
+##### 5.4 Fallback ohne Brücke
+
+Wenn David die Zwischenversion `0.1.15` ablehnt:
+
+- Basis `0.2.0` zuerst veröffentlichen (enthält Contract 1), unmittelbar danach Erweiterung `0.1.0`.
+- Für die Dauer zwischen den Releases sind die Buttons verborgen; das Repair-Issue erklärt es. Kein Datenverlust, aber eine sichtbare Feature-Lücke.
+- Die Erweiterung darf nicht vor der Basis `0.2.0` veröffentlicht werden, weil sie das `extension`-Modul benötigt.
+
+##### 5.5 Wie verhindert man die halbe Migration?
+
+1. **Feature-Flags statt kaputter Aufrufe:** Ohne Erweiterung sind die Buttons nicht sichtbar; ein direkter Aufruf liefert `409 feature_unavailable` mit klarer Meldung.
+2. **Repair-Issue:** Die Basis meldet Legacy-Settings ohne Provider; die Erweiterung meldet fehlenden Token. Beide verlinken auf die Migration.
+3. **Extension-Guards:** Config Flow bricht bei fehlender/zu alter/nicht eingerichteter Basis ab; `async_setup_entry` wirft `ConfigEntryNotReady` mit klarer Meldung.
+4. **Daten bleiben:** `0.2.0` löscht weder `settings.publish` noch `github_*`-Options. Ein Nutzer, der nur die Basis aktualisiert, verliert die UI, nicht die Daten; die Erweiterung kann später nachgezogen werden.
+5. **Release Notes und README:** Explizite Reihenfolge, Token-Anleitung, Rollback. HACS kann keine Abhängigkeiten erzwingen; die Dokumentation und das Repair-Issue sind das Sicherheitsnetz.
+6. **Installationsmatrix in CI/QA:** Basis-only, Extension-only, beide, alte/neue Kombinationen, Rollback.
+
+##### 5.6 Kompatibilitätsmatrix
+
+| Basis | Erweiterung | Erwartung |
+| --- | --- | --- |
+| `0.1.14` | nicht installiert | Alles wie bisher; keine Features-Flags. |
+| `0.1.14` | `0.1.0` | Erweiterung startet nicht (kein `extension`-Modul); Config Flow `base_too_old`; klare Meldung. |
+| `0.1.15` | nicht installiert | Built-in Publish/Import funktionieren; `features` true; keine Extension-Details. |
+| `0.1.15` | `0.1.0` (konfiguriert) | Erweiterung übernimmt Publish/Import; Built-in bleibt Fallback. |
+| `0.1.15` | `0.1.0` (ohne Token) | Publish nutzt Built-in-Fallback; Import ggf. Erweiterung; `/settings` zeigt `reason`. |
+| `0.2.0` | nicht installiert | Publish/Import-Buttons weg; Repair-Issue; kein Datenverlust. |
+| `0.2.0` | `0.1.0` (konfiguriert) | Voller Funktionsumfang über die Erweiterung. |
+| `0.2.0` | `0.1.0` (ohne Token) | Import ggf. verfügbar; Publish weg; Repair-Issue der Erweiterung. |
+| `0.2.0` | `0.2.x` (Contract 2) | Basis akzeptiert nur `<= CONTRACT_VERSION`; neuere Erweiterung wird abgelehnt. |
+
+---
+
+#### 6. Open-Source-Hygiene der Basis
+
+##### 6.1 Muss aus der Basis verschwinden
+
+- **Code:** `publish.py`, `importer.py`, `PublishView`, `CatalogImportView`, `PublishService` im Runtime, `_persist_publish_options`, Publish-/Import-Tests.
+- **Konstanten:** `DEFAULT_PUBLISH_REPOSITORY`, `DEFAULT_PUBLISH_DEV_BRANCH`, `DEFAULT_PUBLISH_PROD_BRANCH`, `DEFAULT_PUBLISH_PROD_WORKFLOW`, `DEFAULT_CATALOG_URL`, `DEFAULT_IMAGE_BASE_URL`, `IMPORT_ALLOWED_HOSTS`, `ISSUE_URL` mit `#289`.
+- **Frickeldave-URLs/Repo-/Workflow-Namen:** `frickeldave.de`, `frickeldave.github.io`, `raw.githubusercontent.com/Frickeldave/...`, `fd-ci`, `fd-deploy-dev`, `fd-deploy-prd`, `Frickeldave/frickeldave.github.io`.
+- **Config-/Options-Flow:** `github_repository`, `github_dev_branch`, `github_prod_workflow`, `github_token`; die zugehörigen Übersetzungen.
+- **Panel:** Der Tab „Veröffentlichen“ im Config-Panel; der hartcodierte Satz „Der aktuelle Katalog von **frickeldave.de** …“ im Import-Dialog; die Publish-Settings-Formulare.
+- **Doku:** Publish-/Import-Abschnitte in Basis-README und `docs/`; sie werden durch einen Verweis auf die Erweiterung und `docs/migration-0.2.md` ersetzt.
+- **Metadaten:** `country: ["DE"]` in `hacs.json` (optional; für eine internationale Community entfernen).
+
+##### 6.2 Bleibt als sinnvoller Default
+
+- Domain `frickeldave_store`, Storage-Keys, Datenordner `frickeldave_store`, Bildlayout `<artikelnummer>/<name>`, Rollen und Rechte, Default Deny, Soft-Delete, Buchungen, Lagerstätten.
+- Der Katalogexport samt stabilem `stock`/`salesCabinet`-Mapping (Entscheidung vom 2026-11-02 bleibt gültig).
+- KI-Anbieter-Abstraktion und DeepSeek-Defaults (Endpunkt/Modell bleiben konfigurierbar).
+- Panel, Bildoptimierung, Backup/Snapshot, lokaler Export, deutsche/englische Übersetzungen.
+- Markenname „Frickeldave Store“ für `0.2.0`. Ein neutraler Produktname ist eine separate Breaking Change (siehe offene Fragen).
+
+##### 6.3 Generische Defaults
+
+| Konstante/Einstellung | Neuer Default | Migration |
+| --- | --- | --- |
+| `DEFAULT_AI_PROMPT` | `"Write a concise, appealing product description for an online shop."` | Bestehende gespeicherte Prompts bleiben unverändert; nur neue Installationen sehen den neuen Default. |
+| `CATALOG_DESCRIPTION` | `"Generated by Frickeldave Store"` | Einmaliger Katalog-Diff beim ersten Publish nach `0.2.0`; akzeptiert und in den Release Notes genannt. Alternativ als Export-Option konfigurierbar. |
+| Export-Katalogpfad | `data/catalog.json` | Bestehende Entries erhalten in `async_migrate_entry` die Legacy-Werte `public/data/handmade.json`; neue Installationen bekommen den generischen Default. |
+| Export-Bildpfad | `images` | Dito: bestehende Entries `src/assets/handmade`, neue `images`. |
+| `ISSUE_URL` | `f"{REPOSITORY_URL}/issues"` | Kein `#289` mehr. |
+| `REPOSITORY_URL` | Basis-Repo (`Frickeldave/frickeldave.home.net`) | Bei einem Repo-Rename in `0.3.0` an einer Stelle aktualisieren. |
+| HACS `country` | entfernt | Keine funktionale Änderung. |
+
+Die Erweiterung übergibt beim Publish explizit die Website-Pfade `public/data/handmade.json` und `src/assets/handmade`; damit bleibt der Website-Output byte-identisch, während die Basis generisch wird.
+
+##### 6.4 Doku, Lizenz, Übersetzungen, Templates, CI
+
+- **Lizenz:** MIT bleibt; `LICENSE` in beiden Repos, Lizenzabschnitt im README.
+- **README Basis:** Was ist das, Features, Installation über HACS, Einrichtung, Optionen, Datenorte/Backup, Rechte-Matrix, KI, Exportformat, Erweiterungen (Verweis auf Sync), Migration `0.1.x → 0.2.0`, Support, Contributing, Lizenz. Beispiele mit `owner/repo`, nicht mit Frickeldave-URLs.
+- **README Erweiterung:** Voraussetzung Basis, Installation über HACS, Einrichtung, Token-Rechte, Migration, Troubleshooting, Grenzen (kein Add-on, kein Supervisor), Rollback.
+- **`docs/extension-api.md`:** Contract 1, Lebenszyklus, Feature-Payloads, Fehler, Event, Minimalbeispiel, Stabilitätszusage.
+- **`docs/migration-0.2.md`:** Die Schritte aus 4.4 inkl. Token-Widerruf und Rollback.
+- **Übersetzungen:** Basis de/en ohne Publish/Import-Keys, mit Repair-Issue-Texten; Erweiterung de/en mit Config-/Options-Flow, Fehlern, Repair-Issue.
+- **Templates:** `.github/ISSUE_TEMPLATE/bug.yml` (HA-Version, Basis-Version, Extension-Version, Installationsart, Logs, Panel/App), `feature_request.yml`, `config.yml`; `.github/pull_request_template.md`; `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
+- **CI:** Beide Repos: `ruff`, `mypy`, `pytest`, `hassfest`, HACS-Action. Erweiterung zusätzlich Cross-Repo-Matrix gegen Basis `0.1.15`/`0.2.0`. Basis zusätzlich Hygiene-Test (keine Frickeldave-Spezifika im Paket).
+
+##### 6.5 Was nicht in `0.2.0` gehört (bewusst zurückgestellt)
+
+- **Repo-/Produkt-Rename:** Ein Rename von `frickeldave.home.net` oder der Domain `frickeldave_store` ist eine eigene Breaking Change mit Datenmigration und HACS-URL-Wechsel. Empfehlung: `0.2.0` behält Namen und Domain; Rename in `0.3.0` prüfen.
+- **Katalog-Schema generalisieren:** `stock`/`salesCabinet` bleiben, weil die Website und die bestehende Entscheidung daran hängen. Eine generische Lagerstätten-Repräsentation wäre ein Schema-Bump.
+- **Extension-provided UI-Module:** Die Publish-/Import-Dialoge bleiben in der Basis und werden gegatet. Ein dynamisches UI-Modul der Erweiterung wäre ein zusätzlicher Vertrag und eine Sicherheitsfläche; erst bei Bedarf.
+- **Token-Auto-Migration:** Nicht einführen (siehe 4.2).
+- **API-i18n:** Die Basis-API-Meldungen bleiben in `0.2.0` deutsch; die stabilen `code`-Werte sind sprachneutral. Eine Übersetzung der Meldungen ist eine spätere Verbesserung.
+
+---
+
+#### 7. Risiken und Rückfallweg
+
+##### 7.1 Risiken
+
+| Risiko | Wirkung | Gegenmaßnahme | Absicherung |
+| --- | --- | --- | --- |
+| Nutzer aktualisiert nur die Basis auf `0.2.0` | Publish/Import-UI verschwindet | Repair-Issue, Release Notes, Brücke `0.1.15`, Daten bleiben | Basis-only-Test, manuelle Matrix |
+| Nutzer installiert die Erweiterung ohne Basis | Setup schlägt fehl | `dependencies`, Config-Flow-Abbruch `base_missing`, README-Reihenfolge | Extension-only-Test |
+| Basis zu alt für die Erweiterung | ImportError/Setup-Fehler | `base_too_old`, Contract-Check, Brücke | Kompatibilitätsmatrix |
+| Token geht verloren/vergessen | Publish blockiert | Neue-PAT-Anleitung, Defaults vorbelegt, Repair-Issue, optionaler Verbindungstest | Config-Flow-Test |
+| Halbe Migration / Verwirrung | Features fehlen ohne Erklärung | Feature-Flags, Repair-Issue, Migrationsdoku | Installationsmatrix |
+| Veraltetes Panel zeigt Buttons | 409-Fehler beim Klick | Event + `feature_unavailable`-Behandlung + `/me`-Refresh | Frontend-Test |
+| Publish-Regression (GitHub, leerer Katalog) | Falscher Commit/Deploy | Portierte Tests, Dry-Run zuerst, Feature-Flag | `test_publish.py` |
+| Import schreibt teilweise | Inkonsistenter Store | Validate-then-apply, ein Snapshot, ein Save, Fehler je Item | Batch-Tests |
+| Secret-Leak | Token in Logs/API | Write-only, keine Payload-Logs, Redaktion, eigener Token | Tests + Review |
+| Contract-Drift | Erweiterung bricht nach Basis-Update | Versionierter Contract, N/N-1, CI-Matrix | `test_compat.py` |
+| Rollback scheitert | Nutzer kann nicht zurück | Legacy-Settings/Options erhalten, kein Schema-Bump | Rollback-Test |
+| HACS installiert keine Abhängigkeiten | Falsche Reihenfolge | Doku, Repair-Issue, Config-Flow-Guards | Manuelle Matrix |
+| In-Process-Erweiterung hat volle HA-Rechte | Keine echte Sandbox | Code-Review, minimale Token-Rechte, klare Vertragsregeln; Sicherheitsgrenze dokumentieren | Review |
+
+**Sicherheitshinweis:** Der Vertrag ist eine architektonische Grenze, keine Sandbox. Eine Custom Integration läuft im HA-Prozess und kann technisch alles; die Fassade verhindert versehentliche Kopplung, nicht böswilligen Code. Die Erweiterung wird wie jeder Custom-Integration-Code behandelt und reviewt.
+
+##### 7.2 Rückfallweg
+
+1. Erweiterung deaktivieren (Config Entry deaktivieren oder Integrationsdateien entfernen), HA neu starten.
+2. Basis `0.1.14` über HACS installieren (Version auswählen), HA neu starten.
+3. `settings.publish` und `github_*`-Options sind erhalten; bei widerrufenem Token einen gültigen Token im alten Options-Flow eintragen.
+4. Store-Datei ist schema-kompatibel; die neuen Exportpfad-Options werden ignoriert.
+5. Die Erweiterung kann installiert bleiben, ist mit `0.1.14` aber funktionslos; deaktivieren, um Fehler zu vermeiden.
+
+##### 7.3 Tests, die die Grenze absichern
+
+Die konkreten Testdateien stehen in 3.5. Zusätzlich als Abnahmekriterien:
+
+- **Basis ohne Erweiterung:** `0.2.0` startet, Panel funktioniert, Publish/Import-Buttons sind weg, keine Exception, keine Frickeldave-URLs im Paket.
+- **Basis mit Erweiterung:** `publish`/`import` erscheinen nur bei `ready` und Rolle; Dry-Run und echter Lauf funktionieren; Fehler werden als `{"error": {"code", "message"}}` angezeigt.
+- **Deaktivierung bei offenem Panel:** Event oder 409 schließt den Dialog, entfernt die Buttons, zeigt einen Banner; kein Datenverlust.
+- **Import:** Dry-Run schreibt nichts (Hash über alle Dateien), Overwrite-Semantik unverändert, Bilder nur ergänzt, Archiv bleibt Archiv.
+- **Publish:** Dry-Run schreibt nichts, dev/prod-Semantik unverändert, leerer Katalog blockiert, chunked GitHub-Antworten funktionieren.
+- **Migration:** Altbestand mit `settings.publish` lädt, `/settings` leakt nichts, Speichern erhält den Schlüssel, Rollback `0.2.0` → `0.1.14` liest die alten Werte.
+- **Hygiene:** Keine `frickeldave.de`/`fd-deploy`/`frickeldave.github.io`-Strings im Basispaket; nur die zulässige Basis-Repo-URL und der Markenname.
+
+---
+
+#### Umsetzungsreihenfolge
+
+Die Pakete sind so geschnitten, dass die Basis jederzeit standalone grün bleibt und die Erweiterung erst auf einen stabilen Contract aufsetzt. „Abhängig von“ meint inhaltliche Voraussetzung, nicht zwingend zeitliche Blockade.
+
+| # | Rolle | Arbeitspaket | Ergebnis | Abhängig von |
+| --- | --- | --- | --- | --- |
+| 1 | **Nick** | Erweiterungs-Repo-Gerüst: `custom_components/frickeldave_store_sync/`, `manifest.json`, `hacs.json`, CI (ruff/mypy/pytest/hassfest/HACS), Issue-/PR-Templates, Topics, `brand/icon.png` | Installierbares Skelett, CI grün | — |
+| 2 | **Bruce** | Basis-Contract: `extension.py` (Datentypen, Registry, Fassade-Protocol, `ExtensionError`), Feature-Route `POST /features/{feature}`, `features` in `/me`/`/settings`, Event, Tests | Contract 1 in Basis `0.1.15` | — |
+| 3 | **Bruce** | Basis-Fassade: `async_build_export`, `async_apply_import_batch`, `async_create_snapshot`, `can/require`, konfigurierbare Exportpfade, Legacy-Settings-Pass-through, Hygiene-Test | Generische Fähigkeiten + Tests | 2 |
+| 4 | **Natasha** | Panel: Feature-State aus `/me`, Gating Topbar/Dialoge, `feature_unavailable`-Behandlung, Event-Subscription, Import-Dialog neutralisieren, Config-Panel-Tab „Veröffentlichen“ entfernen, „Erweiterungen“-Status | Panel `0.2.0` UI | 2 (mit Mock) |
+| 5 | **Bruce** | Erweiterung Publish: `publish.py` portieren, `async_build_export` nutzen, Config-/Options-Flow (Repo/Branches/Workflow/Token), Token write-only, Fehler-Mapping, Tests | Publish-Feature | 1, 2, 3 |
+| 6 | **Bruce** | Erweiterung Import: `importer.py` portieren, Allowlist/Defaults, Dry-Run/Overwrite, `async_apply_import_batch`, Tests | Import-Feature | 1, 2, 3 |
+| 7 | **Maria** | Basis-Doku: README generisch, `docs/extension-api.md`, `docs/migration-0.2.md`, CHANGELOG `0.1.15`/`0.2.0`, Architektur aktualisieren | Doku Basis | 2, 3 |
+| 8 | **Maria** | Erweiterungs-Doku: README, Token-Anleitung, Installationsreihenfolge, Troubleshooting, CHANGELOG `0.1.0` | Doku Erweiterung | 1, 5, 6 |
+| 9 | **Nick** | CI/HACS: Cross-Repo-Matrix (Basis `0.1.15`/`0.2.0`), Tag/Manifest-Check, Release-Checkliste, HACS-Validierung | Grüne Pipelines | 1, 5, 6 |
+| 10 | **Bruce** | Basis `0.2.0`: Publish/Import entfernen, Settings/Config-Flow bereinigen, Repair-Issue, Legacy-Daten erhalten, Exportpfad-Migration, Tests | Breaking Release | 3, 4, 5, 6 |
+| 11 | **Natasha** | Panel-Feinschliff: Fehlertexte, Barrierefreiheit, Dialog-/Tab-Verhalten, Frontend-Tests | Finale UI | 4, 10 |
+| 12 | **Maria** | Open-Source-Hygiene: Übersetzungen, Issue-Templates, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, Release Notes | Community-Readiness | 7, 8 |
+| 13 | **Nick** | Releases: Basis `0.1.15` → Erweiterung `0.1.0` → Basis `0.2.0`; Installations-/Rollback-Matrix | Veröffentlichte Versionen | 9, 10, 11, 12 |
+| 14 | **Clint / Tony** | QA/Abnahme: Upgrade, Rollback, Feature-Gating, Publish/Import, Token, Contract-Kompatibilität | Abnahme | 13 |
+
+**Kritischer Pfad:** 2 → 3 → 5/6 → 10 → 13. Parallel laufen 1 (Repo), 4 (Panel gegen Mock), 7/8 (Doku) und 9 (CI). Der Contract-Review durch Tony und Natasha ist ein Gate nach Paket 2; die Fassade wird nach Paket 3 gegen die alten `build_artifacts`/Importer-Tests golden geprüft.
+
+**Release-Gates:**
+
+- **Gate A (nach 2):** Contract dokumentiert, Tests grün, Natasha kann das Panel gegen Mocks bauen.
+- **Gate B (nach 3):** Basis standalone grün; `async_build_export` byte-identisch; Batch-Tests grün; Hygiene-Test grün.
+- **Gate C (nach 5/6):** Erweiterung grün gegen Basis `0.1.15` und `0.2.0`; Publish-/Import-Tests portiert.
+- **Gate D (nach 10):** Basis `0.2.0` ohne Erweiterung grün; Repair-Issue getestet; keine Frickeldave-Spezifika im Paket.
+- **Gate E (nach 13):** Installationsmatrix und Rollback manuell bestätigt; HACS-Release nicht Draft/Pre-Release; Tag = Manifest-Version.
+
+---
+
+#### Offene Fragen mit Empfehlung
+
+1. **Brückenversion `0.1.15` oder nur zwei Releases?**
+   *Empfehlung:* Brücke. Sie ist additiv, ermöglicht die Verifikation vor dem Breaking Update und vermeidet das Feature-Lücken-Fenster. Fallback: `0.2.0` zuerst, Extension unmittelbar danach, Repair-Issue als Netz.
+
+2. **Token automatisch migrieren?**
+   *Empfehlung:* Nein. Der Token ist write-only und soll es bleiben. Neuer Fine-grained-Token + Widerruf des alten ist sicherer und vermeidet einen dauerhaften Secret-Pfad in der Basis. Ein optionaler Einmal-Migrationsleser wäre nur mit expliziter David-Entscheidung und befristet auf `0.2.x` zu bauen.
+
+3. **Basis-Repo oder Produkt umbenennen?**
+   *Empfehlung:* In `0.2.0` nicht. Domain `frickeldave_store` und Repo `frickeldave.home.net` bleiben, um HACS-Installationen und Daten nicht zu brechen. Ein neutraler Name/Repo-Rename ist eine eigene Breaking Change für `0.3.0` (GitHub-Redirects helfen, HACS-URLs und Doku müssen mit).
+
+4. **Exportpfade in `0.2.0` generisch machen?**
+   *Empfehlung:* Ja, mit Migration: bestehende Entries behalten `public/data/handmade.json`/`src/assets/handmade`, neue bekommen `data/catalog.json`/`images`. Wenn der Release-Umfang zu groß wird, ist die Minimalvariante, die Legacy-Defaults zu behalten und die Optionen erst in `0.3.0` einzuführen.
+
+5. **Katalog-Schema (`stock`/`salesCabinet`) generalisieren?**
+   *Empfehlung:* Nein in `0.2.0`. Die bestehende Entscheidung und die Website hängen daran. Eine generische Lagerstätten-Repräsentation wäre ein Schema-Bump und ein separates ADR.
+
+6. **Extension-provided UI-Module?**
+   *Empfehlung:* Nein in `0.1.0`. Die Publish-/Import-Dialoge bleiben in der Basis und werden gegatet. Das ist weniger Vertrag, weniger Sicherheitsfläche und erfüllt die Anforderung „Buttons nur bei installierter/eingerichteter Erweiterung“.
+
+7. **API-Meldungen internationalisieren?**
+   *Empfehlung:* `0.2.0` behält deutsche Meldungen und stabile `code`-Werte. Eine Übersetzung nach `hass.config.language` ist eine spätere Verbesserung; die Erweiterung kann ihre Meldungen selbst lokalisieren.
+
+8. **Feature-Namen namespacen (`sync.publish`)?**
+   *Empfehlung:* `publish`/`import` bleiben für `0.2.0` reserviert. Wenn weitere Erweiterungen eigene Features anbieten, in Contract 2 auf `namespace.feature` wechseln.
+
+9. **Import-Rolle `product` beibehalten?**
+   *Empfehlung:* Ja, entsprechend der bestehenden Entscheidung vom 2026-11-02. `overwrite` ist ein Sammel-Update auf Felder, die `product` ohnehin ändern darf; eigene Quellen bleiben `app_admin`.
+
+10. **Legacy-Hinweise (Repo/Branches) für die Vorbelegung lesen?**
+    *Empfehlung:* Nein für Contract 1. Die Defaults der Erweiterung entsprechen den bisherigen Werten; ein zusätzlicher Lesezugriff auf `settings.publish` wäre nur Komfort und würde die Grenze unnötig aufweichen.
+
+---
+
+#### Referenzen
+
+- `.squad/decisions.md`: `2026-11-02T07:24:38+0000: Veröffentlichung nach dev und prod läuft ausschließlich über dev + fd-deploy-prd`
+- `.squad/decisions.md`: `2026-11-02T07:24:38+0000: Lagerstätten ersetzen stock/salesCabinet; Website-Abbildung bleibt stabil`
+- `.squad/decisions.md`: `2026-11-02T13:30:51+0000: Katalogimport mit Dry-Run und Überschreiben`
+- `.squad/decisions.md`: `2026-11-02T14:21:10+0000: Veröffentlichen-Fehler eingegrenzt`
+- `.squad/decisions.md`: `2026-11-02T11:24:46+0000: Datenverlust bei Update behoben`
+- `.squad/decisions.md`: `2026-11-02T16:05:00+0000: Doku 0.1.14 — Bilder, Optimierung und Tab „Allgemeine Einstellungen“`
+- Basis-Repository `Frickeldave/frickeldave.home.net`, Commit `286096e`, `custom_components/frickeldave_store/` (`__init__.py`, `const.py`, `publish.py`, `importer.py`, `views.py`, `store.py`, `products.py`, `permissions.py`, `export.py`, `config_flow.py`, `frontend/frickeldave-store-panel.js`, `frontend/frickeldave-store-config-panel.js`)
+- Erweiterungs-Repository `Frickeldave/homeassistant-frickeldave-store-syncfd`, Default-Branch `main`, aktuell nur `LICENSE` und `README.md`
+- Issue #289 „Management Tool in HomeAssistant“ (gelesen, nicht verändert)
+
+#### 2026-11-02T17:05:00+0000: Veröffentlichung löschte 3D-Modelle
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:** Die Integration veröffentlicht nach `dev`, indem sie ihren kompletten
+Dateisatz (`public/data/handmade.json` + Produktbilder) mit dem GitHub-Baum
+vergleicht und alles, was im Store fehlt, als `removed` committet. Maßgeblich war
+`_is_managed_path`; es stufte **jeden** Pfad unter `src/assets/handmade` als
+verwaltetes Produktbild ein. Mit dem Publish `d13cb2f` (Integration 0.1.13)
+verschwanden dadurch `src/assets/handmade/3dmodels/includes/roundedcube.scad`
+und `src/assets/handmade/3dmodels/models/Verteilerdose.scad` aus `dev`; `fd-ci`
+(Lauf `41475789176`) wurde rot (`scad-smoke-test`, `e2e-test`), `fd-deploy-dev`
+(`41476094701`) übersprungen.
+
+Entscheidungen (Integration 0.1.15, Issue #289):
+
+1. **Verwaltete Pfade sind abschließend definiert:** `public/data/handmade.json`
+   und ausschließlich
+   `src/assets/handmade/<Kategorie>/<Artikelnummer>/<Artikelnummer>-NN.<Endung>`
+   mit Kategorie aus `models.CATEGORIES` (`3D`, `EP`, `LA`, `SB`, `WO`), einer
+   Artikelnummer, die mit ihrer Kategorie beginnt, und einer zweistelligen
+   Bildnummer. Alles andere unter `src/assets/handmade` – `3dmodels/**`,
+   `.gitkeep`, Unterordner ohne Artikelmuster, fremde Artikelnummern – gehört der
+   Website und wird **nie** als entfernt gemeldet. Das gilt auch dann, wenn die
+   Datei im Store nicht existiert.
+2. **Bilddateinamen bleiben stabil.** Das Hauptbild heißt weiterhin
+   `<Artikelnummer>-01` (die Website zeigt das lexikografisch erste Bild als
+   Hauptbild, siehe `src/pages/handmade/[articleNumber].astro`). Alle übrigen
+   Bilder behalten ihre eigene Nummer aus dem Store, solange sie frei ist; nur
+   eine Kollision vergibt die nächste freie Nummer. Die bisherige
+   Durchnummerierung nach Position verschob beim Löschen eines Bildes alle
+   folgenden Namen (im Vorfall `LAKBCD-08.jpg` → `LAKBCD-04.jpg` bei
+   gleichzeitigem `D LAKBCD-05.jpg`). Diese Umbenennungen waren inhaltlich
+   unschädlich, aber unnötig; sie sind damit beendet.
+3. **Löschschutz `publish_removal_guard`.** Würde ein Lauf mehr als 10 Bilder
+   oder mehr als ein Drittel des bestehenden Bildbestands entfernen (mindestens
+   3 Löschungen), bricht er mit `409 publish_removals_blocked` und deutscher
+   Meldung ab. Im Dry-Run erscheint dieselbe Meldung als Warnung. Übergehen nur
+   mit `"confirm_removals": true` (`POST /publish`, `app_admin`), je Lauf, nicht
+   gespeichert. Begründung der Schwellen: ein normaler Publish ändert einzelne
+   Bilder; zehn gleichzeitige Löschungen übersteigen jeden realistischen
+   manuellen Vorgang, während die Anteilsgrenze zusätzlich kleine Kataloge
+   schützt, in denen zehn Dateien fast alles wären. Die Mindestzahl 3 verhindert,
+   dass gezielte Einzellöschungen (z. B. 1 von 2 Bildern eines Produkts) in
+   kleinen Beständen blockieren.
+4. **Gleiche Bildbytes bei zwei Produkten sind kein Zuordnungsfehler.**
+   `ImageStorage` legt Bilder je Artikelverzeichnis ab (`images/<Artikel>/`), ein
+   Überschreiben über Produktgrenzen ist konstruktiv ausgeschlossen. Im Vorfall
+   hatten `3DHP42` (Produkt „Test“) und `LA6BPS` („Herbstkürbis“) dasselbe Foto;
+   derselbe Fall existiert bereits länger zwischen `SBAPRV` und `SBIXS4`. Das ist
+   eine Entscheidung des Nutzers, keine Fehlfunktion.
+
+**Why:** Ein Publish darf nur die Dateien anfassen, die der Store selbst erzeugt.
+Die pauschale Ordnerregel hat das verletzt und die Website unbaubar gemacht; die
+Wiederherstellung (`57b9d95`) hat `dev` sofort reparieren können. Die präzise
+Pfadregel, die stabilen Namen und der Löschschutz sichern denselben Fehler doppelt
+ab: die Regel verhindert falsche Kandidaten, der Schutz stoppt massenhafte
+Löschungen, die aus einem unvollständigen Store entstehen. Einmalige Folge: beim
+nächsten Publish werden die aktuell in `dev` liegenden, komprimierten Namen von
+`LAKBCD` (`-01`…`-04`) auf die historischen Store-Nummern (`-01`, `-03`, `-05`,
+`-08`) zurückgeführt – ein einzelner Rename-Lauf, danach stabil.
+
+#### 2026-11-02T17:20:00+0000: FR008-Doku beschreibt Integration 0.1.15 mit verwalteten Pfaden und Löschschutz
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin)
+
+**What:** `docs/features/fr008-ha-manager.md` beschreibt Version 0.1.15 (02.11.2026). Neu sind im
+Abschnitt „Veröffentlichen“ die Unterabschnitte „Verwaltete Pfade“ und „Löschschutz“; die stabilen
+Bilddateinamen stehen im Abschnitt „Website-Export“. Die Statuszeile nennt 0.1.15.
+
+- „Verwaltete Pfade“ begrenzt die Löschlogik auf `public/data/handmade.json` und Bilder nach dem
+  Muster `src/assets/handmade/<Kategorie>/<Artikelnummer>/<Artikelnummer>-NN.<Endung>` mit einer der
+  fünf bekannten Kategorien. `.scad`-Quellen, `3dmodels/`, `.gitkeep` und fremde Unterordner gelten
+  nie als verwaltet. Der Vorfall ist dort dokumentiert: Commit `d13cb2f` löschte
+  `3dmodels/includes/roundedcube.scad` und `3dmodels/models/Verteilerdose.scad`, weil
+  `_is_managed_path()` jeden Pfad unter `src/assets/handmade/` als Produktbild einstufte; `fd-ci`
+  wurde rot und `fd-deploy-dev` übersprungen. Commit `57b9d95` stellte beide Dateien wieder her,
+  seit 0.1.15 prüft die Funktion nur die beiden Muster, und ein Regressionstest belegt, dass
+  `3dmodels/**` unangetastet bleibt.
+- „Löschschutz“ nennt die Schwellen (mehr als zehn Bilder oder mehr als ein Drittel des Bestands,
+  ab drei Löschungen), die Warnung im Dry-Run, die Antwort `publish_removals_blocked` (HTTP 409)
+  mit Feld `removal_guard` und die Bestätigung `confirm_removals` (nur Anwendungsverwaltung, je
+  Lauf, nicht gespeichert).
+- „Website-Export“ erklärt die stabilen Bilddateinamen: Hauptbild bleibt `-01`, weitere Bilder
+  behalten ihre Store-Nummer, solange sie frei ist; ein gelöschtes Bild erzeugt nur `removed`, keine
+  Umbenennung wie `LAKBCD-08 → LAKBCD-04`. Identische Fotos zweier Produkte liegen getrennt unter
+  `images/<Artikelnummer>/` und sind kein Fehler.
+- `CHANGELOG.md` führt unter `## [Unreleased]` je einen Eintrag unter Added (Doku 0.1.15, Löschschutz),
+  Changed (stabile Bilddateinamen) und Fixed (verwaltete Pfade samt Vorfall), alle mit `(#289)`.
+
+**Why:** Die beiden Website-Dateien waren bereits auf `dev` verschwunden; ohne dokumentierte Grenze
+der verwalteten Pfade wiederholt sich der Fehler beim nächsten Publish. Der Vorfall steht bewusst
+mit Commits, Dateiliste und CI-Folge im Dokument, damit die Regel prüfbar bleibt und niemand sie
+später als übervorsichtig zurücknimmt. Der Löschschutz braucht die Schwellen und den Notausgang in
+der Doku, weil `confirm_removals` sonst wie ein stiller Datenverlust wirkt. Die
+Bild-Namensstabilität gehört fachlich zum Export, nicht zum Veröffentlichen: Sie ändert, welche
+Dateien im Repository entstehen, nicht den Transport.
+
+**Offene Punkte:** Die bestehende Zeile im Website-Export nennt weiterhin das Muster
+`<artikelnummer>-NN.jpg`; bei Bedarf auf `<endung>` vereinheitlichen, sobald der Export auch WebP
+offiziell dokumentiert. Die Beispielversionen `v0.1.14` in „Navigation“ und „Aktualisierung und
+Browser-Cache“ bleiben als geladene Builds unverändert.
+
+#### 2026-11-02T17:20:00+0000: Release 0.1.15 veröffentlicht
+
+**By:** Nick (DevOps / Infrastruktur)
+
+**What:** Der Fix aus #289 (`_is_managed_path` löschte 3D-Modellquellen,
+stabile Bildnamen, `publish_removal_guard`) ist als Home-Assistant-Integration
+**0.1.15** veröffentlicht.
+
+- Annotierter Tag `0.1.15` (`a16ad6446cde60753ad5dfc425f783543d3a05ee`,
+  Nachricht „Frickeldave Store 0.1.15“) auf Commit
+  `396103bbfc5b7b1dd9070187bae3db02a25972ff` = `origin/main`.
+- GitHub-Release `0.1.15` als Latest: kein Draft, kein Pre-Release,
+  `targetCommitish: main`, keine Assets.
+  <https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.1.15>
+- Release-Notes sind der unveränderte Abschnitt `## [0.1.15] - 2026-11-02` aus
+  `CHANGELOG.md` (byte-gleich bis auf die abschließende Leerzeile).
+- Manifest `custom_components/frickeldave_store/manifest.json` = `0.1.15`,
+  `hacs.json` vorhanden (HACS-fähig).
+- CI für `396103b`: Lauf `41483802530`, `success`
+  (<https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41483802530>).
+- Releases `0.1.8`–`0.1.14` unverändert (gleiche `publishedAt`, Namen, Targets,
+  weiterhin je 0 Assets; `0.1.14` bleibt nicht mehr Latest).
+- Website `dev` ist gesund: `fd-ci` `41481531676` (SHA `57b9d95`, `success`) und
+  `fd-deploy-dev` `41482415072` (`success`, deployt genau `57b9d95`; der
+  `dev-v1.0.11`-Release-Job war erwartungsgemäß ein No-Op-`notice`, weil die
+  Version schon existiert). Der Incident-Lauf `41475789176` (`d13cb2f`,
+  `failure`) ist damit überholt.
+
+**Why:** `0.1.15` ist der erste Release, der den Datenverlust-Vorfall
+(`d13cb2f` löschte `3dmodels/**/*.scad` und brach `fd-ci`) behebt. HACS-Nutzer
+und das Panel dürfen nicht weiter auf `0.1.14` mit dem zerstörerischen
+Publish-Verhalten bleiben; der Release musste daher als Latest ohne
+Pre-Release-Kennzeichnung erscheinen. Veröffentlicht wurde ausschließlich per
+Tag-Push und `gh release create` — kein Commit, kein Push auf `main`, keine
+Änderung an bestehenden Tags oder Releases, damit die Release-Historie
+nachvollziehbar und unverändert bleibt.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
