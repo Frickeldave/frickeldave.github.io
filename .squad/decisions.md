@@ -4,22 +4,6 @@
 
 - Archivierte Einträge (ab 20 KB älter als 30 Tage, ab 50 KB älter als 7 Tage; Stand 2026-11-02): siehe [`decisions-archive.md`](decisions-archive.md).
 
-#### 2026-10-26T15-04-34: Issue #285: Aktivierungsmarker per menschlicher Proxy-Freigabe angelegt; Release 1.0.6 gemergt und promotet
-**By:** Squad Coordinator (via Copilot)
-**What:** Issue #285: Aktivierungsmarker per menschlicher Proxy-Freigabe angelegt; Release 1.0.6 gemergt und promotet
-**References:** #285, #287, 63c04e3, ae4f7bd, e01a623
-**Why:** ##### 2026-10-26: Issue #285 — Marker-Proxy, Merge nach dev, Release 1.0.6
-
-**By:** David Koenig (via Copilot/Squad Coordinator)
-
-**What:**
-1. **Aktivierungsmarker:** `.frickeldave-active-issue` fehlte in der frisch provisionierten Umgebung (gitignored, weder im Worktree noch im Hauptcheckout). `go:yes`, Projekt-Status `In Progress`, Implementer-Label und Pepper-Hand-off waren vorhanden. Nach ausdrücklicher menschlicher Bestätigung ("proxy") wurde der Marker für Issue 285 mit `tony_approved: true` angelegt. Agenten legen ihn weiterhin nicht eigenmächtig an — die Autorisierung kam vom Menschen, nicht vom Agenten.
-2. **Versionierung:** Der ursprünglich gewünschte Bump `1.0.5` war bereits durch `07d5bd0` (Fix aus #282) belegt; freigegeben wurde `1.0.6` (Patch, kleinster Schritt über dem bestehenden Stand) als eigener Release-Commit `ae4f7bd` auf `dev`.
-3. **Merge/Deploy:** Squash-Merge `feat/issue-285-deepseek-integration-in-github-copilot-cli` → `dev` als `63c04e3`; Promote `dev` → `main` als `e01a623` über `fd-promote-prd` → `fd-deploy-prd`; Release `v1.0.6` veröffentlicht.
-
-**Why:** Das Gate-Marker-Protokoll braucht eine belastbare Spur, wer die Ausnahme autorisiert hat. Die Versionswahl folgt der menschlichen Vorgabe (Patch statt Minor), angepasst an den real belegten Versionsstand. Squash-Merge und Promote-Weg entsprechen `.squad/routing.md` und `.github/pull_request_template.md`.
-
-
 ### 2026-10-27T12-21-13: IS_289 integration MVP scaffold in frickeldave.home.net
 **By:** Bruce
 **What:** IS_289 integration MVP scaffold in frickeldave.home.net
@@ -1209,6 +1193,201 @@ unverändert zu übernehmen hält Release-Beschreibung und Repository-Changelog
 deckungsgleich. Die Prüfung der älteren Releases stellt sicher, dass die
 Veröffentlichung keine Historie umgeschrieben hat (keine bestehenden
 Tags/Releases verändert, `Latest` nur weitergereicht).
+
+#### 2026-11-02T14:21:10+0000: Veröffentlichen-Fehler eingegrenzt
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:**
+
+Ursache belegt (Davids Traceback, `publish.py:552` → `publish.py:408`):
+
+```
+File ".../publish.py", line 552, in async_publish
+    tree = await client.async_read_tree()
+File ".../publish.py", line 408, in async_read_tree
+    head_sha = str((ref.get("object") or {}).get("sha", ""))
+AttributeError: 'NoneType' object has no attribute 'get'
+```
+
+`GitHubClient._async_json` verwarf den Antwort-Body bei
+`if response.status == 204 or not response.content_length:`. Bei
+`Transfer-Encoding: chunked` ist `content_length` `None`, `not None` ist `True` –
+die Methode gab also bei HTTP 200 `None` zurück. GitHub liefert REST-Antworten
+regelmäßig chunked, deshalb scheiterte schon der erste Aufruf
+`GET git/ref/heads/dev`, noch vor Commit, Workflow-Dispatch oder Store-Zugriff.
+Der `AttributeError` war keine `StoreError` und wurde von `PublishView` nicht
+übersetzt: aiohttp lieferte ein nacktes 500 ohne unser Fehlerformat, das Panel
+zeigte den Fallback „Der Server hat einen Fehler gemeldet.“. Betroffen war der
+komplette Lesepfad, also auch der Dry-Run, seit der Einführung der
+GitHub-Daten-API (0.1.9).
+
+Warum die Tests das nicht fanden: `FakeGitHub` in `tests/test_publish.py`
+umgeht HTTP vollständig, und `FakeHTTPResponse` setzte `content_length` auf
+`2`/`0` – nie `None`. Der chunked-Fall war damit unsichtbar.
+
+Fix (Version 0.1.13):
+
+1. `_async_json` liest den Body immer (`response.read()`), prüft zuerst den
+   Status, gibt nur bei 204/205/304 oder leerem Body `None` zurück und parst
+   sonst `json.loads(raw)`. Ungültiges JSON → `GitHubError`
+   (`github_unavailable`); 5xx von GitHub ebenfalls `github_unavailable`.
+2. `_as_mapping` sichert Branch, Commit, Baum und Blob ab: unerwartete
+   Antwortformen ergeben `GitHubError` statt `AttributeError`.
+3. `PublishView` (und `CatalogImportView`) fangen unerwartete Exceptions,
+   loggen den Traceback mit `_LOGGER.exception` und antworten mit
+   `500 internal_error` plus deutscher Meldung (Verweis auf das HA-Protokoll).
+4. `build_artifacts` meldet fehlende/unlesbare Bilddateien gesammelt als
+   `409 publish_artifacts_unavailable` (vorher stilles Überspringen bzw.
+   `PermissionError` als 500); `async_commit` wirft bei fehlendem Artefakt
+   denselben fachlichen Fehler statt `KeyError`.
+5. Leerer Katalog (0 veröffentlichbare Produkte, auch „nur archiviert“) ist
+   gesperrt: Veröffentlichen → `409 publish_empty_catalog`, kein Commit.
+   Dry-Run liefert weiter eine Vorschau, setzt aber `warning` (string|null) und
+   ergänzt die `summary`. Notausgang: Body-Feld `allow_empty` (bool, Default
+   `false`), nur über `POST /publish` mit `app_admin`; auch dann bleibt
+   `warning` gesetzt. `publish_settings_from_store` verkraftet defekte
+   Settings-Strukturen (`PublishNotConfigured` statt `AttributeError`).
+6. Jede Publish-Antwort enthält jetzt `warning` (`string|null`, bei normalem
+   Katalog `null`).
+
+**Why:**
+
+Ein leerer Antwort-Body wurde als „kein Inhalt“ fehlinterpretiert; der
+resultierende `AttributeError` lag außerhalb jeder fachlichen Fehlerbehandlung
+und machte die Veröffentlichung unbenutzbar, ohne verwertbare Meldung. Der Fix
+behebt die Ursache (Body immer lesen), macht verbleibende Überraschungen
+sichtbar (`internal_error` mit Traceback) und verhindert, dass ein leerer Store
+nach einem Datenverlust den Website-Katalog löscht. Der Notausgang bleibt
+bewusst eng: explizites `allow_empty`, nur für `app_admin`, mit sichtbarem
+Warnhinweis.
+
+#### 2026-11-02T14:53:17+0000: Publish-Warnungen im Panel
+
+**By:** Natasha (Frontend-Entwicklerin / UI-Spezialistin)
+
+**What:**
+
+Panel `frontend/frickeldave-store-panel.js`, Publish-Dialog (#289, Version
+bleibt 0.1.13):
+
+1. `normalizePublishResult` übernimmt das neue Feld `warning` als
+   `typeof payload.warning === "string" ? payload.warning : ""`. Der Hinweis
+   erscheint als Warnblock (Symbol aus der bestehenden Banner-Maske plus Text)
+   im Dialog oberhalb der Bestätigung — also vor Ergebnisdetails und Footer —
+   und nach einem erfolgreichen Lauf zusätzlich im Ergebnis und im Toast.
+2. `publish_empty_catalog` setzt im Dialog die Zustände `emptyCatalog: true`
+   und `allowEmpty: false`. Der Dialog zeigt zuerst den Alert
+   „Veröffentlichung abgelehnt.“ mit der deutschen Server-Meldung und dem
+   Hinweis, dass die Website danach keine Produkte mehr zeigt. Darunter steht
+   der Bestätigungsschritt „Leeren bestätigen“ mit der Checkbox
+   „Ich verstehe, dass der Website-Katalog geleert wird“ (48 px Touch-Ziel,
+   `aria-describedby` auf den Hilfetext). Der Button „Trotzdem veröffentlichen“
+   (Danger-Variante) bleibt gesperrt, bis die Checkbox gesetzt ist; erst dann
+   sendet `_requestPublish(false)` `allow_empty: true`. Ohne Häkchen enthält der
+   Body das Feld gar nicht. Nach Abbruch (`_closePublish`), nach jedem Fehler
+   und nach einem erneuten Dry-Run wird die Zustimmung auf `false`
+   zurückgesetzt; sie wird nie vorausgewählt und nie gespeichert.
+3. `publish_artifacts_unavailable` und `internal_error` zeigen die
+   Server-`message` direkt. Bei `internal_error` ergänzt `_publishErrorText`
+   zusätzlich „Details stehen im Home-Assistant-Protokoll (Filter:
+   frickeldave_store).“
+4. Statuswechsel laufen über eine `role="status"`-Region (sr-only) mit
+   „Anfrage läuft …“, „Dry-Run abgeschlossen.“, „Veröffentlichung abgelehnt:
+   Der Store ist leer.“, „Veröffentlichung abgeschlossen.“ bzw. „Dry-Run
+   fehlgeschlagen.“. `busy` sperrt Aktions-, Abbrechen- und Schließen-Buttons;
+   nach der Ablehnung wandert der Fokus auf die Checkbox, weil der bisher
+   fokussierte Veröffentlichen-Button deaktiviert wird.
+5. Nur vorhandene `--fd-*`-Tokens (Banner, Danger-Button, Flächen, Abstände)
+   und deutsche Texte in ruhigem Ton; keine Rohfarben, keine neuen
+   Abhängigkeiten, kein Versionsbump.
+
+**Why:**
+
+Der Fix an `_async_json` macht Antworten und Fehler erstmals auswertbar; das
+Panel muss die neuen Signale auch zeigen. Ohne sichtbaren `warning`-Block wäre
+der Dry-Run bei leerem Katalog eine unauffällige Vorschau, und der Nutzer
+könnte den Notausgang versehentlich auslösen. Die zweistufige Bestätigung hält
+die Sperre serverseitig wirksam und macht das Leeren zu einer bewussten,
+widerruflichen Entscheidung im Dialog statt zu einem stillen Default. Die
+direkte Anzeige von `message` beendet den bisherigen Fallback „Der Server hat
+einen Fehler gemeldet.“, der keine Ursache nannte.
+
+#### 2026-11-02T15:27:14+0000: Dokumentation 0.1.13 (Veröffentlichungsfehler, leerer Katalog)
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin)
+
+**What:**
+
+`docs/features/fr008-ha-manager.md` und `CHANGELOG.md` beschreiben jetzt Stand 0.1.13:
+
+- Neuer Unterabschnitt **Fehlerbehandlung und leerer Katalog** unter „Veröffentlichen“:
+  `publish_empty_catalog` (409, auch „nur archivierte“ zählt als leer), Notausgang `allow_empty`
+  (Standard `false`, nur Anwendungsverwaltung) samt Bestätigung „Leeren bestätigen“ mit nicht
+  vorausgewählter Checkbox und gesperrtem „Trotzdem veröffentlichen“,
+  `publish_artifacts_unavailable` (409, Meldung nennt Artikelnummer und Datei), `internal_error`
+  mit Traceback im HA-Protokoll (Filter `frickeldave_store`), `github_unavailable` für ungültiges
+  JSON und 5xx sowie `warning` (`string|null`) in jeder Publish-Antwort.
+- Die Ursache bis 0.1.12 steht als kurzer Absatz: `GitHubClient._async_json` verwarf Bodies ohne
+  `Content-Length`, was bei `Transfer-Encoding: chunked` immer zutraf; der Aufrufer lief in
+  `AttributeError` (publish.py:408) bis zum nackten HTTP 500. Der Dry-Run war schon über den
+  Lesepfad betroffen, das Token nie die Ursache.
+- Versionsangaben im Dokument auf 0.1.13 gezogen (Statuszeile, Versionsbeispiel im Drei-Punkte-Menü,
+  Prüfschritt nach dem Update). `CHANGELOG.md` ergänzt unter `## [Unreleased]` drei Added- und einen
+  Fixed-Eintrag, jeweils mit `(#289)`.
+
+**Why:**
+
+Wer nach dem Update auf „Trotzdem veröffentlichen“ oder ein leeres Panel schaut, braucht die
+Bestätigung, dass beide Fälle bewusst behandelt sind. Die Ursache des chunked-Fehlers gehört in die
+Doku, weil „das Token war schuld“ sonst als Erklärung stehen bleibt und beim nächsten 500er wieder zu
+falscher Fehlersuche führt. Die Baseline-Befunde in `[1.0.7]` (MD032/MD022) bleiben unangetastet,
+damit der Diff auf #289 beschränkt bleibt.
+
+#### 2026-11-02T15:27:14+0000: Release 0.1.13 veröffentlicht
+
+**By:** Nick (DevOps / Infrastruktur)
+
+**What:**
+
+Release `0.1.13` des HACS-Repos `Frickeldave/frickeldave.home.net` ist
+veröffentlicht.
+
+- Annotierter Tag `0.1.13` → Commit `62af03fb0dea175127974a34891f4ecbe19107eb`
+  (`git rev-parse main` = `62af03f`), Tag-Objekt `56d6c2577dff9a320c333dddbccffc00bd189667`,
+  Nachricht „Frickeldave Store 0.1.13“.
+- GitHub-Release `0.1.13`: **kein Draft, kein Pre-Release, Latest**,
+  Datum 2026-11-02T15:28:22Z.
+  <https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.1.13>
+- Release-Notes = unveränderter Abschnitt `## [0.1.13] - 2026-11-02` aus
+  `CHANGELOG.md` (Markdown-Struktur mit `### Added`, `### Changed`, `### Fixed`
+  erhalten); der Publish-Fix steht unter **Fixed** an erster Stelle.
+- Manifest im Tag: `custom_components/frickeldave_store/manifest.json` →
+  `"version": "0.1.13"`. `hacs.json` und
+  `custom_components/frickeldave_store/publish.py` sind im Tag vorhanden.
+- CI: Lauf
+  <https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41469501407>
+  (Workflow `CI`, `headSha` `62af03f`, `conclusion` `success`).
+- Bestehende Tags/Releases unangetastet: Tag-SHAs `0.1.8`–`0.1.12` unverändert
+  (z. B. `0.1.11` → `a322219`, `0.1.12` → `1d1b295`), `publishedAt` von
+  `0.1.8`–`0.1.12` unverändert, alle weiterhin weder Draft noch Pre-Release.
+
+**Why:**
+
+`0.1.13` behebt den kritischen Fehler, der die Veröffentlichung seit `0.1.9`
+funktionsunfähig machte: `GitHubClient._async_json` verwarf chunked Antworten
+(`Transfer-Encoding: chunked`, kein `Content-Length`) und gab `None` zurück; der
+Aufrufer lief in einen `AttributeError`, der als nackter HTTP 500 ankam. Ohne
+den Tag wäre der Fix für HACS-Nutzer nicht als Version verfügbar und der letzte
+Latest-Stand (`0.1.12`) bliebe der defekte. Zusätzlich enthält `0.1.13`
+strukturierte Fehler (`internal_error`), die Sperre gegen den leeren Katalog mit
+`allow_empty`-Notausgang, das `warning`-Feld und die Panel-Warnungen.
+
+Der Tag ist annotiert, damit Version, Datum und Tagger wie bei `0.1.8`–`0.1.12`
+nachvollziehbar bleiben; Release-Notes wurden bewusst unverändert aus dem
+Changelog übernommen, damit Release und `CHANGELOG.md` nicht auseinanderlaufen.
+Kein Branch-Push, keine Commits, keine Dateiänderungen im Repo — nur Tag und
+Release.
 
 ## Governance
 
