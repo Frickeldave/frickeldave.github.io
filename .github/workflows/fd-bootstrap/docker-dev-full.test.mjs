@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { after, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -70,6 +70,54 @@ function run(script, args, { home, env = {}, cwd } = {}) {
       ...env,
     },
   });
+}
+
+// Sources the same status library fd-welcome uses and calls the given functions,
+// so the tests exercise the real Cgroup/PID-1 code paths instead of a copy.
+function runStatus(functions, { home, env = {} } = {}) {
+  return spawnSync(
+    bash,
+    ['-c', `. "${toSlashes(path.join(dir, 'fd-status.sh'))}"\n${functions}`],
+    {
+      encoding: 'utf8',
+      env: {
+        PATH: `${toSlashes(path.join(home, 'bin'))}:${process.env.PATH}`,
+        HOME: toSlashes(home),
+        USERPROFILE: toSlashes(home),
+        FD_CGROUP_MEMORY_MAX: '',
+        FD_CGROUP_MEMORY_LIMIT: '',
+        GH_TOKEN: '',
+        GITHUB_TOKEN: '',
+        COPILOT_GITHUB_TOKEN: '',
+        COPILOT_HOME: '',
+        ...env,
+      },
+    }
+  );
+}
+
+// fd_container_uptime derives the age from the mtime of ~/.fd-ready, so the
+// tests set it explicitly instead of depending on the host's PID 1 runtime.
+function makeReady(home, secondsAgo) {
+  const ready = path.join(home, '.fd-ready');
+  writeFileSync(ready, '');
+  const when = Date.now() / 1000 - secondsAgo;
+  utimesSync(ready, when, when);
+}
+
+// A failing ps stub makes the PID-1 fallback unusable without removing PATH
+// (spawnSync resolves bash itself through PATH) or touching system binaries.
+function makeBrokenPs(home) {
+  mkdirSync(path.join(home, 'bin'), { recursive: true });
+  writeFileSync(path.join(home, 'bin', 'ps'), '#!/usr/bin/env bash\nexit 1\n', { mode: 0o755 });
+}
+
+function makeFixtureFile(name, content) {
+  const fixtureDir = mkdtempSync(path.join(root, 'node_modules', '.fd-fixture-'));
+  tempDirs.push(fixtureDir);
+  const file = path.join(fixtureDir, name);
+  writeFileSync(file, content);
+  return toSlashes(file);
 }
 
 describe('docker-dev-full image', () => {
@@ -224,6 +272,132 @@ describe('fd scripts', () => {
     mkdirSync(path.join(home, '.copilot'), { recursive: true });
     writeFileSync(path.join(home, '.copilot', 'config.json'), '{"theme":"dark"}');
     assert.ok(run('fd-welcome.sh', ['--force'], { home }).stdout.includes('Copilot CLI logged in: no'));
+  });
+});
+
+describe('container status functions (issue #303)', () => {
+  test('fd_memory_limit returns unknown when the cgroup file is missing or unlimited', { skip: skipWithoutBash }, () => {
+    const home = makeHome();
+    const missing = `${toSlashes(home)}/missing-memory.max`;
+    assert.equal(
+      runStatus('fd_memory_limit', {
+        home,
+        env: { FD_CGROUP_MEMORY_MAX: missing, FD_CGROUP_MEMORY_LIMIT: missing },
+      }).stdout.trim(),
+      'unknown'
+    );
+    const unlimited = makeFixtureFile('memory.max', 'max\n');
+    assert.equal(
+      runStatus('fd_memory_limit', {
+        home,
+        env: { FD_CGROUP_MEMORY_MAX: unlimited, FD_CGROUP_MEMORY_LIMIT: unlimited },
+      }).stdout.trim(),
+      'unknown'
+    );
+    // cgroup v1 reports "unlimited" as a 19-digit value.
+    const v1Unlimited = makeFixtureFile('memory.limit_in_bytes', '9223372036854771712\n');
+    assert.equal(
+      runStatus('fd_memory_limit', {
+        home,
+        env: { FD_CGROUP_MEMORY_MAX: unlimited, FD_CGROUP_MEMORY_LIMIT: v1Unlimited },
+      }).stdout.trim(),
+      'unknown'
+    );
+  });
+
+  test('fd_memory_limit reads a numeric cgroup fixture and skips cgroup v2 "max"', { skip: skipWithoutBash }, () => {
+    const home = makeHome();
+    const numeric = makeFixtureFile('memory.max', '2147483648\n');
+    assert.equal(
+      runStatus('fd_memory_limit', {
+        home,
+        env: { FD_CGROUP_MEMORY_MAX: numeric, FD_CGROUP_MEMORY_LIMIT: '' },
+      }).stdout.trim(),
+      '2147483648'
+    );
+    // "max" in cgroup v2 must fall through to the v1 file instead of a bogus 0.
+    const unlimited = makeFixtureFile('memory.max', 'max');
+    const v1 = makeFixtureFile('memory.limit_in_bytes', '4294967296\n');
+    assert.equal(
+      runStatus('fd_memory_limit', {
+        home,
+        env: { FD_CGROUP_MEMORY_MAX: unlimited, FD_CGROUP_MEMORY_LIMIT: v1 },
+      }).stdout.trim(),
+      '4294967296'
+    );
+  });
+
+  test('fd_container_uptime returns unknown when neither the ready marker nor ps is usable', { skip: skipWithoutBash }, () => {
+    const home = makeHome();
+    makeBrokenPs(home);
+    const result = runStatus('fd_container_uptime', { home });
+    assert.equal(result.stdout.trim(), 'unknown');
+  });
+
+  test('fd_restart_hint reports ok, restart-suspected and unknown', { skip: skipWithoutBash }, () => {
+    const recent = makeHome();
+    makeReady(recent, 60);
+    assert.equal(runStatus('fd_restart_hint', { home: recent }).stdout.trim(), 'restart-suspected');
+
+    const old = makeHome();
+    makeReady(old, 700);
+    assert.equal(runStatus('fd_restart_hint', { home: old }).stdout.trim(), 'ok');
+
+    const undeterminable = makeHome();
+    makeBrokenPs(undeterminable);
+    assert.equal(
+      runStatus('fd_restart_hint', { home: undeterminable }).stdout.trim(),
+      'unknown'
+    );
+  });
+
+  test('fd_container_uptime uses the ready marker before the PID 1 runtime', { skip: skipWithoutBash }, () => {
+    const home = makeHome();
+    makeReady(home, 3600);
+    const seconds = Number(runStatus('fd_container_uptime', { home }).stdout.trim());
+    assert.ok(Number.isFinite(seconds), 'uptime must be a number');
+    assert.ok(seconds >= 3400 && seconds <= 3800, `unexpected uptime: ${seconds}`);
+  });
+
+  test('status functions stay offline, exit 0 and never print token material', { skip: skipWithoutBash }, () => {
+    const home = makeHome();
+    makeReady(home, 3600);
+    const started = Date.now();
+    const result = runStatus('fd_memory_limit; fd_container_uptime; fd_restart_hint', { home });
+    const elapsed = Date.now() - started;
+    assert.equal(result.status, 0);
+    assert.doesNotMatch(result.stdout, /gho_|github_pat_|ghp_/);
+    assert.ok(elapsed < 5000, `status functions took ${elapsed} ms`);
+    const lines = result.stdout.trim().split('\n');
+    assert.equal(lines.length, 3);
+    assert.match(lines[0], /^(?:unknown|\d+)$/);
+    assert.match(lines[1], /^(?:unknown|\d+)$/);
+    assert.match(lines[2], /^(?:ok|restart-suspected|unknown)$/);
+  });
+
+  test('fd-welcome shows all status lines and warns only below 600 s uptime', { skip: skipWithoutBash || skipCopilotStatus }, () => {
+    const statusLines = (out) =>
+      out.match(/^[ \t]*(?:Container-Uptime|Memory-Limit|Restart):/gm)?.length ?? 0;
+    const warnLines = (out) => out.split('\n').filter((line) => line.includes('WARN')).length;
+
+    // An old ready marker keeps the banner deterministic; without it the host's
+    // PID 1 runtime decides whether the 600 s warning appears.
+    const fresh = makeHome();
+    makeReady(fresh, 3600);
+    const quiet = run('fd-welcome.sh', ['--force'], { home: fresh });
+    assert.equal(quiet.status, 0);
+    assert.equal(statusLines(quiet.stdout), 3);
+    assert.equal(warnLines(quiet.stdout), 0);
+    assert.ok(quiet.stdout.includes('Restart: ok'));
+
+    const restarted = makeHome();
+    makeReady(restarted, 60);
+    const warned = run('fd-welcome.sh', ['--force'], { home: restarted });
+    assert.equal(warned.status, 0);
+    assert.equal(statusLines(warned.stdout), 3);
+    assert.equal(warnLines(warned.stdout), 1);
+    assert.ok(warned.stdout.includes('Restart: restart-suspected'));
+    assert.ok(warned.stdout.includes('WARN: container uptime < 600 s — restart suspected'));
   });
 });
 
