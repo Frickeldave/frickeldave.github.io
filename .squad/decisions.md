@@ -179,6 +179,73 @@ SDK-Support für deutsche Headings warten. `team.md` wurde hier bewusst nicht ve
 
 **Why:** Der Nutzer arbeitet allein am Projekt und will den Rollout von #303 (16 GiB, neue Diagnose) mit einem Klick auslösen können, statt Handle, Image und vier Ressourcenwerte jedes Mal zu tippen.
 
+#### 2026-11-03T19:50:00Z: Layout und Terminologie der zweisprachigen Kubernetes-Schulung
+
+**By:** Maria
+
+**What:** Drei Festlegungen für die zweisprachige Kubernetes-Schulung (#301):
+
+1. Sprachordner heißen `kubernetes-basis-de` und `kubernetes-basis-en` (Top-Level in
+   `src/content/docs/`). Die Beispielmanifeste liegen sprachneutral unter
+   `src/content/docs/examplefiles/` und enthalten keine Markdown-Dateien, damit der Glob-Loader sie
+   nicht als Content lädt und die 3-Segment-IDs des Routing nicht entstehen.
+2. Englische Kapitel behalten die Zahlenpräfixe (`01 Introduction` … `91 kubectl Reference`), weil
+   `sortByTitle` per `localeCompare` sortiert. Die Kapitelliste im EN-Gruppenindex heißt
+   `Chapter overview` -- `Table of contents` würde von `remarkToc`/`remarkCollapse` überschrieben.
+3. Englische Glossaranker: `container-orchestration`, `scaling`, `labels-and-selectors` und
+   `qos-classes` ersetzen die deutschen Anker; alle Verweise in beiden Sprachfassungen zeigen auf die
+   jeweils eigene Fassung. Code-Fences bleiben in beiden Sprachen byte-identisch (402 Fences pro
+   Sprache, inklusive deutscher Kommentare in Skripten und Manifesten) -- übersetzt werden nur
+   Fließtext, Überschriften, Tabellenzellen, Bild-Alt-Texte und die Kommentare in
+   `src/content/docs/examplefiles/`.
+
+**Why:** Ordnername = URL-Segment; nur Top-Level-Ordner mit `-index.md` werden als Gruppe erkannt.
+Sortier- und Remark-Verhalten sind im Repo verifiziert. Die Trennung zwischen übersetzbarer Prosa und
+unveränderten technischen Blöcken hält Kommandos, Namespace, FQDNs, Images und Secret-Werte in beiden
+Sprachen identisch und macht Diffs prüfbar.
+
+#### 2026-11-03T20:45:00Z: Legacy /docs/kubernetes-basis URLs redirect via static Astro redirects
+
+**By:** Nick
+
+**What:** `astro.config.mjs` now carries a `redirects` block with eight keys (no trailing slash on the keys,
+trailing slash on the targets) mapping the old Kubernetes training URLs to `/docs/kubernetes-basis-de/…`. With
+`output: "static"` Astro emits meta-refresh stub pages (HTTP 200) that also carry `robots: noindex` and a canonical
+link to the `-de` target. Sitemap and Pagefind exclude these stubs automatically (sitemap only sees page routes;
+Pagefind skips documents without an `<html>` element).
+
+**Why:** Old inbound links and bookmarks must keep working after the German course moved to `kubernetes-basis-de`
+and an English twin (`kubernetes-basis-en`) was added. Real 301s would require hosting/Cloudflare redirect rules,
+which the spec explicitly excludes from this issue; the static stubs are the in-repo mechanism and stay reversible.
+
+#### 2026-11-03T20:55:00Z: Bilingual Kubernetes e2e tests — detector design and the literal-grep contradiction
+
+**By:** Clint
+
+**What:** `test/e2e/docs-kubernetes-bilingual.spec.mjs` covers chapter coverage (set equality of the seven slugs per
+group), HTTP 200 plus exactly one `<h1>` for both group pages and all 14 chapters, the eight legacy redirects, link
+hygiene, the docs overview and the sitemap. Two design decisions:
+
+1. The "no German running prose" check removes `pre`, `code`, `script` and `style` before scanning `#main-content` and
+   looks for unambiguous German function words plus umlauts. Code fences stay German by design (spec step 5), so
+   scanning raw page text would produce false positives. A negative-control test runs the same detector against the
+   German `10-tag-1` chapter and requires >20 marker hits — without it a broken selector would make the check pass
+   vacuously.
+2. Redirect tests accept both shapes the spec allows: 3xx with `location` starting `/docs/kubernetes-basis-de`, or
+   200 with meta refresh, `robots noindex`, canonical link and no `<h1>`. Astro's static build emits the 200 variant,
+   but the test documents and tolerates the 3xx variant.
+
+**Why:** Deterministic assertions that cannot pass by accident, while keeping code blocks (untranslatable technical
+payloads) out of the prose signal. The prose check and the redirect/navigation check are split into one test per page
+so a single failure names the affected chapter instead of aborting a seven-page loop, and the 30 s default timeout
+stays comfortable on a loaded shared host.
+
+**Known contradiction in acceptance criterion 10:** `grep -rn "/docs/kubernetes-basis/" src/content` cannot be 0:
+48 hits remain, all of them Vite asset specifiers `@assets/docs/kubernetes-basis/…`, which the spec explicitly keeps
+unchanged (step 2 and "Nicht enthalten"). Zero non-asset hits hold, and the built-page test asserts that no rendered
+DE/EN page contains `href="/docs/kubernetes-basis/` or `localhost:4321`, which is the meaningful version of the
+criterion.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
