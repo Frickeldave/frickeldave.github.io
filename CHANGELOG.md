@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dev-Container: Die README beschreibt Datenverlust nach `OOMKilled` bzw. Neustart, die
+  Erkennungssignale von `fd-status.sh` (Container-Uptime, Memory-Limit, Restart-Status) und die
+  Recovery über `fd-setup`. CPU- und RAM-Werte der Dev-Container sind über
+  `workflow_dispatch`-Parameter des `fd-bootstrap`-Workflows setzbar (#303).
+
 ## [1.0.11] - 2026-10-30
 
 ### Added
