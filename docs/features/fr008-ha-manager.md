@@ -8,16 +8,18 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 (siehe [Synchronisation als eigene Integration](#synchronisation-als-eigene-integration)).
 
 - Issue: [#289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
-- Integrations-Repository (Basis): <https://github.com/Frickeldave/frickeldave.home.net>
+- Integrations-Repository (Basis): <https://github.com/Frickeldave/homeassistant-frickeldave-store>
 - Erweiterung: <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
 - Status: Basis 0.2.0 (03.11.2026) und Erweiterung `frickeldave_store_syncfd` 0.1.0 (02.11.2026)
-  sind released; Finanz- und Kundenfunktionen bleiben geplant.
+  sind released. Basis 0.2.1 mit dem Fix für das Feature-Gating ist in Vorbereitung; Finanz- und
+  Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
-> `Frickeldave/frickeldave-store`. Am 27.10.2026 hat David Koenig entschieden, dass die Integration
-> im Repository `Frickeldave/frickeldave.home.net` liegt. Dieses Dokument verwendet durchgehend den
-> neuen Namen. Die Integrations-Domain bleibt `frickeldave_store`.
+> `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
+> `Frickeldave/frickeldave.home.net`, seit dem 03.11.2026 heißt es
+> `Frickeldave/homeassistant-frickeldave-store`. Dieses Dokument verwendet durchgehend den aktuellen
+> Namen. Die Integrations-Domain bleibt `frickeldave_store`.
 
 ## Zweck und Umfang
 
@@ -60,7 +62,7 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/frickeldave.home.net`                   | `0.2.0` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.1` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.0` |
 
 - Basis: `custom_components/frickeldave_store/`.
@@ -180,7 +182,7 @@ Lauf einen Snapshot an. Seit 0.1.11 richtet sich die Migration der Store-Datei n
 
 1. Home Assistant Container mit laufender Oberfläche und installiertem HACS vorbereiten.
 2. In HACS ein benutzerdefiniertes Repository anlegen: Repository-URL
-   `https://github.com/Frickeldave/frickeldave.home.net`, Typ **Integration**.
+   `https://github.com/Frickeldave/homeassistant-frickeldave-store`, Typ **Integration**.
 3. Die Integration `frickeldave_store` installieren.
 4. Home Assistant neu starten. Erst danach lädt die Custom Integration.
 5. Die Integration über **Einstellungen → Geräte & Dienste → Integration hinzufügen** einrichten
@@ -493,11 +495,11 @@ und Bilder optimieren.“, und ein Klick öffnet den Bilder-Tab.
 
 ### Katalogimport
 
-Der Katalogimport gehört seit Basis 0.2.0 zur Erweiterung `frickeldave_store_syncfd`; ohne sie gibt
-es den Button nicht (siehe
-[Synchronisation als eigene Integration](#synchronisation-als-eigene-integration)). Mit installierter
-Erweiterung öffnet **Katalog importieren** den Importdialog. Beim Öffnen läuft automatisch ein
-Dry-Run; dabei wird nichts geschrieben.
+Der Katalogimport gehört seit Basis 0.2.0 zur Erweiterung `frickeldave_store_syncfd`. Solange diese
+nicht registriert ist, ist der Button **Katalog importieren** nicht vorhanden; danach erscheint er und
+ist aktiv, weil der Import keine weitere Voraussetzung hat (siehe
+[Verhalten ohne und mit Erweiterung](#verhalten-ohne-und-mit-erweiterung)). Ein Klick öffnet den
+Importdialog. Beim Öffnen läuft automatisch ein Dry-Run; dabei wird nichts geschrieben.
 
 - Die Vorschau nennt, wie viele Produkte neu angelegt, überschrieben, unverändert gelassen und
   fehlerhaft wären, und wie viele Bilder importiert würden. Eine deutsche Zusammenfassung beschreibt
@@ -567,6 +569,11 @@ Veröffentlichen ist seit Basis 0.2.0 keine Funktion der Basis mehr, sondern kom
 Erweiterung `frickeldave_store_syncfd` (siehe
 [Synchronisation als eigene Integration](#synchronisation-als-eigene-integration)). Ohne diese
 Erweiterung existieren die folgenden Aktionen nicht.
+
+Seit Basis 0.2.1 sind die Buttons in diesem Fall vollständig ausgeblendet; 0.2.0 zeigte sie noch
+sichtbar und deaktiviert. Ist die Erweiterung registriert, aber noch kein Token hinterlegt, bleiben
+beide sichtbar, sind deaktiviert und nennen den Grund (siehe
+[Verhalten ohne und mit Erweiterung](#verhalten-ohne-und-mit-erweiterung)).
 
 Mit installierter Erweiterung stehen für die Rolle **Anwendungsverwaltung** (`app_admin`) in der
 Topbar zwei Icon-Buttons neben **Aktualisieren**, **Katalog importieren** und **Produkt erstellen**:
@@ -776,17 +783,37 @@ SSRF-Teile mehr.
 
 ### Verhalten ohne und mit Erweiterung
 
-Ohne installierte Erweiterung ist die Basis vollständig benutzbar, nur ohne Website-Anbindung:
+Das Panel richtet sich nach dem Feature-Status der Basis: Entscheidend ist, ob eine Erweiterung
+registriert ist (`provider` gesetzt) und ob sie ihre Aufgabe ausführen kann (`available`).
+
+| Zustand der Erweiterung                          | Buttons `dev` und `prd`                                           | **Katalog importieren** |
+| ------------------------------------------------ | ----------------------------------------------------------------- | ----------------------- |
+| nicht registriert (`provider: ""`)               | nicht vorhanden                                                   | nicht vorhanden         |
+| registriert, aber nicht bereit (etwa ohne Token) | sichtbar, deaktiviert, Grund als Tooltip und Screenreader-Hinweis | sichtbar und aktiv      |
+| registriert und bereit                           | aktiv                                                             | aktiv                   |
+
+Ohne registrierte Erweiterung ist die Basis vollständig benutzbar, nur ohne Website-Anbindung:
 
 - `GET /api/frickeldave_store/me` sowie `GET`/`PATCH /api/frickeldave_store/settings` melden
   `publish` und `import` jeweils mit `available: false`, `provider: ""` und der Begründung „Die
   Synchronisation ist nicht installiert…“.
 - `POST /api/frickeldave_store/features/publish` und `.../features/import` antworten mit
   `409 feature_unavailable`, eine unbekannte Fähigkeit mit `404 feature_unknown`.
-- Im Panel erscheinen weder die Buttons `dev` und `prd` noch **Katalog importieren**.
+- Im Panel sind weder die Buttons `dev` und `prd` noch **Katalog importieren** vorhanden. Sie werden
+  nicht gerendert, nicht bloß deaktiviert.
 
-Mit installierter Erweiterung melden `GET /me` und `/settings` beide Fähigkeiten mit
-`available: true` und `provider: "frickeldave_store_syncfd"`. Die Buttons erscheinen und senden an
+Basis 0.2.0 behandelte einen Eintrag schon dann als vorhanden, wenn die Basis ihn mit
+`available: false` und `provider: ""` meldete. Das Panel zeichnete die Buttons deshalb deaktiviert,
+statt sie wegzulassen; so standen sie auch ohne installierte Erweiterung im Panel. Seit Basis 0.2.1
+fehlen sie in diesem Zustand vollständig.
+
+Ist die Erweiterung registriert, aber noch nicht bereit — etwa weil im Options-Flow der Erweiterung
+kein Token hinterlegt ist —, bleiben die Buttons `dev` und `prd` sichtbar und sind deaktiviert.
+Tooltip und Screenreader-Text nennen den Grund aus `reason`. **Katalog importieren** ist in diesem
+Zustand bereits aktiv, weil der Import nach der Registrierung keine weitere Voraussetzung hat.
+
+Ist die Erweiterung registriert und bereit, melden `GET /me` und `/settings` beide Fähigkeiten mit
+`available: true` und `provider: "frickeldave_store_syncfd"`. Die Buttons sind aktiv und senden an
 `POST /api/frickeldave_store/features/publish` beziehungsweise
 `POST /api/frickeldave_store/features/import`. Der Ablauf im Panel ändert sich nicht: Es bleibt beim
 [Dry-Run](#dry-run), beim [Löschschutz](#löschschutz) und bei den Meldungen aus
@@ -957,7 +984,7 @@ falls ein späterer Schritt doch danebengeht.
 
 - [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
 - [Issue #289](https://github.com/Frickeldave/frickeldave.github.io/issues/289)
-- [Integrations-Repository](https://github.com/Frickeldave/frickeldave.home.net)
+- [Integrations-Repository](https://github.com/Frickeldave/homeassistant-frickeldave-store)
 - [Erweiterung
   `frickeldave_store_syncfd`](https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd)
 - DeepSeek Vision: <https://api-docs.deepseek.com/guides/vision/>
