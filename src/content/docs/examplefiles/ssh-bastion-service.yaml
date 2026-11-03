@@ -4,7 +4,7 @@ metadata:
   name: ssh-bastion
   namespace: k8s-training
 spec:
-  type: ClusterIP          # nur clusterintern erreichbar
+  type: ClusterIP          # reachable inside the cluster only
   selector:
     app: ssh-bastion
   ports:

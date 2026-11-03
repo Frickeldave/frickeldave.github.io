@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Kubernetes-Schulung auf Englisch: unter `/docs/kubernetes-basis-en/` liegt der vollständige Kurs
+  mit sieben Kapiteln und englischem Glossar, während die deutsche Fassung unter
+  `/docs/kubernetes-basis-de/` erreichbar bleibt und die alten `/docs/kubernetes-basis/`-URLs
+  dorthin weiterleiten. Die Beispielmanifeste liegen sprachneutral unter
+  `src/content/docs/examplefiles/` und sind englisch kommentiert (#301).
+
 ### Changed
 
 - Dev-Container: Die README beschreibt Datenverlust nach `OOMKilled` bzw. Neustart, die

@@ -35,4 +35,4 @@ spec:
             - name: USER_NAME
               value: "training"
             - name: PUBLIC_KEY
-              value: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... hier euren eigenen öffentlichen Schlüssel einsetzen"
+              value: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... insert your own public key here"

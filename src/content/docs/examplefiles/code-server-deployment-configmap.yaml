@@ -27,15 +27,14 @@ spec:
               memory: "1Gi"
           ports:
             - containerPort: 8443
-          envFrom:                          # ConfigMap als Umgebungsvariablen
+          envFrom:                          # two ConfigMaps as environment variables
+            - configMapRef:
+                name: linuxserver-common
             - configMapRef:
                 name: code-server-config
           env:
-            - name: PASSWORD    
-              valueFrom:
-                secretKeyRef:
-                  name: code-server-secret
-                  key: PASSWORD
+            - name: PASSWORD
+              value: "trainingk8s"
           volumeMounts:
             - name: config
               mountPath: /config
