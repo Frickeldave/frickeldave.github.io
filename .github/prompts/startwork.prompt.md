@@ -108,10 +108,12 @@ If a gate fails, stop without further preparation and report the concrete reason
    Acceptance criteria, Scope / Out of scope, Affected components, `### Clarifications / Decisions`,
    `### Implementation plan`), the requirement hand-off comment when one exists, worktree path, branch,
    port information and — if one exists — the PR number. No role-play, no simulated results, no
-   implementation by you. Remind the member of the project's validation commands
-   (`npm run lint:check`, `npm run format:check`, `npm run prose`, `npm run build`,
-   `npm run test:bootstrap`) and of the `CHANGELOG.md` duty from `.squad/decisions.md`: an entry under
-   `## [Unreleased]` referencing the issue as `(#<id>)`.
+   implementation by you. Remind the member of the light validation commands that must run in the dev pod
+   (`npm run lint:check`, `npm run format:check`, `npm run prose`, `npm run test:bootstrap`) and that the
+   production build and the e2e suite are deliberately not part of the dev-pod flow: `fd-ci` runs and
+   verifies them after the push, and the start flow does not wait for that run locally. Also remind of the
+   `CHANGELOG.md` duty from `.squad/decisions.md`: an entry under `## [Unreleased]` referencing the issue
+   as `(#<id>)`.
 6. **Scribe finalization (mandatory, before hand-over):** spawn Scribe (`mode: "background"`,
    `TEAM ROOT` = active worktree, `STATE_BACKEND`, `CURRENT_DATETIME`). Scribe merges
    `.squad/decisions/inbox/` into `.squad/decisions.md` (headings demoted, flattest at `####`, duplicates
@@ -134,7 +136,9 @@ If a gate fails, stop without further preparation and report the concrete reason
       `squad:pepper` run, hand-off comment read
 - [ ] Worktree `<ProjectName>_IS_<id>` on a `dev`-based branch; PR (if used) targets `dev`
 - [ ] Implementation dispatched to a real Squad member (name in the dispatch log), not done by me
-- [ ] Validation commands run and reported; `CHANGELOG.md` entry added when code or site behaviour changed
+- [ ] Validation commands run and reported: the light checks `lint:check`, `format:check`, `prose` and
+      `test:bootstrap` in the dev pod; production build and e2e are verified by the `fd-ci` run after the
+      push, not locally; `CHANGELOG.md` entry added when code or site behaviour changed
 - [ ] Scribe finalization succeeded, `.squad/decisions.md` committed
 - [ ] Issue comment with changes, validation and commit/branch reference posted; issue left open
 
@@ -153,5 +157,6 @@ If a gate fails, stop without further preparation and report the concrete reason
 
 Report the issue reference, branch, worktree, identity verification (`--notmux` or tmux), gates/status,
 draft PR (if any), reviewers, assignment, **dispatch log (which Squad member)**, Scribe finalization (entry
-counts), **link to the issue comment**, validation commands and concrete ports. Distinguish successful,
-pending and aborted steps; name the reason on abort.
+counts), **link to the issue comment**, the light validation commands run in the dev pod and concrete
+ports. Report the push plus the `fd-ci` run as the evidence for production build and e2e instead of a
+local gate. Distinguish successful, pending and aborted steps; name the reason on abort.
