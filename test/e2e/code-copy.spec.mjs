@@ -13,8 +13,8 @@ import { test, expect } from "@playwright/test";
  * Blöcke aufgerüstet werden, und übersteht die Navigationen.
  */
 
-const DOCS_PAGE = "/docs/kubernetes-basis/10-tag-1";
-const NEXT_DOCS_PAGE = "/docs/kubernetes-basis/20-tag-2";
+const DOCS_PAGE = "/docs/kubernetes-basis-de/10-tag-1";
+const NEXT_DOCS_PAGE = "/docs/kubernetes-basis-de/20-tag-2";
 const SCAD_PAGE = "/handmade/3d-druck";
 
 const WRAPPER = "[data-code-copy-wrapper]";
