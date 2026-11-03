@@ -141,11 +141,20 @@ Eine leere Eingabe bedeutet Default. Die Werte müssen dem Kubernetes-Quantity-F
 ist ein Wert ungültig, bricht der Workflow vor dem `kubectl apply` ab. Ein geänderter Wert wirkt
 erst nach einem bewussten Neustart der Maschine (`updateStrategy: OnDelete`, siehe oben).
 
+Die Felder im Dispatch-Dialog sind vorbelegt: `build_image=true`,
+`image=ghcr.io/frickeldave/fd-dev-full:latest`, `restart_machines=frickeldave` (die eigene
+Maschine) und `force_restart=true`; die Ressourcen-Parameter entsprechen den Defaults der Tabelle.
+Ein leer gelassenes `restart_machines` bedeutet **kein** Neustart. Jeder Dispatch mit diesen
+Defaults baut das Image neu und startet die eigene Maschine — er kostet damit `gh`-/Copilot-Login,
+den Checkout und alle Worktrees, danach läuft `fd-setup` (siehe „Neustart: was verloren geht und
+wie es weitergeht“).
+
 ## Build
 
 Der Workflow `fd-bootstrap.yml` baut das Image per Kaniko-Job (Kontext: Repository-Root), bei
 Änderung in diesem Verzeichnis, an `scripts/copilot-environment.mjs`, `scripts/platform-shared.mjs`
-oder `scripts/copilot-provider.mjs` oder per `build_image`. Lokal:
+oder `scripts/copilot-provider.mjs` oder per `build_image`. Die Felder `build_image` (`true`) und
+`image` (`ghcr.io/frickeldave/fd-dev-full:latest`) sind im Dispatch-Dialog vorbelegt. Lokal:
 
 ```bash
 docker build \

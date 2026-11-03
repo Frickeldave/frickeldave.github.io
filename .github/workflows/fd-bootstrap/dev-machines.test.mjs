@@ -430,16 +430,47 @@ describe('render CLI resource flags', () => {
       readFileSync(path.join(root, '.github', 'workflows', 'fd-bootstrap.yml'), 'utf8')
     )[0].toJS();
     const inputs = workflow.on.workflow_dispatch.inputs;
-    for (const name of [
-      'dev_cpu_request',
-      'dev_memory_request',
-      'dev_cpu_limit',
-      'dev_memory_limit',
-    ]) {
+    // Drift guard: the dispatch defaults must be exactly what the renderer falls
+    // back to, so a one-click dispatch and an empty value cannot diverge (AC 7).
+    const resourceDefaults = {
+      dev_cpu_request: 'cpuRequest',
+      dev_memory_request: 'memoryRequest',
+      dev_cpu_limit: 'cpuLimit',
+      dev_memory_limit: 'memoryLimit',
+    };
+    for (const [name, key] of Object.entries(resourceDefaults)) {
       assert.equal(inputs[name].type, 'string');
       assert.equal(inputs[name].required, false);
-      assert.equal(inputs[name].default, '');
+      assert.equal(
+        inputs[name].default,
+        DEFAULT_RESOURCES[key],
+        `${name} must default to DEFAULT_RESOURCES.${key}`
+      );
     }
+
+    // Pre-filled dispatch: the only developer is restarted, an active SSH session
+    // must not skip that restart, and the image is built so the container ships
+    // the current fd-status.sh/fd-welcome.sh.
+    assert.equal(inputs.restart_machines.type, 'string');
+    assert.equal(inputs.restart_machines.required, false);
+    assert.equal(inputs.restart_machines.default, 'frickeldave');
+    assert.equal(inputs.force_restart.type, 'boolean');
+    assert.equal(inputs.force_restart.required, false);
+    assert.equal(inputs.force_restart.default, true);
+    assert.equal(inputs.build_image.type, 'boolean');
+    assert.equal(inputs.build_image.required, false);
+    assert.equal(inputs.build_image.default, true);
+    assert.equal(inputs.image.type, 'string');
+    assert.equal(inputs.image.required, false);
+    assert.equal(inputs.image.default, 'ghcr.io/frickeldave/fd-dev-full:latest');
+
+    // The data loss from restarting must stay spelled out in the description.
+    assert.match(inputs.restart_machines.description, /ALL DATA IN THE CONTAINER IS LOST/);
+    assert.match(inputs.restart_machines.description, /Empty = restart nothing/);
+
+    // The push trigger carries no inputs, so a push run keeps every value empty
+    // (no image build, no restart) and only the path/diff logic decides.
+    assert.equal(workflow.on.push.inputs, undefined);
 
     const step = workflow.jobs['dev-machines'].steps.find(
       (candidate) => candidate.name === 'Render dev machine manifests'
@@ -454,7 +485,8 @@ describe('render CLI resource flags', () => {
     for (const flag of ['--cpu-request', '--memory-request', '--cpu-limit', '--memory-limit']) {
       assert.ok(step.run.includes(flag), `the render step must pass ${flag}`);
     }
-    // Empty inputs must be skipped instead of becoming an empty argument.
+    // Empty inputs must be skipped instead of becoming an empty argument. A push
+    // run has no inputs at all, and a manually cleared field must behave the same.
     for (const variable of [
       'DEV_CPU_REQUEST',
       'DEV_MEMORY_REQUEST',
@@ -463,6 +495,19 @@ describe('render CLI resource flags', () => {
     ]) {
       assert.ok(step.run.includes(`[ -n "\${${variable}}" ]`), `${variable} needs an -n guard`);
     }
+
+    // Push runs carry no inputs, so the restart and build decisions must come from
+    // `inputs.*` alone and stay empty: no automatic restart, no automatic build.
+    const restartStep = workflow.jobs['dev-machines'].steps.find((candidate) =>
+      (candidate.name ?? '').startsWith('Restart selected machines')
+    );
+    assert.equal(restartStep.if, "inputs.restart_machines != ''");
+    assert.equal(restartStep.env.RESTART_TARGETS, '${{ inputs.restart_machines }}');
+    assert.equal(restartStep.env.FORCE_RESTART, '${{ inputs.force_restart }}');
+    const planStep = workflow.jobs['build-image'].steps.find(
+      (candidate) => candidate.id === 'plan'
+    );
+    assert.equal(planStep.env.BUILD_REQUESTED, '${{ inputs.build_image }}');
   });
 });
 

@@ -160,6 +160,25 @@ SDK-Support für deutsche Headings warten. `team.md` wurde hier bewusst nicht ve
 
 **Rollout-Hinweis:** Wegen `updateStrategy: OnDelete` wirken neue Limits erst nach bewusstem Neustart der Maschine (`restart_machines` oder `kubectl delete pod`). Ein Neustart wurde in diesem Lauf nicht ausgelöst. AC 13 aus #303 ist damit erst nach dem Rollout abnehmbar.
 
+#### 2026-11-03T15-31-41: fd-bootstrap Dispatch-Felder sind vorbelegt (build_image, restart_machines=frickeldave, force_restart, image, Ressourcen)
+**By:** Squad (Coordinator)
+**What:** fd-bootstrap Dispatch-Felder sind vorbelegt (build_image, restart_machines=frickeldave, force_restart, image, Ressourcen)
+**References:** #303, fd-bootstrap
+**Why:** **By:** David Koenig (via Copilot Squad) — Nutzerdirektive
+
+**What:**
+- Die `workflow_dispatch`-Felder von `.github/workflows/fd-bootstrap.yml` sind vorbelegt, damit ein einzelner Dispatch ein komplettes Refresh auslöst:
+  - `build_image: true` (die Diagnose-Skripte `fd-status.sh`/`fd-welcome.sh` liegen im Image, nicht im Manifest)
+  - `restart_machines: "frickeldave"` (einziger Entwickler)
+  - `force_restart: true` (die Maschine hat praktisch immer eine offene SSH-Sitzung)
+  - `image: "ghcr.io/frickeldave/fd-dev-full:latest"`
+  - `dev_cpu_request: "100m"`, `dev_memory_request: "2Gi"`, `dev_cpu_limit: "4"`, `dev_memory_limit: "16Gi"` — identisch zu `DEFAULT_RESOURCES`, per Test gegen Drift geschützt
+- Die Defaults gelten **nur** für `workflow_dispatch`. Push-Runs auf `dev` übergeben keine Inputs; dort bleibt `BUILD_REQUESTED` falsch und `if: inputs.restart_machines != ''` greift nicht — kein automatischer Image-Build und kein automatischer Neustart.
+- Konsequenz, bewusst akzeptiert: Jeder manuelle Dispatch mit diesen Defaults startet die eigene Maschine neu und kostet `gh`-/Copilot-Login, SSH-Keys, Checkout und alle Worktrees; Recovery über `fd-setup`. Wer nur Manifeste anwenden will, leert `restart_machines`.
+- `restart_machines` bleibt destruktiv beschrieben („ALL DATA IN THE CONTAINER IS LOST"); `force_restart` überspringt bewusst die Schutzprüfung auf aktive SSH-Sitzungen.
+
+**Why:** Der Nutzer arbeitet allein am Projekt und will den Rollout von #303 (16 GiB, neue Diagnose) mit einem Klick auslösen können, statt Handle, Image und vier Ressourcenwerte jedes Mal zu tippen.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens

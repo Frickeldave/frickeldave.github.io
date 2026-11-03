@@ -24,46 +24,49 @@ name: fd-bootstrap (Developer machines)
 on:
   workflow_dispatch:
     inputs:
+      # Die Defaults gelten ausschließlich für workflow_dispatch. Der push-Trigger
+      # setzt keine inputs, dort bleibt jeder Wert leer (kein Image-Build, kein
+      # Neustart); die Bedingungen unten prüfen deshalb nur auf nicht-leere Werte.
       build_image:
-        description: Rebuild and push the fd-dev-full image before deploying
+        description: "Rebuild and push the fd-dev-full image before deploying. Default: true - fd-status.sh and fd-welcome.sh live in the image, not in the manifest, so a restarted container only shows the current scripts after a fresh build."
         required: false
         type: boolean
-        default: false
+        default: true
       restart_machines:
-        description: "DELETES the pods of the listed machines, so ALL DATA IN THE CONTAINER IS LOST (gh/copilot login, worktrees, unpushed work). Empty = restart nothing; all or comma-separated GitHub handles / machine names. Machines with an active SSH session are skipped unless force_restart is set."
+        description: "DELETES the pods of the listed machines, so ALL DATA IN THE CONTAINER IS LOST (gh/copilot login, worktrees, unpushed work). Default: frickeldave. Empty = restart nothing; all or comma-separated GitHub handles / machine names. Machines with an active SSH session are skipped unless force_restart is set."
         required: false
         type: string
-        default: ""
+        default: "frickeldave"
       force_restart:
-        description: Also restart machines with an active SSH session (their data is lost)
+        description: "Also restart machines with an active SSH session (their data is lost). Default: true - the machine practically always holds an open SSH session, so without this it would be skipped."
         required: false
         type: boolean
-        default: false
+        default: true
       image:
-        description: "Dev machine image as a bare OCI reference, e.g. ghcr.io/<owner>/fd-dev-full:latest (empty = ghcr.io/<owner-lowercase>/fd-dev-full:latest). A pasted 'docker pull …' line is accepted and normalized; anything else aborts the run before a build Job is created."
+        description: "Dev machine image as a bare OCI reference. Default: ghcr.io/frickeldave/fd-dev-full:latest (empty = ghcr.io/<owner-lowercase>/fd-dev-full:latest). A pasted 'docker pull …' line is accepted and normalized; anything else aborts the run before a build Job is created."
         required: false
         type: string
-        default: ""
+        default: "ghcr.io/frickeldave/fd-dev-full:latest"
       dev_cpu_request:
-        description: "CPU request per dev machine as a Kubernetes quantity, e.g. 100m or 0.5 (empty = 100m)."
+        description: "CPU request per dev machine as a Kubernetes quantity, e.g. 100m or 0.5. Default: 100m (DEFAULT_RESOURCES in dev-machines.mjs; empty = same default)."
         required: false
         type: string
-        default: ""
+        default: "100m"
       dev_memory_request:
-        description: "Memory request per dev machine as a Kubernetes quantity, e.g. 2Gi or 512Mi (empty = 2Gi)."
+        description: "Memory request per dev machine as a Kubernetes quantity, e.g. 2Gi or 512Mi. Default: 2Gi (DEFAULT_RESOURCES in dev-machines.mjs; empty = same default)."
         required: false
         type: string
-        default: ""
+        default: "2Gi"
       dev_cpu_limit:
-        description: "CPU limit per dev machine as a Kubernetes quantity, e.g. 4 or 500m (empty = 4)."
+        description: "CPU limit per dev machine as a Kubernetes quantity, e.g. 4 or 500m. Default: 4 (DEFAULT_RESOURCES in dev-machines.mjs; empty = same default)."
         required: false
         type: string
-        default: ""
+        default: "4"
       dev_memory_limit:
-        description: "Memory limit per dev machine as a Kubernetes quantity, e.g. 16Gi or 24Gi (empty = 16Gi). An invalid value aborts before kubectl apply."
+        description: "Memory limit per dev machine as a Kubernetes quantity, e.g. 16Gi or 24Gi. Default: 16Gi (DEFAULT_RESOURCES in dev-machines.mjs; empty = same default). An invalid value aborts before kubectl apply."
         required: false
         type: string
-        default: ""
+        default: "16Gi"
   push:
     branches:
       - dev

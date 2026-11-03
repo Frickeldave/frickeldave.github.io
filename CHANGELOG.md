@@ -12,7 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dev-Container: Die README beschreibt Datenverlust nach `OOMKilled` bzw. Neustart, die
   Erkennungssignale von `fd-status.sh` (Container-Uptime, Memory-Limit, Restart-Status) und die
   Recovery über `fd-setup`. CPU- und RAM-Werte der Dev-Container sind über
-  `workflow_dispatch`-Parameter des `fd-bootstrap`-Workflows setzbar (#303).
+  `workflow_dispatch`-Parameter des `fd-bootstrap`-Workflows setzbar; die Dispatch-Felder sind
+  vorbelegt (`build_image=true`, `restart_machines=frickeldave`, `force_restart=true`,
+  `image=ghcr.io/frickeldave/fd-dev-full:latest`, `100m`/`2Gi` als Requests und `4`/`16Gi` als
+  Limits), ein Dispatch mit diesen Defaults startet also das Image neu und kostet Login, Checkout
+  und Worktrees (#303).
 
 ## [1.0.11] - 2026-10-30
 
