@@ -39,6 +39,18 @@ export default defineConfig({
   base: "/",
   output: "static", // GitHub Pages requires static output
   trailingSlash: "ignore",
+  // Legacy URLs of the German Kubernetes training; keys without trailing slash so
+  // `trailingSlash: "ignore"` matches both variants, targets with trailing slash.
+  redirects: {
+    "/docs/kubernetes-basis": "/docs/kubernetes-basis-de/",
+    "/docs/kubernetes-basis/01-einleitung": "/docs/kubernetes-basis-de/01-einleitung/",
+    "/docs/kubernetes-basis/02-ziele-methoden": "/docs/kubernetes-basis-de/02-ziele-methoden/",
+    "/docs/kubernetes-basis/03-vorbereitung": "/docs/kubernetes-basis-de/03-vorbereitung/",
+    "/docs/kubernetes-basis/10-tag-1": "/docs/kubernetes-basis-de/10-tag-1/",
+    "/docs/kubernetes-basis/20-tag-2": "/docs/kubernetes-basis-de/20-tag-2/",
+    "/docs/kubernetes-basis/90-glossar": "/docs/kubernetes-basis-de/90-glossar/",
+    "/docs/kubernetes-basis/91-kubectl": "/docs/kubernetes-basis-de/91-kubectl/",
+  },
   prefetch: {
     prefetchAll: true,
   },
