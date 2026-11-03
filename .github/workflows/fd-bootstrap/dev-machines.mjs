@@ -11,6 +11,14 @@ export const DEFAULT_NAMESPACE = 'fd-infra';
 export const DEFAULT_IMAGE = 'ghcr.io/frickeldave/fd-dev-full:latest';
 export const DEFAULT_REPO_URL = 'https://github.com/Frickeldave/frickeldave.github.io.git';
 export const DEFAULT_REPO_BRANCH = 'dev';
+// Defaults der Dev-Maschine: 16 GiB Limit, weil die Grundlast (3,7 GiB) plus
+// Build-Peak (~8 GiB) das alte 8-GiB-Limit sprengte (Issue #303, OOMKilled 137).
+export const DEFAULT_RESOURCES = Object.freeze({
+  cpuRequest: '100m',
+  memoryRequest: '2Gi',
+  cpuLimit: '4',
+  memoryLimit: '16Gi',
+});
 export const MACHINE_PREFIX = 'fd-dev-';
 export const MANAGED_SELECTOR = 'app.kubernetes.io/part-of=fd-dev-machines';
 export const TEMPLATE_PATH = path.join(scriptDir, 'k8s', 'fd-k8s-dev-machine.yaml');
@@ -20,6 +28,43 @@ const SSH_KEYS_HEADING = /^##\s+(?:Developer\s+SSH\s+Keys|Entwickler-SSH-Schl(?:
 const MAX_SLUG_LENGTH = 40;
 const SSH_KEY_PATTERN =
   /^(ssh-ed25519|ssh-rsa|ecdsa-sha2-nistp(?:256|384|521)|sk-ssh-ed25519@openssh\.com|sk-ecdsa-sha2-nistp256@openssh\.com) [A-Za-z0-9+/]+={0,3}(?: [^\r\n]*)?$/;
+
+// Kubernetes-Quantity-Formate. Bewusst streng: der Wert landet im YAML, und ein
+// Tippfehler in einer Dispatch-Eingabe soll den Render-Schritt abbrechen, bevor
+// `kubectl apply` irgendetwas anwendet.
+const CPU_QUANTITY_PATTERN = /^\d+(?:\.\d+)?m?$/;
+const MEMORY_QUANTITY_PATTERN = /^\d+(?:\.\d+)?(?:Ki|Mi|Gi|Ti|Pi|Ei|k|M|G|T|P|E)?$/;
+
+const RESOURCE_SPECS = [
+  {
+    key: 'cpuRequest',
+    flag: '--cpu-request',
+    label: 'CPU request',
+    pattern: CPU_QUANTITY_PATTERN,
+    examples: '100m, 0.5 or 4',
+  },
+  {
+    key: 'memoryRequest',
+    flag: '--memory-request',
+    label: 'memory request',
+    pattern: MEMORY_QUANTITY_PATTERN,
+    examples: '2Gi, 512Mi or 2G',
+  },
+  {
+    key: 'cpuLimit',
+    flag: '--cpu-limit',
+    label: 'CPU limit',
+    pattern: CPU_QUANTITY_PATTERN,
+    examples: '4, 500m or 2.5',
+  },
+  {
+    key: 'memoryLimit',
+    flag: '--memory-limit',
+    label: 'memory limit',
+    pattern: MEMORY_QUANTITY_PATTERN,
+    examples: '16Gi, 24Gi or 16384Mi',
+  },
+];
 
 /** Only Developer / Techlead roles get a machine; Projektleiter do not. */
 export function isDevMachineRole(role) {
@@ -169,7 +214,32 @@ export function parseDevelopers(teamMarkdown) {
   return { developers, skipped, warnings };
 }
 
+/**
+ * Resolves cpu/memory requests and limits from render options. An `undefined` or
+ * blank value falls back to `DEFAULT_RESOURCES`; anything else must be a valid
+ * Kubernetes quantity, otherwise this throws with the offending value and flag.
+ */
+export function resolveResources(options = {}) {
+  const resolved = {};
+  for (const spec of RESOURCE_SPECS) {
+    const raw = options[spec.key];
+    const value = raw === undefined || raw === null ? '' : String(raw).trim();
+    if (!value) {
+      resolved[spec.key] = DEFAULT_RESOURCES[spec.key];
+      continue;
+    }
+    if (!spec.pattern.test(value)) {
+      throw new Error(
+        `Invalid ${spec.label} "${value}" for ${spec.flag}: expected a Kubernetes quantity like ${spec.examples}.`
+      );
+    }
+    resolved[spec.key] = value;
+  }
+  return resolved;
+}
+
 export function renderDevMachine(developer, template, options = {}) {
+  const resources = resolveResources(options);
   const replacements = {
     __MACHINE_NAME__: developer.machineName,
     __NAMESPACE__: options.namespace ?? DEFAULT_NAMESPACE,
@@ -177,6 +247,10 @@ export function renderDevMachine(developer, template, options = {}) {
     __DEVELOPER_NAME__: JSON.stringify(developer.name),
     __DEVELOPER_GITHUB__: JSON.stringify(developer.github),
     __IMAGE__: options.image ?? DEFAULT_IMAGE,
+    __CPU_REQUEST__: resources.cpuRequest,
+    __MEMORY_REQUEST__: resources.memoryRequest,
+    __CPU_LIMIT__: resources.cpuLimit,
+    __MEMORY_LIMIT__: resources.memoryLimit,
     // JSON string literal, so quoting/escaping never depends on the template;
     // an absent key becomes "" and the entrypoint skips sshd.
     __SSH_PUBLIC_KEY__: JSON.stringify(developer.sshPublicKey ?? ''),
@@ -271,12 +345,21 @@ export function main(argv, { stdout = process.stdout, stderr = process.stderr, s
   }
 
   if (command === 'render') {
+    // Validate before rendering so an invalid dispatch input fails even when the
+    // roster has no machines to render (and therefore never reaches kubectl apply).
+    const resources = resolveResources({
+      cpuRequest: options['cpu-request'],
+      memoryRequest: options['memory-request'],
+      cpuLimit: options['cpu-limit'],
+      memoryLimit: options['memory-limit'],
+    });
     stdout.write(
       `${renderAll(developers, readFileSync(TEMPLATE_PATH, 'utf8'), {
         namespace: options.namespace,
         image: options.image,
         repoUrl: options['repo-url'],
         repoBranch: options['repo-branch'],
+        ...resources,
       })}\n`
     );
   } else if (command === 'names') {
@@ -296,7 +379,9 @@ export function main(argv, { stdout = process.stdout, stderr = process.stderr, s
     );
   } else {
     stderr.write(
-      'Usage: dev-machines.mjs <render|names|select|stale> [--targets list] [--team file] [--namespace ns] [--image ref]\n'
+      'Usage: dev-machines.mjs <render|names|select|stale> [--targets list] [--team file] [--namespace ns] [--image ref]\n' +
+        '       render also accepts [--cpu-request q] [--memory-request q] [--cpu-limit q] [--memory-limit q]\n' +
+        '       (Kubernetes quantities; empty or omitted = 100m / 2Gi / 4 / 16Gi)\n'
     );
     return 2;
   }

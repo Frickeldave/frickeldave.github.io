@@ -44,6 +44,26 @@ on:
         required: false
         type: string
         default: ""
+      dev_cpu_request:
+        description: "CPU request per dev machine as a Kubernetes quantity, e.g. 100m or 0.5 (empty = 100m)."
+        required: false
+        type: string
+        default: ""
+      dev_memory_request:
+        description: "Memory request per dev machine as a Kubernetes quantity, e.g. 2Gi or 512Mi (empty = 2Gi)."
+        required: false
+        type: string
+        default: ""
+      dev_cpu_limit:
+        description: "CPU limit per dev machine as a Kubernetes quantity, e.g. 4 or 500m (empty = 4)."
+        required: false
+        type: string
+        default: ""
+      dev_memory_limit:
+        description: "Memory limit per dev machine as a Kubernetes quantity, e.g. 16Gi or 24Gi (empty = 16Gi). An invalid value aborts before kubectl apply."
+        required: false
+        type: string
+        default: ""
   push:
     branches:
       - dev
@@ -295,10 +315,28 @@ jobs:
       - name: Render dev machine manifests
         env:
           IMAGE: ${{ needs.build-image.outputs.image_ref }}
+          DEV_CPU_REQUEST: ${{ inputs.dev_cpu_request }}
+          DEV_MEMORY_REQUEST: ${{ inputs.dev_memory_request }}
+          DEV_CPU_LIMIT: ${{ inputs.dev_cpu_limit }}
+          DEV_MEMORY_LIMIT: ${{ inputs.dev_memory_limit }}
         run: |
           set -euo pipefail
-          node "${BOOTSTRAP_DIR}/dev-machines.mjs" render \
-            --namespace "${NAMESPACE}" --image "${IMAGE}" > dev-machines.yaml
+          # Leere Dispatch-Eingaben werden ausgelassen, damit der Default des
+          # Renderers greift und kein leeres Argument eine Validierung auslöst.
+          render_args=(--namespace "${NAMESPACE}" --image "${IMAGE}")
+          if [ -n "${DEV_CPU_REQUEST}" ]; then
+            render_args+=(--cpu-request "${DEV_CPU_REQUEST}")
+          fi
+          if [ -n "${DEV_MEMORY_REQUEST}" ]; then
+            render_args+=(--memory-request "${DEV_MEMORY_REQUEST}")
+          fi
+          if [ -n "${DEV_CPU_LIMIT}" ]; then
+            render_args+=(--cpu-limit "${DEV_CPU_LIMIT}")
+          fi
+          if [ -n "${DEV_MEMORY_LIMIT}" ]; then
+            render_args+=(--memory-limit "${DEV_MEMORY_LIMIT}")
+          fi
+          node "${BOOTSTRAP_DIR}/dev-machines.mjs" render "${render_args[@]}" > dev-machines.yaml
           node "${BOOTSTRAP_DIR}/dev-machines.mjs" names > dev-machines.names
           echo "Desired dev machines:"
           cat dev-machines.names

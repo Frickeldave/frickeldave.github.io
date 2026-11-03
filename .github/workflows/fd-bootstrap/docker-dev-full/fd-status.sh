@@ -40,3 +40,79 @@ fd_copilot_provider() {
 fd_copilot_provider_line() {
     node "${fd_runtime}" provider --line 2>/dev/null || echo "Provider : unknown"
 }
+
+# --- Container-Diagnose (Issue #303) -----------------------------------------
+# Die drei folgenden Funktionen laufen rein offline: kein Netzzugriff, kein
+# kubectl, kein Token. Nicht Ermittelbares wird als "unknown" gemeldet, nie als 0.
+
+# Bytes aus dem cgroup-Speicherlimit (/sys/fs/cgroup/memory.max, cgroup v2).
+# Fallback auf cgroup v1; dort bedeutet ein riesiger Wert "unlimited".
+fd_memory_limit() {
+    local file value
+    for file in "${FD_CGROUP_MEMORY_MAX:-/sys/fs/cgroup/memory.max}" \
+        "${FD_CGROUP_MEMORY_LIMIT:-/sys/fs/cgroup/memory/memory.limit_in_bytes}"; do
+        [ -r "${file}" ] || continue
+        value=$(<"${file}") 2>/dev/null || continue
+        value="${value//[[:space:]]/}"
+        case "${value}" in
+            '' | max) continue ;;
+            *[!0-9]*) continue ;;
+        esac
+        # cgroup v1 meldet "unlimited" als 19-stelligen Wert.
+        [ "${#value}" -ge 19 ] && continue
+        echo "${value}"
+        return 0
+    done
+    echo unknown
+}
+
+# Laufzeit des Containers in Sekunden. Vorrang hat das Alter der Ready-Marke
+# ~/.fd-ready: der Entrypoint legt sie bei jedem Container-Start neu an, ihr
+# mtime ist damit der verlässlichste Startzeitpunkt. Ohne Marke PID 1 (etimes).
+# Beides ist offline lesbar.
+fd_container_uptime() {
+    local seconds ready mtime now
+    ready="${HOME:-}/.fd-ready"
+    if [ -n "${HOME:-}" ] && [ -r "${ready}" ]; then
+        mtime=$(stat -c %Y "${ready}" 2>/dev/null || stat -f %m "${ready}" 2>/dev/null)
+        now=$(date +%s 2>/dev/null)
+        case "${mtime}" in
+            '' | *[!0-9]*) ;;
+            *)
+                case "${now}" in
+                    '' | *[!0-9]*) ;;
+                    *)
+                        seconds=$((now - mtime))
+                        [ "${seconds}" -lt 0 ] && seconds=0
+                        echo "${seconds}"
+                        return 0
+                        ;;
+                esac
+                ;;
+        esac
+    fi
+    seconds=$(ps -p 1 -o etimes= 2>/dev/null | tr -cd '0-9')
+    if [ -n "${seconds}" ]; then
+        echo "${seconds}"
+        return 0
+    fi
+    echo unknown
+}
+
+# Heuristik: Ein Dev-Container, der vor weniger als 600 s gestartet ist, wurde
+# wahrscheinlich gerade neu gestartet (z. B. OOMKill, exitCode 137) - oder das
+# ist ein frisch angelegter Pod. Mehr ist ohne Cluster-Zugriff nicht sagbar.
+fd_restart_hint() {
+    local seconds
+    seconds=$(fd_container_uptime)
+    case "${seconds}" in
+        '' | *[!0-9]*) echo unknown ;;
+        *)
+            if [ "${seconds}" -lt 600 ]; then
+                echo restart-suspected
+            else
+                echo ok
+            fi
+            ;;
+    esac
+}

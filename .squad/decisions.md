@@ -139,6 +139,27 @@ SDK-Support für deutsche Headings warten. `team.md` wurde hier bewusst nicht ve
 
 **Why:** Das Gate-Marker-Protokoll braucht eine belastbare Spur, wer die Ausnahme autorisiert hat. Die Versionswahl folgt der menschlichen Vorgabe (Patch statt Minor), angepasst an den real belegten Versionsstand. Squash-Merge und Promote-Weg entsprechen `.squad/routing.md` und `.github/pull_request_template.md`.
 
+#### 2026-11-03T14-25-47: Issue #303 — Dev-Container-Ressourcen sind über Dispatch-Parameter definiert (Paket B, Default 16 GiB)
+**By:** Squad (Coordinator)
+**What:** Issue #303 — Dev-Container-Ressourcen sind über Dispatch-Parameter definiert (Paket B, Default 16 GiB)
+**References:** #303, #304, Option B
+**Why:** **By:** David Koenig (via Copilot Squad) — Nutzerdirektive im StartWork-Lauf IS_303
+
+**What:**
+- Die CPU-/RAM-Ressourcen der von `fd-bootstrap` gespawnten Dev-Container sind keine Template-Konstanten mehr, sondern Parameter:
+  - `workflow_dispatch`-Inputs: `dev_cpu_request`, `dev_memory_request`, `dev_cpu_limit`, `dev_memory_limit` (Typoskript-Inputs als `string`, leer = Default).
+  - CLI: `dev-machines.mjs render --cpu-request/--memory-request/--cpu-limit/--memory-limit`.
+  - Template-Platzhalter: `__CPU_REQUEST__`, `__MEMORY_REQUEST__`, `__CPU_LIMIT__`, `__MEMORY_LIMIT__`.
+- Defaults (identisch mit dem Zustand nach Paket B): `100m` / `2Gi` / `4` / `16Gi`. Das Memory-Limit steigt damit von 8 GiB auf 16 GiB (OOMKill-Ursache aus #303), der Request bleibt bei 2 GiB.
+- Eingaben werden gegen Kubernetes-Quantity-Formate validiert; ein ungültiger Wert bricht den Render-Schritt ab, **bevor** `kubectl apply` läuft. Leere Eingabe = Default, es wird kein leeres Argument erzeugt.
+- Der Workflow rendert weiterhin **alle** Maschinen mit demselben Satz Ressourcen — ein Per-Developer-Override ist bewusst nicht Teil dieses Issues.
+- Ergänzende Diagnose (Paket B, AC 8/9): `fd_memory_limit`, `fd_container_uptime`, `fd_restart_hint` sind rein offline ermittelbar; `fd_container_uptime` priorisiert die mtime von `~/.fd-ready` (Entrypoint setzt den Marker bei jedem Start neu), Fallback ist die PID-1-Laufzeit.
+- Der Start-Flow verlangt keinen `npm run build` mehr im Dev-Pod; Build und e2e prüft `fd-ci` nach dem Push.
+
+**Why:** Nutzerauftrag im StartWork-Lauf: Ressourcen sollen über Parameter definierbar sein, ohne Template-Änderung und ohne neuen Branch. Gleichzeitig behebt das Issue den bestätigten OOM-Restart (exitCode 137, restartCount 3) und hält schwere Builds aus dem Dev-Pod heraus.
+
+**Rollout-Hinweis:** Wegen `updateStrategy: OnDelete` wirken neue Limits erst nach bewusstem Neustart der Maschine (`restart_machines` oder `kubectl delete pod`). Ein Neustart wurde in diesem Lauf nicht ausgelöst. AC 13 aus #303 ist damit erst nach dem Rollout abnehmbar.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
