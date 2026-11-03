@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { parseAllDocuments } from 'yaml';
 
 import {
+  DEFAULT_RESOURCES,
   TEMPLATE_PATH,
   findStale,
   isDevMachineRole,
@@ -14,6 +15,7 @@ import {
   parseSshKeys,
   renderAll,
   renderDevMachine,
+  resolveResources,
   selectMachines,
   slugify,
   validateSshPublicKey,
@@ -263,6 +265,204 @@ describe('manifest rendering', () => {
     const [set] = parseAllDocuments(rendered).map((doc) => doc.toJS());
     assert.equal(set.spec.template.spec.containers[0].env[0].value, developer.sshPublicKey);
     assert.ok(!/__[A-Z_]+__/.test(rendered));
+  });
+});
+
+describe('cpu and memory resources', () => {
+  const { developers } = parseDevelopers(team());
+  const resourcesOf = (options) =>
+    parseAllDocuments(renderAll(developers, template, options))
+      .map((doc) => doc.toJS())
+      .find((doc) => doc.kind === 'StatefulSet').spec.template.spec.containers[0].resources;
+
+  test('renders the documented defaults', () => {
+    assert.deepEqual(DEFAULT_RESOURCES, {
+      cpuRequest: '100m',
+      memoryRequest: '2Gi',
+      cpuLimit: '4',
+      memoryLimit: '16Gi',
+    });
+    assert.deepEqual(resourcesOf(), {
+      requests: { cpu: '100m', memory: '2Gi' },
+      limits: { cpu: '4', memory: '16Gi' },
+    });
+  });
+
+  test('raises only the memory limit to 16Gi and keeps the 2Gi request (AC 7)', () => {
+    const { requests, limits } = resourcesOf();
+    assert.equal(limits.memory, '16Gi');
+    assert.equal(requests.memory, '2Gi');
+  });
+
+  test('renders overrides into the YAML', () => {
+    assert.deepEqual(
+      resourcesOf({
+        cpuRequest: '250m',
+        memoryRequest: '1Gi',
+        cpuLimit: '8',
+        memoryLimit: '24Gi',
+      }),
+      {
+        requests: { cpu: '250m', memory: '1Gi' },
+        limits: { cpu: '8', memory: '24Gi' },
+      }
+    );
+  });
+
+  test('treats blank or missing values as defaults', () => {
+    assert.deepEqual(
+      resourcesOf({
+        cpuRequest: '',
+        memoryRequest: '   ',
+        cpuLimit: undefined,
+        memoryLimit: null,
+      }),
+      {
+        requests: { cpu: '100m', memory: '2Gi' },
+        limits: { cpu: '4', memory: '16Gi' },
+      }
+    );
+    assert.deepEqual(resolveResources({}), DEFAULT_RESOURCES);
+  });
+
+  test('rejects invalid quantities with the value and the flag', () => {
+    const cases = [
+      [{ cpuRequest: '100 m' }, '100 m', '--cpu-request'],
+      [{ memoryRequest: '2GB' }, '2GB', '--memory-request'],
+      [{ cpuLimit: '4 cores' }, '4 cores', '--cpu-limit'],
+      [{ memoryLimit: '16 GB' }, '16 GB', '--memory-limit'],
+      [{ memoryLimit: '16Gi!' }, '16Gi!', '--memory-limit'],
+    ];
+    for (const [options, value, flag] of cases) {
+      assert.throws(
+        () => renderDevMachine(developers[0], template, options),
+        (error) => error.message.includes(value) && error.message.includes(flag),
+        `${value} must be rejected and name ${flag}`
+      );
+    }
+  });
+
+  test('accepts the documented quantity shapes', () => {
+    for (const value of ['100m', '0.5', '4', '250.5m']) {
+      assert.equal(resolveResources({ cpuLimit: value }).cpuLimit, value);
+    }
+    for (const value of ['2Gi', '512Mi', '2G', '1024M', '16384']) {
+      assert.equal(resolveResources({ memoryLimit: value }).memoryLimit, value);
+    }
+  });
+
+  test('leaves no unreplaced placeholder with overrides', () => {
+    const rendered = renderAll(developers, template, { cpuLimit: '8', memoryLimit: '24Gi' });
+    assert.ok(!/__[A-Z_]+__/.test(rendered));
+    assert.ok(rendered.includes('memory: "24Gi"'));
+    assert.ok(rendered.includes('cpu: "8"'));
+  });
+
+  test('still reports an unreplaced placeholder', () => {
+    assert.throws(
+      () => renderDevMachine(developers[0], `${template}\nextra: __NOT_REPLACED__\n`),
+      /Unreplaced placeholder __NOT_REPLACED__/
+    );
+  });
+});
+
+describe('render CLI resource flags', () => {
+  const script = path.join(root, '.github', 'workflows', 'fd-bootstrap', 'dev-machines.mjs');
+  const teamFile = () => {
+    const dir = mkdtempSync(path.join(root, 'node_modules', '.fd-team-'));
+    tempDirs.push(dir);
+    const file = path.join(dir, 'team.md');
+    writeFileSync(file, team());
+    return file;
+  };
+  const runRender = (...args) =>
+    spawnSync(process.execPath, [script, 'render', '--team', teamFile(), ...args], {
+      encoding: 'utf8',
+    });
+  const resourcesOf = (stdout) =>
+    parseAllDocuments(stdout)
+      .map((doc) => doc.toJS())
+      .find((doc) => doc.kind === 'StatefulSet').spec.template.spec.containers[0].resources;
+
+  test('uses the defaults when no resource flag is passed', () => {
+    const result = runRender();
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(resourcesOf(result.stdout), {
+      requests: { cpu: '100m', memory: '2Gi' },
+      limits: { cpu: '4', memory: '16Gi' },
+    });
+  });
+
+  test('passes the flags into the rendered YAML', () => {
+    const result = runRender(
+      '--cpu-request',
+      '250m',
+      '--memory-request',
+      '1Gi',
+      '--cpu-limit',
+      '8',
+      '--memory-limit',
+      '24Gi'
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(resourcesOf(result.stdout), {
+      requests: { cpu: '250m', memory: '1Gi' },
+      limits: { cpu: '8', memory: '24Gi' },
+    });
+  });
+
+  test('treats an empty flag value as "use the default"', () => {
+    const result = runRender('--memory-limit', '');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(resourcesOf(result.stdout).limits.memory, '16Gi');
+  });
+
+  test('aborts with a clear error for an invalid quantity', () => {
+    const result = runRender('--memory-limit', '16 GB');
+    assert.notEqual(result.status, 0);
+    assert.equal(result.stdout, '');
+    assert.match(result.stderr, /16 GB/);
+    assert.match(result.stderr, /--memory-limit/);
+  });
+
+  test('the workflow exposes the four inputs and forwards only non-empty ones', () => {
+    const workflow = parseAllDocuments(
+      readFileSync(path.join(root, '.github', 'workflows', 'fd-bootstrap.yml'), 'utf8')
+    )[0].toJS();
+    const inputs = workflow.on.workflow_dispatch.inputs;
+    for (const name of [
+      'dev_cpu_request',
+      'dev_memory_request',
+      'dev_cpu_limit',
+      'dev_memory_limit',
+    ]) {
+      assert.equal(inputs[name].type, 'string');
+      assert.equal(inputs[name].required, false);
+      assert.equal(inputs[name].default, '');
+    }
+
+    const step = workflow.jobs['dev-machines'].steps.find(
+      (candidate) => candidate.name === 'Render dev machine manifests'
+    );
+    assert.deepEqual(Object.keys(step.env).sort(), [
+      'DEV_CPU_LIMIT',
+      'DEV_CPU_REQUEST',
+      'DEV_MEMORY_LIMIT',
+      'DEV_MEMORY_REQUEST',
+      'IMAGE',
+    ]);
+    for (const flag of ['--cpu-request', '--memory-request', '--cpu-limit', '--memory-limit']) {
+      assert.ok(step.run.includes(flag), `the render step must pass ${flag}`);
+    }
+    // Empty inputs must be skipped instead of becoming an empty argument.
+    for (const variable of [
+      'DEV_CPU_REQUEST',
+      'DEV_MEMORY_REQUEST',
+      'DEV_CPU_LIMIT',
+      'DEV_MEMORY_LIMIT',
+    ]) {
+      assert.ok(step.run.includes(`[ -n "\${${variable}}" ]`), `${variable} needs an -n guard`);
+    }
   });
 });
 
