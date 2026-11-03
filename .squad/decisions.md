@@ -2,7 +2,7 @@
 
 ## Aktive Entscheidungen
 
-- Archivierte Einträge (ab 20 KB älter als 30 Tage, ab 50 KB älter als 7 Tage; Stand 2026-11-02): siehe [`decisions-archive.md`](decisions-archive.md).
+- Archivierte Einträge (ab 20 KB älter als 30 Tage, ab 50 KB älter als 7 Tage; Stand 2026-11-03): siehe [`decisions-archive.md`](decisions-archive.md).
 
 ### 2026-10-27T12-21-13: IS_289 integration MVP scaffold in frickeldave.home.net
 **By:** Bruce
@@ -2813,6 +2813,376 @@ Fallback. Die Platzierung hinter „Veröffentlichen“ hält den Weg vom besteh
 künftigen Erweiterung kurz, der Standort der Statuszeile bleibt erhalten, und die Auslagerung steht
 als geplant statt als umgesetzt da. So bleibt das Dokument für Bestandsnutzer unmissverständlich:
 Veröffentlichen und Katalogimport laufen unverändert weiter.
+
+#### 2026-11-02T18:51:52+0000: Publish und Import in der Erweiterung
+
+**By:** Bruce (Backend / Scripts / Komponenten)
+
+**What:** Arbeitspakete 5 und 6 des ADR #289 sind in
+`Frickeldave/homeassistant-frickeldave-store-syncfd` umgesetzt
+(`0.1.0`, `main` = `f3781ad`; Commits `08c4455`, `228ef0f`, `3271123`,
+`f3781ad`). Die frickeldave-Synchronisation läuft
+vollständig in der Erweiterung; die Basis `frickeldave_store` bleibt bei `0.1.16`
+und **unverändert** (ihr eingebauter Fallback bleibt, Entfernen ist
+Arbeitspaket 10).
+
+Neue Module: `const.py` (Vorgaben), `settings.py` (`SyncSettings`, Token
+write-only), `errors.py` (`SyncError` + Status-Map), `base_api.py` (einziger
+Zugriff auf `custom_components.frickeldave_store.extension`), `publish.py`,
+`importer.py`, `features.py` (Payload-Validierung + Handler), `config_flow.py`
+(Config- und Options Flow). Registrierung in `async_setup_entry`, Abmeldung über
+`entry.async_on_unload`, Reload bei Options-Änderung.
+
+**Was Natasha für die Umstellung des Panels wissen muss:**
+
+1. Ein Endpunkt: `POST /api/frickeldave_store/features/publish` und
+   `POST /api/frickeldave_store/features/import`. Authentifizierung, Rolle und
+   Routing macht die Basis; der Body ist optional (`{}` = alles Standard).
+2. Payloads und Antworten sind **identisch** zu `POST /publish` und
+   `POST /import/catalog` – nur der Pfad ändert sich. Fehler kommen als
+   `{"error": {"code", "message"}}` mit den bisherigen Codes und Status.
+3. `publish`-Request: `{"target": "dev"|"prod", "dry_run": bool, "message": str
+   (max. 200), "allow_empty": bool, "confirm_removals": bool}`. Unbekannte Felder
+   → `validation_error` (400). Antwort: `target`, `dry_run`, `repository`,
+   `branch`, `commit`, `changed`, `counts{added,changed,removed,unchanged,total}`,
+   `products`, `images`, `files[]`, `files_truncated`, `deployment{triggered,
+   would_trigger, mode, workflow, branch}`, `removal_guard{triggered,removed,
+   existing,maxFiles,share,confirmed}`, `warning`, `summary`.
+4. `import`-Request: `{"source_url"?: str, "image_base_url"?: str,
+   "import_images": bool = true, "dry_run": bool, "overwrite": bool}`. Antwort:
+   `created`, `skipped`, `failed`, `images_imported`, `products_total`,
+   `errors[{articleNumber,message}]`, `dry_run`, `would_create`,
+   `would_overwrite`, `overwritten`, `unchanged`, `summary`.
+5. **Gating über `/me`:** `features.publish.available` ist `false`, solange kein
+   Token im Options Flow liegt (`reason` = deutsche Begründung, `provider` =
+   `frickeldave_store_syncfd`). `features.import` ist immer `available`.
+   Buttons erst zeigen, wenn `available` true ist; bei
+   `frickeldave_store_features_changed` nur `/me` neu laden. Die Settings für
+   Veröffentlichen liegen **nicht mehr** unter `/settings`, sondern im
+   Options Flow der Erweiterung – das Panel sollte dort keinen Token-Dialog mehr
+   anbieten.
+6. Neue Codes gegenüber den Alt-Endpunkten gibt es nicht; zusätzlich kann
+   `feature_unavailable` (409) auftreten, wenn das Feature installiert, aber
+   nicht eingerichtet ist.
+
+**Why:** Die Erweiterung muss die frickeldave-Vorgaben (Repository
+`Frickeldave/frickeldave.github.io`, `dev`, `main`, `fd-deploy-prd.yml`,
+`public/data/handmade.json`, `src/assets/handmade`) selbst mitbringen, weil die
+Basis in `0.2.0` alle frickeldave-Kenntnis verliert. Der Store-Zugriff läuft
+ausschließlich über die Fassade: `async_build_export` liefert Katalogbytes und
+Bildartefakte im Speicher, `async_apply_import_batch` validiert und schreibt den
+Import (mit eigenem Snapshot `pre-import-batch`), gelesen wird über
+`async_products`/`async_locations`. Kein Import von `store`, `models`, `views`
+oder `permissions`, kein Zugriff auf `hass.data`, keine Dateipfade, keine
+eigenen HTTP-Routen. `async_create_snapshot` wird bewusst nicht zusätzlich
+aufgerufen: der Batch snapshottet selbst, und Veröffentlichen schreibt nie in den
+Store. Die stabilen Bildnamen (`<artikel>-NN.<endung>`) entstehen aus den
+Bildmetadaten der Fassade, weil der Export Bilder unter ihrem Store-Namen liefert;
+ein fehlendes Bild ist deshalb ein strukturierter Fehler
+(`publish_artifacts_unavailable`, 409) statt eines stillen Löschens.
+
+**Validierung:** Erweiterung `ruff check .`, `ruff format --check .`,
+`mypy custom_components`, `pytest -q` (127 Tests) grün; Basis `pytest -q`
+(340 Tests) grün, dort nichts geändert. CI auf `main` grün (Ruff, mypy, pytest,
+hassfest, HACS-Validierung). Der GitHub-Token wird in keiner Antwort
+und keinem Log ausgegeben (eigene Tests).
+
+**Offen für Arbeitspaket 10 (Basis 0.2.0):** `publish.py`, `importer.py`, die
+Endpunkte `POST /publish` und `POST /import/catalog`, die `publish`-Settings
+(`settings.publish`, `github_*` im Options Flow) und der Builtin-Fallback
+(`BUILTIN_FEATURES`, `_async_publish`, `_async_import` in `views.py`) können
+entfernt werden. Ebenfalls zu entfernen: `DEFAULT_CATALOG_URL`,
+`DEFAULT_IMAGE_BASE_URL`, `IMPORT_ALLOWED_HOSTS`, `DEFAULT_PUBLISH_*` aus
+`const.py` sowie die zugehörigen Tests. Die Fassade (`async_build_export`,
+`async_apply_import_batch`, `async_create_snapshot`) muss bleiben, sie ist der
+Vertrag. `public_settings` sollte das Feld `publish` samt `token_set` verlieren.
+
+#### 2026-11-02T19:10:00+0000: Panel nutzt Feature-Routen
+
+**By:** Natasha (Frontend-Entwicklerin / UI-Spezialistin)
+
+**What:** Das Store-Panel (`0.1.17`) spricht Veröffentlichen und Import nur noch
+über `POST /api/frickeldave_store/features/publish` bzw.
+`POST /api/frickeldave_store/features/import` an. Payload, Antwortfelder und die
+Normalisierung bleiben unverändert; die alten Pfade `/publish` und
+`/import/catalog` kommen im Panel nicht mehr vor (Guard über die Smoke-Checks und
+die Suche im Modul). Das Feature-Gating liest `features` aus `/me`
+(Seitenpanel) bzw. `/settings` (Konfigurationspanel, inklusive
+`feature_details`).
+
+**Ausgegrauter Zustand:** Ist eine Fähigkeit vorhanden, aber `available: false`,
+bleibt das Topbar-Icon sichtbar. Es erhält `aria-disabled="true"` statt
+`disabled`, bleibt damit fokussierbar und wird über `aria-describedby` mit einem
+`fd-sr-only`-Element verbunden, das die deutsche `reason` enthält. Zusätzlich
+dimmt `.fd-bar-icon[aria-disabled="true"]` das Icon auf 38 % und setzt
+`cursor: not-allowed`; der Fokusring bleibt erhalten. Ein Klick auf den
+fokussierbaren Button zeigt die Begründung über die bestehende `role="status"`
+Toast-Region (`aria-live="polite"`). Fehlt die Fähigkeit ganz, wird das Icon
+ausgeblendet. Eine ältere Basis ohne `features`-Feld (`null`) behält das
+bisherige Verhalten, damit das Panel rückwärtskompatibel bleibt.
+
+**Anbieterwechsel im Einstellungen-Tab:** Das Konfigurationspanel berechnet die
+sichtbaren Tabs aus `_publishFeature()`. Nur `provider === "frickeldave_store"`
+(oder eine Basis ohne Feature-Angabe) zeigt den Tab „Veröffentlichen“; bei
+`frickeldave_store_syncfd` und jedem anderen Anbieter wird er aus
+`_visibleTabs()` entfernt. Stattdessen rendert `_renderMain()` unter der
+Tab-Leiste einen neutralen `fd-banner`-Hinweis: bei `syncfd` mit dem Verweis auf
+Einstellungen → Geräte & Dienste → Frickeldave Store Sync (Token und Ziele
+liegen dort, nie mehr im Basis-Panel), bei fehlender Fähigkeit mit dem Hinweis,
+dass die Synchronisation nicht installiert ist. Ist der ausgeblendete Tab gerade
+aktiv, wechselt `_ensureValidTab()` auf den ersten sichtbaren Tab; die
+Tastaturnavigation (`_onTabKeydown`) nutzt dieselbe gefilterte Liste.
+
+**Event-Abonnement:** Beide Panels abonnieren
+`frickeldave_store_features_changed` in `_ensureFeatureSubscription()` über
+`this.hass.connection.subscribeEvents(callback, EVENT)`. Der Callback entprellt
+150 ms (`_scheduleFeatureRefresh`) und ruft `_reloadFeatures()`: das Seitenpanel
+lädt ausschließlich `/me` und aktualisiert `_me`/`_features`, das
+Konfigurationspanel ausschließlich `/settings`. Produktliste, Filter und offene
+Dialoge bleiben unangetastet; nicht mehr verfügbare Publish-/Import-Dialoge
+werden geschlossen und die Begründung als Toast gezeigt. `disconnectedCallback`
+ruft `_unsubscribeFeatureEvents()`; die Abmeldefunktion wird zusätzlich
+verworfen, falls die Verbindung vor dem Auflösen des Subscribe-Promise wechselt
+oder das Element bereits getrennt ist.
+
+**Why:** Die Basis `0.2.0` entfernt die Alt-Endpunkte; ein Panel, das weiterhin
+`/publish` oder `/import/catalog` aufruft, würde dort mit 404 brechen. Das
+Gating verhindert außerdem, dass eine nicht eingerichtete Erweiterung als
+generischer Serverfehler erscheint: `feature_unavailable` (409) und
+`not_registered` (404) zeigen die deutsche `error.message`, `feature_unknown`
+erklärt die veraltete Erweiterung. Der dezent ausgegraute Zustand ist bewusst
+kein kommentarloses Verschwinden, weil Nutzer sonst nicht erkennen, dass die
+Fähigkeit existiert, aber z. B. ein Token fehlt.
+
+**Offen:** Die Basis muss `features` weiterhin in `/me` und `/settings` liefern;
+das Panel behandelt ein fehlendes Feld nur als Übergang. Ein Provider-Wechsel
+während einer laufenden Veröffentlichung wird erst nach Abschluss sichtbar, weil
+das Konfigurationspanel bei `saving` nicht neu lädt.
+
+#### 2026-11-02T20:25:32+0000: Basis 0.2.0 ohne frickeldave-Spezifika
+
+**By:** Bruce (Backend / Scripts / Komponenten) · **Issue:** #289 · **Arbeitspaket:** 10 des ADR
+
+**What:**
+
+`Frickeldave/frickeldave.home.net`, Branch `main`, drei Commits auf `ea7ef9c`:
+
+| Commit | Inhalt |
+| --- | --- |
+| `00ce3af` | `feat(api)!: Basis 0.2.0 ohne frickeldave-Spezifika (#289)` — Backend + Tests |
+| `ac18401` | `refactor(panel): Publish-Tab und Legacy-Fallback entfernen (#289)` |
+| `7d01172` | `docs: Migration auf 0.2.0 und Erweiterungsbezug dokumentieren (#289)` |
+| `582be96` | `test(ha): entfernte Publish-/Import-Routen sind nicht registriert (#289)` |
+
+Version `0.2.0` (`const.VERSION`, `manifest.json`). `CONTRACT_VERSION` bleibt `1`.
+
+**Entfernt (vollständig):**
+
+- Dateien: `custom_components/frickeldave_store/publish.py`,
+  `custom_components/frickeldave_store/importer.py`, `tests/test_publish.py`,
+  `tests/test_importer.py`.
+- Views: `PublishView` (`POST /publish`), `CatalogImportView`
+  (`POST /import/catalog`) und ihre Einträge in `VIEWS`.
+- Fallback der Feature-Route: die Zweige `publish`/`import` in `FeaturesView`;
+  reservierte Namen ohne Registrierung → `409 feature_unavailable`, übrige →
+  `404 feature_unknown`.
+- Konstanten: `DEFAULT_PUBLISH_REPOSITORY`, `DEFAULT_PUBLISH_DEV_BRANCH`,
+  `DEFAULT_PUBLISH_PROD_BRANCH`, `DEFAULT_PUBLISH_PROD_WORKFLOW`,
+  `DEFAULT_CATALOG_URL`, `DEFAULT_IMAGE_BASE_URL`, `IMPORT_ALLOWED_HOSTS`.
+- Funktionen/Symbole in `views.py`: `_validate_publish_payload`, `_async_publish`,
+  `_import_requires_admin`, `_validate_import_payload`, `_async_import`,
+  `_optional_url`, `SettingsView._persist_publish_options`.
+- Statuscodes: `catalog_unavailable`, `catalog_invalid`, `publish_*` (7),
+  `github_*` (5).
+- `CatalogStore.update_settings()`: `publish`-Zweig; `public_settings()`:
+  `publish`-Block (auch `token_set`); `default_settings()`: `publish`-Abschnitt.
+- `FrickeldaveStoreRuntime.publish` und `PublishService`-Import in `__init__.py`;
+  `_async_apply_entry_config` wendet `github_*`-Optionen nicht mehr an.
+- Options-Flow: `github_repository`, `github_dev_branch`, `github_prod_workflow`,
+  `github_token`; zugehörige `strings.json`/`translations/de.json`-Labels.
+- `PATCH /settings`: `publish` gilt als unbekanntes Feld (`400 validation_error`)
+  mit deutscher Meldung, dass der Abschnitt zur Erweiterung gehört.
+- Panel (minimal, exakt): Konfigurationspanel ohne Tab „Veröffentlichen“, ohne
+  `normalizePublish`, `_publish`-Zustand, `_setPublishField`, `_savePublish`,
+  `_renderPublishTab`, `_showPublishTab`, `_publishFeature`, `BASE_PROVIDER`,
+  `SYNC_PROVIDER` und `_featureDetails`-Spiegel; Hinweisbanner bleibt und nennt
+  die Erweiterung. Seitenpanel: `legacy`-Zweig in `_featureInfo`
+  (fehlende Feature-Angabe gilt nicht mehr als verfügbar),
+  `showPublish`/`showImport` ohne `legacy`, Anbieter-Sonderfall im
+  Token-Hinweis entfernt (verweist immer auf die Erweiterung).
+- `default_settings()`-Docstring, `STATUS_BY_CODE`, Doku-Abschnitte mit
+  Fallback-Beschreibung.
+
+**Bewusst geblieben (und warum):**
+
+- `extension.py`: `CONTRACT_VERSION = 1`, `__all__`, Signaturen unverändert. Die
+  Erweiterung `f3781ad` hängt daran. **Eine Zeile musste sich ändern:** der
+  private Import `from .importer import ...` heißt jetzt `from .batch_import
+  import ...` — öffentliche Namen, Typen und Verhalten sind identisch.
+- `batch_import.py` (neu): der generische Batch-Schreibpfad
+  (`ImportItem`, `ImageUpload`, `ImportResult`, `async_import_products`,
+  `map_catalog_product`, Snapshot-/Feldregeln) wurde wörtlich aus `importer.py`
+  übernommen, weil `StoreFacade.async_apply_import_batch` Teil von Contract 1
+  ist und die Erweiterung ihn aufruft. Ohne ihn wäre die Fassade gebrochen.
+  Entfernt wurden nur die Netz-/frickeldave-Teile (`async_import_catalog`,
+  SSRF-Allowlist, HTTP-Fetches, Bildsignaturen).
+- `export.py` inklusive `async_build_export`-Nutzung, `ArticleNumberView`,
+  Produkte, Bilder/`imaging.py`, Lagerstätten, Rechte, KI, Panel-Grundgerüst,
+  WebSocket-API.
+- `settings.publish` in `frickeldave_store.data`: wird ab 0.2.0 nicht mehr
+  gelesen und nicht mehr ausgeliefert, aber beim Laden/Speichern unverändert
+  durchgereicht (`coerce_payload` spreadet `settings`).
+
+**Feature-Status ohne Erweiterung:** `/me` und `/settings` liefern
+`{"publish": {"available": false, "reason": "Die Synchronisation ist nicht installiert.
+Installiere Frickeldave Store Sync über HACS.", "provider": "", "contract_version": 1},
+"import": {…identisch…}}`. Mit Registrierung kommen `available`, `reason`, `provider`
+und `contract_version` aus der Registrierung. `POST /features/publish|import` antwortet
+ohne Erweiterung `409 feature_unavailable` mit derselben Meldung.
+
+**Offene Lücke (bewusst nicht behoben, Vertrag):** `extension.feature_status()` /
+`async_get_feature_status()` führen `publish`/`import` weiterhin als eingebaute
+Fähigkeiten mit `available: true, provider: "frickeldave_store"`, weil das Modul in
+diesem Arbeitspaket unverändert bleiben muss. Die HTTP-Schicht korrigiert das
+(`views._reserved_status_without_extension`). Auflösung erst mit einem Contract-Bump
+(Arbeitspaket 13 / 0.3.0): `BUILTIN_FEATURES`/`_BUILTIN_DETAILS` entfernen und
+`feature_status` nur noch aus Registrierungen speisen.
+
+**Why:** Die Basis soll ohne Frickeldave-Geheimnisse und ohne frickeldave-Vorgaben
+installierbar und prüfbar sein; Veröffentlichen und Katalogimport gehören der
+Erweiterung, die dafür Netzzugriff, Allowlist und Token besitzt. Der Schnitt bleibt
+für Bestandsnutzer reversibel: keine Daten werden gelöscht, `settings.publish` und
+das Store-Schema (`schemaVersion: 2`) bleiben stehen.
+
+**Rollback-Weg:** Erweiterung deinstallieren, Basis auf die letzte 0.1.x-Version
+zurücksetzen, Home Assistant neu starten. `POST /publish` und `/import/catalog`
+lesen dann wieder `settings.publish`; ein nur in der Erweiterung hinterlegtes Token
+muss für den Rollback erneut im Basis-Options-Flow eingetragen werden. Details:
+`docs/migration-0.2.md` im Basis-Repository.
+
+**Validierung:** `ruff check .` grün, `ruff format --check .` (43 Dateien), `mypy
+custom_components` (16 Dateien) grün, `pytest -q` 234 passed, `node --check` für
+beide Panel-Module und `lit.js` grün. Bekannt und vorbestehend: die HA-Testsuite
+ist sporadisch instabil (Teardown-/Socket-Fehler in `test_config_flow` bzw.
+`test_extension`, auf `ea7ef9c` ebenso reproduzierbar); davon unabhängig fünf
+Läufe hintereinander grün.
+
+#### 2026-11-02T20:35:00+0000: Release der Erweiterung 0.1.0
+
+**By:** Nick (DevOps / Infrastruktur)
+
+**What:** Die Erweiterung `Frickeldave/homeassistant-frickeldave-store-syncfd` ist
+als `0.1.0` veröffentlicht. Annotierter Tag `0.1.0` (Typ `tag`, Tagger David
+Koenig, Annotation „Frickeldave Store Sync 0.1.0") zeigt auf
+`f3781ad529dfa3ea8f0999581ac8bcfc3808510a`; das GitHub-Release `0.1.0` ist kein
+Draft, kein Pre-Release und über `releases/latest` als „Latest" bestätigt:
+https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/releases/tag/0.1.0
+Die Notes sind der Abschnitt `## [0.1.0] - 2026-11-02` aus `CHANGELOG.md`
+(inhaltlich unverändert, nur ohne den Folgeschnitt). `manifest.json` am Tag nennt
+`"version": "0.1.0"` und `"dependencies": ["frickeldave_store"]`, `hacs.json`
+existiert. CI-Lauf für `f3781ad` ist grün (Run 41508704489, `CI`, success).
+Es wurden keine Commits, keine Dateiänderungen und kein Push auf `main`
+vorgenommen; die Basis `frickeldave.home.net` blieb unberührt.
+
+**HACS-Prüfung:** bestanden — Release-Tag `0.1.0` = Manifest-Version `0.1.0`,
+`hacs.json` vorhanden, Release ist kein Pre-Release.
+
+**Basis-Kompatibilität:** geprüft gegen die veröffentlichte Basis `0.1.16`
+(letzter Tag/Release der Basis; `0.1.17` ist noch nicht veröffentlicht). Deren
+`extension.py` liefert `CONTRACT_VERSION = 1` und exportiert alle von
+`base_api.py` geforderten Namen (`ExtensionError`, `ExtensionRegistration`,
+`FeatureRequest`, `FeatureResponse`, `FeatureSpec`, `ImageUpload`, `ImportItem`,
+`async_register_extension`, `async_unregister_extension`, Rollen). Die
+Erweiterung spricht `CONTRACT_VERSION = 1` / `MIN_BASE_CONTRACT_VERSION = 1` und
+greift ausschließlich über diese Fassade zu. Die gesetzte `dependencies`-Liste
+erzwingt die Basis als Voraussetzung. Keine Inkompatibilität gefunden; `0.2.0`
+der Basis wurde nicht geprüft und nicht angefasst.
+
+**Why:** Der erste eigene Release der Erweiterung fixiert den Zeitpunkt, ab dem
+Publish und Katalogimport außerhalb der Basis leben. Die Trennung braucht eine
+klare Installationsreihenfolge: zuerst die Basis `frickeldave_store` (≥ `0.1.16`,
+Vertrag 1) installieren und einrichten, dann die Erweiterung `0.1.0`; ohne
+Erweiterungspunkt scheitert das Setup bewusst mit `ConfigEntryNotReady`, statt
+still ohne Features weiterzulaufen. Der Fallback für `publish`/`import` in der
+Basis bleibt bis zu einem eigenen Basis-Release bestehen, daher ist die
+Erweiterung additiv und rückwärtsverträglich.
+
+#### 2026-11-03T07:14:19+0000: Release Basis 0.2.0
+
+**By:** Nick (DevOps / Infrastruktur) · **Issue:** #289
+
+**What:**
+
+`Frickeldave/frickeldave.home.net @ 582be96` ist als `0.2.0` veröffentlicht — Basis für den Breaking-Change-Schnitt, der die frickeldave-Synchronisation vollständig in die Erweiterung `frickeldave_store_syncfd` verlagert.
+
+| Gegenstand | Wert |
+| --- | --- |
+| Annotierter Tag | `0.2.0` → Tag-Objekt `21a4ba4`, Commit `582be96c7ea09e138b3513959127a6589e04479f` |
+| Tag-Annotation | `Frickeldave Store 0.2.0` |
+| Release | <https://github.com/Frickeldave/frickeldave.home.net/releases/tag/0.2.0> |
+| Status | `draft=false`, `prerelease=false`, **Latest** (vorher `0.1.16`) |
+| Notes | Abschnitt `## [0.2.0] - 2026-11-02` aus `CHANGELOG.md` bei `582be96`, unverändert (GitHub ergänzt nur den abschließenden Zeilenumbruch); `### Breaking Changes` und `### Migration` bleiben im Text |
+| Manifest im Tag | `custom_components/frickeldave_store/manifest.json` → `version: "0.2.0"` |
+| HACS | `hacs.json` im Tag vorhanden (`homeassistant: 2024.6.0`, `country: ["DE"]`) |
+| Entfernt (Nachweis) | `git cat-file -e 0.2.0:custom_components/frickeldave_store/publish.py` → Exit 1 (fehlt), `.../importer.py` → Exit 1 (fehlt) |
+| Vorhanden | `custom_components/frickeldave_store/extension.py` (`CONTRACT_VERSION = 1`), `batch_import.py` |
+| CI | <https://github.com/Frickeldave/frickeldave.home.net/actions/runs/41549414761> — Workflow `CI`, `completed` / `success` auf `582be96` |
+| Ältere Releases | `0.1.8`–`0.1.16` unverändert (`draft=false`, `prerelease=false`, IDs `431242373`, `431259835`, `431358030`, `431427059`, `431517858`, `431629259`, `431669467`, `431713681`, `431808568`) |
+| Erweiterung | `Frickeldave/homeassistant-frickeldave-store-syncfd` `0.1.0` vorhanden (Release <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/releases/tag/0.1.0>, nicht Draft, nicht Pre-Release) |
+
+Erweiterung `0.1.0` verlangt die Basis mit `CONTRACT_VERSION = 1` (`MIN_BASE_CONTRACT_VERSION = 1`, Manifest `dependencies: ["frickeldave_store"]`). Das Vertragsangebot `CONTRACT_VERSION = 1` besteht unverändert seit Basis `0.1.16` und gilt auch in `0.2.0`; die Erweiterung startet erst nach eingerichteter Basis, HACS löst die Abhängigkeit nicht auf.
+
+**Empfohlene Installationsreihenfolge:**
+
+1. Basis `frickeldave_store` `0.2.0` über HACS installieren.
+2. Basis einrichten (Store, Rechte, Panel).
+3. `Frickeldave/homeassistant-frickeldave-store-syncfd` als zweites benutzerdefiniertes Repository (Kategorie Integration) hinzufügen, `0.1.0` installieren und einrichten.
+4. In der Erweiterung einen neuen Fine-grained Token (`Contents: write`, `Actions: write`) hinterlegen und den alten Token widerrufen — der Token wird bewusst nicht übernommen.
+
+**Why:**
+
+`0.2.0` ist der Breaking-Change-Release: `publish.py`, `importer.py`, `/publish`, `/import/catalog`, der eingebaute Feature-Fallback und alle frickeldave-spezifischen Defaults sind entfernt. Ohne Erweiterung melden `features.publish`/`features.import` `available: false` mit deutscher Begründung. Der Release markiert den Punkt, ab dem die Synchronisation ausschließlich aus der Erweiterung kommt, und macht die Rollback-Grenze zu `0.1.16` (letzter Release mit eingebautem Fallback) eindeutig. Die Migration ist in `docs/migration-0.2.md` dokumentiert; gespeicherte `settings.publish`-Daten bleiben in `frickeldave_store.data` erhalten und werden ab `0.2.0` weder gelesen noch ausgeliefert, sodass ein Rückfall auf `0.1.x` ohne Datenverlust möglich ist.
+
+#### 2026-11-03T07:14:19+0000: Doku für Basis 0.2.0 und Erweiterung frickeldave_store_syncfd 0.1.0
+
+**By:** Maria (Technische Redakteurin / Dokumentationsspezialistin) · **Issue:** #289 · **Branch:**
+`feat/issue-289-management-tool-in-homeassistant` (Draft-PR #296 gegen `dev`)
+
+**What:**
+
+`docs/features/fr008-ha-manager.md` und `CHANGELOG.md` beschreiben die Auslagerung der
+frickeldave.de-Synchronisation. Kein Code, keine anderen Dokumente, keine Secrets.
+
+- Kopf: zweites Repository und Versionsstand (Basis 0.2.0 vom 03.11.2026, Erweiterung 0.1.0 vom
+  02.11.2026); Einleitung und Zweck benennen die Synchronisation als Teil der Erweiterung.
+- Architektur: Mermaid zeigt die Basis ohne eigene Website-Anbindung, `StoreFacade` →
+  `frickeldave_store_syncfd` → Commit beziehungsweise `fd-deploy-prd`; „Integration und Verteilung"
+  führt beide Repositories, Domains und Versionen in einer Tabelle und hält fest, dass auch die
+  Erweiterung eine HACS-Custom-Integration und keine Add-on ist.
+- Einrichtung: Die Tab-Liste des Konfigurationspanels nennt keinen Tab „Veröffentlichen" mehr;
+  Token und Ziele liegen im Options-Flow der Erweiterung.
+- Produktpflege: „Katalogimport" ist als Funktion der Erweiterung gekennzeichnet, „Aktualisieren"
+  verweist auf die Erweiterung; „Website-Export" trennt Exportbau und Transport.
+- „Veröffentlichen": Einleitung stellt klar, dass die Aktionen ohne Erweiterung nicht existieren;
+  Token-Voraussetzung und „Verwaltete Pfade" sind auf die Erweiterung umgestellt.
+- „Erweiterungen": 0.1.16 bleibt als additiver Schritt eingeordnet, 0.2.0 als Übernahme durch die
+  erste Erweiterung. Das JSON-Beispiel zeigt jetzt den Zustand ohne Erweiterung (`available: false`,
+  `provider: ""`), der Abschnitt „Geplante Auslagerung" heißt „Ausgelagerte Synchronisation" und
+  verlinkt den neuen Abschnitt.
+- Neu: „Synchronisation als eigene Integration" mit Aufteilung (inklusive `async_apply_import_batch`
+  in `batch_import.py`), Verhalten ohne und mit Erweiterung, Installationsreihenfolge inklusive
+  `ConfigEntryNotReady`, Token-Berechtigungen, Migration von 0.1.x und Rückfall auf 0.1.x.
+- `CHANGELOG.md` unter `## [Unreleased]`: zwei Einträge unter „Added", drei unter „Changed", neuer
+  Abschnitt „Removed" mit vier Einträgen — alle mit `(#289)`.
+
+**Why:**
+
+Release und Verhalten weichen jetzt voneinander ab, je nachdem ob die Erweiterung installiert ist.
+Die Doku beschreibt beide Zustände getrennt, damit niemand die fehlenden Buttons für einen Fehler
+hält und die Installationsreihenfolge nicht vertauscht. Die Trennung von Exportbau (Basis) und
+Transport (Erweiterung) hält die Open-Source-Basis frei von frickeldave-Spezifika. Der dokumentierte
+Rückfallweg sichert Bestandsnutzer ab, deren alte Publish-Einstellungen zwar im Store bleiben, aber
+von 0.2.0 nicht mehr gelesen werden.
 
 ## Governance
 
