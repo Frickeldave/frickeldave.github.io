@@ -246,6 +246,36 @@ unchanged (step 2 and "Nicht enthalten"). Zero non-asset hits hold, and the buil
 DE/EN page contains `href="/docs/kubernetes-basis/` or `localhost:4321`, which is the meaningful version of the
 criterion.
 
+#### 2026-11-04T07:57:19+00:00: Nutzerfreigabe für Scope-Erweiterungen von #301
+
+**By:** David Koenig (via Copilot Squad)
+
+**What:** Alles, was die deutsch/englische Doku betrifft und in dieser Session aufkam, darf unter Ticket #301 bearbeitet werden. Konkret bestätigt: (1) Badge "Deutsch"/"Englisch" auf den Docs-Kacheln plus neues optionales Frontmatter-Feld `languageLabel`; (2) linke Doku-Navigation und rechtes ToC auf allen Gruppen-Landingpages (/docs, astro-workshop, kubernetes-basis-de, kubernetes-basis-en), ToC aus den Überschriften des Gruppen-Index.
+
+**Why:** Der Nutzer reviewt die laufende #301-Implementierung und will Nacharbeiten am selben Ticket statt in neuen Issues; Tony muss die erweiterte Spec jeweils mit approven.
+
+#### 2026-11-04T13:15:00+00:00: Sprach-Badge und Gruppen-Navigation auf den Docs-Landingpages
+
+**By:** Natasha
+
+**What:** (1) Neues optionales Schema-Feld `languageLabel` (`z.string().optional()`, ohne Default) in `src/content.config.ts`. (2) Badge in `Card.astro` als `<span class="glass-t ... absolute top-2 left-2 z-10 ..." data-language-label={languageLabel}>` innerhalb des bestehenden `<a>`, nur bei gesetztem Feld; zusätzlich `text-txt-h dark:text-darkmode-txt-h`, damit die Badge-Schrift exakt die Farbe der `h4`-Titelbox hat (#111 in Light, #fff in Dark) und über beliebigen Kachelbildern lesbar bleibt — kein `text-transform`, das Attribut trägt zusätzlich den Label-Wert für stabile e2e-Lokatoren. (3) `CollectionLayout.astro` baut `browserMenu` jetzt selbst: auf `/docs/` alle Gruppen mit ihren Kapiteln, auf einer Gruppen-Landingpage nur die eigene Gruppe (Filter über die Collection-ID, nicht über Props), Aufbau in einer sequenziellen `for`-Schleife statt `Promise.all` + `push`, damit die Menüreihenfolge deterministisch bleibt (die Page-Variante in `[...id].astro` bleibt unverändert). (4) Der Index-Body wird nur bei nicht-leerem `body` gerendert (`collectionIndex.body?.trim()`), damit `/docs/` keine leere Glas-Box und kein leeres ToC erhält; `headings` gehen mit `tocDepth = 3` an `TableOfContents`, die `hideNav`/`hideToc`-Staffelung ist 1:1 aus `EntryLayout` übernommen.
+
+**Why:** Kriterien 13–24 verlangen Badge-Sichtbarkeit ohne Layout-Regress der Kachel, lesbare Beschriftung und ein ToC, dessen `#`-Links auf tatsächlich gerenderte IDs zeigen — daher Body-Rendering oberhalb des Kachel-Grids als Ankerquelle. Menüaufbau im Layout hält `src/pages/docs/**` unangetastet (Abgrenzung AK 25). Offen bis zur Content-Ebene (Maria): die Frontmatter-Werte `Deutsch`/`Englisch`, die Umbenennung der Index-Überschriften (`Überblick`/`Overview`) und die Entlinkung der Kapitellisten in den Gruppen-Indizes (AK 13/14/22/26).
+
+#### 2026-11-04T13:23:00+00:00: Sprachlabels und entlinkte Kapitellisten in den drei Gruppen-Indizes
+
+**By:** Maria
+
+**What:** (1) `kubernetes-basis-de/-index.md` trägt `languageLabel: "Deutsch"`, `kubernetes-basis-en/-index.md` `languageLabel: "Englisch"` (je direkt nach `description`, alle übrigen Felder unverändert); `astro-workshop/-index.md` und `src/content/docs/-index.md` bleiben ohne Feld. (2) Überschriften umbenannt: `## Inhaltsverzeichnis` → `## Überblick` (DE), `## Chapter overview` → `## Overview` (EN), `## Inhaltsverzeichnis` → `## Workshop-Überblick` (Workshop). Die sechs bzw. zehn Einträge sind reiner Text ohne `href`; die beschreibenden Halbsätze und die vorhandenen Trenner (` -- ` in den Kubernetes-Indizes, `—` im Workshop) bleiben unverändert. (3) Workshop-Liste auf die zehn real vorhandenen Kapitel korrigiert: `31 Deployment` entfällt (Deployment steckt in `10-astro-setup`), `32 KI-Integration` wird zu `30 KI-Übersetzung`, neu ergänzt wird `40 Weiter lernen`; die vier `### Phase …`-Überschriften bleiben unverändert, `30`/`40` stehen unter `### Phase 3—Deployment & KI`.
+
+**Why:** Nach dem Body-Rendering in `CollectionLayout.astro` würde jede manuelle Kapitelliste das Kachel-Grid duplizieren; als Text bleibt die didaktische Ordnung lesbar, ohne dritte Navigation und ohne 404-Ziele. Die Workshop-Korrektur hält die Liste mit dem tatsächlichen Kapitelbestand deckungsgleich (AC 22 erwartet sechs ToC-Einträge: zwei `h2` plus die vier Phasen-Überschriften). `src/content/docs/-index.md` bleibt unverändert, damit `/docs/` keine leere Body-Box und kein leeres ToC erhält (AC 22/26).
+
+#### 2026-11-04T13:40:38Z: e2e-Abdeckung der Gruppen-Landingpages: Hydration abwarten, Link-Zählungen auf das Kachel-Grid begrenzen
+
+- Navigation und Inhaltsverzeichnis liegen in `ScrollArea` (`client:only="react"`) und stehen im statischen HTML nur in `<template data-astro-template>`. Die neuen Helfer `navPanel`/`tocPanel` filtern `astro-island` nach der gerenderten `h2` („Documents“/„Contents“); `waitForHydratedNav`/`waitForHydratedToc` warten mit 15 s Timeout auf die sichtbare Überschrift. Dadurch prüfen die Tests den hydratisierten DOM statt des Template-Inhalts und sind nicht von Timing-Zufällen abhängig.
+- Alle Link-Zählungen auf den Landingpages (Kapitelabdeckung beider Kubernetes-Gruppen sowie die Ein-Link-Prüfung auf `/docs/`) sind auf `section.section div.row` begrenzt. Die linke Navigation verwendet dieselben `href`-Werte; ohne Eingrenzung wären die Zahlen doppelt so hoch. Die Absicht der bisherigen Zusicherungen bleibt unverändert.
+- Neue Fälle decken Sprachbadges (genau zwei, „Deutsch“/„Englisch“, keine an `astro-workshop`), Navigation aller vier Landingpages inkl. Auflösung jedes `href`, ToC-Einträge und Anker-Existenz, entlinkte Index-Bodies ohne `31-deployment`/`32-ki-integration` sowie die unveränderte Kapitelseite `/docs/kubernetes-basis-de/10-tag-1/` ab.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
