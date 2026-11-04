@@ -3183,6 +3183,31 @@ Der Footer des Panels zeigte nach dem 0.2.1-Release weiterhin 0.2.0, weil `VERSI
 
 **Why:** Der Veröffentlichungsdialog wurde in `Frickeldave/homeassistant-frickeldave-store#3` (Commit `333d4bc`, Basis 0.2.3) überarbeitet; die Dokumentation beschrieb noch die alte Titelleiste mit Dry-Run-Untertitel, den doppelten Zusammenfassungsabsatz und die ungefilterte Dateiliste.
 
+#### 2026-11-04T14:34:31+00:00: Prod-Dry-Run vergleicht gegen den Produktionsbranch
+**By:** Bruce
+**What:** `custom_components/frickeldave_store_syncfd/publish.py`: `GitHubClient.async_read_tree(branch=None)` / `async_read_file(path, branch=None)` lesen den übergebenen Branch (Default `dev`), Protokoll und Test-Fake angepasst. `async_publish()` trennt Berichtsbasis (`compare_branch` = `main` für prod, sonst `dev`) von der Commit-Basis (`commit_branch` = `dev`); Zähler, Produkte, Bilder, Dateiliste, Löschschutz und Summary nutzen `changes` gegen den Zielbranch, Commit/`changed` nutzen `dev_changes` mit `dev_tree.head_sha`/`tree_sha`. Produkt-Diff liest `handmade.json` mit `?ref=main`. Payload neu: `compare_branch`, `commit_branch`; `deployment`/`would_trigger` unverändert. Tests in `tests/test_publish.py` (Prod-Dry-Run, Prod-Publish mit aktuellem/veraltetem dev, unverändertes dev-Verhalten, Branch in der GitHub-URL). Version 0.1.3 (manifest.json, pyproject.toml, const.py), CHANGELOG-Fixed-Eintrag. Commit `f3c0ca3`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/3 (nicht gemergt). Validierung: ruff check/format, mypy, pytest 141 passed, manifest JSON gültig.
+**Why:** `async_read_tree` las immer `dev_branch`, daher meldete der Prod-Dry-Run „unverändert“, obwohl `main` die Testprodukte nicht enthielt. Der Bericht muss den Zielzustand nach der Promotion zeigen, während der Commit weiterhin auf `dev` erfolgt.
+
+#### 2026-11-04T14:34:31+00:00: fr008 trennt Vergleichsbasis und Commit-Branch beim Veröffentlichen
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md` erhält im Abschnitt „Dry-Run“ den neuen Unterabschnitt
+„Vergleichsbasis je Ziel (ab 0.1.3)“: Ziel `dev` vergleicht gegen `dev`, Ziel `prod` gegen
+`settings.prod_branch` (`main`); der Commit bleibt auf `dev` und erfolgt nur bei Bedarf, danach führt
+`fd-deploy-prd` `dev → main` zusammen. Beschrieben sind die Felder `compare_branch` und
+`commit_branch` (neben `deployment.branch` als Zielbranch), die Zusammenfassung mit genannter
+Vergleichsbasis, der Löschschutz als Sicht des Zielbranchs sowie die Oberfläche, die bei `prod`
+**Zielbranch** `main` zeigt und Zähler wie Dateiliste gegen `main` rechnet. Ein Beispiel belegt, dass
+ein nur auf `dev` vorhandenes Testprodukt im prod-Dry-Run bis zum Merge als `neu` erscheint. Die
+Versionstabelle führt die Erweiterung mit `0.1.3`, die Statuszeile nennt 0.1.2 als released und 0.1.3
+als in Vorbereitung (ohne Datum). `CHANGELOG.md` ergänzt unter `## [Unreleased]` → `### Fixed` einen
+Bullet mit Verweis auf (#289).
+
+**Why:** Der prod-Dry-Run las den Änderungsbaum immer aus `dev` und verglich damit gegen `dev`
+statt gegen `main`. Er meldete alles unverändert, obwohl `main` die lokalen Testprodukte noch nicht
+enthielt; die Dokumentation beschreibt jetzt, welche Vergleichsbasis für welches Ziel gilt.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens

@@ -12,9 +12,10 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 - Erweiterung: <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
 - Status: Basis 0.2.2 mit dem Versionsabgleich ist released, ebenso Erweiterung
-  `frickeldave_store_syncfd` 0.1.1 mit der GitHub-Fehlerdiagnose. Basis 0.2.3 mit dem
-  überarbeiteten Veröffentlichungsdialog und Erweiterung 0.1.2 mit dem Fix für die Produktzähler im
-  Dry-Run sind in Vorbereitung; Finanz- und Kundenfunktionen bleiben geplant.
+  `frickeldave_store_syncfd` 0.1.2 mit der GitHub-Fehlerdiagnose und dem Fix für die Produktzähler im
+  Dry-Run. Basis 0.2.3 mit dem überarbeiteten Veröffentlichungsdialog und Erweiterung 0.1.3 mit der
+  zielbezogenen Vergleichsbasis im Dry-Run sind in Vorbereitung; Finanz- und Kundenfunktionen bleiben
+  geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -64,7 +65,7 @@ und genau einem Integrationsverzeichnis:
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
 | Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.3` |
-| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.2` |
+| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.3` |
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -668,12 +669,43 @@ Lauf und wird nicht gespeichert.
 
 Der Dry-Run zeigt vor dem Schreiben:
 
-- Ziel und Zielbranch, Repository sowie eine deutsche Zusammenfassung in der Antwort.
+- Ziel und Zielbranch, die Vergleichsbasis des Berichts, Repository sowie eine deutsche
+  Zusammenfassung in der Antwort.
 - Zählungen für Dateien, Produkte und Bilder, jeweils neu, geändert, entfernt und unverändert.
 - Ob ein Deployment ausgelöst würde — bei `prod` also der Workflow `fd-deploy-prd`.
 - Die betroffene Dateiliste; ab 500 Einträgen ist sie gekürzt und trägt einen Hinweis darauf.
 - Ein Feld `warning` (`string|null`) mit Hinweisen, das das Panel als Warnblock über der Bestätigung
   zeigt.
+
+#### Vergleichsbasis je Ziel (ab 0.1.3)
+
+Der Dry-Run vergleicht gegen den Branch, der sich durch die Veröffentlichung ändert, nicht gegen den
+Branch, in den der Commit geht. Beim Ziel `dev` ist beides `dev`. Beim Ziel `prod` ist die
+Vergleichsbasis `main` (`settings.prod_branch`), weil `main` der Stand ist, den die Website
+ausliefert.
+
+Der Commit geht bei beiden Zielen nach `dev`, aber nur, wenn `dev` die Inhalte noch nicht enthält.
+Beim Ziel `prod` stößt die Erweiterung danach den Workflow `fd-deploy-prd` an, der `dev → main`
+zusammenführt. Der prod-Bericht zeigt deshalb, was sich in der Produktion ändert, und nicht, was auf
+`dev` bereits liegt.
+
+Die Antwort trennt beide Branches: `compare_branch` nennt die Vergleichsbasis, `commit_branch` den
+Branch des Commits, und `deployment.branch` bleibt der Zielbranch. Die Zusammenfassung nennt die
+Vergleichsbasis; der [Löschschutz](#löschschutz) bezieht sich auf den Bericht, also auf den Vergleich
+mit dem Zielbranch. In der Oberfläche zeigt **Zielbranch** beim Ziel `prod` den Wert `main`, und
+Zähler wie Dateiliste zeigen die Differenz gegen `main`.
+
+Ein Beispiel: Auf `main` liegen 67 Produkte und 172 Bilder; ein Testprodukt mit einem Bild liegt nur
+auf `dev`. Der prod-Dry-Run meldet das Testprodukt als `neu`, bis `main` es enthält:
+
+```text
+Dateien:  neu 1, geändert 1, entfernt 0, unverändert 172
+Produkte: neu 1, geändert 0, entfernt 0, unverändert 67
+```
+
+Die Katalogdatei zählt als `geändert`, weil sie in `main` bereits existiert; das Bild ist `neu`. Im
+dev-Dry-Run ist dasselbe Produkt `unverändert`, weil `dev` es schon führt. Nach dem Merge über
+`fd-deploy-prd` verschwindet es im prod-Bericht aus `neu`.
 
 Die drei Zählblöcke messen verschiedene Dinge:
 
@@ -720,7 +752,7 @@ Seit Basis 0.2.3 ist der Dialog aufgeräumt:
   Bestätigung.
 - Der Absatz mit der Zusammenfassung aus der Antwort (`result.summary`) wird nicht mehr angezeigt,
   weil die Übersichtskacheln und der Deployment-Hinweis dieselbe Information tragen. Das Feld
-  `summary` bleibt unverändert in der API-Antwort.
+  `summary` bleibt Teil der API-Antwort und nennt seit 0.1.3 die Vergleichsbasis.
 - Die Abschnitte **Dateien**, **Produkte** und **Bilder** sind kompakter: kleinere Kacheln mit
   weniger Innenabstand, und die Gesamtzahl steht rechts neben der Abschnittsüberschrift statt als
   kleiner Klammerzusatz direkt hinter dem Titel.
