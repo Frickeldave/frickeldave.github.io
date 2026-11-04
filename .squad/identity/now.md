@@ -1,13 +1,24 @@
 ---
-updated_at: 2026-10-26T08:10:00+0100
-focus_area: Issue #282 — Steps 1–24 auf dev, v1.0.4 ist nach main promotet; offen: fd-deploy.yaml (Kaniko-Deploy), Projektboard-/Badge-/Release-Label-Workflows
+updated_at: 2026-11-03T14:25:28+0000
+focus_area: Issue #303 — Dev-Container-OOMKill behoben (Paket B); Ressourcen der Dev-Maschinen sind jetzt Dispatch-Parameter, Draft-PR #304 wartet auf Review und Rollout
 active_issues:
-  - 282
+  - 303
 ---
 
 # What We're Focused On
 
 Marvel Cinematic squad is active. Legacy `.github/archive` content has been rewritten into `.squad/agents` and `.squad/skills`.
+
+Aktuell: **Issue #303 — Development Container wird nach dem start-work flow neu gestartet.** Ursache belegt: `OOMKilled` (exitCode 137, `restartCount` 3), weil ~3,7 GiB Grundlast plus ~8 GiB Build-Peak das 8-GiB-Limit sprengten und der Pod kein Volume hat. Paket B ist auf `feat/issue-303-…` umgesetzt (Draft-PR #304, `release:no`):
+
+- **Ressourcen sind Parameter:** `dev_cpu_request`, `dev_memory_request`, `dev_cpu_limit`, `dev_memory_limit` → `dev-machines.mjs render --cpu-request/…`; Default `100m` / `2Gi` / `4` / `16Gi`, Validierung vor `kubectl apply`.
+- **Diagnose:** `fd_memory_limit`, `fd_container_uptime`, `fd_restart_hint` (offline) und Bannerzeilen `Container-Uptime:`, `Memory-Limit:`, `Restart:` mit Warnung unter 600 s Uptime.
+- **Start-Flow:** kein `npm run build` mehr im Dev-Pod; Build und e2e prüft `fd-ci` nach dem Push.
+- **Doku:** README-Abschnitt „Neustart: was verloren geht und wie es weitergeht" plus Parametertabelle, `fd-setup`-Verweis in `restart-machines.sh`.
+
+Offen: Rollout der Limits (`updateStrategy: OnDelete` verlangt einen bewussten Neustart — AC 13 aus #303 ist erst danach abnehmbar), Review und Merge von PR #304, sowie der Branch-Basis-Defekt von `start-reqeng` als eigenes Issue.
+
+## Vorheriger Fokus: Issue #282
 
 Issue #282 übernimmt die Artefakte aus dem Ursprungsprojekt schrittweise. Steps 1–24 sind auf `dev`, **v1.0.4 ist nach `main` promotet und als Release veröffentlicht**:
 

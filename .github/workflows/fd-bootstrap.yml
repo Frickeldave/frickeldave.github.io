@@ -24,26 +24,49 @@ name: fd-bootstrap (Developer machines)
 on:
   workflow_dispatch:
     inputs:
+      # Die Defaults gelten ausschließlich für workflow_dispatch. Der push-Trigger
+      # setzt keine inputs, dort bleibt jeder Wert leer (kein Image-Build, kein
+      # Neustart); die Bedingungen unten prüfen deshalb nur auf nicht-leere Werte.
       build_image:
-        description: Rebuild and push the fd-dev-full image before deploying
+        description: "Rebuild and push the fd-dev-full image before deploying. Default: true - fd-status.sh and fd-welcome.sh live in the image, not in the manifest, so a restarted container only shows the current scripts after a fresh build."
         required: false
         type: boolean
-        default: false
+        default: true
       restart_machines:
-        description: "DELETES the pods of the listed machines, so ALL DATA IN THE CONTAINER IS LOST (gh/copilot login, worktrees, unpushed work). Empty = restart nothing; all or comma-separated GitHub handles / machine names. Machines with an active SSH session are skipped unless force_restart is set."
+        description: "DELETES the pods of the listed machines, so ALL DATA IN THE CONTAINER IS LOST (gh/copilot login, worktrees, unpushed work). Default: frickeldave. Empty = restart nothing; all or comma-separated GitHub handles / machine names. Machines with an active SSH session are skipped unless force_restart is set."
         required: false
         type: string
-        default: ""
+        default: "frickeldave"
       force_restart:
-        description: Also restart machines with an active SSH session (their data is lost)
+        description: "Also restart machines with an active SSH session (their data is lost). Default: true - the machine practically always holds an open SSH session, so without this it would be skipped."
         required: false
         type: boolean
-        default: false
+        default: true
       image:
-        description: "Dev machine image as a bare OCI reference, e.g. ghcr.io/<owner>/fd-dev-full:latest (empty = ghcr.io/<owner-lowercase>/fd-dev-full:latest). A pasted 'docker pull …' line is accepted and normalized; anything else aborts the run before a build Job is created."
+        description: "Dev machine image as a bare OCI reference. Default: ghcr.io/frickeldave/fd-dev-full:latest (empty = ghcr.io/<owner-lowercase>/fd-dev-full:latest). A pasted 'docker pull …' line is accepted and normalized; anything else aborts the run before a build Job is created."
         required: false
         type: string
-        default: ""
+        default: "ghcr.io/frickeldave/fd-dev-full:latest"
+      dev_cpu_request:
+        description: "CPU request per dev machine as a Kubernetes quantity, e.g. 100m or 0.5. Default: 100m (DEFAULT_RESOURCES in dev-machines.mjs; empty = same default)."
+        required: false
+        type: string
+        default: "100m"
+      dev_memory_request:
+        description: "Memory request per dev machine as a Kubernetes quantity, e.g. 2Gi or 512Mi. Default: 2Gi (DEFAULT_RESOURCES in dev-machines.mjs; empty = same default)."
+        required: false
+        type: string
+        default: "2Gi"
+      dev_cpu_limit:
+        description: "CPU limit per dev machine as a Kubernetes quantity, e.g. 4 or 500m. Default: 4 (DEFAULT_RESOURCES in dev-machines.mjs; empty = same default)."
+        required: false
+        type: string
+        default: "4"
+      dev_memory_limit:
+        description: "Memory limit per dev machine as a Kubernetes quantity, e.g. 16Gi or 24Gi. Default: 16Gi (DEFAULT_RESOURCES in dev-machines.mjs; empty = same default). An invalid value aborts before kubectl apply."
+        required: false
+        type: string
+        default: "16Gi"
   push:
     branches:
       - dev
@@ -295,10 +318,28 @@ jobs:
       - name: Render dev machine manifests
         env:
           IMAGE: ${{ needs.build-image.outputs.image_ref }}
+          DEV_CPU_REQUEST: ${{ inputs.dev_cpu_request }}
+          DEV_MEMORY_REQUEST: ${{ inputs.dev_memory_request }}
+          DEV_CPU_LIMIT: ${{ inputs.dev_cpu_limit }}
+          DEV_MEMORY_LIMIT: ${{ inputs.dev_memory_limit }}
         run: |
           set -euo pipefail
-          node "${BOOTSTRAP_DIR}/dev-machines.mjs" render \
-            --namespace "${NAMESPACE}" --image "${IMAGE}" > dev-machines.yaml
+          # Leere Dispatch-Eingaben werden ausgelassen, damit der Default des
+          # Renderers greift und kein leeres Argument eine Validierung auslöst.
+          render_args=(--namespace "${NAMESPACE}" --image "${IMAGE}")
+          if [ -n "${DEV_CPU_REQUEST}" ]; then
+            render_args+=(--cpu-request "${DEV_CPU_REQUEST}")
+          fi
+          if [ -n "${DEV_MEMORY_REQUEST}" ]; then
+            render_args+=(--memory-request "${DEV_MEMORY_REQUEST}")
+          fi
+          if [ -n "${DEV_CPU_LIMIT}" ]; then
+            render_args+=(--cpu-limit "${DEV_CPU_LIMIT}")
+          fi
+          if [ -n "${DEV_MEMORY_LIMIT}" ]; then
+            render_args+=(--memory-limit "${DEV_MEMORY_LIMIT}")
+          fi
+          node "${BOOTSTRAP_DIR}/dev-machines.mjs" render "${render_args[@]}" > dev-machines.yaml
           node "${BOOTSTRAP_DIR}/dev-machines.mjs" names > dev-machines.names
           echo "Desired dev machines:"
           cat dev-machines.names

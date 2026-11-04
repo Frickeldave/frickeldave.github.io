@@ -1,5 +1,6 @@
 ---
 import { plainify } from "@lib/textConverter";
+import CopyCode from "@components/base/CopyCode.astro";
 import Footer from "@components/base/Footer.astro";
 import Header from "@components/base/Header.astro";
 
@@ -214,6 +215,9 @@ const baseUrl = "https://janedoe.com";
     <Tooltips interactive={false} delay={[333, 0]} />
   </head>
   <body>
+    <!-- Kopierknopf für Codeblöcke (Markup-Vorlage, bewusst nicht im <head>) -->
+    <CopyCode />
+
     <Background />
 
     <Header />

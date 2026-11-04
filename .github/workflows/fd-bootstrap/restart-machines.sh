@@ -3,6 +3,8 @@
 # StatefulSet erzeugt ihn aus dem aktuellen Spec neu (imagePullPolicy: Always zieht
 # das neueste Image). ALLE DATEN IM CONTAINER GEHEN VERLOREN. Maschinen mit aktiver
 # SSH-Sitzung werden übersprungen, außer FORCE_RESTART=true.
+# Nach dem Neustart fehlen Login, Checkout und Worktrees; `fd-setup` im neuen Container
+# stellt sie wieder her (Details: docker-dev-full/README.md, Abschnitt „Neustart“).
 #
 # Env: NAMESPACE, MACHINES_FILE (ein Maschinenname pro Zeile), FORCE_RESTART,
 # SESSIONS_SCRIPT (Pfad von active-sessions.sh), KUBECTL_REQUEST_TIMEOUT.

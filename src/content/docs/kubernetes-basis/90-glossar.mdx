@@ -155,6 +155,15 @@ kubectl get ingressclass    # Verfügbare Ingress Controller anzeigen
 kubectl get ingress -n k8s-training
 ```
 
+### ACME
+
+Abkürzung für **Automatic Certificate Management Environment**: ein Protokoll, mit dem sich
+TLS-Zertifikate automatisch beantragen und erneuern lassen. [Let's Encrypt](https://letsencrypt.org/)
+ist die bekannteste Zertifizierungsstelle, die ACME anbietet. Im Cluster prüft der
+[Ingress Controller](#ingress-controller) den Hostnamen und lässt sich das passende Zertifikat per
+ACME ausstellen -- die Erneuerung läuft ohne Handarbeit. Die Zugangsdaten des ACME-Kontos verwaltet
+der Cluster-Betrieb, nicht das Manifest.
+
 ### ClusterIP
 
 Der Standard-Service-Typ. Ein ClusterIP-Service ist **nur innerhalb des Clusters** erreichbar und

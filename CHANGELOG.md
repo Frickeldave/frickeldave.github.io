@@ -50,6 +50,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Der Erweiterungsvertrag `CONTRACT_VERSION = 1` bleibt in Basis 0.2.0 unverändert; der generische Import-Batch bleibt als Fassadenfunktion `async_apply_import_batch` erhalten, die Logik liegt in `batch_import.py` ohne Netzwerk- und SSRF-Teile. Mit installierter Erweiterung melden `GET /me` und `/settings` `provider: "frickeldave_store_syncfd"`, und die Buttons senden an `POST /api/frickeldave_store/features/publish` und `.../features/import` (#289).
 - Token und Ziele der Synchronisation liegen im Options-Flow der Erweiterung unter **Einstellungen → Geräte & Dienste → Frickeldave Store Sync**. Der Fine-grained Token braucht `Contents: Read and write`, `Actions: Read and write` und `Metadata: Read`, beschränkt auf `Frickeldave/frickeldave.github.io` (#289).
 - Das Integrations-Repository der Basis heißt jetzt `Frickeldave/homeassistant-frickeldave-store` und wurde zuvor von `Frickeldave/frickeldave.home.net` umbenannt; `docs/features/fr008-ha-manager.md` nennt überall den neuen Namen, erklärt die Umbenennung und aktualisiert Repository-Tabelle, Installationsschritt und Linkliste. Basis 0.2.0 ist released, 0.2.1 mit dem Gating-Fix ist in Vorbereitung (#289).
+- Dev-Container: Die README beschreibt Datenverlust nach `OOMKilled` bzw. Neustart, die
+  Erkennungssignale von `fd-status.sh` (Container-Uptime, Memory-Limit, Restart-Status) und die
+  Recovery über `fd-setup`. CPU- und RAM-Werte der Dev-Container sind über
+  `workflow_dispatch`-Parameter des `fd-bootstrap`-Workflows setzbar; die Dispatch-Felder sind
+  vorbelegt (`build_image=true`, `restart_machines=frickeldave`, `force_restart=true`,
+  `image=ghcr.io/frickeldave/fd-dev-full:latest`, `100m`/`2Gi` als Requests und `4`/`16Gi` als
+  Limits), ein Dispatch mit diesen Defaults startet also das Image neu und kostet Login, Checkout
+  und Worktrees (#303).
 
 ### Removed
 
@@ -65,6 +73,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Browser-Cache nach einem Integrations-Update: `PANEL_MODULE_URL` und `CONFIG_PANEL_MODULE_URL` tragen über die Hilfsfunktion `module_url()` in `const.py` den Versionsparameter `?v=<Version>`, und ein eigener Frontend-View liefert die Dateien mit `Cache-Control: no-cache, must-revalidate`; `GET /api/frickeldave_store/me` liefert `version`, `storage_schema_version` und `panel_module_url`, `GET` und `PATCH /api/frickeldave_store/settings` liefern `version`, und Panel (Drei-Punkte-Menü) sowie Konfigurationspanel (Fußzeile) zeigen die geladene Version. Nach dem Update auf 0.1.9 zeigte der Desktop-Browser weiterhin die alten Panel-Controls, während die Android-App die neuen zeigte (#289).
 - Verwaltete Pfade beim Veröffentlichen: `_is_managed_path()` stufte jede Datei unterhalb von `src/assets/handmade/` als verwaltetes Produktbild ein, weshalb der Veröffentlichungs-Commit `d13cb2f` zwei 3D-Modellquellen löschte (`src/assets/handmade/3dmodels/includes/roundedcube.scad`, `src/assets/handmade/3dmodels/models/Verteilerdose.scad`). Die Dateien existieren nicht im Store und galten daher als entfernt; `build-scad.mjs` fand das Modellverzeichnis nicht, `scad-smoke-test` und `e2e-test` scheiterten, `fd-ci` wurde rot und `fd-deploy-dev` übersprungen. Commit `57b9d95` stellte beide Dateien wieder her, danach liefen `fd-ci` und `fd-deploy-dev` grün. Seit 0.1.15 erkennt `_is_managed_path` nur noch `public/data/handmade.json` und Bilder nach dem Muster `src/assets/handmade/<Kategorie>/<Artikelnummer>/<Artikelnummer>-NN.<Endung>` mit einer der fünf bekannten Kategorien; `.scad`, `3dmodels/`, `.gitkeep` und fremde Unterordner gelten nie als verwaltet, und ein Regressionstest bildet den Vorfall nach und belegt, dass `3dmodels/**` unangetastet bleibt (#289).
 - Feature-Gating im HA-Panel: Das Panel behandelte einen Eintrag schon dann als vorhanden, wenn die Basis ihn mit `available: false` und `provider: ""` meldete, und zeigte die Buttons „Nach dev veröffentlichen“ und „Nach prod veröffentlichen“ deshalb deaktiviert an, obwohl die Erweiterung nicht installiert war. Seit Basis 0.2.1 blendet das Panel beide Buttons und „Katalog importieren“ vollständig aus, solange die Erweiterung nicht registriert ist; ist sie registriert, aber etwa der Token noch nicht hinterlegt, bleiben die dev-/prd-Buttons sichtbar, deaktiviert und nennen den Grund, während „Katalog importieren“ bereits aktiv ist (#289).
+
+## [1.0.11] - 2026-10-30
+
+### Added
+
+- Interaktive Checkliste für die Abschlussaufgabe an Tag 2: Aufgaben lassen sich bis zum nächsten
+  Seiten-Refresh an- und abhaken (#260).
+
+## [1.0.10] - 2026-10-30
+
+### Changed
+
+- Kubernetes-Schulung Tag 2 und die Chromium-Beispielmanifeste ergänzen und korrigieren die Probe-Konfigurationen (#260).
+
+## [1.0.9] - 2026-10-29
+
+### Changed
+
+- Git-Bash-Troubleshooting: die breite Drei-Spalten-Tabelle ist durch eine Definitionsliste aus Symptom, Ursache und Lösung ersetzt und passt damit in die rund 667 px breite Prose-Spalte (#260).
+- § „api-resources“ der Vorbereitungsseite nennt den Befehl `kubectl api-resources | grep -E "(pods|services|deployments|ingress)"` samt Kurzerklärung über der Ausgabe (#260).
+
+### Fixed
+
+- Kubernetes-Schulung: Alle Deployment-Beispiele (`examplefiles/*deployment*.yaml`, die YAML-Blöcke in Tag 1 und Tag 2) setzen `resources.requests` und `resources.limits` und erfüllen damit die Kyverno-Policy `require-resource-requirements` der Firmen-Cluster; `code-server-deployment.yaml` und `code-server-deployment-configmap.yaml` sowie `code-server-pvc.yaml` stimmen wieder mit den Doku-Blöcken überein, das Passwort heißt überall `trainingk8s`; neu sind `create-namespace.yaml`, `ssh-bastion-deployment.yaml` und `ssh-bastion-service.yaml` (#260).
+- Vorbereitungsseite: der LimitRange-Hinweis steht nur noch an Tag 2, wo er auftritt (#260).
+- Der „Weiter“-Link der Vorbereitungsseite zeigt jetzt auf `/docs/kubernetes-basis/10-tag-1` statt auf den `.mdx`-Pfad und trägt das Label „Tag 1“ (#260).
+
+## [1.0.8] - 2026-10-27
+
+### Added
+
+- Globaler Kopierknopf für Codeblöcke: `src/lib/code-copy.ts` bindet sich idempotent auf `astro:page-load` (Muster wie `cart-dom.ts`), `src/components/base/CopyCode.astro` liefert Markup und Script, `src/components/base/BaseLayout.astro` bindet beides einmalig ein; einen Knopf bekommt nur `pre > code`, ausgenommen sind `pre.mermaid`, Inline-Code und Blöcke mit `[data-no-copy]`; ohne `navigator.clipboard` (unsicherer Kontext) blendet sich der Knopf aus, das Feedback läuft über `role="status"` mit `Kopiert!` für 2000 ms (#260).
+- Beispielmanifest `src/content/docs/kubernetes-basis/examplefiles/linuxserver-common-config-map.yaml`: zentrale linuxserver-ConfigMap mit den Keys `PUID`, `PGID` und `TZ` (#260).
+- Beispielmanifest `src/content/docs/kubernetes-basis/examplefiles/database-deployment.yaml`: vollständiges MariaDB-+-phpMyAdmin-Deployment mit Init-Container `wait-for-mariadb`, PVC-Mount `mariadb-config` und den Container-Ports 3306 und 80 (#260).
+- Glossareintrag `ACME` in `90-glossar.mdx` zwischen `Ingress Controller` und `ClusterIP` (#260).
+
+### Changed
+
+- Zeitplan und Rahmen der Kubernetes-Schulung Tag 2: Persistent Volumes (15:30–16:15), optionale Vertiefung MariaDB + phpMyAdmin (16:15–17:00) und Abschluss (17:00–17:15) statt des Ingress-Blocks; Frontmatter-`description` und § „Workloads & Networking“ nennen kein Ingress mehr (#260).
+- Kubernetes-Schulung Tag 1: `kubectl port-forward deployment/chromium 4000:3000` steht jetzt in § „Chromium deployen“ → § „Imperativ“, § „Port-Forwarding“ schrumpft auf Referenzsätze und bekommt ein SSH-Container-Beispiel als „Harness“ mit `ClusterIP`-Service und `ssh_config` (#260).
+- Ingress-Kapitel Tag 1: Hosts `chrome.k8s-training.frickeldave.de` und `code.k8s-training.frickeldave.de` statt der ungültigen `*.*.com`-Platzhalter, `ingressClassName` mit den Kandidaten `nginx`, `traefik` und `traefik-ingress-controller` samt Discovery über `kubectl get ingressclass`, § „Status prüfen“ heißt jetzt § „Ingress-URL ermitteln“ (#260).
+- ConfigMaps Tag 2: neue zentrale ConfigMap `linuxserver-common`, `code-server-config` enthält nur noch `DEFAULT_WORKSPACE`, das Deployment bindet beide per `envFrom` ein; Reloader als kanonischer Link samt Installationssätzen und Annotation `reloader.stakater.com/auto: "true"` (#260).
+- LimitRange Tag 2 und `examplefiles/limitrange.yaml`: Name `default-container-resources`, Defaults `cpu: "1"` / `memory: "1Gi"`, Requests `cpu: "100m"` / `memory: "256Mi"`, `max`/`min` unverändert; Rechte-Aussage auf Namespace-Admin korrigiert, Fehlerfall `exceeded quota` und `kubectl describe limitrange` ergänzt (#260).
+- PV/PVC Tag 2: neue StorageClass-Sektion mit Default-Erkennung und Fehlerbild „PVC bleibt Pending“, auskommentierte `storageClassName` im PVC; § „Analogie: Das Logistiklager“ mit „schlecht erreichbares Regal (Festplatte)“, „Regalplatz auf Schulterhöhe am Eingang (SSD)“ und „Kühl-Regal (Archive)“ neu formuliert (#260).
+- Vertiefung MariaDB + phpMyAdmin: NodePort als Alternative zum Ingress, Ingress-Route als freiwillige Zusatzaufgabe (#260).
+- Ausblick Tag 1, Feinlernziele Tag 2 und Tag-2-Checkpoint: Code-Server mit PVC sowie MariaDB + phpMyAdmin statt Home Assistant, Nextcloud und Ingress-Routing für vier Anwendungen (#260).
+- Beispielmanifests: Namespace `kw-b2824a-default` → `k8s-training`, interner Cluster-FQDN → `code.k8s-training.frickeldave.de` in `code-server-ingress.yaml` und `example_commands.txt` (#260).
+
+### Fixed
+
+- Doku nannte `vector-config.yaml` und `chromium-logging-configmap.yaml`; sie verweist jetzt auf die vorhandenen Dateien `vector-config-map.yaml` und `chromium-logging-config-map.yaml` (#260).
+- `examplefiles/code-server-deployment.yaml` nutzt dieselben zwei `envFrom`-Referenzen wie die Doku und setzt `PUID`/`PGID`/`TZ` nicht mehr inline (#260).
+- Warnhinweis auf die Dateinamen-Konvention `<app>-<kind>.yaml` samt Prüfritual `kubectl diff` vor dem ersten `kubectl apply -f` in § „Chromium deklarativ neu anlegen“ (#260).
+- „Status prüfen“ im Ingress-Kapitel verweist nicht mehr auf den ungültigen Wildcard-Host, sondern auf den tatsächlich gesetzten HOST (#260).
 
 ## [1.0.7] - 2026-10-27
 

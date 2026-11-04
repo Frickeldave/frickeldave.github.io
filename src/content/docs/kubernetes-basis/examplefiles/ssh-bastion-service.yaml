@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh-bastion
+  namespace: k8s-training
+spec:
+  type: ClusterIP          # nur clusterintern erreichbar
+  selector:
+    app: ssh-bastion
+  ports:
+    - port: 22
+      targetPort: 2222

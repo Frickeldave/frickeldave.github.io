@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chromium
+  namespace: k8s-training
+  labels:
+    app: chromium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chromium
+  template:
+    metadata:
+      labels:
+        app: chromium
+    spec:
+      containers:
+        - name: chromium
+          image: lscr.io/linuxserver/chromium:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          ports:
+            - containerPort: 3000
+            - containerPort: 3001
+          envFrom:                          # PUID, PGID, TZ
+            - configMapRef:
+                name: linuxserver-common
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+            - name: chromium-logs
+              mountPath: /config/log
+            - name: chromium-logging-script     # NEU: Custom wrapped-chromium
+              mountPath: /usr/bin/wrapped-chromium
+              subPath: wrapped-chromium
+          startupProbe:
+            httpGet:
+              path: /
+              port: 3000
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3005
+            periodSeconds: 5
+            failureThreshold: 1
+        - name: vector
+          image: timberio/vector:0.42.0-alpine
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          command:
+            - vector
+            - --config
+            - /etc/vector/vector.toml
+          volumeMounts:
+            - name: chromium-logs
+              mountPath: /config/log
+            - name: vector-config
+              mountPath: /etc/vector
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: chromium-logs
+          emptyDir: {}
+        - name: vector-config
+          configMap:
+            name: vector-config
+        - name: chromium-logging-script         # NEU: ConfigMap mit Script
+          configMap:
+            name: chromium-logging
+            defaultMode: 0755
