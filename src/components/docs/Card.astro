@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { title, image, imageAlt } = entry.data;
+const { title, image, imageAlt, languageLabel } = entry.data;
 ---
 
 <div
@@ -29,6 +29,16 @@ const { title, image, imageAlt } = entry.data;
               height={720}
               loading="eager"
             />
+          )
+        }
+        {
+          languageLabel && (
+            <span
+              class="glass-t text-txt-h dark:text-darkmode-txt-h absolute top-2 left-2 z-10 rounded-md px-2 py-1 text-xs font-semibold"
+              data-language-label={languageLabel}
+            >
+              {languageLabel}
+            </span>
           )
         }
         <div
