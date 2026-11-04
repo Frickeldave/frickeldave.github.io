@@ -3126,6 +3126,35 @@ von 0.2.0 nicht mehr gelesen werden.
 
 **Why:** Der Nutzer arbeitet allein am Projekt und will den Rollout von #303 (16 GiB, neue Diagnose) mit einem Klick auslösen können, statt Handle, Image und vier Ressourcenwerte jedes Mal zu tippen.
 
+### 2026-11-04T09:40:39+00:00: #289 Versionskonstante korrigiert und GitHub-Publish-Fehler diagnostizierbar gemacht
+**By:** Bruce
+**What:**
+Zwei Repositories, je ein Branch von `origin/main`, je ein offener PR gegen `main` (kein Merge, kein Tag, kein Release).
+
+- **Basis `Frickeldave/homeassistant-frickeldave-store`** — Branch `fix/289-version-and-github-error-details`, Commits `2b027ef` (`fix(build): sync version constant and repository URL (#289)`) und `cd44baa` (`docs(readme): point links at the renamed repository (#289)`: CI-Badge, HACS-URL, Manifest-`documentation`/`issue_tracker`, sachlicher README-Rename-Hinweis), PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/2
+  - `custom_components/frickeldave_store/const.py`: `VERSION` `0.2.0` → `0.2.2`; `REPOSITORY_URL` → `https://github.com/Frickeldave/homeassistant-frickeldave-store` (`ISSUE_URL` unverändert).
+  - `manifest.json` und `pyproject.toml`: `0.2.2`.
+  - Neu `tests/test_version_consistency.py` (4 Tests): `VERSION` == Manifest, == `pyproject.toml`, `REPOSITORY_URL` == neues Repository, `module_url()` endet auf `?v={VERSION}`.
+  - `CHANGELOG.md`: `### Fixed`-Eintrag unter `## [Unreleased]` mit `(#289)`.
+  - Validierung: `ruff check .` ✅, `ruff format --check .` ✅ (44 Dateien), `mypy custom_components` ✅ (16 Dateien), `pytest -q` ✅ 238 passed, `pytest -q tests/test_version_consistency.py` ✅ 4 passed, `python -m json.tool manifest.json` ✅.
+- **Erweiterung `Frickeldave/homeassistant-frickeldave-store-syncfd`** — Branch `fix/289-github-retry-and-diagnostics`, Commit `d9407d8` (`fix(publish): retry transient GitHub errors and expose status (#289)`), PR https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/1
+  - `publish.py`: 5xx-Meldung enthält `HTTP <status>: <GitHub message>` (einzeilig, getrimmt, ≤ 200 Zeichen Detail, ohne Token/Payload; ohne `message` nur `HTTP <status>`); `_LOGGER.warning("GitHub %s %s → HTTP %s (%s)", method, path_ohne_query, status, message)` je Fehlerantwort (Transportfehler analog mit Ausnahmetyp); Retry mit max. 3 Versuchen, Backoff 0,5 s/1,5 s, für `aiohttp.ClientError`/`TimeoutError` und HTTP 500/502/503/504; Debug-Zeile je Retry; Timeout je Versuch bleibt `GITHUB_TIMEOUT`; abschließendes `PATCH git/refs/heads/{branch}` mit `retry=False` und Begründungskommentar (nicht idempotent), Blob/Baum/Commit weiterhin mit Retry.
+  - Version `0.1.1` in `manifest.json`, `pyproject.toml` und `const.py` (die bestehenden Konsistenztests `tests/test_setup.py::test_manifest_matches_constants` und `assert VERSION == ...` in `tests/test_publish.py` verlangen die Mitführung der Konstante); `CHANGELOG.md` mit `## [Unreleased]` / `### Fixed` `(#289)`.
+  - Neue Tests in `tests/test_publish.py` (vorhandene `FakeHTTPSession`/`FakeHTTPResponse`, Backoff über injizierte 0-Verzögerungen): 2× 503 → Erfolg; dauerhaft 503 → `github_unavailable` mit `HTTP 503` und genau 3 Versuchen; `ClientError` → Retry mit Erfolg; 500 auf `PATCH git/refs/...` → genau ein PATCH; bereinigte GitHub-`message` (einzeilig, ≤ 200 Zeichen Detail, ohne Token); 5xx ohne `message` → nur `(HTTP 504)`.
+  - Validierung: `ruff check .` ✅, `ruff format --check .` ✅ (18 Dateien), `mypy custom_components` ✅ (9 Dateien), `pytest -q` ✅ 133 passed, `python -m json.tool manifest.json` ✅, `node --check` nicht anwendbar (kein Panel/JS in dieser Erweiterung).
+  - Ausgeführt mit den CI-Pins aus `.venv` der Basis (`ruff==0.17.3`, `mypy`, `pytest==8.3.4`, `homeassistant==2025.1.4`, `aiohttp==3.11.11`).
+**Why:**
+Der Footer des Panels zeigte nach dem 0.2.1-Release weiterhin 0.2.0, weil `VERSION` in `const.py` fest auf `0.2.0` stand und nur Manifest/`pyproject.toml` angehoben wurden; da `module_url()` die Cache-Bust-Query aus `VERSION` baut, blieb zudem die Panel-Modul-URL zwischen den Releases identisch und Browser konnten das alte ES-Modul weiterverwenden. Beim Veröffentlichen versteckte die 5xx-Meldung Status und GitHubs `message` und es gab keinen Retry, obwohl die GitHub-API gesund war — vorübergehende Störungen wurden damit ununterscheidbar von echten Fehlern und nicht abgefangen. Offene Beobachtung (nicht geändert, bereits auf `origin/main`): `GitHubClient._headers()` setzt `Authorization` auf den Literalwert `******`; falls das kein Redaktionsartefakt ist, fehlt die Authentifizierung.
+
+### 2026-11-04T09:40:39+00:00: fr008 dokumentiert Versionsabgleich und GitHub-Fehlerdiagnose
+
+**By:** Maria
+
+**What:** `.squad`-unabhängige Doku-Änderungen auf Branch `fix/issue-289-ha-version-github-errors`:
+`docs/features/fr008-ha-manager.md` nennt in der Repository-Tabelle Basis `0.2.2` und Erweiterung `0.1.1`, die Statuszeile führt 0.2.1 als released und 0.2.2/0.1.1 als in Vorbereitung (ohne Datum), ergänzt den Unterabschnitt „Versionsanzeige in Fußzeile und Modul-URL“ (Version aus `/me` bzw. `VERSION` in `const.py`, Cache-Bust `?v=<Version>`, HACS-Update plus HA-Neustart und Hard-Reload bei alter Anzeige, Ursache der 0.2.0-Konstante für die 0.2.1-Beobachtung) und den Unterabschnitt „GitHub-Fehler: Status, Protokoll und Wiederholung (ab 0.1.1)“ (HTTP-Status und GitHub-Meldung in `github_unavailable`, WARNING-Zeile mit Methode/Pfad/Status/Meldung, bis zu drei Versuche mit ~0,5 s/1,5 s bei Netzwerkfehlern und 500/502/503/504, kein Retry des abschließenden `PATCH git/refs/heads/{branch}`, 401/403, 404, 409/422 unverändert, Diagnose per `curl` gegen `https://api.github.com` und Logfilter `frickeldave_store_syncfd`). `CHANGELOG.md` ergänzt unter `## [Unreleased]` → `### Fixed` zwei Einträge (#289).
+
+**Why:** Nutzerbericht: Nach dem Einspielen von 0.2.1 zeigte der Footer weiterhin 0.2.0, und der Sync-nach-dev-Test endete mit der generischen Meldung „GitHub ist momentan nicht erreichbar (Störung auf der GitHub-Seite)“ ohne Status, ohne Protokolleintrag und ohne Wiederholung. Die Doku beschreibt das neue Verhalten, damit Betreiber Ursache und Selbsthilfe kennen.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
