@@ -58,6 +58,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `image=ghcr.io/frickeldave/fd-dev-full:latest`, `100m`/`2Gi` als Requests und `4`/`16Gi` als
   Limits), ein Dispatch mit diesen Defaults startet also das Image neu und kostet Login, Checkout
   und Worktrees (#303).
+- Veröffentlichungsdialog im HA-Verwaltungspanel: Mehr Abstand zwischen Titelleiste und den
+  Metadatenboxen Ziel, Zielbranch und Repository (`.fd-publish-meta`, 16 px), damit die Boxen nicht
+  am Titel kleben (#289).
+- Übersichten im Veröffentlichungsdialog: Die Abschnitte Dateien, Produkte und Bilder sind
+  kompakter, und ihre Gesamtzahl steht rechts neben der Abschnittsüberschrift statt als
+  Klammerzusatz hinter dem Titel (#289).
+- Dateiliste im Veröffentlichungsdialog: Eine Knopfreihe Alle, Neu, Geändert, Entfernt und
+  Unverändert filtert die Zeilen, jeweils mit Anzahl, `aria-pressed` für den aktiven Filter,
+  Voreinstellung Alle, Rücksetzung beim Öffnen, bei neuem Ergebnis und beim Schließen sowie einem
+  Hinweis, wenn kein Eintrag zum Filter passt; die Zahlen stammen aus `result.files` (#289).
+- Doppelte Ausgabe im Veröffentlichungsdialog entfernt: Der Absatz mit `result.summary` und der
+  Dry-Run-Untertitel in der Titelleiste entfallen, weil Übersichtskacheln und Deployment-Hinweis die
+  Information bereits tragen; das API-Feld `summary` bleibt bestehen (#289).
 
 ### Removed
 

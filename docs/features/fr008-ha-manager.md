@@ -11,10 +11,10 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 - Integrations-Repository (Basis): <https://github.com/Frickeldave/homeassistant-frickeldave-store>
 - Erweiterung: <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: Basis 0.2.1 mit dem Fix für das Feature-Gating ist released, ebenso Erweiterung
-  `frickeldave_store_syncfd` 0.1.1 mit der GitHub-Fehlerdiagnose. Basis 0.2.2 mit dem
-  Versionsabgleich und Erweiterung 0.1.2 mit dem Fix für die Produktzähler im Dry-Run sind in
-  Vorbereitung; Finanz- und Kundenfunktionen bleiben geplant.
+- Status: Basis 0.2.2 mit dem Versionsabgleich ist released, ebenso Erweiterung
+  `frickeldave_store_syncfd` 0.1.1 mit der GitHub-Fehlerdiagnose. Basis 0.2.3 mit dem
+  überarbeiteten Veröffentlichungsdialog und Erweiterung 0.1.2 mit dem Fix für die Produktzähler im
+  Dry-Run sind in Vorbereitung; Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -63,7 +63,7 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.2` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.3` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.2` |
 
 - Basis: `custom_components/frickeldave_store/`.
@@ -668,7 +668,7 @@ Lauf und wird nicht gespeichert.
 
 Der Dry-Run zeigt vor dem Schreiben:
 
-- Ziel und Zielbranch, Repository und eine deutsche Zusammenfassung.
+- Ziel und Zielbranch, Repository sowie eine deutsche Zusammenfassung in der Antwort.
 - Zählungen für Dateien, Produkte und Bilder, jeweils neu, geändert, entfernt und unverändert.
 - Ob ein Deployment ausgelöst würde — bei `prod` also der Workflow `fd-deploy-prd`.
 - Die betroffene Dateiliste; ab 500 Einträgen ist sie gekürzt und trägt einen Hinweis darauf.
@@ -708,6 +708,29 @@ Löschschutz und die Meldung, dass nichts zu ändern ist, bleiben unverändert.
 
 Im Dry-Run wird nichts geschrieben: kein Commit, kein Workflow-Dispatch und kein Schreibzugriff auf
 den Store.
+
+### Veröffentlichungsdialog
+
+Seit Basis 0.2.3 ist der Dialog aufgeräumt:
+
+- Zwischen Titelleiste und den Metadatenboxen **Ziel**, **Zielbranch** und **Repository**
+  (`.fd-publish-meta`) liegen 16 px Abstand.
+- Die Titelleiste trägt nur noch den Titel. Der Untertitel „Dry-Run für das Ziel … Es wird noch
+  nichts geschrieben.“ ist entfallen: Der Dialog selbst ist die Vorschau, geschrieben wird erst nach
+  Bestätigung.
+- Der Absatz mit der Zusammenfassung aus der Antwort (`result.summary`) wird nicht mehr angezeigt,
+  weil die Übersichtskacheln und der Deployment-Hinweis dieselbe Information tragen. Das Feld
+  `summary` bleibt unverändert in der API-Antwort.
+- Die Abschnitte **Dateien**, **Produkte** und **Bilder** sind kompakter: kleinere Kacheln mit
+  weniger Innenabstand, und die Gesamtzahl steht rechts neben der Abschnittsüberschrift statt als
+  kleiner Klammerzusatz direkt hinter dem Titel.
+- Über der Dateiliste filtert eine Knopfreihe **Alle**, **Neu**, **Geändert**, **Entfernt** und
+  **Unverändert**, jeweils mit Anzahl. Der aktive Knopf trägt `aria-pressed="true"`;
+  voreingestellt ist **Alle**. Beim Öffnen, bei einem neuen Ergebnis und beim Schließen fällt der
+  Filter auf **Alle** zurück. Passt keine Zeile zum Filter, erscheint statt der Liste ein Hinweis.
+  Die Zahlen je Knopf stammen aus `result.files` und passen damit immer zu den gelieferten Zeilen;
+  die Gesamtzahl in der Abschnittsüberschrift kommt weiterhin aus den Zählungen der Antwort und
+  bleibt von der Kürzung der Liste unabhängig.
 
 ### Fehlerbehandlung und leerer Katalog
 
