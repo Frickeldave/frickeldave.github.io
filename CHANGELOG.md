@@ -58,6 +58,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `image=ghcr.io/frickeldave/fd-dev-full:latest`, `100m`/`2Gi` als Requests und `4`/`16Gi` als
   Limits), ein Dispatch mit diesen Defaults startet also das Image neu und kostet Login, Checkout
   und Worktrees (#303).
+- Veröffentlichungsdialog im HA-Verwaltungspanel: Mehr Abstand zwischen Titelleiste und den
+  Metadatenboxen Ziel, Zielbranch und Repository (`.fd-publish-meta`, 16 px), damit die Boxen nicht
+  am Titel kleben (#289).
+- Übersichten im Veröffentlichungsdialog: Die Abschnitte Dateien, Produkte und Bilder sind
+  kompakter, und ihre Gesamtzahl steht rechts neben der Abschnittsüberschrift statt als
+  Klammerzusatz hinter dem Titel (#289).
+- Dateiliste im Veröffentlichungsdialog: Eine Knopfreihe Alle, Neu, Geändert, Entfernt und
+  Unverändert filtert die Zeilen, jeweils mit Anzahl, `aria-pressed` für den aktiven Filter,
+  Voreinstellung Alle, Rücksetzung beim Öffnen, bei neuem Ergebnis und beim Schließen sowie einem
+  Hinweis, wenn kein Eintrag zum Filter passt; die Zahlen stammen aus `result.files` (#289).
+- Doppelte Ausgabe im Veröffentlichungsdialog entfernt: Der Absatz mit `result.summary` und der
+  Dry-Run-Untertitel in der Titelleiste entfallen, weil Übersichtskacheln und Deployment-Hinweis die
+  Information bereits tragen; das API-Feld `summary` bleibt bestehen (#289).
 
 ### Removed
 
@@ -75,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Feature-Gating im HA-Panel: Das Panel behandelte einen Eintrag schon dann als vorhanden, wenn die Basis ihn mit `available: false` und `provider: ""` meldete, und zeigte die Buttons „Nach dev veröffentlichen“ und „Nach prod veröffentlichen“ deshalb deaktiviert an, obwohl die Erweiterung nicht installiert war. Seit Basis 0.2.1 blendet das Panel beide Buttons und „Katalog importieren“ vollständig aus, solange die Erweiterung nicht registriert ist; ist sie registriert, aber etwa der Token noch nicht hinterlegt, bleiben die dev-/prd-Buttons sichtbar, deaktiviert und nennen den Grund, während „Katalog importieren“ bereits aktiv ist (#289).
 - Versionsabgleich für Fußzeile und Panel-Modul: `VERSION` in `const.py` blieb bis 0.2.1 auf `0.2.0`, während der Release nur `manifest.json` und `pyproject.toml` erhöhte. Nach dem Update auf 0.2.1 zeigte die Fußzeile des Konfigurationspanels deshalb weiterhin `0.2.0`, und die Modul-URL (`?v=<Version>`) blieb unverändert, sodass der Browser das alte Panel-Modul weiter aus seinem Cache laden konnte. Seit Basis 0.2.2 stimmt die Konstante mit dem Manifest überein, ein Test hält beide Werte zusammen, und Fußzeile wie Modul-URL tragen die veröffentlichte Version (#289).
 - GitHub-Fehler beim Veröffentlichen in der Erweiterung: `github_unavailable` meldete bis `frickeldave_store_syncfd` 0.1.0 nur „Störung auf der GitHub-Seite“, ohne HTTP-Status, ohne Protokolleintrag und ohne Wiederholung. Seit 0.1.1 nennt die Meldung den HTTP-Status und GitHubs Text, jede fehlgeschlagene Antwort steht als WARNING-Zeile mit Methode, Pfad, Status und Meldung im Home-Assistant-Protokoll, und vorübergehende Fehler (Netzwerkfehler, 500/502/503/504) werden bis zu drei Versuche mit rund 0,5 s und 1,5 s Wartezeit wiederholt; der abschließende `PATCH git/refs/heads/{branch}` bleibt bewusst ohne Wiederholung, 401/403, 404 und 409/422 sind unverändert (#289).
+- Produktzähler im Dry-Run der Erweiterung: Bis `frickeldave_store_syncfd` 0.1.1 las die Erweiterung den Remote-Katalog nur bei geänderter Katalogdatei, sodass ein unveränderter Katalog jedes lokale Produkt als neu meldete (`Produkte: neu = alle, unverändert = 0`), während der Dateivergleich 173 unveränderte Dateien zeigte; seit 0.1.2 meldet ein unveränderter Katalog alle lokalen Produkte als unverändert, ein neuer oder geänderter Katalog liest weiterhin den Remote-Katalog, und Dateizählungen, Löschschutz und die Meldung „nichts zu ändern“ bleiben unverändert (#289).
 
 ## [1.0.11] - 2026-10-30
 
