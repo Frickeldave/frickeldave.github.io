@@ -12,9 +12,9 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 - Erweiterung: <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
 - Status: Basis 0.2.1 mit dem Fix für das Feature-Gating ist released, ebenso Erweiterung
-  `frickeldave_store_syncfd` 0.1.0 (02.11.2026). Basis 0.2.2 mit dem Versionsabgleich und
-  Erweiterung 0.1.1 mit der GitHub-Fehlerdiagnose sind in Vorbereitung; Finanz- und
-  Kundenfunktionen bleiben geplant.
+  `frickeldave_store_syncfd` 0.1.1 mit der GitHub-Fehlerdiagnose. Basis 0.2.2 mit dem
+  Versionsabgleich und Erweiterung 0.1.2 mit dem Fix für die Produktzähler im Dry-Run sind in
+  Vorbereitung; Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -64,7 +64,7 @@ und genau einem Integrationsverzeichnis:
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
 | Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.2` |
-| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.1` |
+| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.2` |
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -674,6 +674,37 @@ Der Dry-Run zeigt vor dem Schreiben:
 - Die betroffene Dateiliste; ab 500 Einträgen ist sie gekürzt und trägt einen Hinweis darauf.
 - Ein Feld `warning` (`string|null`) mit Hinweisen, das das Panel als Warnblock über der Bestätigung
   zeigt.
+
+Die drei Zählblöcke messen verschiedene Dinge:
+
+- **Dateien** vergleicht die verwalteten Dateien byteweise mit dem Zielbranch: die Katalogdatei
+  `public/data/handmade.json` und die verwalteten Bilder.
+- **Produkte** vergleicht den Katalog auf Produktebene, je Artikelnummer: neu, geändert, entfernt
+  und unverändert.
+- **Bilder** zählt die verwalteten Bilddateien.
+
+Bei unverändertem Katalog und ohne fremde Dateien im Ziel folgt die Dateizahl aus der einen
+Katalogdatei plus den unveränderten Bildern: `Dateien.unchanged = Bilder.unchanged + 1`. Ein Katalog
+mit 67 Produkten und 172 Bildern meldet im unveränderten Stand deshalb:
+
+```text
+Dateien:  neu 0, geändert 0, entfernt 0, unverändert 173
+Produkte: neu 0, geändert 0, entfernt 0, unverändert 67
+Bilder:   neu 0, geändert 0, entfernt 0, unverändert 172
+```
+
+Die Produktzählung ist eine eigene Achse: Sie zählt Katalogeinträge, nicht Dateien, und geht
+deshalb nicht in die Dateisumme ein. 173 unveränderte Dateien sind eine Katalogdatei plus 172
+Bilder, nicht 67 Produkte plus 172 Bilder.
+
+**Produktzähler bei unverändertem Katalog (ab 0.1.2).** Bis 0.1.1 las die Erweiterung den
+Remote-Katalog nur, wenn sich `public/data/handmade.json` geändert hatte. Blieb die Datei
+unverändert, blieb der Remote-Katalog leer, und `diff_products()` zählte jedes lokale Produkt als
+neu — bei 67 Produkten also `Produkte: neu 67, geändert 0, entfernt 0, unverändert 0`, obwohl der
+Dateivergleich 173 unveränderte Dateien meldete. Seit 0.1.2 meldet ein unveränderter Katalog alle
+lokalen Produkte als unverändert; nur bei neuem oder geändertem Katalog liest die Erweiterung den
+Remote-Katalog, und fehlt er im Ziel, gelten weiterhin alle Produkte als neu. Dateizählungen,
+Löschschutz und die Meldung, dass nichts zu ändern ist, bleiben unverändert.
 
 Im Dry-Run wird nichts geschrieben: kein Commit, kein Workflow-Dispatch und kein Schreibzugriff auf
 den Store.
