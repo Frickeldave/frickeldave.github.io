@@ -3155,6 +3155,34 @@ Der Footer des Panels zeigte nach dem 0.2.1-Release weiterhin 0.2.0, weil `VERSI
 
 **Why:** Nutzerbericht: Nach dem Einspielen von 0.2.1 zeigte der Footer weiterhin 0.2.0, und der Sync-nach-dev-Test endete mit der generischen Meldung „GitHub ist momentan nicht erreichbar (Störung auf der GitHub-Seite)“ ohne Status, ohne Protokolleintrag und ohne Wiederholung. Die Doku beschreibt das neue Verhalten, damit Betreiber Ursache und Selbsthilfe kennen.
 
+### 2026-11-04T13:11:48+00:00: Dry-Run meldet Produkte nur bei geändertem Katalog gegen remote
+**By:** Bruce
+
+**What:** In `homeassistant-frickeldave-store-syncfd` (Branch `fix/289-dry-run-product-counts`, Commit `7b07eb3`) wurde `custom_components/frickeldave_store_syncfd/publish.py` geändert: neuer Helper `unchanged_product_counts(local_catalog)`, der bei byte-identischem Katalog `{"added": 0, "changed": 0, "removed": 0, "unchanged": n, "total": n}` liefert; `async_publish()` nutzt ihn bei `catalog_change is None or status == STATUS_UNCHANGED` und liest GitHub dann nicht. Nur bei `added`/`changed` wird der Remote-Katalog gelesen und `diff_products()` verwendet. Tests in `tests/test_publish.py` (identischer Tree ohne Katalog-Read, geänderter Katalog, Helper-Einheitstest) plus bestehender „neuer Katalog“-Fall; Version 0.1.2 in `manifest.json`, `pyproject.toml`, `const.py`; Changelog unter `[Unreleased]`/`Fixed`. Validierung: `ruff check .` ok, `ruff format --check .` ok, `mypy custom_components` ok, `pytest -q` 136 passed, `python -m json.tool manifest.json` ok. PR: https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/2 (nicht gemergt).
+
+**Why:** Bei unverändertem Katalog blieb `remote_catalog` `None`, sodass `diff_products()` gegen eine leere Remote-Map verglich und alle lokalen Produkte (im Report 67) als `added` zählte — obwohl die Dateizähler 173 unveränderte Dateien und „nichts ändert sich“ meldeten.
+
+### 2026-11-04T13:11:48+00:00: fr008 erklärt die Dry-Run-Zähler und den 0.1.2-Fix
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md`: Im Abschnitt „Dry-Run“ beschreiben drei Bullets die Quellen der Blöcke **Dateien** (byteweiser Vergleich von `public/data/handmade.json` plus verwalteten Bildern), **Produkte** (Produkt-Diff je Artikelnummer) und **Bilder** (verwaltete Bilddateien), dazu ein Beispielblock mit 67 Produkten und 172 Bildern und die Einordnung, dass `Dateien.unchanged = Bilder.unchanged + 1` gilt und die Produktzählung Einträge statt Dateien zählt. Ein kurzer Absatz dokumentiert den Fix 0.1.2: bis 0.1.1 blieb der Remote-Katalog bei unveränderter Katalogdatei ungelesen, `diff_products()` zählte alle lokalen Produkte als neu; seit 0.1.2 gelten sie als unverändert, nur bei neuem oder geändertem Katalog wird der Remote-Katalog gelesen. Versionsbuchhaltung: Erweiterung `0.1.2` in der Repository-Tabelle, Statuszeile nennt 0.1.1 als released und 0.1.2 als in Vorbereitung. `CHANGELOG.md`: ein `### Fixed`-Bullet unter `## [Unreleased]` mit `(#289)`.
+
+**Why:** Der Nutzer fragte, warum der Dry-Run `Produkte: neu 67` meldet, während `Dateien: unverändert 173` erscheint. Ursache war, dass der Remote-Katalog nur bei geänderter Katalogdatei gelesen wurde und der Vergleich dadurch ohne Gegenstück lief.
+
+### 2026-11-04T13:24:07+00:00: Publish-Dialog kompakter, Filter für die Dateiliste
+**By:** Natasha
+**What:** Publish-Dialog im Panel (`custom_components/frickeldave_store/frontend/frickeldave-store-panel.js`) überarbeitet: `.fd-publish-meta` mit 16 px Abstand zur Titelleiste; Summary-Absatz und Dry-Run-Untertitel entfernt (`result.summary` bleibt im Payload); Überschriften der Übersichten als Flex-Zeile mit Gesamtzahl rechts (`.fd-publish-total`), Kacheln kompakter (Padding, Schrift, Gap); neue Filterknopfzeile über der Dateiliste (Alle/Neu/Geändert/Entfernt/Unverändert, `aria-pressed`, Anzahl, Leerzustand), Filter-Reset auf „Alle“ bei neuem Ergebnis/Öffnen/Schließen. Neuer DOM-freier Helfer `frontend/publish-filters.js` (`filterFileChanges`, `fileStatusCounts`, `statusOptions`) mit `tests/frontend/publish-filters.test.mjs` und eigener CI-Stufe. Version 0.2.3 (Manifest, pyproject, `VERSION`), Changelog `## [Unreleased]` / `### Changed` mit (#289). Commit 333d4bc, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/3 (nicht gemerged).
+**Why:** Fünf Nutzeranforderungen aus #289: (1) mehr Luft zwischen Titelleiste und Ziel/Zielbranch/Repository, (2) doppelte Zusammenfassung entfernen, (3) kompakte Übersicht mit Zahl rechts neben der Überschrift, (4) sinnvolle, tastaturerreichbare Filter über der Dateiliste, (5) Dry-Run-Subheader in der Titelleiste entfernen. Filterzahlen kommen aus `result.files`, damit sie bei gekürzter Liste (`filesTruncated`) zu den tatsächlich sichtbaren Zeilen passen; alle fünf Knöpfe bleiben sichtbar, damit die Zeile stabil bleibt und der Leerzustand erreichbar ist.
+
+### 2026-11-04T13:54:47+00:00: fr008 dokumentiert die Überarbeitung des Veröffentlichungsdialogs (0.2.3)
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md`: neuer Abschnitt „Veröffentlichungsdialog“ mit dem größeren Abstand zwischen Titelleiste und `.fd-publish-meta` (16 px), dem entfallenen `result.summary`-Absatz und Dry-Run-Untertitel (API-Feld `summary` bleibt), den kompakteren Übersichten mit der Gesamtzahl rechts neben der Abschnittsüberschrift und der Filterreihe **Alle**, **Neu**, **Geändert**, **Entfernt**, **Unverändert** samt Anzahl, `aria-pressed`, Voreinstellung **Alle**, Rücksetzung beim Öffnen/neuen Ergebnis/Schließen, Leerzustand und Herkunft der Zahlen aus `result.files`. Versionsbuchhaltung: Basis `0.2.3` in der Repository-Tabelle, Statuszeile nennt 0.2.2 als released und 0.2.3 als in Vorbereitung. `CHANGELOG.md`: vier `### Changed`-Bullets unter `## [Unreleased]` für Abstände, kompakte Übersichten, Dateilisten-Filter und den entfernten Doppeltext, alle mit `(#289)`; der 0.1.2-Eintrag unter `### Fixed` bleibt bestehen. Der lokale Branch heißt jetzt `fix/issue-289-publish-dialog-and-counters` und enthält beide Dokumentationscommits.
+
+**Why:** Der Veröffentlichungsdialog wurde in `Frickeldave/homeassistant-frickeldave-store#3` (Commit `333d4bc`, Basis 0.2.3) überarbeitet; die Dokumentation beschrieb noch die alte Titelleiste mit Dry-Run-Untertitel, den doppelten Zusammenfassungsabsatz und die ungefilterte Dateiliste.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
