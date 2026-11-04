@@ -145,3 +145,113 @@ SDK-Support für deutsche Headings warten. `team.md` wurde hier bewusst nicht ve
 3. **Merge/Deploy:** Squash-Merge `feat/issue-285-deepseek-integration-in-github-copilot-cli` → `dev` als `63c04e3`; Promote `dev` → `main` als `e01a623` über `fd-promote-prd` → `fd-deploy-prd`; Release `v1.0.6` veröffentlicht.
 
 **Why:** Das Gate-Marker-Protokoll braucht eine belastbare Spur, wer die Ausnahme autorisiert hat. Die Versionswahl folgt der menschlichen Vorgabe (Patch statt Minor), angepasst an den real belegten Versionsstand. Squash-Merge und Promote-Weg entsprechen `.squad/routing.md` und `.github/pull_request_template.md`.
+
+## Archiviert am 2026-11-04 (7-Tage-Gate, 50 KB)
+
+#### 2026-10-27T12-21-13: IS_289 integration MVP scaffold in frickeldave.home.net
+**By:** Bruce
+**What:** IS_289 integration MVP scaffold in frickeldave.home.net
+**Why:**
+##### Was gebaut wurde
+
+Phase-1-Slice der HACS-Custom-Integration `frickeldave_store` im Repository
+`Frickeldave/frickeldave.home.net` (Commit 05edd71, direkt auf `main` gepusht).
+
+- Repo-Gerüst: `custom_components/frickeldave_store/`, `manifest.json` (0.1.0,
+  domain frickeldave_store, dependencies http/panel_custom/websocket_api,
+  iot_class local_polling), `hacs.json`, MIT-Lizenz, README (deutsch),
+  CHANGELOG (`## [Unreleased]`, Refs #289), pyproject (ruff+mypy+pytest),
+  CI-Workflow mit getrennten Jobs für ruff, mypy, pytest, hassfest und hacs/action.
+- Datenschicht: HA-`Store` (Key `frickeldave_store.data`, Version 1/Minor 1) unter
+  `config/frickeldave_store/`, Bilder unter
+  `config/frickeldave_store/images/<artikelnummer>/`, atomare Writes, Executor-I/O,
+  Snapshot vor Migration, `async_migrate_func` + `async_migrate_entry`.
+- Produktdomain: eindeutige Artikelnummern (Kategorie + 4 Zeichen, Lock-geschützt),
+  unveränderliche Kategorie, ausschließlich Soft-Delete, Tags, Bestandsbuchungen,
+  Filter (Kategorie ODER, Tags UND, Rest UND), stabile Sortierung.
+- Config-/Options-Flow (keine YAML), deutsche und englische Übersetzungen.
+- Berechtigungen: Rollen product/finance/app_admin, Default Deny, Prüfung je
+  HTTP-/WebSocket-Anfrage, sofortiger Entzug; `GET /me` liefert nur eigene Rechte.
+- Panel via `panel_custom` (`frickeldave-store`, `embed_iframe=False`,
+  `require_admin=False`), statische Assets unter `/frickeldave_store_frontend`.
+  Das Verzeichnis `frontend/` bleibt Natasha vorbehalten.
+- HTTP-API `/api/frickeldave_store/*` exakt nach dem mit Natasha abgestimmten
+  Vertrag inkl. `image_limit` (409, keine Teilpersistenz) und Settings ohne API-Key.
+- KI-Dienst mit Anbieter-Abstraktion, DeepSeek `deepseek-flash`, EXIF/GPS-Strip,
+  Timeouts, lesbaren 429/5xx-Meldungen, Vorschlag ohne Persistenz.
+- Export im Live-Schema der Website (idempotent, ohne archivierte Produkte) plus CLI.
+- Dokumentation `docs/architecture.md`, `data-model.md`, `permissions.md`,
+  `backup-restore.md`; 68 Tests.
+
+##### Validierung
+
+- `python3 -m compileall custom_components` → OK
+- `.venv/bin/ruff check .` → All checks passed
+- `.venv/bin/ruff format --check .` → 27 files already formatted
+- `.venv/bin/mypy custom_components` → no issues in 12 source files
+- `.venv/bin/pytest -q` → 68 passed
+- `python3 -m json.tool` für manifest.json, hacs.json, translations/*.json, strings.json → OK
+- Smoke-Test Export gegen `public/data/handmade.json`: 63 Produkte, identische Feldnamen
+
+##### Abweichung von der Spezifikation
+
+Repository-Name weicht auf ausdrückliche Anweisung von `Frickeldave/frickeldave-store`
+ab: `Frickeldave/frickeldave.home.net`. Manifest, HACS-Metadaten, README und Doku
+verweisen durchgehend auf dieses Repository.
+
+##### Grenzen
+
+PayPal, Kundenverwaltung, Website-Publish-Workflow, HACS-Default-Katalog und produktive
+Migration sind bewusst nicht in diesem Slice (Roadmap im README). Restore-Test gegen eine
+produktive Instanz steht noch aus.
+
+#### 2026-10-27T12-16-39: IS_289 panel: Lit web component with HA tokens
+**By:** Natasha
+**What:** IS_289 panel: Lit web component with HA tokens
+**Why:** Deliverable: custom_components/frickeldave_store/frontend/frickeldave-store-panel.js (single file, `frickeldave-store-panel`, Shadow DOM, Lit via bare "lit" import, HA design tokens + --fd-* layer, German UI).
+
+Implemented views:
+1. Access gate: GET /me on first hass assignment, default deny, dedicated "Kein Zugriff" and connection-error states, revalidation on visibilitychange and HA user change; no protected fetch without can.product / can.app_admin.
+2. Product list: search (debounced), category multi-select (OR), tag multi-select (AND), personalisierbar, Auf Lager, Im Schrank, Sichtbarkeit, "Nur archivierte", sort name/price with asc/desc that survives filter changes, result count, loading/empty/error states, pagination 24.
+3. Create/edit dialog: name, description, price (EUR decimal with comma), size, tags (add/remove/free text), visible/customizable switches, category select only on create (disabled and explained afterwards), German validation, buttons disabled while saving.
+4. Image management: max 10, count-aware rejection message before any upload, per-file multipart upload, move left/right (order endpoint), set main, two-step delete, main badge, alt text; images require the bearer token, so they are fetched once and rendered as object URLs.
+5. Stock booking: Zugang/Abgang/Umlagerung/Korrektur, quantity, note, current stock/salesCabinet.
+6. Archive confirmation dialog (soft delete only, no hard-delete UI).
+7. AI description suggestion: suggestion shown in an editable textarea, "Übernehmen" only changes the local form value (saved by the normal PATCH), "Verwerfen" leaves the description untouched; loading and 429/timeout messages.
+8. Tag management dialog (list/create/delete).
+9. Settings (app_admin): KI-Endpunkt, Modell, Prompt, API-Key only as api_key_set plus write-only field; key is never rendered back.
+
+API contract used: /me, /products (+ search/category/tags/customizable/in_stock/in_cabinet/visibility/archived/sort/order/limit/offset), /products POST, /products/{articleNumber} PATCH, /archive, /images GET/POST/order/main/DELETE, /tags GET/POST/DELETE, /stock, /description/suggest, /settings GET/PATCH. All requests send "Authorization: Bearer <access_token>" with base URL from hass.auth.data.hassUrl.
+
+Assumptions recorded:
+- Backend settings payload is nested as {"ai": {endpoint, model, prompt, api_key_set}}; PATCH sends {"ai": {...}} (aligned with the work-tree implementation; flat shapes are tolerated on read).
+- Image upload uses one request per file with multipart field "file" (backend reads exactly one file per request).
+- archived=true means "only archived"; label is "Nur archivierte anzeigen".
+- Correction requires quantity >= 1 (backend rejects 0).
+- Image URLs returned by the API are bearer-protected; HA has no cookie auth for /api, so previews are loaded via fetch + object URLs rather than plain img src.
+- Tag catalog (/tags) and free-form product tags are separate; product tags are not auto-created in the catalog.
+
+Validation: node --check passes; no browser/DOM test possible in this environment.
+
+#### 2026-10-27T12-13-24: IS_289 website docs: fr008 + fr003 update + types
+**By:** Maria
+**What:** IS_289 website docs: fr008 + fr003 update + types
+**Why:** Doku-Paket für #289 (nur Website-Repo, keine Implementierung) abgeschlossen.
+
+Geänderte Dateien:
+- NEU docs/features/fr008-ha-manager.md: Zweck/Umfang, Architektur (HACS-Custom-Integration custom_components/frickeldave_store, panel_custom + Lit, HA-Store unter config/frickeldave_store/, Bilder unter config/frickeldave_store/images/<artikelnummer>/), Installation über HACS, Config-/Options-Flow, Datenmodell mit schemaVersion 1, Rollen (Produktpflege/Finanzen/Anwendungsverwaltung, Default Deny, serverseitige Prüfung), Backup/Restore, Website-Export, DeepSeek-Vorschläge, Bestandsmodell, Non-Goals, offene Fragen.
+- docs/old/features/fr003-catalog.md: fünf Kategorien inkl. SB (Steinmasse) samt Codes und Label-Mapping, stock/salesCabinet als vorhandene, nicht ausgewertete Felder, Link auf fr008.
+- src/types/index.d.ts: HandmadeItem um stock?: number und salesCabinet?: number ergänzt; zusätzlich die veraltete category-Union auf die fünf Live-Codes 3D/EP/LA/SB/WO korrigiert (eng mit der fr003-Korrektur verbunden, keine Vergleichsstellen im Code betroffen).
+- CHANGELOG.md: ein Eintrag unter [Unreleased] mit (#289).
+
+Abweichung: Repository der Integration ist laut Nutzerentscheidung vom 27.10.2026 Frickeldave/frickeldave.home.net, nicht Frickeldave/frickeldave-store; im Dokument einmal sachlich vermerkt.
+
+Validierung:
+- npm run format:check: "All matched files use Prettier code style!"
+- npx prettier --check auf den drei geänderten Dateien: clean
+- npm run lint:check: exit 0, keine Ausgabe
+- npx markdownlint-cli@0.44.0: fr008 ohne Befund; fr003 nur die zwei vorbestehenden Befunde MD040 (Zeile 167) und MD031 (Zeile 437), Baseline identisch
+- npx astro check: 51 errors / 0 warnings / 184 hints, exakt identisch zur Baseline ohne die Änderungen (vorbestehend, u. a. fehlendes Pflichtfeld picture im JSON)
+- npm run build nicht ausgeführt: reine Doku-/Deklarationsänderung, Typprüfung über astro check abgedeckt.
+
+Offen: Export-Transport zur Website, PayPal-Kunden-API-Umfang, Aufbewahrungsfrist, Rechnungsauswirkung, HA-Benutzer-IDs.
