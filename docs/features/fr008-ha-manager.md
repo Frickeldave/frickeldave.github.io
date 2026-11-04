@@ -11,8 +11,9 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 - Integrations-Repository (Basis): <https://github.com/Frickeldave/homeassistant-frickeldave-store>
 - Erweiterung: <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: Basis 0.2.0 (03.11.2026) und Erweiterung `frickeldave_store_syncfd` 0.1.0 (02.11.2026)
-  sind released. Basis 0.2.1 mit dem Fix für das Feature-Gating ist in Vorbereitung; Finanz- und
+- Status: Basis 0.2.1 mit dem Fix für das Feature-Gating ist released, ebenso Erweiterung
+  `frickeldave_store_syncfd` 0.1.0 (02.11.2026). Basis 0.2.2 mit dem Versionsabgleich und
+  Erweiterung 0.1.1 mit der GitHub-Fehlerdiagnose sind in Vorbereitung; Finanz- und
   Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -62,8 +63,8 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.1` |
-| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.0` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.2` |
+| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.1` |
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -219,7 +220,29 @@ Wenn die Oberfläche nach einem Update unverändert wirkt:
 1. Die Seite mit `Strg+Shift+R` hart neu laden (macOS: `Cmd+Shift+R`).
 2. Hilft das nicht, im Browser die Websitedaten für die Home-Assistant-URL löschen.
 3. Die geladene Version prüfen: Sie steht im Drei-Punkte-Menü des Panels und in der Fußzeile des
-   Konfigurationspanels. `v0.1.14` bestätigt den aktuellen Build.
+   Konfigurationspanels. Sie muss zur in HACS installierten Version passen.
+
+#### Versionsanzeige in Fußzeile und Modul-URL
+
+Die Fußzeile des Konfigurationspanels zeigt die Version, die `GET /api/frickeldave_store/me` als
+`version` meldet — also den Wert der Konstante `VERSION` aus `const.py` der geladenen Integration.
+Dieselbe Konstante erzeugt den Cache-Bust-Parameter der Modul-URL (`?v=<Version>`), unter der Panel
+und Konfigurationspanel ihre Module laden. Beide Anzeigen hängen damit an derselben Quelle.
+
+Genau hier lag der Fehler bis 0.2.1: `VERSION` in `const.py` blieb auf `0.2.0` stehen, während der
+Release nur `manifest.json` und `pyproject.toml` erhöhte. Nach dem Update auf 0.2.1 zeigte die
+Fußzeile deshalb weiterhin `0.2.0`, und die Modul-URL blieb unverändert — der Browser konnte das
+alte Panel-Modul aus seinem Cache verwenden. Seit 0.2.2 stimmt die Konstante mit dem Manifest
+überein; ein Test hält beide Werte zusammen. Fußzeile und Modul-URL tragen damit die veröffentlichte
+Version.
+
+Zeigt die Fußzeile nach einem Update trotzdem eine alte Version:
+
+1. Prüfen, ob HACS das Update installiert hat, und Home Assistant neu starten. Ohne Neustart läuft
+   die alte Integration weiter.
+2. Die Seite hart neu laden (`Strg+Shift+R`, macOS: `Cmd+Shift+R`) oder die Websitedaten für die
+   Home-Assistant-URL löschen.
+3. Erst wenn Fußzeile und installierte Version übereinstimmen, ist der Build aktuell.
 
 ## Einrichtung und Optionen
 
@@ -688,6 +711,26 @@ die Ursache. Die bisherigen Tests verdeckten den Fehler, weil die Fake-Antworten
 echten Null-Body-Status (204, 205, 304) auf das Parsen; alle Stellen, die ein Objekt erwarten,
 prüfen den Typ und liefern strukturierte Fehler statt `AttributeError`. Regressionstests decken
 chunked-Antworten und einen Dry-Run über den echten Client ab.
+
+#### GitHub-Fehler: Status, Protokoll und Wiederholung (ab 0.1.1)
+
+Fehler von GitHub meldet die Erweiterung `frickeldave_store_syncfd` seit 0.1.1 genauer.
+`github_unavailable` nennt jetzt den HTTP-Status und die von GitHub gelieferte Meldung, statt nur
+„Störung auf der GitHub-Seite“ anzuzeigen. Jede fehlgeschlagene Antwort steht zusätzlich als
+WARNING-Zeile im Home-Assistant-Protokoll, mit Methode, Pfad, Status und Meldung.
+
+Vorübergehende Fehler wiederholt die Erweiterung bis zu drei Versuche mit rund 0,5 s und 1,5 s
+Wartezeit dazwischen: Netzwerkfehler sowie die Status 500, 502, 503 und 504. Der abschließende
+`PATCH git/refs/heads/{branch}` wird bewusst nicht wiederholt, damit ein bereits erfolgtes
+Branch-Update nicht doppelt läuft. 401/403 (Token), 404 (Ziel fehlt) und 409/422 (Konflikt oder
+ungültige Daten) bleiben unverändert und werden nicht wiederholt.
+
+Bleibt die Meldung bestehen, helfen zwei Prüfungen:
+
+1. Erreichbarkeit aus dem HA-Container:
+   `curl -s -o /dev/null -w "%{http_code}" https://api.github.com` muss `200` liefern.
+2. Im Home-Assistant-Protokoll nach der WARNING-Zeile der Integration `frickeldave_store_syncfd`
+   suchen; sie nennt Methode, Pfad, Status und GitHubs Meldung.
 
 ## Erweiterungen
 
