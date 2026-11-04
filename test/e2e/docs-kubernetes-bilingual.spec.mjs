@@ -7,8 +7,9 @@ import { test, expect } from '@playwright/test';
  * `<h1>`-Struktur aller 14 Kapitel, fehlende deutsche Fließprosa in der
  * englischen Fassung, die acht Legacy-Weiterleitungen, Link-Hygiene, die
  * Docs-Übersicht und die Sitemap. Zusätzlich deckt die Spec die
- * Sprachbeschriftung der Kacheln sowie Navigation, Inhaltsverzeichnis und
- * Anker der vier Gruppen-Landingpages ab.
+ * Sprachbeschriftung der Kacheln, die reduzierte Übersicht ohne Navigation und
+ * Inhaltsverzeichnis sowie Navigation, Inhaltsverzeichnis und Anker der drei
+ * Gruppen-Landingpages ab.
  *
  * Link-Zählungen auf den Landingpages sind auf das Kachel-Grid
  * (`section.section div.row`) begrenzt: Die linke Navigation verwendet
@@ -75,12 +76,14 @@ const DOCS_GROUPS = [
   { id: 'kubernetes-basis-en', slugs: EN_SLUGS, bodyEntries: 6 },
 ];
 
-/** Die vier Gruppen-Landingpages; `groupId: null` steht für die Übersicht `/docs/`. */
+/**
+ * Die drei Gruppen-Landingpages mit ihrer erwarteten ToC-Länge. Die Übersicht
+ * `/docs/` fehlt bewusst: sie rendert seit #301 nur Header und Kachel-Grid.
+ */
 const LANDING_PAGES = [
-  { path: '/docs/', groupId: null },
-  { path: '/docs/astro-workshop/', groupId: 'astro-workshop' },
-  { path: `${DE_BASE}/`, groupId: 'kubernetes-basis-de' },
-  { path: `${EN_BASE}/`, groupId: 'kubernetes-basis-en' },
+  { path: '/docs/astro-workshop/', groupId: 'astro-workshop', tocEntries: 6 },
+  { path: `${DE_BASE}/`, groupId: 'kubernetes-basis-de', tocEntries: 1 },
+  { path: `${EN_BASE}/`, groupId: 'kubernetes-basis-en', tocEntries: 1 },
 ];
 
 /** Timeout für die Hydration der React-Inseln mit Navigation und Inhaltsverzeichnis. */
@@ -508,8 +511,66 @@ test.describe('docs overview - language labels', () => {
   });
 });
 
+test.describe('docs overview - no navigation chrome', () => {
+  test('/docs/ renders only the header and the full-width tile grid', async ({
+    page,
+    request,
+  }) => {
+    const response = await page.goto('/docs/');
+    expect(response, 'expected a response for /docs/').not.toBeNull();
+    expect(response.status(), 'expected HTTP 200 for /docs/').toBe(200);
+
+    // Die Übersicht liefert keine Client-Inseln und kein Template-Markup aus.
+    // Die Abwesenheit von Navigation und ToC ist damit kein Hydrationsartefakt,
+    // sondern gilt bereits für das statische Dokument.
+    await expect(page.locator('astro-island')).toHaveCount(0);
+    await expect(page.locator('template[data-astro-template]')).toHaveCount(0);
+    await expect(navPanel(page), 'navigation panel on /docs/').toHaveCount(0);
+    await expect(tocPanel(page), 'toc panel on /docs/').toHaveCount(0);
+    await expect(
+      page.getByRole('heading', { name: 'Documents', exact: true })
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('heading', { name: 'Contents', exact: true })
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.max-h-static_sidemenu'),
+      'no sidebar wrappers on /docs/'
+    ).toHaveCount(0);
+
+    // Kein leerer Body-Kasten: die Sammel-Indexseite hat keinen Fließtext.
+    await expect(page.locator('section.content')).toHaveCount(0);
+
+    // Genau eine Überschrift aus dem PageHeader, keine weitere aus dem Body.
+    await expect(page.locator('h1'), 'h1 count on /docs/').toHaveCount(1);
+    await expect(page.locator('h1')).toHaveText('Documentation');
+
+    // Das Grid nimmt die volle Breite ein statt 3/4 bzw. 3/5 neben der Navigation.
+    const wrapperClasses = await page
+      .locator('section.section')
+      .first()
+      .evaluate((section) =>
+        (section.parentElement?.className ?? '').split(/\s+/).filter(Boolean)
+      );
+    expect(wrapperClasses, 'grid wrapper classes on /docs/').toContain('w-full');
+    expect(wrapperClasses).not.toContain('md:w-3/4');
+    expect(wrapperClasses).not.toContain('lg:w-3/5');
+
+    // Auch die ausgelieferte HTML-Antwort enthält kein Navigations-Markup.
+    const htmlResponse = await request.get('/docs/');
+    expect(htmlResponse.status()).toBe(200);
+    const html = await htmlResponse.text();
+    expect(html, 'served Documents heading on /docs/').not.toContain(
+      '>Documents<'
+    );
+    expect(html, 'served Contents heading on /docs/').not.toContain(
+      '>Contents<'
+    );
+  });
+});
+
 test.describe('group landing pages - Documents navigation', () => {
-  for (const { path, groupId } of LANDING_PAGES) {
+  for (const { path, groupId, tocEntries } of LANDING_PAGES) {
     test(`${path} shows the hydrated navigation for its scope`, async ({ page }) => {
       const response = await page.goto(path);
       expect(response, `expected a response for ${path}`).not.toBeNull();
@@ -522,9 +583,21 @@ test.describe('group landing pages - Documents navigation', () => {
         `index body must not add an h1 on ${path}`
       ).toHaveCount(0);
 
-      const expectedGroups = groupId
-        ? DOCS_GROUPS.filter((group) => group.id === groupId)
-        : DOCS_GROUPS;
+      // Navigation und Inhaltsverzeichnis existieren je genau einmal.
+      await expect(navPanel(page), `nav panels on ${path}`).toHaveCount(1);
+      await expect(
+        page.getByRole('heading', { name: 'Documents', exact: true }),
+        `Documents headings on ${path}`
+      ).toHaveCount(1);
+      await expect(tocPanel(page), `toc panels on ${path}`).toHaveCount(1);
+      await expect(
+        tocPanel(page).locator('li > a'),
+        `toc entries on ${path}`
+      ).toHaveCount(tocEntries);
+
+      const expectedGroups = DOCS_GROUPS.filter(
+        (group) => group.id === groupId
+      );
 
       const items = await readNavStructure(page);
       expect(
@@ -628,20 +701,6 @@ test.describe('group landing pages - table of contents', () => {
       'Phase 2—Linting',
       'Phase 3—Deployment & KI',
     ]);
-  });
-
-  test('/docs/ has no table of contents and no empty body box', async ({
-    page,
-  }) => {
-    await page.goto('/docs/');
-    // Erst die Hydration abwarten: sonst wäre die Abwesenheit des ToC nicht aussagekräftig.
-    await waitForHydratedNav(page);
-
-    await expect(
-      page.getByRole('heading', { name: 'Contents', exact: true })
-    ).toHaveCount(0);
-    await expect(tocPanel(page)).toHaveCount(0);
-    await expect(page.locator('section.content')).toHaveCount(0);
   });
 
   test('every ToC link points at an existing anchor in the same document', async ({
