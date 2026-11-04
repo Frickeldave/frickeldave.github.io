@@ -26,28 +26,31 @@ const currentPage = collectionIndex.id.replace("/-index", "");
 const isDocsIndex = collectionIndex.id === "-index";
 const hasBody = Boolean(collectionIndex.body?.trim());
 
-// Construct Doc Browser menu: all groups on /docs/, only the own group on a group landing page
+// Construct Doc Browser menu: only the own group on a group landing page.
+// The root collection index (/docs/) has no navigation at all.
 const browserMenu: MenuItem[] = [];
-const groups = (await getGroups("docs", sortByTitle)) as DocsEntry[];
-for (const group of groups) {
-  const groupId = group.id.replace("/-index", "");
-  if (!isDocsIndex && groupId !== currentPage) continue;
+if (!isDocsIndex) {
+  const groups = (await getGroups("docs", sortByTitle)) as DocsEntry[];
+  for (const group of groups) {
+    const groupId = group.id.replace("/-index", "");
+    if (groupId !== currentPage) continue;
 
-  const groupEntries = (await getEntriesInGroup(
-    "docs",
-    groupId,
-    sortByTitle
-  )) as DocsEntry[];
+    const groupEntries = (await getEntriesInGroup(
+      "docs",
+      groupId,
+      sortByTitle
+    )) as DocsEntry[];
 
-  browserMenu.push({
-    title: group.data.title,
-    id: groupId,
-    children: groupEntries.map((groupEntry) => ({
-      title: groupEntry.data.title,
-      id: groupEntry.id,
-      children: [],
-    })),
-  });
+    browserMenu.push({
+      title: group.data.title,
+      id: groupId,
+      children: groupEntries.map((groupEntry) => ({
+        title: groupEntry.data.title,
+        id: groupEntry.id,
+        children: [],
+      })),
+    });
+  }
 }
 
 const actuallyHideNav = hideNav || globalHideNav;
@@ -81,15 +84,24 @@ if (actuallyHideNav && actuallyHideToc) {
   articleClass = "w-full md:w-3/4 lg:w-3/5";
   tocClass = "hidden lg:flex lg:w-1/5";
 }
+
+// The root collection index renders only the header and the tile grid.
+if (isDocsIndex) {
+  articleClass = "w-full";
+}
 ---
 
 <BaseLayout title={title} image={image?.src} description={description}>
   <PageHeader title={title} />
   <section class="container flex p-4">
-    <div class=`max-h-static_sidemenu sticky top-[5rem] mr-4 ${navClass}`>
-      <DocBrowser menu={browserMenu} currentPage={currentPage} />
-    </div>
-    <div class=`w-full ${articleClass}`>
+    {
+      !isDocsIndex && !actuallyHideNav && (
+        <div class={`max-h-static_sidemenu sticky top-[5rem] mr-4 ${navClass}`}>
+          <DocBrowser menu={browserMenu} currentPage={currentPage} />
+        </div>
+      )
+    }
+    <div class={`w-full ${articleClass}`}>
       {
         hasBody && (
           <section class="content glass mb-4 rounded-lg px-4">
@@ -111,8 +123,12 @@ if (actuallyHideNav && actuallyHideToc) {
         </div>
       </section>
     </div>
-    <div class=`max-h-static_sidemenu sticky top-[5rem] ml-4 ${tocClass}`>
-      <TableOfContents headings={headings} tocDepth={tocDepth} />
-    </div>
+    {
+      !isDocsIndex && !actuallyHideToc && (
+        <div class={`max-h-static_sidemenu sticky top-[5rem] ml-4 ${tocClass}`}>
+          <TableOfContents headings={headings} tocDepth={tocDepth} />
+        </div>
+      )
+    }
   </section>
 </BaseLayout>
