@@ -1,13 +1,8 @@
 ---
 import BaseLayout from "@components/base/BaseLayout.astro";
 import DocCard from "@components/docs/Card.astro";
-import DocBrowser from "@components/docs/Browser.astro";
 import PageHeader from "@components/common/PageHeader.astro";
-import TableOfContents from "@components/common/TableOfContents.astro";
-import { getEntriesInGroup, getGroups } from "@lib/contentParser";
-import { sortByTitle } from "@lib/sortFunctions";
-import { render } from "astro:content";
-import type { DocsEntry, MenuItem } from "@/types";
+import type { DocsEntry } from "@/types";
 
 interface Props {
   collectionIndex: DocsEntry;
@@ -15,120 +10,25 @@ interface Props {
 }
 
 const { collectionIndex, entries } = Astro.props;
-const { Content, headings } = await render(collectionIndex);
-const { title, description, image, hideNav, hideToc } = collectionIndex.data;
-
-const globalHideNav = false; // set true to always hide the nav bar (left side menu)
-const globalHideToc = false; // set true to always hide the table of contents (right side menu)
-const tocDepth = 3; // maximum depth for the table of contents 1 = h1, etc
-
-const currentPage = collectionIndex.id.replace("/-index", "");
-const isDocsIndex = collectionIndex.id === "-index";
-const hasBody = Boolean(collectionIndex.body?.trim());
-
-// Construct Doc Browser menu: only the own group on a group landing page.
-// The root collection index (/docs/) has no navigation at all.
-const browserMenu: MenuItem[] = [];
-if (!isDocsIndex) {
-  const groups = (await getGroups("docs", sortByTitle)) as DocsEntry[];
-  for (const group of groups) {
-    const groupId = group.id.replace("/-index", "");
-    if (groupId !== currentPage) continue;
-
-    const groupEntries = (await getEntriesInGroup(
-      "docs",
-      groupId,
-      sortByTitle
-    )) as DocsEntry[];
-
-    browserMenu.push({
-      title: group.data.title,
-      id: groupId,
-      children: groupEntries.map((groupEntry) => ({
-        title: groupEntry.data.title,
-        id: groupEntry.id,
-        children: [],
-      })),
-    });
-  }
-}
-
-const actuallyHideNav = hideNav || globalHideNav;
-const actuallyHideToc =
-  hideToc ||
-  globalHideToc ||
-  headings.filter((heading) => heading.depth <= tocDepth).length === 0;
-
-let articleClass;
-let navClass;
-let tocClass;
-
-if (actuallyHideNav && actuallyHideToc) {
-  // Nav und ToC sind ausgeblendet
-  navClass = "hidden";
-  articleClass = "w-full";
-  tocClass = "hidden";
-} else if (!actuallyHideNav && actuallyHideToc) {
-  // Nav sichtbar, ToC ausgeblendet
-  navClass = "hidden md:flex md:w-1/4 lg:w-1/5";
-  articleClass = "w-full md:w-3/4 lg:w-4/5";
-  tocClass = "hidden";
-} else if (actuallyHideNav && !actuallyHideToc) {
-  // Nav ausgeblendet, ToC sichtbar
-  navClass = "hidden";
-  articleClass = "w-full md:w-3/4 lg:w-4/5";
-  tocClass = "hidden md:flex md:w-1/4 lg:w-1/5";
-} else {
-  // Nav und ToC sind sichtbar
-  navClass = "hidden md:flex md:w-1/4 lg:w-1/5";
-  articleClass = "w-full md:w-3/4 lg:w-3/5";
-  tocClass = "hidden lg:flex lg:w-1/5";
-}
-
-// The root collection index renders only the header and the tile grid.
-if (isDocsIndex) {
-  articleClass = "w-full";
-}
 ---
 
-<BaseLayout title={title} image={image?.src} description={description}>
-  <PageHeader title={title} />
-  <section class="container flex p-4">
-    {
-      !isDocsIndex && !actuallyHideNav && (
-        <div class={`max-h-static_sidemenu sticky top-[5rem] mr-4 ${navClass}`}>
-          <DocBrowser menu={browserMenu} currentPage={currentPage} />
-        </div>
-      )
-    }
-    <div class={`w-full ${articleClass}`}>
-      {
-        hasBody && (
-          <section class="content glass mb-4 rounded-lg px-4">
-            <Content />
-          </section>
-        )
-      }
-      <section class="section">
-        <div class="container">
-          <div class="row">
-            {
-              entries.map((entry) => (
-                <div class="h-min p-2 md:col-6 lg:col-4">
-                  <DocCard entry={entry} />
-                </div>
-              ))
-            }
-          </div>
-        </div>
-      </section>
+<BaseLayout
+  title={collectionIndex.data.title}
+  image={collectionIndex.data.image?.src}
+  description={collectionIndex.data.description}
+>
+  <PageHeader title={collectionIndex.data.title} />
+  <section class="section">
+    <div class="container">
+      <div class="row">
+        {
+          entries.map((entry) => (
+            <div class="h-min p-2 md:col-6 lg:col-4">
+              <DocCard entry={entry} />
+            </div>
+          ))
+        }
+      </div>
     </div>
-    {
-      !isDocsIndex && !actuallyHideToc && (
-        <div class={`max-h-static_sidemenu sticky top-[5rem] ml-4 ${tocClass}`}>
-          <TableOfContents headings={headings} tocDepth={tocDepth} />
-        </div>
-      )
-    }
   </section>
 </BaseLayout>
