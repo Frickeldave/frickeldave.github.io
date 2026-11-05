@@ -11,10 +11,10 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 - Integrations-Repository (Basis): <https://github.com/Frickeldave/homeassistant-frickeldave-store>
 - Erweiterung: <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
-- Status: Basis 0.2.2 mit dem Versionsabgleich ist released, ebenso Erweiterung
-  `frickeldave_store_syncfd` 0.1.3 mit der zielbezogenen Vergleichsbasis im Dry-Run. Basis 0.2.3 mit
-  dem überarbeiteten Veröffentlichungsdialog und Erweiterung 0.1.4 mit der zielgenauen Meldung beim
-  Prod-Publish sind in Vorbereitung; Finanz- und Kundenfunktionen bleiben geplant.
+- Status: Basis 0.2.3 mit dem überarbeiteten Veröffentlichungsdialog ist released, ebenso Erweiterung
+  `frickeldave_store_syncfd` 0.1.4 mit der zielgenauen Meldung beim Prod-Publish. Basis 0.2.4 mit der
+  reduzierten Übersicht im Veröffentlichungsdialog und Erweiterung 0.1.5 mit der änderungsbasierten
+  Deployment-Meldung sind in Vorbereitung; Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -63,8 +63,8 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.3` |
-| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.4` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.4` |
+| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.5` |
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -718,8 +718,10 @@ Der Dry-Run zeigt vor dem Schreiben:
 
 - Ziel und Zielbranch, die Vergleichsbasis des Berichts, Repository sowie eine deutsche
   Zusammenfassung in der Antwort.
-- Zählungen für Dateien, Produkte und Bilder, jeweils neu, geändert, entfernt und unverändert.
-- Ob ein Deployment ausgelöst würde — bei `prod` also der Workflow `fd-deploy-prd`.
+- In der Übersicht Zählungen für **Produkte** und **Bilder**, jeweils neu, geändert, entfernt und
+  unverändert; den Dateistand zeigt die filterbare **Dateiliste** je Zeile.
+- Ob ein Deployment ausgelöst würde — bei `prod` also der Workflow `fd-deploy-prd`. Ein Deployment
+  gilt nur dann als ausgelöst, wenn mindestens eine Datei neu, geändert oder entfernt ist.
 - Die betroffene Dateiliste; ab 500 Einträgen ist sie gekürzt und trägt einen Hinweis darauf.
 - Ein Feld `warning` (`string|null`) mit Hinweisen, das das Panel als Warnblock über der Bestätigung
   zeigt.
@@ -754,10 +756,11 @@ Die Katalogdatei zählt als `geändert`, weil sie in `main` bereits existiert; d
 dev-Dry-Run ist dasselbe Produkt `unverändert`, weil `dev` es schon führt. Nach dem Merge über
 `fd-deploy-prd` verschwindet es im prod-Bericht aus `neu`.
 
-Die drei Zählblöcke messen verschiedene Dinge:
+Die Zählungen der Antwort messen verschiedene Dinge:
 
 - **Dateien** vergleicht die verwalteten Dateien byteweise mit dem Zielbranch: die Katalogdatei
-  `public/data/handmade.json` und die verwalteten Bilder.
+  `public/data/handmade.json` und die verwalteten Bilder. Seit Basis 0.2.4 erscheint diese Zählung
+  nicht mehr als eigener Block in der Übersicht; die Dateiliste bleibt die Dateisicht.
 - **Produkte** vergleicht den Katalog auf Produktebene, je Artikelnummer: neu, geändert, entfernt
   und unverändert.
 - **Bilder** zählt die verwalteten Bilddateien.
@@ -788,6 +791,17 @@ Löschschutz und die Meldung, dass nichts zu ändern ist, bleiben unverändert.
 Im Dry-Run wird nichts geschrieben: kein Commit, kein Workflow-Dispatch und kein Schreibzugriff auf
 den Store.
 
+#### Deployment nur bei Änderungen (ab 0.1.5)
+
+`deployment.would_trigger` richtet sich seit 0.1.5 nach den tatsächlichen Änderungszahlen beider
+Ziele. Ein Lauf ohne neue, geänderte oder entfernte Datei meldet **kein Deployment**; das gilt für
+den Dry-Run wie für das Veröffentlichen. Beim Ziel `prod` stößt die Erweiterung `fd-deploy-prd` nur
+an, wenn mindestens eine Datei neu, geändert oder entfernt ist. Ohne Änderungen entstehen weder
+Commit noch Workflow-Dispatch, und die Antwort meldet, dass kein Deployment ausgelöst wurde.
+
+Bis 0.1.4 folgte die Meldung nicht den Änderungszahlen; seit 0.1.5 gilt für beide Ziele dieselbe
+Regel.
+
 ### Veröffentlichungsdialog
 
 Seit Basis 0.2.3 ist der Dialog aufgeräumt:
@@ -800,16 +814,24 @@ Seit Basis 0.2.3 ist der Dialog aufgeräumt:
 - Der Absatz mit der Zusammenfassung aus der Antwort (`result.summary`) wird nicht mehr angezeigt,
   weil die Übersichtskacheln und der Deployment-Hinweis dieselbe Information tragen. Das Feld
   `summary` bleibt Teil der API-Antwort und nennt seit 0.1.3 die Vergleichsbasis.
-- Die Abschnitte **Dateien**, **Produkte** und **Bilder** sind kompakter: kleinere Kacheln mit
-  weniger Innenabstand, und die Gesamtzahl steht rechts neben der Abschnittsüberschrift statt als
-  kleiner Klammerzusatz direkt hinter dem Titel.
+- Die Abschnitte der Übersicht sind kompakter: kleinere Kacheln mit weniger Innenabstand, und die
+  Gesamtzahl steht rechts neben der Abschnittsüberschrift statt als kleiner Klammerzusatz direkt
+  hinter dem Titel.
 - Über der Dateiliste filtert eine Knopfreihe **Alle**, **Neu**, **Geändert**, **Entfernt** und
   **Unverändert**, jeweils mit Anzahl. Der aktive Knopf trägt `aria-pressed="true"`;
   voreingestellt ist **Alle**. Beim Öffnen, bei einem neuen Ergebnis und beim Schließen fällt der
   Filter auf **Alle** zurück. Passt keine Zeile zum Filter, erscheint statt der Liste ein Hinweis.
   Die Zahlen je Knopf stammen aus `result.files` und passen damit immer zu den gelieferten Zeilen;
-  die Gesamtzahl in der Abschnittsüberschrift kommt weiterhin aus den Zählungen der Antwort und
-  bleibt von der Kürzung der Liste unabhängig.
+  sie bleiben von der Kürzung der Liste unabhängig.
+
+Ab Basis 0.2.4 besteht die Übersicht nur noch aus **Produkte** und **Bilder**:
+
+- Der Block **Dateien** ist entfallen. Seine Zählungen waren der byteweise Vergleich der
+  Katalogdatei `public/data/handmade.json` plus der verwalteten Bilddateien und zeigten damit
+  dieselbe Information wie **Produkte** (Katalogeinträge) und **Bilder** (Bilddateien) in einer
+  zweiten Zählachse.
+- Die filterbare **Dateiliste** bleibt die Dateisicht: Ihre Knöpfe **Alle**, **Neu**, **Geändert**,
+  **Entfernt** und **Unverändert** tragen weiterhin die Zahlen je Datei aus `result.files`.
 
 ### Fehlerbehandlung und leerer Katalog
 
