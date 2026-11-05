@@ -12,10 +12,9 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 - Erweiterung: <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
 - Status: Basis 0.2.2 mit dem Versionsabgleich ist released, ebenso Erweiterung
-  `frickeldave_store_syncfd` 0.1.2 mit der GitHub-Fehlerdiagnose und dem Fix für die Produktzähler im
-  Dry-Run. Basis 0.2.3 mit dem überarbeiteten Veröffentlichungsdialog und Erweiterung 0.1.3 mit der
-  zielbezogenen Vergleichsbasis im Dry-Run sind in Vorbereitung; Finanz- und Kundenfunktionen bleiben
-  geplant.
+  `frickeldave_store_syncfd` 0.1.3 mit der zielbezogenen Vergleichsbasis im Dry-Run. Basis 0.2.3 mit
+  dem überarbeiteten Veröffentlichungsdialog und Erweiterung 0.1.4 mit der zielgenauen Meldung beim
+  Prod-Publish sind in Vorbereitung; Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -65,7 +64,7 @@ und genau einem Integrationsverzeichnis:
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
 | Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.3` |
-| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.3` |
+| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.4` |
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -641,6 +640,28 @@ Katalog-Schnellweg keinen Versions-Bump mehr:
 Details zu beiden Gates, `force_deploy` und dem Rollback stehen unter
 [Versionierung und Release](../workflow/versionierung%20und%20release.md).
 
+### Fehler beim Veröffentlichen nach prod
+
+Meldet das Veröffentlichen nach prod „Repository … oder Branch nicht gefunden. Bitte Repository und
+Token prüfen.“, ist der Commit nach `dev` bereits geschrieben; fehlgeschlagen ist der
+Workflow-Dispatch, der `fd-deploy-prd` startet. Zwei Prüfungen klären die Ursache:
+
+1. **Options-Flow der Erweiterung** (**Einstellungen → Geräte & Dienste → Frickeldave Store Sync**):
+   Das Feld **Repository** muss `Frickeldave/frickeldave.github.io` enthalten, das Feld
+   **Prod-Workflow** den Dateinamen mit Endung, also `fd-deploy-prd.yml` und nicht nur
+   `fd-deploy-prd`. Der Zielbranch für prod ist `main` (`prod_branch`).
+2. **Fine-grained Token:** Auf `Frickeldave/frickeldave.github.io` muss **Actions: Read and write**
+   gesetzt sein (siehe [Token-Berechtigungen](#token-berechtigungen)). Ohne dieses Recht antwortet
+   GitHub auf den Dispatch mit 404 statt 403.
+
+Die genaue Anfrage steht im Home-Assistant-Protokoll: Die WARNING-Zeile der Integration, gefiltert
+auf `frickeldave_store_syncfd`, nennt Methode, Pfad und Status im Format
+`GitHub METHOD path → HTTP status (message)`. Der Pfad zeigt, welcher Workflow aufgerufen wurde.
+
+Bis Erweiterung 0.1.3 lautet die Meldung in diesem Fall generisch „Repository oder Branch nicht
+gefunden“. Ab 0.1.4 nennt sie den betroffenen Workflow, den Branch und das fehlende Recht
+`Actions: Read and write`.
+
 ### Verwaltete Pfade
 
 Beim Veröffentlichen darf die Erweiterung im Website-Repository nur anfassen, was sie selbst
@@ -993,6 +1014,14 @@ Die Erweiterung braucht einen Fine-grained Token, der ausschließlich auf
 | `Contents`   | Read and write |
 | `Actions`    | Read and write |
 | `Metadata`   | Read           |
+
+`Contents` deckt den Commit ab, den beide Ziele nach `dev` schreiben, `Metadata` das Lesen des
+Repositories. Für das Veröffentlichen nach prod ist zusätzlich `Actions: Read and write` auf
+`Frickeldave/frickeldave.github.io` nötig: Der Prod-Pfad löst den Workflow `fd-deploy-prd` über
+`POST /repos/{repo}/actions/workflows/{workflow}/run` aus. Fehlt dieses Recht, beantwortet GitHub den
+Aufruf mit 404 statt 403; die Fehlermeldung spricht dann von einem fehlenden Repository oder Branch,
+obwohl das Recht fehlt (siehe
+[Fehler beim Veröffentlichen nach prod](#fehler-beim-veröffentlichen-nach-prod)).
 
 Der Token wird im Options-Flow der Erweiterung hinterlegt und ist dort write-only: Die Oberfläche
 zeigt nur, dass ein Token hinterlegt ist. Token-Werte gehören weder in dieses Dokument noch in Logs,

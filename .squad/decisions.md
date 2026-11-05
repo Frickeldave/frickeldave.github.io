@@ -3221,6 +3221,32 @@ enthielt; die Dokumentation beschreibt jetzt, welche Vergleichsbasis für welche
 
 **Why:** Nick hat in `fd-deploy-prd.yml` (Commit `f2620d2`, PR #310) den Katalog-Schnellweg umgesetzt; die Dokumentation behauptete bis dahin, `main` brauche immer einen Versions-Bump. Belegt am echten Diff: `scripts/catalog-only.mjs`, der `equal`-Zweig in `dev_gate`, `decide` mit `should_deploy`/`should_release` und der neue Eingang `force_deploy`.
 
+#### 2026-11-05T12:56:29+00:00: Dispatch-404 nennt Workflow, Branch und Actions-Recht
+**By:** Bruce
+**What:** `custom_components/frickeldave_store_syncfd/publish.py` ordnet 404-Antworten jetzt endpunktspezifisch ein: Dispatch (`actions/workflows/<workflow>/run`) nennt den konfigurierten Workflow (`prod_workflow`) und Branch (`prod_branch`) plus „Actions: Read and write“; `git/ref(s)` nennt Repository und den Branch aus dem Pfad (URL-dekodiert) plus „Contents: Read and write“; alle anderen 404 behalten die generische Meldung. Konfigurationswerte laufen einzeilig/limitiert durch `_one_line`; der WARNING-Log bleibt unverändert. Drei neue Tests in `tests/test_publish.py` (Dispatch, Ref, Blob/generisch), Version 0.1.4 in `manifest.json`, `pyproject.toml`, `const.py`, CHANGELOG-Bullet unter `Unreleased/Fixed`. Commit `085d441`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/4 (Basis `main`, nicht gemerged). Validierung: `ruff check .` ok, `ruff format --check .` 18 Dateien formatiert, `mypy custom_components` ok, `pytest -q` 144 passed, manifest.json gültig.
+**Why:** Der Prod-404 kam vom `POST actions/workflows/.../run`, nicht von einem fehlenden Repository/Branch; die alte Meldung „Repository oder Branch nicht gefunden“ führte in die Irre. Wahrscheinlichste Ursachen sind ein falscher Workflow-Name/Branch oder ein Fine-Grained-Token ohne Actions-Schreibrecht (GitHub antwortet dann mit 404 statt 403).
+
+#### 2026-11-05T12:56:29+00:00: fr008 erklärt den Prod-Publish-404 und die Token-Rechte
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md` macht im Abschnitt Token-Berechtigungen explizit, dass
+das Veröffentlichen nach prod zusätzlich `Actions: Read and write` auf
+`Frickeldave/frickeldave.github.io` braucht, weil der Prod-Pfad `fd-deploy-prd` per
+`POST /repos/{repo}/actions/workflows/{workflow}/run` auslöst; neu ist der Unterabschnitt „Fehler beim
+Veröffentlichen nach prod“ mit den zwei Prüfungen (Options-Flow: Repository
+`Frickeldave/frickeldave.github.io`, Prod-Workflow `fd-deploy-prd.yml`, Zielbranch `main`; Token:
+Actions Read and write) und dem Verweis auf die WARNING-Zeile im HA-Protokoll (Filter
+`frickeldave_store_syncfd`, Format `GitHub METHOD path → HTTP status (message)`). Versionsbuchhaltung:
+Erweiterung 0.1.4 in der Repository-Tabelle, Statuszeile nennt 0.1.3 als released und 0.1.4 als in
+Vorbereitung. `CHANGELOG.md` ergänzt unter `[Unreleased]` einen `### Fixed`-Eintrag mit `(#289)`.
+
+**Why:** Ein Prod-Publish scheiterte am Workflow-Dispatch mit „Repository oder Branch nicht
+gefunden“, obwohl der Commit nach `dev` bereits geschrieben war. Realistische Ursachen sind ein
+falscher Prod-Workflow-Wert (ohne `.yml`), ein falscher `prod_branch` oder ein Fine-grained Token
+ohne Actions-Recht — GitHub antwortet in diesem Fall mit 404 statt 403. Die generische Meldung
+verschleiert das; ab 0.1.4 benennt sie Workflow, Branch und fehlende Berechtigung.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
