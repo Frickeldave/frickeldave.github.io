@@ -187,18 +187,30 @@ bleiben ein bewusster eigener Schritt.
 
 ## Katalog-Deploy klassifizieren
 
-`catalog-only.mjs` beantwortet die Frage, ob ein Diff ausschließlich aus verwaltetem
-Katalog-/Produktbildmaterial besteht. `fd-deploy-prd` nutzt das Gate, um Katalogänderungen auch ohne
-Versions-Bump nach `main` zu promoten.
+`catalog-only.mjs` beantwortet die Frage, ob ein Diff einen Katalog-Deploy ohne
+Versions-Bump erlaubt. `fd-deploy-prd` nutzt das Gate, um Katalogänderungen auch dann nach
+`main` zu promoten, wenn `dev` zusätzlich deploy-neutrale Pfade enthält (Docs, `.squad`,
+`.github`, Tests, `CHANGELOG.md` …).
 
 ```bash
 git diff --name-only origin/main origin/dev | node scripts/catalog-only.mjs
 ```
 
-Exit `0` nur bei nicht-leerer Liste und ausschließlich verwalteten Pfaden: `public/data/handmade.json`
-und `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<jpg|jpeg|png|webp|gif>`. Alles
-andere — etwa `3dmodels/**`, `public/data/news.json` oder `public/data/link-mappings.json` — ist
-Website-Inhalt und damit kein reiner Katalog-Deploy (Exit `1`, Begründung auf stderr).
+Exit `0` nur bei mindestens einem verwalteten Katalogpfad (`public/data/handmade.json`,
+`src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<jpg|jpeg|png|webp|gif>`) und
+keinem seitenrelevanten Pfad. Deploy-neutral sind `docs/**`, `.squad/**`, `.github/**`,
+`.husky/**`, `test/**`, `scripts/*` (außer `build-*`/`install-*`), README/CHANGELOG,
+Lint-/Format-Configs und `LICENSE`. Seitenrelevant — und damit release-pflichtig — sind
+`src/**`, `public/**` außer dem Katalog, die Root-Build-Eingaben (`astro.config.mjs`,
+`tailwind.config.*`, `postcss.config.js`, `tsconfig.json`, `package.json`,
+`package-lock.json`, `wrangler.jsonc`) sowie `scripts/build-*` und `scripts/install-*`.
+Nicht auswertbare Pfade (Traversal, absolut, Backslash) gelten fail-closed als
+seitenrelevant.
+
+Optionen: `--mode=is-managed` verlangt weiterhin den reinen Katalog-Diff (Exit `0` nur bei
+ausschließlich verwalteten Pfaden), `--json` gibt die vollständige Klassifikation
+(`catalog_only`, `promote_safe`, `managed`, `neutral`, `site`, `files`, `classification`,
+`summary`) als eine JSON-Zeile aus.
 
 ## Release-Gate für Pull Requests
 
