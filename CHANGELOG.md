@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Produktions-Deploy ohne Versions-Bump: `fd-deploy-prd` mergt `dev` nach `main` und deployt Pages jetzt auch dann, wenn `dev` dieselbe Version wie das letzte stabile Release trägt und der Diff `main..dev` ausschließlich verwaltete Katalog- und Produktbildpfade enthält (`public/data/handmade.json`, `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<Endung>`). Tag und GitHub-Release entstehen weiterhin nur, wenn die Version auf `main` höher ist als das letzte stabile Release; der neue Eingang `force_deploy` wiederholt einen fehlgeschlagenen Pages-Deploy ohne neuen Merge. `fd-promote-prd` behält vorerst das strenge Versions-Gate (#289).
+- Katalog-Schnellweg für deploy-neutrale Pfade: Die Klassifikation `promote_safe` erlaubt bei gleicher Version neben Katalogmaterial auch Dokumentation, `.squad/`, `.github/`, `.husky/`, Tests, `CHANGELOG.md` und Tooling-Konfigurationen, weil sie das gebaute Seitenartefakt nicht verändern; `src/**`, `public/**` außer dem Katalog, Root-Build-Eingaben und `scripts/build-*`/`scripts/install-*` bleiben seitenrelevant und verlangen weiterhin ein Release. Die Promotion-Notice unterscheidet „nur Katalog“ von „Katalog plus unkritische Pfade“ und nennt die Klassifikation (#289).
 
 ### Fixed
 
