@@ -185,6 +185,21 @@ Hebt `version` in `package.json` und `package-lock.json` an und verschiebt die E
 verlangt `fd-deploy-prd` vor einem Promote. Das Skript committet und pusht nicht — Commit und Push
 bleiben ein bewusster eigener Schritt.
 
+## Katalog-Deploy klassifizieren
+
+`catalog-only.mjs` beantwortet die Frage, ob ein Diff ausschließlich aus verwaltetem
+Katalog-/Produktbildmaterial besteht. `fd-deploy-prd` nutzt das Gate, um Katalogänderungen auch ohne
+Versions-Bump nach `main` zu promoten.
+
+```bash
+git diff --name-only origin/main origin/dev | node scripts/catalog-only.mjs
+```
+
+Exit `0` nur bei nicht-leerer Liste und ausschließlich verwalteten Pfaden: `public/data/handmade.json`
+und `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<jpg|jpeg|png|webp|gif>`. Alles
+andere — etwa `3dmodels/**`, `public/data/news.json` oder `public/data/link-mappings.json` — ist
+Website-Inhalt und damit kein reiner Katalog-Deploy (Exit `1`, Begründung auf stderr).
+
 ## Release-Gate für Pull Requests
 
 Zwei Skripte, ein Regelwerk. `release-gate.mjs` ist rein (keine Seiteneffekte, kein `git`/`gh`) und
@@ -344,7 +359,8 @@ Fügt die neue Episode mit einer eindeutigen fünfstelligen ID am Anfang des Epi
   `start-work.test.mjs`, `start-reqeng.test.mjs`, `start-review.test.mjs`, `start-flow-flags.test.mjs`,
   `flow-shared.test.mjs`, `platform-shared.test.mjs`, `copilot-environment.test.mjs`,
   `ensure-issue-branch.test.mjs`, `versionbump.test.mjs`, `release-gate.test.mjs`,
-  `check-release-label.test.mjs`. Der Lauf braucht `--experimental-test-module-mocks`.
+  `check-release-label.test.mjs`, `catalog-only.test.mjs`. Der Lauf braucht
+  `--experimental-test-module-mocks`.
 - `npm run test:bootstrap` — Tests des Bootstrap-Skripts.
 - `test-mock-support.mjs` — Adapter, der die für vitest geschriebenen Tests auf `node --test`
   lauffähig macht (`vi.fn`, `vi.spyOn`, `vi.stubEnv`, `expect`-Teilmenge).
