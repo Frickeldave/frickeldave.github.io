@@ -3263,6 +3263,32 @@ verschleiert das; ab 0.1.4 benennt sie Workflow, Branch und fehlende Berechtigun
 
 **Why:** Nick hat mit `586a157` (PR #313) die Klassifikation in `scripts/catalog-only.mjs` und `fd-deploy-prd.yml` zweistufig gemacht; die bisherige Doku behauptete, Workflows und Dokumentation seien seitenrelevant und ein gemischter Diff brauche immer einen Bump. Belegt am Diff: `isSitePath`/`isNeutralPath`, `promote_safe`-Berechnung, `equal`-Zweig mit den zwei Notices.
 
+### 2026-11-05T15:34:36+00:00: Kein Prod-Deployment ohne tatsächliche Änderung
+**By:** Bruce
+**What:** `has_changes` (added/changed/removed aus dem Berichtsdiff) ersetzt das feste `would_trigger = true` für prod; `would_trigger` gilt jetzt für beide Ziele aus dem Diff. Der Prod-Dispatch von `fd-deploy-prd.yml` läuft nur noch bei Änderungen, sonst `triggered = false`, `commit = null`, `changed = false` und die Summary „Keine Änderungen: nichts committet, kein Deployment ausgelöst.“; Commit-Logik, Retry, Löschschutz bleiben unverändert. Tests: 2 neue Regressionstests, bestehende erweitert (146 passed), ruff/mypy/json grün. Version 0.1.5, CHANGELOG unter `[Unreleased]`/`Fixed`. PR: https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/5, Commit e08417c5eb7f7d79e6637180af35ae7aca4ea7e3.
+**Why:** `would_trigger` war für prod hart auf `true` gesetzt und `async_publish()` rief den Workflow unbedingt auf, sodass ein leerer Diff fälschlich ein Deployment meldete und auslöste.
+
+### 2026-11-05T15:34:36+00:00: Publish-Dialog zeigt nur noch Produkte und Bilder
+**By:** Natasha
+**What:** Die Übersicht „Dateien“ (`<section aria-labelledby="fd-publish-files-title">` samt `_renderCounts(result.counts)`) ist aus dem Veröffentlichungsdialog in `frickeldave-store-panel.js` entfernt; „Produkte“, „Bilder“, das Deployment-Banner und die filterbare Dateiliste bleiben. `result.counts` bleibt unverändert in der API. Version 0.2.4 in `manifest.json`, `pyproject.toml` und `VERSION`; CHANGELOG-Eintrag unter `[Unreleased]`. Tests: node --check 5/5, node --test 10 passed, ruff check/format grün, mypy grün, pytest 238 passed, manifest JSON gültig. Commit b0651ef, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/4 (nicht gemergt).
+**Why:** Die Datei-Zählung war die Byte-Vergleichssumme aus `public/data/handmade.json` plus den verwalteten Bilddateien — also genau die Information, die „Produkte“ (Katalogeinträge) und „Bilder“ (Bilddateien) bereits beschreiben. Die Sektion war redundant und hat die Übersicht nur verlängert.
+
+### 2026-11-05T15:34:36+00:00: fr008 zeigt nur Produkte und Bilder und koppelt Deployment an Änderungen
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md` beschreibt die Übersicht im Veröffentlichungsdialog ab
+Basis 0.2.4 nur noch mit **Produkte** und **Bilder**; der frühere Block **Dateien** war der byteweise
+Vergleich von `public/data/handmade.json` plus den verwalteten Bilddateien und ist entfallen, die
+filterbare **Dateiliste** bleibt die Dateisicht. Ein neuer Abschnitt „Deployment nur bei Änderungen
+(ab 0.1.5)“ erklärt, dass ohne neue, geänderte oder entfernte Datei kein Deployment gemeldet und
+`fd-deploy-prd` nicht ausgelöst wird. Versionsstand: Basis 0.2.3 und Erweiterung 0.1.4 released,
+0.2.4/0.1.5 in Vorbereitung. `CHANGELOG.md` ergänzt je einen Eintrag unter **Changed** und **Fixed**.
+
+**Why:** Der Block **Dateien** zeigte dieselbe Information wie **Produkte** (Katalogeinträge) und
+**Bilder** (Bilddateien) in einer zweiten Zählachse; ein Prod-Lauf ohne Änderungen meldete ein
+Deployment, obwohl weder Commit noch Workflow-Dispatch anfielen.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
