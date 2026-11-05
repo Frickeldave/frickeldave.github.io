@@ -196,22 +196,6 @@
       "category": "3D"
     },
     {
-      "name": "Testprodukt",
-      "description": "Testbeschreibung",
-      "tags": [
-        "Hochzeit",
-        "Personalisierbar"
-      ],
-      "price": 222.0,
-      "size": "12x12",
-      "visible": true,
-      "customizable": true,
-      "salesCabinet": 0,
-      "stock": 0,
-      "articleNumber": "3DSLDU",
-      "category": "3D"
-    },
-    {
       "name": "Dekohasen",
       "description": "Bringe mit diesem liebevoll 3D‑gedruckten Deko-Hasen einen Hauch von verspieltem Charme in dein Zuhause. Jeder Hase wird einzeln verkauft und ist damit das perfekte kleine Highlight auf Regal, Schreibtisch oder im Fensterbrett.\n\nDesign & Varianten\nModernes, minimalistisches Hasen-Design mit großen Kulleraugen und langen Ohren.\n\nIn zwei Größen erhältlich – ideal, um je nach Platz den passenden Hingucker auszuwählen.\n\nVerschiedene Farbvarianten, die sich gut mit Pflanzen und anderer Deko kombinieren lassen.\n\nHochwertiger 3D‑Druck\nPräzise im 3D‑Druck gefertigt für saubere Konturen und feine Details.\n\nAus PLA‑Kunststoff, einem biobasierten, dekorationsgeeigneten Material.\n\nStabil und formtreu – ideal als langlebige Dekofigur.\n\nEinsatzmöglichkeiten\nPerfekt als Tisch- oder Regaldeko im Wohn- oder Kinderzimmer.\n\nNiedriges Geschenk zu Ostern, zum Geburtstag oder als kleine Aufmerksamkeit.\n\nLässt sich einzeln einsetzen oder mit weiteren Hasen zu einer eigenen kleinen Szene kombinieren.\n\nProduktdetails (anpassbar)\nMaterial: PLA‑Kunststoff\n\nGrößen:\nKlein: ca. 6 cm x 3 cm\nGroß: ca. 12 cm x 6 cm",
       "tags": [
@@ -400,22 +384,6 @@
       "salesCabinet": 0,
       "stock": 0,
       "articleNumber": "LA17AE",
-      "category": "LA"
-    },
-    {
-      "name": "Test2",
-      "description": "Test 2 beschreibung",
-      "tags": [
-        "Personalisierbar",
-        "Geschenk"
-      ],
-      "price": 22.0,
-      "size": "22",
-      "visible": true,
-      "customizable": true,
-      "salesCabinet": 0,
-      "stock": 0,
-      "articleNumber": "LA58WX",
       "category": "LA"
     },
     {
@@ -892,6 +860,23 @@
       "salesCabinet": 0,
       "stock": 0,
       "articleNumber": "SBAPRV",
+      "category": "SB"
+    },
+    {
+      "name": "Tasse mit DRUCK",
+      "description": "Diese fröhlich-freche Tasse bringt gute Laune direkt an den Frühstückstisch – denn wer kennt ihn nicht, den kleinen Morgenmuffel in uns? Mit ihrem liebevoll gestalteten Druck, dem verschlafen dreinblickenden Charakter mit roten Strubbelhaaren und dem augenzwinkernden Spruch „Morgenmuffel! Ich nenn's Persönlichkeit.\" ist sie ein echter Hingucker. Die Tasse fasst mit ihren Maßen von ca. 13 x 13 cm eine ordentliche Portion Kaffee, Tee oder Kakao und liegt dabei angenehm in der Hand. Gefertigt aus weißem Porzellan mit hochwertigem, farbintensivem Druck ist sie ein treuer Begleiter für den Alltag – und dank der Personalisierungsmöglichkeit wird sie zum ganz persönlichen Unikat: Ob mit Namen, einer individuellen Botschaft oder einem kleinen Insiderwitz, gestalte deine Tasse ganz nach deinen Wünschen. Damit ist sie ein wunderbares Geschenk zum Geburtstag, eine nette Aufmerksamkeit für Kolleginnen und Kollegen oder einfach eine kleine Freude für dich selbst. Bitte beachte, dass es sich um ein handgefertigtes Produkt handelt und kleine Abweichungen im Druckbild die Einzigartigkeit jedes Exemplars unterstreichen.",
+      "tags": [
+        "Geburtstag",
+        "Haushalt",
+        "Geschenk"
+      ],
+      "price": 15.0,
+      "size": "13x13",
+      "visible": true,
+      "customizable": true,
+      "salesCabinet": 0,
+      "stock": 0,
+      "articleNumber": "SBBEHQ",
       "category": "SB"
     },
     {
