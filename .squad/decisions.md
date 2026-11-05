@@ -3208,6 +3208,19 @@ Bullet mit Verweis auf (#289).
 statt gegen `main`. Er meldete alles unverändert, obwohl `main` die lokalen Testprodukte noch nicht
 enthielt; die Dokumentation beschreibt jetzt, welche Vergleichsbasis für welches Ziel gilt.
 
+#### 2026-11-05T07:15:02+00:00: Produktion deployt Katalogänderungen ohne Versions-Bump
+**By:** Nick
+**What:** `fd-deploy-prd` hat jetzt zwei getrennte Gates. Gate 1 (`promote`) merged `dev → main` bei `relation=greater` oder bei `relation=equal` mit nicht-leerem, ausschließlich verwaltetem Katalog-/Bild-Diff; `equal` ohne Katalog-Diff bleibt ein grüner No-Op, `less` bleibt ein Fehler. Gate 2 (`decide`) trennt `should_deploy` (main durch Merge verändert oder `force_deploy=true`) von `should_release` (Version > letztes stabiles Release); Tag/Release entstehen nur bei `should_release`, die CHANGELOG-Prüfung hängt an `should_release` und läuft vor dem Merge. Neues Skript `scripts/catalog-only.mjs` (Allowlist exakt wie `_is_managed_path`/`_MANAGED_IMAGE_RE`: `public/data/handmade.json` plus `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<ext>`, keine `3dmodels/**`, kein `news.json`/`link-mappings.json`) mit 15 Tests in `scripts/catalog-only.test.mjs`; neuer Workflow-Input `force_deploy` für Deploy-Retries. PR https://github.com/Frickeldave/frickeldave.github.io/pull/310, Commit `f2620d2`. `fd-promote-prd.yml` bleibt vorerst unverändert (strenger Versions-Gate).
+**Why:** Der Versions-Gate blockierte jede Katalog-Aktualisierung aus der Store-Sync-Integration, obwohl dabei nur Daten und Produktbilder geändert werden. Dev-first bleibt erhalten: `main` wird weiterhin nur vom Workflow aktualisiert, und ein echtes Release entsteht ausschließlich bei einer Versionserhöhung — Katalog-Deploys lassen die Footer-Version unverändert.
+
+#### 2026-11-05T07:59:19+00:00: Katalog-only-Prod-Deploys dokumentiert, Version 1.0.12
+
+**By:** Maria
+
+**What:** Version auf `1.0.12` erhöht (`npm run versionbump -- 1.0.12`): `package.json`, `package-lock.json` und `CHANGELOG.md`, der bisherige Unreleased-Inhalt liegt jetzt unter `## [1.0.12] - 2026-11-05`, `## [Unreleased]` ist leer bis auf einen neuen `### Changed`-Eintrag `(#289)` zum Katalog-Schnellweg. `docs/workflow/versionierung und release.md`: Abschnitt „Promote nach `main`“ um die zwei Gates (Promotion vs. Release, `promote`, `should_deploy`, `should_release`), die Allowlist aus `scripts/catalog-only.mjs` (`public/data/handmade.json` plus `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<Endung>`, alles andere gemischt und damit bump-pflichtig), den Gleichstand mit Katalog-Diff, den unveränderten Footer bei Daten-Deploys, `force_deploy` als Retry, den Rollback über `git revert -m 1 <merge-commit>` ohne eigenen `data-*`-Tag und das weiterhin strenge Gate von `fd-promote-prd` erweitert; „Wo die Version sichtbar ist“ präzisiert. `docs/features/fr008-ha-manager.md`: neuer Abschnitt „Produktions-Deploy ohne Versions-Bump“ mit Nutzerverhalten, Footer-Version, gemischtem Diff und dem einmaligen Release 1.0.12, der die neue Workflow-Fassung erstmals nach `main` bringt.
+
+**Why:** Nick hat in `fd-deploy-prd.yml` (Commit `f2620d2`, PR #310) den Katalog-Schnellweg umgesetzt; die Dokumentation behauptete bis dahin, `main` brauche immer einen Versions-Bump. Belegt am echten Diff: `scripts/catalog-only.mjs`, der `equal`-Zweig in `dev_gate`, `decide` mit `should_deploy`/`should_release` und der neue Eingang `force_deploy`.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
