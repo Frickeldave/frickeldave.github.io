@@ -107,12 +107,13 @@ veröffentlicht wird.
 
 - `dev_version > latest_stable`: `promote=true`, Merge `dev` → `main`,
   `should_release=true`.
-- `dev_version == latest_stable` mit nicht leerem Diff
-  `origin/main..origin/dev`, der ausschließlich verwaltete Katalog- und
-  Produktbildpfade enthält: `promote=true` („Katalog-Merge ohne Release“),
-  `should_deploy=true`, `should_release=false`.
-- `dev_version == latest_stable` mit leerem oder gemischtem Diff:
-  `promote=false`, kein Merge, grüner Lauf.
+- `dev_version == latest_stable` mit mindestens einem verwalteten Katalogpfad
+  und ohne seitenrelevanten Pfad (`promote_safe`): `promote=true`
+  („Katalog-Merge ohne Release“), `should_deploy=true`,
+  `should_release=false`.
+- `dev_version == latest_stable` mit leerem Diff, ausschließlich neutralen
+  Pfaden oder einem seitenrelevanten Pfad: `promote=false`, kein Merge, grüner
+  Lauf.
 - `dev_version < latest_stable`: `::error::` und Exit 1, weil `dev` hinter
   `main` zurückliegt.
 
@@ -123,22 +124,56 @@ letzte stabile Release oder noch kein stabiles Release existiert. Der
 Pages-Deploy läuft bei `should_deploy`, Tag und GitHub-Release zusätzlich nur
 bei `should_release`.
 
-### Allowlist des Katalog-Schnellwegs
+### Klassifikation des Katalog-Schnellwegs
 
-`scripts/catalog-only.mjs` klassifiziert den Diff `main..dev` und spiegelt exakt
-`_is_managed_path`/`_MANAGED_IMAGE_RE` der Store-Sync-Integration:
+`scripts/catalog-only.mjs` klassifiziert den Diff `main..dev` zweistufig:
+
+| Wert | Bedeutung | Entscheidet |
+| --- | --- | --- |
+| `catalog_only` | Diff besteht ausschließlich aus verwaltetem Katalogmaterial | nur Reporting |
+| `promote_safe` | mindestens ein Katalogpfad und kein seitenrelevanter Pfad | Gate 1 bei gleicher Version |
+
+Verwaltet sind exakt die Pfade aus `_is_managed_path`/`_MANAGED_IMAGE_RE` der
+Store-Sync-Integration:
 
 - `public/data/handmade.json`,
 - `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<Endung>` mit
   `jpg`, `jpeg`, `png`, `webp` oder `gif`, wobei die Artikelnummer mit ihrer
   Kategorie beginnt und jede tiefere Ebene fremd ist.
 
-Alles andere ist Website-Inhalt und damit kein reiner Katalog-Deploy:
-`3dmodels/**`, `public/data/news.json`, `public/data/link-mappings.json`,
-Workflows, Dokumentation und Quellcode. Ein gemischter Diff braucht weiterhin
-einen Versions-Bump; ohne ihn bleibt die Promotion bei gleicher Version aus.
-Pfade mit Backslash, absolute Pfade, `..`-Segmente und leere Segmente gelten nie
-als verwaltet.
+Seitenrelevant — und damit weiterhin release-pflichtig — ist eine explizite
+Deny-List:
+
+- `src/**` (Seitenquellen, Komponenten, Bilder; die verwalteten Produktbilder
+  ausgenommen, `src/assets/handmade/3dmodels/**` eingeschlossen),
+- `public/**` außer `public/data/handmade.json`, also auch
+  `public/data/news.json` und `public/data/link-mappings.json`, weil Astro
+  `public/` unverändert ins Build-Ergebnis kopiert,
+- `astro.config.mjs`, `tailwind.config.js`, `tailwind.config.mjs`,
+  `postcss.config.js`, `tsconfig.json`, `package.json`, `package-lock.json`,
+  `wrangler.jsonc`,
+- `scripts/build-*` und `scripts/install-*`.
+
+Alles andere gilt als deploy-neutral: `docs/**`, `.squad/**`, `.github/**`,
+`.husky/**`, `test/**`, `README.md`, `CHANGELOG.md`, `LICENSE`, `metadata.json`,
+`scripts/*` außerhalb der beiden Build-Präfixe sowie Tooling-Konfigurationen wie
+`.vale*`, `.prettier*`, `eslint.config.mjs` und `commitlint.config.js`. Nicht
+sicher auswertbare Pfade — Backslash, absolute Pfade, `..`-Segmente, leere
+Segmente — gelten fail-closed als seitenrelevant.
+
+`promote_safe` verlangt mindestens einen Katalogpfad. Ein Diff aus
+ausschließlich Dokumentation oder Governance promotet also nicht: Ohne
+Katalogänderung gibt es nichts zu veröffentlichen. Sobald aber ein Katalogpfad
+dabei ist, reisen die neutralen Änderungen mit — genau dafür ist die Stufe da,
+denn Entscheidungsnotizen, Dokumentation und Workflow-Anpassungen sammeln sich
+auf `dev` an und sollen einen Katalog-Publish nicht blockieren. Ein einziger
+seitenrelevanter Pfad kippt den ganzen Diff: Dann bleibt es beim Release mit
+Versions-Bump.
+
+Die Notice unterscheidet beide Fälle ausdrücklich — „nur Katalog“ bei
+`catalog_only`, „Katalog plus unkritische Pfade“ sonst — und nennt zusätzlich
+die Klassifikation. Gate 2, `force_deploy` und die Release-Bedingungen bleiben
+unverändert: Ein Fast-Path deployt Pages und erzeugt keinen Tag.
 
 Ein reiner Katalog-Deploy lässt `version` in `package.json` unverändert. Die
 Footer-Version der Website bleibt damit gleich, weil sie den Stand des Builds
