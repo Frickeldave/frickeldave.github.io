@@ -621,6 +621,26 @@ Dienste → Frickeldave Store Sync**; die nötigen Berechtigungen stehen unter
 [Token-Berechtigungen](#token-berechtigungen). Das Feld ist write-only; die Oberfläche zeigt nur
 **Token hinterlegt**.
 
+### Produktions-Deploy ohne Versions-Bump
+
+Ein Prod-Publish, der ausschließlich den Katalog und Produktbilder ändert, braucht seit dem
+Katalog-Schnellweg keinen Versions-Bump mehr:
+
+- `fd-deploy-prd` vergleicht den Diff `main..dev`. Enthält er nur `public/data/handmade.json` und
+  Bilder nach dem Muster `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<Endung>`,
+  mergt der Workflow nach `main` und deployt Pages, ohne die Version zu erhöhen.
+- Die Footer-Version der Website bleibt in diesem Fall gleich; sie ändert sich nur mit einem
+  Release. Tag und GitHub-Release entstehen ausschließlich, wenn `package.json` höher steht als das
+  letzte stabile Release.
+- Ein gemischter Diff — etwa eine geänderte Seite, ein Workflow oder eine Datei außerhalb der
+  Allowlist — braucht weiterhin einen regulären Release mit Versions-Bump.
+- Der erste Lauf mit diesem Weg ist der normale Release 1.0.12; er bringt die neue
+  Workflow-Fassung erstmals nach `main`. Solange `main` sie noch nicht trägt, verhält sich ein
+  Prod-Publish wie bisher und erwartet einen Versions-Bump.
+
+Details zu beiden Gates, `force_deploy` und dem Rollback stehen unter
+[Versionierung und Release](../workflow/versionierung%20und%20release.md).
+
 ### Verwaltete Pfade
 
 Beim Veröffentlichen darf die Erweiterung im Website-Repository nur anfassen, was sie selbst
