@@ -12,6 +12,41 @@ fi
 
 repo_dir="${FD_REPO_DIR:-${HOME}/frickeldave.github.io}"
 
+# Diagnosewerte (Issue #303) einmal ermitteln; alles rein offline.
+memory_bytes=$(fd_memory_limit 2>/dev/null || echo unknown)
+uptime_seconds=$(fd_container_uptime 2>/dev/null || echo unknown)
+restart_hint=$(fd_restart_hint 2>/dev/null || echo unknown)
+
+case "${memory_bytes}" in
+    '' | *[!0-9]*) memory_display="unknown" ;;
+    *)
+        if [ "${memory_bytes}" -ge 1073741824 ]; then
+            memory_display="${memory_bytes} bytes ($((memory_bytes / 1073741824)) GiB)"
+        elif [ "${memory_bytes}" -ge 1048576 ]; then
+            memory_display="${memory_bytes} bytes ($((memory_bytes / 1048576)) MiB)"
+        else
+            memory_display="${memory_bytes} bytes"
+        fi
+        ;;
+esac
+
+case "${uptime_seconds}" in
+    '' | *[!0-9]*) uptime_display="unknown" ;;
+    *) uptime_display="${uptime_seconds} s" ;;
+esac
+
+# Dieselbe 600-s-Schwelle wie fd_restart_hint: ein so junger Container wurde
+# wahrscheinlich gerade neu gestartet (z. B. OOMKill, exitCode 137).
+warn_line=""
+case "${uptime_seconds}" in
+    '' | *[!0-9]*) ;;
+    *)
+        if [ "${uptime_seconds}" -lt 600 ]; then
+            warn_line=$'\n  WARN: container uptime < 600 s — restart suspected'
+        fi
+        ;;
+esac
+
 cat <<BANNER
 
 === fd dev machine ===
@@ -20,6 +55,10 @@ cat <<BANNER
   tmux installed       : $(fd_yes_no fd_tmux_installed)
   Copilot CLI logged in: $(fd_copilot_status)
   $(fd_copilot_provider_line)
+
+  Container-Uptime: ${uptime_display}
+  Memory-Limit: ${memory_display}
+  Restart: ${restart_hint}${warn_line}
 
   Run 'fd-setup' to log in and clone the repository (guided).
   Also in VS Code Remote-SSH: open a new terminal (Terminal > New Terminal) to see this banner.

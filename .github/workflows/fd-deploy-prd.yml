@@ -8,36 +8,51 @@ on:
         required: false
         default: false
         type: boolean
+      force_deploy:
+        description: "Force a Pages deploy without a new merge (retry after a failed deploy)"
+        required: false
+        default: false
+        type: boolean
 
 # Phasen: ci-gate dispatcht fd-ci und wartet (actions: write); promote merged
 # dev nach main (contents: write); deploy-pages baut und veröffentlicht die Seite
 # (pages + id-token); release taggt und veröffentlicht erst NACH einem erfolgreichen
 # Pages-Deploy (contents: write), damit ein fehlgeschlagener Deploy keine Version verbraucht.
 #
-# Release-Modell und Zustandslogik:
+# Release-Modell und Zustandslogik — zwei getrennte Gates:
 # dev-Releases    = Pre-Releases `dev-v<version>` (fd-deploy-dev), nie nach Produktion
 # deployt und nie als Vergleichsbasis verwendet.
 # stabile Releases = `v<version>`, `isPrerelease == false`, kein `dev-v`-Tag.
 # `promote` vergleicht nur gegen das neueste davon, ein dev-Pre-Release kann eine
 # Promotion daher nie blockieren.
 #
-# promote (Outputs: dev_version, latest_stable, relation, main_version, should_deploy)
-# dev_version  > latest_stable → `relation=greater`: Merge dev→main (ein zweiter Lauf
-#                                ist ein No-Op: „Already up to date"),
-#                                danach wird die Version aus main gelesen.
-# dev_version == latest_stable → `relation=equal`: kein Merge, `newer=false`,
-#                                ::notice:: „nichts zu promoten", Lauf bleibt grün.
+# Gate 1 — „darf nach main?" (`promote`, Outputs: relation, newer, promote)
+# dev_version  > latest_stable → `relation=greater`: promote=true, Merge dev→main
+#                                (ein zweiter Lauf ist ein No-Op: „Already up to date").
+# dev_version == latest_stable → `relation=equal`:
+#                                Diff `origin/main..origin/dev` besteht ausschließlich
+#                                aus verwalteten Katalog-/Produktbildpfaden und ist
+#                                nicht leer (scripts/catalog-only.mjs, Allowlist wie
+#                                `_is_managed_path` in der Store-Sync-Integration)
+#                                → promote=true, ::notice:: „Katalog-Merge ohne Release".
+#                                sonst → promote=false, kein Merge, Lauf bleibt grün.
 # dev_version  < latest_stable → `relation=less`: ::error:: und exit 1 (dev liegt
 #                                hinter main zurück, echter Anomaliezustand).
-# main_version  > latest_stable → should_deploy=true  → deploy-pages + release.
-# main_version <= latest_stable → should_deploy=false → beide werden übersprungen,
-# der Lauf bleibt grün mit einem ::notice::
-# („nichts zu deployen, main ist bereits
-# veröffentlicht"). Ein erneuter Versuch nach einem fehlgeschlagenen
-# Deploy braucht daher keinen Versions-Bump.
+# `main` darf damit Daten-Commits ohne Release enthalten; die Footer-Version bleibt
+# bei einem reinen Daten-Deploy unverändert.
+#
+# Gate 2 — „ist das ein Release?" (`decide`, Outputs: main_version, tag,
+# should_deploy, should_release)
+# should_deploy  = main hat sich durch den Merge geändert (Diff vor/nach dem Merge)
+#                  || force_deploy (Retry nach fehlgeschlagenem Pages-Deploy).
+# should_release = main_version > latest_stable (bzw. noch kein stabiles Release).
+# deploy-pages läuft bei should_deploy; release zusätzlich nur bei should_release.
+# Ein Katalog-Deploy erzeugt daher nie einen Tag oder ein Release.
 #
 # dry_run: Nichts wird gemerged, dispatcht, getaggt, veröffentlicht oder deployt; die
 # Promotion-Entscheidung wird trotzdem berechnet und ausgegeben.
+#
+# fd-promote-prd (manueller Weg) behält bis zum Follow-up den strengen Versions-Gate.
 permissions:
   contents: write
   actions: write
@@ -104,7 +119,10 @@ jobs:
       dev_version: ${{ steps.version.outputs.version }}
       latest_stable: ${{ steps.latest.outputs.tag }}
       main_version: ${{ steps.decide.outputs.main_version }}
+      catalog_only: ${{ steps.diff.outputs.catalog_only }}
+      changed_files: ${{ steps.diff.outputs.changed_files }}
       should_deploy: ${{ steps.decide.outputs.should_deploy }}
+      should_release: ${{ steps.decide.outputs.should_release }}
       tag: ${{ steps.decide.outputs.tag }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 #v4
@@ -133,15 +151,6 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "📦 Version: $VERSION (tag: v$VERSION)"
 
-      - name: Validate version consistency with CHANGELOG
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if ! grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
-            echo "::error::Version $VERSION not found in CHANGELOG.md — update CHANGELOG.md before promoting."
-            exit 1
-          fi
-          echo "✅ Version $VERSION has a CHANGELOG entry"
-
       # Nur stabile Releases zählen als Basis. `gh release list` ist absteigend nach
       # Erstellungsdatum sortiert; Drafts blockieren nie, `dev-v*`-Pre-Releases werden
       # doppelt ausgeschlossen (isPrerelease und Tag-Prefix), damit sie eine Promotion
@@ -161,20 +170,48 @@ jobs:
           fi
           echo "tag=$LATEST" >> "$GITHUB_OUTPUT"
 
-      # Dreiwertig: größer → promoten, gleich → No-Op (grün), kleiner → Fehler.
-      # „Gleich" ist der Normalfall nach einer Promotion und darf keinen roten Lauf
-      # erzeugen; „kleiner" heißt, dass `dev` hinter `main` zurückliegt — ein echter
-      # Anomaliezustand, der laut scheitern muss.
+      # Allowlist exakt wie `_is_managed_path`/`_MANAGED_IMAGE_RE` in der
+      # Store-Sync-Integration: nur public/data/handmade.json und Produktbilder unter
+      # src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<ext>.
+      # 3dmodels/**, public/data/news.json und public/data/link-mappings.json sind
+      # Website-Inhalt und damit kein reiner Katalog-Deploy.
+      - name: Classify dev → main diff
+        id: diff
+        run: |
+          set -euo pipefail
+          CHANGED_LIST=$(git diff --name-only origin/main origin/dev)
+          CHANGED_FILES=0
+          if [ -n "$CHANGED_LIST" ]; then
+            CHANGED_FILES=$(printf '%s\n' "$CHANGED_LIST" | wc -l | tr -d ' ')
+          fi
+          echo "changed_files=$CHANGED_FILES" >> "$GITHUB_OUTPUT"
+          if printf '%s\n' "$CHANGED_LIST" | node scripts/catalog-only.mjs; then
+            echo "catalog_only=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "catalog_only=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "🔎 $CHANGED_FILES geänderte Datei(en) zwischen main und dev"
+
+      # Drei Relationen plus Katalog-Sonderfall. „Gleich" ist der Normalfall nach
+      # einer Promotion und darf keinen roten Lauf erzeugen — es sei denn, der Diff
+      # ist nicht leer und besteht ausschließlich aus verwalteten Katalog-/
+      # Produktbildpfaden. Dann darf auch ohne Versions-Bump nach main promotet
+      # werden (Gate 1). „Kleiner" heißt, dass `dev` hinter `main` zurückliegt — ein
+      # echter Anomaliezustand, der laut scheitern muss.
       - name: Decide whether dev is ahead of the latest stable release
         id: dev_gate
         env:
           DEV_VERSION: ${{ steps.version.outputs.version }}
           LATEST_TAG: ${{ steps.latest.outputs.tag }}
+          CATALOG_ONLY: ${{ steps.diff.outputs.catalog_only }}
+          CHANGED_FILES: ${{ steps.diff.outputs.changed_files }}
         run: |
           set -euo pipefail
           if [ -z "$LATEST_TAG" ]; then
             echo "relation=none" >> "$GITHUB_OUTPUT"
             echo "newer=true" >> "$GITHUB_OUTPUT"
+            echo "promote=true" >> "$GITHUB_OUTPUT"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Noch kein stabiles Release — dev $DEV_VERSION wird promotet."
             exit 0
           fi
@@ -193,55 +230,91 @@ jobs:
           case "$RELATION" in
             greater)
               echo "newer=true" >> "$GITHUB_OUTPUT"
+              echo "promote=true" >> "$GITHUB_OUTPUT"
+              echo "should_release=true" >> "$GITHUB_OUTPUT"
               echo "::notice::dev $DEV_VERSION > letztes stabiles Release $LATEST_TAG — dev wird nach main promotet."
               ;;
             equal)
               echo "newer=false" >> "$GITHUB_OUTPUT"
-              echo "::notice::dev entspricht bereits dem letzten stabilen Release $LATEST_TAG — nichts zu promoten, kein Merge."
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
+              if [ "$CATALOG_ONLY" = "true" ] && [ "$CHANGED_FILES" -gt 0 ]; then
+                echo "promote=true" >> "$GITHUB_OUTPUT"
+                echo "::notice::dev entspricht dem letzten stabilen Release $LATEST_TAG, aber der Diff ist ausschließlich Katalog-/Produktbildmaterial ($CHANGED_FILES Datei(en)) — Merge nach main ohne Release, die Footer-Version bleibt unverändert."
+              else
+                echo "promote=false" >> "$GITHUB_OUTPUT"
+                echo "::notice::dev entspricht bereits dem letzten stabilen Release $LATEST_TAG — nichts zu promoten, kein Merge."
+              fi
               ;;
             less)
               echo "newer=false" >> "$GITHUB_OUTPUT"
+              echo "promote=false" >> "$GITHUB_OUTPUT"
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
               echo "::error::dev $DEV_VERSION ist älter als das letzte stabile Release $LATEST_TAG. dev liegt hinter main — Version in package.json prüfen und dev nachziehen."
               exit 1
               ;;
             *)
               echo "newer=false" >> "$GITHUB_OUTPUT"
+              echo "promote=false" >> "$GITHUB_OUTPUT"
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
               echo "::error::Unerwartetes Vergleichsergebnis \"$RELATION\"."
               exit 1
               ;;
           esac
 
-      - name: Dry run — show plan
-        if: ${{ inputs.dry_run }}
+      # Release-Buchhaltung nur prüfen, wenn dieser Lauf tatsächlich ein Release
+      # erzeugen kann. Ein reiner Katalog-Deploy (relation=equal) darf nie an
+      # CHANGELOG/Version scheitern. Bewusst VOR dem Merge, damit main ohne
+      # vollständige Buchhaltung nicht vorrückt.
+      - name: Validate version consistency with CHANGELOG
+        if: ${{ steps.dev_gate.outputs.should_release == 'true' }}
         run: |
-          echo "🔍 DRY RUN — no changes will be made."
-          echo "dev version      : ${{ steps.version.outputs.version }}"
-          echo "latest stable rel: ${{ steps.latest.outputs.tag }}"
-          echo "relation         : ${{ steps.dev_gate.outputs.relation }}"
-          echo "dev is ahead     : ${{ steps.dev_gate.outputs.newer }}"
-          echo "Would merge origin/dev into main with message:"
-          echo "  chore(release): promote dev to main v${{ steps.version.outputs.version }}"
-          echo "Then: build + deploy the site to GitHub Pages."
-          echo "Then (only if deploy succeeds): tag and release: ${{ steps.version.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
+            echo "::error::Version $VERSION not found in CHANGELOG.md — update CHANGELOG.md before promoting."
+            exit 1
+          fi
+          echo "✅ Version $VERSION has a CHANGELOG entry"
+
+      - name: Remember main before promotion
+        id: main_before
+        run: echo "sha=$(git rev-parse origin/main)" >> "$GITHUB_OUTPUT"
 
       - name: Merge dev → main
-        # Nur wenn dev tatsächlich eine neuere Version trägt; sonst würde der Merge
-        # main ohne Deploy verschieben. Ein wiederholter Lauf merged nichts.
-        if: ${{ !inputs.dry_run && steps.dev_gate.outputs.newer == 'true' }}
+        # Gate 1: nur wenn `promote=true` (neuere Version oder nicht-leerer,
+        # ausschließlich verwalteter Katalog-Diff). Ein wiederholter Lauf merged nichts.
+        if: ${{ !inputs.dry_run && steps.dev_gate.outputs.promote == 'true' }}
         run: |
           git checkout main
-          git merge origin/dev --no-ff -m "chore(release): promote dev to main v${{ steps.version.outputs.version }}"
+          if [ "${{ steps.dev_gate.outputs.relation }}" = "equal" ]; then
+            git merge origin/dev --no-ff -m "chore(deploy): promote catalog-only changes from dev"
+          else
+            git merge origin/dev --no-ff -m "chore(release): promote dev to main v${{ steps.version.outputs.version }}"
+          fi
           git push origin main
           echo "✅ Pushed main"
 
-      # Der deployte Zustand wird von main bestimmt, nicht von dev: Nach dem Merge
-      # entscheidet die Version in main, ob Pages und das stabile Release laufen.
+      # Gate 2 — „ist das ein Release?": Der deployte Zustand wird von main bestimmt,
+      # nicht von dev. `MAIN_BEFORE` ist der main-Stand vor dem Merge; nur wenn main
+      # dadurch vorgerückt ist, gibt es etwas zu deployen. Ohne Merge bleibt main
+      # unverändert — dann deckt nur `force_deploy` einen Retry ab.
       - name: Read version from main and decide
         id: decide
         env:
           LATEST_TAG: ${{ steps.latest.outputs.tag }}
+          MAIN_BEFORE: ${{ steps.main_before.outputs.sha }}
+          PROMOTE: ${{ steps.dev_gate.outputs.promote }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          FORCE_DEPLOY: ${{ inputs.force_deploy }}
         run: |
-          MAIN_VERSION=$(git show origin/main:package.json | node -e '
+          set -euo pipefail
+          if [ "$PROMOTE" = "true" ]; then
+            # Im Dry-Run ist HEAD noch dev; dessen Version ist die hypothetische
+            # main-Version nach dem Merge. Im echten Lauf ist HEAD der Merge-Commit.
+            VERSION_REF="HEAD"
+          else
+            VERSION_REF="origin/main"
+          fi
+          MAIN_VERSION=$(git show "$VERSION_REF":package.json | node -e '
             let data = "";
             process.stdin.on("data", (chunk) => (data += chunk));
             process.stdin.on("end", () => console.log(JSON.parse(data).version));
@@ -250,9 +323,32 @@ jobs:
           echo "tag=v$MAIN_VERSION" >> "$GITHUB_OUTPUT"
           echo "🔎 Version on main: $MAIN_VERSION"
 
-          if [ -z "$LATEST_TAG" ]; then
+          CHANGED_FILES=0
+          if [ "$PROMOTE" = "true" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              COMPARE_HEAD="origin/dev"
+            else
+              COMPARE_HEAD="HEAD"
+            fi
+            CHANGED_LIST=$(git diff --name-only "$MAIN_BEFORE" "$COMPARE_HEAD")
+            if [ -n "$CHANGED_LIST" ]; then
+              CHANGED_FILES=$(printf '%s\n' "$CHANGED_LIST" | wc -l | tr -d ' ')
+            fi
+          fi
+          echo "changed_files=$CHANGED_FILES" >> "$GITHUB_OUTPUT"
+          echo "🔎 main changes since promotion start: $CHANGED_FILES Datei(en)"
+
+          if [ "$CHANGED_FILES" -gt 0 ] || [ "$FORCE_DEPLOY" = "true" ]; then
             echo "should_deploy=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::No stable release yet — main $MAIN_VERSION is deployed."
+            echo "::notice::main hat sich geändert ($CHANGED_FILES Datei(en)) — Pages wird deployt."
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Nichts zu deployen: main ist unverändert. deploy-pages und release werden übersprungen; für einen Retry nach fehlgeschlagenem Deploy force_deploy=true setzen."
+          fi
+
+          if [ -z "$LATEST_TAG" ]; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::No stable release yet — main $MAIN_VERSION is released."
           elif MAIN="$MAIN_VERSION" BASE="$LATEST_TAG" node -e '
             const parse = (v) => String(v).replace(/^v/, "").split(".").map(Number);
             const a = parse(process.env.MAIN);
@@ -264,12 +360,29 @@ jobs:
             }
             process.exit(1);
           '; then
-            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::main $MAIN_VERSION > latest stable release $LATEST_TAG — deploying."
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::main $MAIN_VERSION > latest stable release $LATEST_TAG — releasing after a successful deploy."
           else
-            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Nichts zu deployen: main $MAIN_VERSION ist nicht höher als das letzte stabile Release $LATEST_TAG. deploy-pages und release werden übersprungen."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Kein Release: main $MAIN_VERSION ist nicht höher als das letzte stabile Release $LATEST_TAG (Katalog-Deploy ohne Versions-Bump)."
           fi
+
+      - name: Dry run — show plan
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 DRY RUN — no changes will be made."
+          echo "dev version      : ${{ steps.version.outputs.version }}"
+          echo "latest stable rel: ${{ steps.latest.outputs.tag }}"
+          echo "relation         : ${{ steps.dev_gate.outputs.relation }}"
+          echo "promote to main  : ${{ steps.dev_gate.outputs.promote }}"
+          echo "catalog only     : ${{ steps.diff.outputs.catalog_only }} (${{ steps.diff.outputs.changed_files }} Datei(en) main..dev)"
+          echo "version on main  : ${{ steps.decide.outputs.main_version }}"
+          echo "would deploy     : ${{ steps.decide.outputs.should_deploy }}"
+          echo "would release    : ${{ steps.decide.outputs.should_release }}"
+          echo "force deploy     : ${{ inputs.force_deploy }}"
+          echo "Would merge origin/dev into main when promote=true."
+          echo "Then: build + deploy the site to GitHub Pages when should_deploy=true."
+          echo "Then (only if deploy succeeds): tag and release ${{ steps.decide.outputs.tag }} when should_release=true."
 
       - name: Write promotion summary
         if: ${{ always() }}
@@ -281,9 +394,14 @@ jobs:
             echo "|---|---|"
             echo "| dev version | \`${{ steps.version.outputs.version }}\` |"
             echo "| latest stable release | \`${{ steps.latest.outputs.tag }}\` |"
-            echo "| dev ahead of stable | \`${{ steps.dev_gate.outputs.newer }}\` |"
+            echo "| relation | \`${{ steps.dev_gate.outputs.relation }}\` |"
+            echo "| catalog only (main..dev) | \`${{ steps.diff.outputs.catalog_only }}\` (${{ steps.diff.outputs.changed_files }} Datei(en)) |"
+            echo "| promote dev → main | \`${{ steps.dev_gate.outputs.promote }}\` |"
             echo "| version on main | \`${{ steps.decide.outputs.main_version }}\` |"
-            echo "| deploy + release | \`${{ steps.decide.outputs.should_deploy }}\` |"
+            echo "| deploy | \`${{ steps.decide.outputs.should_deploy }}\` |"
+            echo "| release | \`${{ steps.decide.outputs.should_release }}\` |"
+            echo "| changed by promotion | \`${{ steps.decide.outputs.changed_files }}\` |"
+            echo "| force deploy | \`${{ inputs.force_deploy }}\` |"
             echo "| dry run | \`${{ inputs.dry_run }}\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -294,10 +412,9 @@ jobs:
   deploy-pages:
     name: Build & deploy to GitHub Pages
     needs: promote
-    # Läuft nur, wenn main wirklich eine Version über dem letzten stabilen
-    # Release trägt (siehe Zustandslogik im Kopf); sonst bleibt der Lauf grün,
-    # ohne zu deployen.
-    if: ${{ !inputs.dry_run && needs.promote.outputs.should_deploy == 'true' }}
+    # Gate 2: Deployt nur, wenn main durch den Merge vorgerückt ist oder
+    # force_deploy einen Retry nach fehlgeschlagenem Deploy erzwingt.
+    if: ${{ !inputs.dry_run && (needs.promote.outputs.should_deploy == 'true' || inputs.force_deploy) }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -324,7 +441,9 @@ jobs:
   release:
     name: Tag & release (after Pages deploy)
     needs: deploy-pages
-    if: ${{ !inputs.dry_run && needs.promote.outputs.should_deploy == 'true' }}
+    # Release nur bei echter Versionserhöhung — ein Katalog-Deploy ohne Bump
+    # deployt Pages, erzeugt aber keinen Tag und kein Release.
+    if: ${{ !inputs.dry_run && needs.promote.outputs.should_deploy == 'true' && needs.promote.outputs.should_release == 'true' }}
     runs-on: ubuntu-latest
     steps:
       # Verzögerter Tag und Release: läuft erst nach erfolgreichem deploy-pages, damit ein

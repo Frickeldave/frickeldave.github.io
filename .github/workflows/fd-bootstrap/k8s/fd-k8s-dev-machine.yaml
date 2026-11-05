@@ -77,14 +77,20 @@ spec:
               drop:
                 - ALL
           # Cluster-Policy verlangt cpu und memory für Requests und Limits.
-          # 4 CPUs decken die Node-/Playwright-/Test-Runner-Last einer interaktiven Dev-Maschine.
+          # Defaults: 16 GiB Limit, weil die Grundlast des Containers (~3,7 GiB)
+          # plus Build-Peak (~8 GiB) das frühere 8-GiB-Limit sprengte (OOMKilled,
+          # exitCode 137, Issue #303). 2 GiB Request halten das Scheduling günstig;
+          # schwere Builds gehören trotzdem nicht in den Dev-Pod.
+          # Alle vier Werte überschreibt der Workflow über die Dispatch-Eingaben
+          # dev_cpu_request / dev_memory_request / dev_cpu_limit / dev_memory_limit
+          # bzw. `dev-machines.mjs render --cpu-request/--memory-request/--cpu-limit/--memory-limit`.
           resources:
             requests:
-              cpu: 100m
-              memory: 2Gi
+              cpu: "__CPU_REQUEST__"
+              memory: "__MEMORY_REQUEST__"
             limits:
-              cpu: "4"
-              memory: 8Gi
+              cpu: "__CPU_LIMIT__"
+              memory: "__MEMORY_LIMIT__"
 ---
 apiVersion: v1
 kind: Service

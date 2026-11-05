@@ -92,12 +92,14 @@ export type HandmadeItem = {
   name: string;
   description: string;
   picture: string;
-  category: "3D-Druck" | "Holz" | "Laser" | "Epoxidharz";
+  category: "3D" | "EP" | "LA" | "SB" | "WO";
   tags: string[];
   price: number;
   size?: string;
   visible: boolean;
   customizable: boolean;
+  stock?: number;
+  salesCabinet?: number;
 };
 
 export type HandmadeData = {
