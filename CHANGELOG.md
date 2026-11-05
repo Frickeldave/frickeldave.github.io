@@ -11,10 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Produktions-Deploy ohne Versions-Bump: `fd-deploy-prd` mergt `dev` nach `main` und deployt Pages jetzt auch dann, wenn `dev` dieselbe Version wie das letzte stabile Release trägt und der Diff `main..dev` ausschließlich verwaltete Katalog- und Produktbildpfade enthält (`public/data/handmade.json`, `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<Endung>`). Tag und GitHub-Release entstehen weiterhin nur, wenn die Version auf `main` höher ist als das letzte stabile Release; der neue Eingang `force_deploy` wiederholt einen fehlgeschlagenen Pages-Deploy ohne neuen Merge. `fd-promote-prd` behält vorerst das strenge Versions-Gate (#289).
 - Katalog-Schnellweg für deploy-neutrale Pfade: Die Klassifikation `promote_safe` erlaubt bei gleicher Version neben Katalogmaterial auch Dokumentation, `.squad/`, `.github/`, `.husky/`, Tests, `CHANGELOG.md` und Tooling-Konfigurationen, weil sie das gebaute Seitenartefakt nicht verändern; `src/**`, `public/**` außer dem Katalog, Root-Build-Eingaben und `scripts/build-*`/`scripts/install-*` bleiben seitenrelevant und verlangen weiterhin ein Release. Die Promotion-Notice unterscheidet „nur Katalog“ von „Katalog plus unkritische Pfade“ und nennt die Klassifikation (#289).
+- Veröffentlichungsdialog (Basis 0.2.4): Die Übersicht zeigt nur noch **Produkte** und **Bilder**; die filterbare **Dateiliste** bleibt die Dateisicht (#289).
 
 ### Fixed
 
 - Prod-Publish: Ein 404 beim Workflow-Dispatch nennt jetzt den betroffenen Workflow, den Branch und das fehlende Recht `Actions: Read and write`, statt generisch „Repository oder Branch nicht gefunden“ zu melden; die Dokumentation erklärt die beiden Prüfungen im Options-Flow (Repository, Prod-Workflow `fd-deploy-prd.yml`) und am Fine-grained Token (#289).
+- Dry-Run und Prod-Publish (Erweiterung 0.1.5): Ein Lauf ohne Änderungen meldet kein Deployment mehr, und `fd-deploy-prd` wird nur noch bei neuen, geänderten oder entfernten Dateien ausgelöst (#289).
 
 ## [1.0.12] - 2026-11-05
 
