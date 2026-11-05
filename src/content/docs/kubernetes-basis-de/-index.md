@@ -14,11 +14,11 @@ Im Laufe der zwei Tage baut jeder Teilnehmer eine vollständige Container-Umgebu
 Anwendungen auf: Chromium Browser, Code-Server, mariadb und PHPMyAdmin -- alles hinter
 Ingress-Routing erreichbar.
 
-## Überblick
+## Inhaltsverzeichnis
 
-- 01 Einleitung -- Worum geht es, was entsteht am Ende
-- 02 Ziele / Methoden -- Lernziele und didaktisches Konzept
-- 03 Vorbereitung -- Umgebung einrichten, Tools installieren
-- 10 Tag 1 -- Kubernetes-Konzepte, Chromium und Code-Server deployen
-- 20 Tag 2 -- Resources, Probes, PVCs, Übung
-- 90 Glossar -- Alle Kubernetes-Fachbegriffe auf einen Blick
+- [01 Einleitung](/docs/kubernetes-basis-de/01-einleitung) -- Worum geht es, was entsteht am Ende
+- [02 Ziele / Methoden](/docs/kubernetes-basis-de/02-ziele-methoden) -- Lernziele und didaktisches Konzept
+- [03 Vorbereitung](/docs/kubernetes-basis-de/03-vorbereitung) -- Umgebung einrichten, Tools installieren
+- [10 Tag 1](/docs/kubernetes-basis-de/10-tag-1) -- Kubernetes-Konzepte, Chromium und Code-Server deployen
+- [20 Tag 2](/docs/kubernetes-basis-de/20-tag-2) -- Resources, Probes, PVCs, Übung
+- [90 Glossar](/docs/kubernetes-basis-de/90-glossar) -- Alle Kubernetes-Fachbegriffe auf einen Blick

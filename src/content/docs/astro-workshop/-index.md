@@ -25,26 +25,26 @@ Am Ende des Workshops hast du eine fertig lauffähige Plattform am Start:
 | Lokales Docker     | Optionale Entwicklungsumgebung mit Nginx                            |
 | KI-Übersetzung     | Automatische Übersetzung Deutsch→Englisch via adesso AI Hub         |
 
-## Workshop-Überblick
+## Inhaltsverzeichnis
 
 ### Phase 0—Grundlagen
 
-- 01 Einleitung—Worum geht es, was entsteht, für wen ist dieser Workshop
-- 02 Ziele & Methoden—Lernziele und didaktisches Konzept
-- 03 Vorbereitung—Umgebung einrichten, Astrogon-Fork klonen
+- [01 Einleitung](/docs/astro-workshop/01-einleitung)—Worum geht es, was entsteht, für wen ist dieser Workshop
+- [02 Ziele & Methoden](/docs/astro-workshop/02-ziele-methoden)—Lernziele und didaktisches Konzept
+- [03 Vorbereitung](/docs/astro-workshop/03-vorbereitung)—Umgebung einrichten, Astrogon-Fork klonen
 
 ### Phase 1—Astro
 
-- 10 Astro Setup—Projektstruktur, GitHub Pages, CI/CD mit GitHub Actions
+- [10 Astro Setup](/docs/astro-workshop/10-astro-setup)—Projektstruktur, GitHub Pages, CI/CD mit GitHub Actions
 
 ### Phase 2—Linting
 
-- 20 ESLint—Code-Qualität: Installation, Konfiguration und Finetuning
-- 21 Prettier—Formatierung: Installation, Konfiguration und Finetuning
-- 22 Vale—Prosa-Linting: Installation, Styleguides und Finetuning
+- [20 ESLint](/docs/astro-workshop/20-linting-eslint)—Code-Qualität: Installation, Konfiguration und Finetuning
+- [21 Prettier](/docs/astro-workshop/21-linting-prettier)—Formatierung: Installation, Konfiguration und Finetuning
+- [22 Vale](/docs/astro-workshop/22-linting-vale)—Prosa-Linting: Installation, Styleguides und Finetuning
 
 ### Phase 3—Deployment & KI
 
-- 30 KI-Übersetzung—Automatische Übersetzung mit dem adesso AI Hub
-- 40 Weiter lernen—Empfehlungen, weiterführende Ressourcen und nächste Schritte
-- 90 Glossar—Alle Fachbegriffe auf einen Blick
+- [31 Deployment](/docs/astro-workshop/31-deployment)—GitHub Pages (primär) und lokales Docker (optional)
+- [32 KI-Integration](/docs/astro-workshop/32-ki-integration)—Automatische Übersetzung mit dem adesso AI Hub
+- [90 Glossar](/docs/astro-workshop/90-glossar)—Alle Fachbegriffe auf einen Blick
