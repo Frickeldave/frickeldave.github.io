@@ -88,15 +88,135 @@ sich geändert haben. Laufende Maschinen bleiben auf ihrem Image.
 
 ## Promote nach `main`
 
+`fd-deploy-prd` ist der Produktionspfad: Er prüft CI auf `dev`, promotet `dev`
+nach `main`, deployt Pages und veröffentlicht erst danach Tag und Release.
+`fd-promote-prd` ist der manuelle Weg davor und behält vorerst das strenge
+Versions-Gate (siehe unten).
+
+### Zwei Gates: Promotion und Release
+
+Seit dem Katalog-Schnellweg fragt der Produktions-Deploy zwei Dinge getrennt:
+
+| Gate | Frage | Entscheidung |
+| --- | --- | --- |
+| Promotion | Darf der Stand nach `main`? | `promote` |
+| Release | Ist das ein Release? | `should_release` |
+
+Dazwischen liegt der Deploy: `should_deploy` entscheidet, ob Pages gebaut und
+veröffentlicht wird.
+
+- `dev_version > latest_stable`: `promote=true`, Merge `dev` → `main`,
+  `should_release=true`.
+- `dev_version == latest_stable` mit mindestens einem verwalteten Katalogpfad
+  und ohne seitenrelevanten Pfad (`promote_safe`): `promote=true`
+  („Katalog-Merge ohne Release“), `should_deploy=true`,
+  `should_release=false`.
+- `dev_version == latest_stable` mit leerem Diff, ausschließlich neutralen
+  Pfaden oder einem seitenrelevanten Pfad: `promote=false`, kein Merge, grüner
+  Lauf.
+- `dev_version < latest_stable`: `::error::` und Exit 1, weil `dev` hinter
+  `main` zurückliegt.
+
+`should_deploy` ist wahr, wenn `main` sich durch den Merge geändert hat —
+gemessen am Vergleich vor und nach dem Merge — oder wenn `force_deploy` gesetzt
+ist. `should_release` ist wahr, wenn die Version auf `main` höher ist als das
+letzte stabile Release oder noch kein stabiles Release existiert. Der
+Pages-Deploy läuft bei `should_deploy`, Tag und GitHub-Release zusätzlich nur
+bei `should_release`.
+
+### Klassifikation des Katalog-Schnellwegs
+
+`scripts/catalog-only.mjs` klassifiziert den Diff `main..dev` zweistufig:
+
+| Wert | Bedeutung | Entscheidet |
+| --- | --- | --- |
+| `catalog_only` | Diff besteht ausschließlich aus verwaltetem Katalogmaterial | nur Reporting |
+| `promote_safe` | mindestens ein Katalogpfad und kein seitenrelevanter Pfad | Gate 1 bei gleicher Version |
+
+Verwaltet sind exakt die Pfade aus `_is_managed_path`/`_MANAGED_IMAGE_RE` der
+Store-Sync-Integration:
+
+- `public/data/handmade.json`,
+- `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<Endung>` mit
+  `jpg`, `jpeg`, `png`, `webp` oder `gif`, wobei die Artikelnummer mit ihrer
+  Kategorie beginnt und jede tiefere Ebene fremd ist.
+
+Seitenrelevant — und damit weiterhin release-pflichtig — ist eine explizite
+Deny-List:
+
+- `src/**` (Seitenquellen, Komponenten, Bilder; die verwalteten Produktbilder
+  ausgenommen, `src/assets/handmade/3dmodels/**` eingeschlossen),
+- `public/**` außer `public/data/handmade.json`, also auch
+  `public/data/news.json` und `public/data/link-mappings.json`, weil Astro
+  `public/` unverändert ins Build-Ergebnis kopiert,
+- `astro.config.mjs`, `tailwind.config.js`, `tailwind.config.mjs`,
+  `postcss.config.js`, `tsconfig.json`, `package.json`, `package-lock.json`,
+  `wrangler.jsonc`,
+- `scripts/build-*` und `scripts/install-*`.
+
+Alles andere gilt als deploy-neutral: `docs/**`, `.squad/**`, `.github/**`,
+`.husky/**`, `test/**`, `README.md`, `CHANGELOG.md`, `LICENSE`, `metadata.json`,
+`scripts/*` außerhalb der beiden Build-Präfixe sowie Tooling-Konfigurationen wie
+`.vale*`, `.prettier*`, `eslint.config.mjs` und `commitlint.config.js`. Nicht
+sicher auswertbare Pfade — Backslash, absolute Pfade, `..`-Segmente, leere
+Segmente — gelten fail-closed als seitenrelevant.
+
+`promote_safe` verlangt mindestens einen Katalogpfad. Ein Diff aus
+ausschließlich Dokumentation oder Governance promotet also nicht: Ohne
+Katalogänderung gibt es nichts zu veröffentlichen. Sobald aber ein Katalogpfad
+dabei ist, reisen die neutralen Änderungen mit — genau dafür ist die Stufe da,
+denn Entscheidungsnotizen, Dokumentation und Workflow-Anpassungen sammeln sich
+auf `dev` an und sollen einen Katalog-Publish nicht blockieren. Ein einziger
+seitenrelevanter Pfad kippt den ganzen Diff: Dann bleibt es beim Release mit
+Versions-Bump.
+
+Die Notice unterscheidet beide Fälle ausdrücklich — „nur Katalog“ bei
+`catalog_only`, „Katalog plus unkritische Pfade“ sonst — und nennt zusätzlich
+die Klassifikation. Gate 2, `force_deploy` und die Release-Bedingungen bleiben
+unverändert: Ein Fast-Path deployt Pages und erzeugt keinen Tag.
+
+Ein reiner Katalog-Deploy lässt `version` in `package.json` unverändert. Die
+Footer-Version der Website bleibt damit gleich, weil sie den Stand des Builds
+zeigt und ein Daten-Deploy keinen neuen Versionsstand erzeugt.
+
+### Retry mit `force_deploy`
+
+Der manuelle Dispatch von `fd-deploy-prd` kennt neben `dry_run` den Eingang
+`force_deploy` (Standard `false`). Ist er `true`, läuft `deploy-pages` auch ohne
+neuen Merge, etwa um einen fehlgeschlagenen Pages-Deploy zu wiederholen.
+`should_release` bleibt davon unberührt: Ein Retry taggt nur dann, wenn
+zusätzlich eine Versionserhöhung ansteht.
+
+### Rollback eines Daten-Deploys
+
+Ein reiner Katalog-Deploy hat keinen Tag und kein Release, an dem er sich
+zurücknehmen ließe; einen eigenen `data-*`-Tag gibt es nicht. Zurückgerollt wird
+stattdessen der Merge-Commit:
+
+```bash
+git revert -m 1 <merge-commit>
+```
+
+`-m 1` behält `main` als erste Elternseite, also den Stand vor dem Merge. Der
+Revert ist ein normaler Commit und braucht keinen Versions-Bump; er läuft als
+nächster Katalog-Deploy durch dasselbe Gate. Danach `fd-deploy-prd` erneut
+starten — oder mit `force_deploy` nur den Pages-Deploy wiederholen, wenn
+ausschließlich der Deploy fehlgeschlagen war.
+
+### Der manuelle Weg `fd-promote-prd`
+
 `fd-promote-prd` ist ein manueller Dispatch und prüft vor dem Merge:
 
 - Version in `package.json` größer als das letzte stabile Release,
 - eigener `## [x.y.z]`-Abschnitt in `CHANGELOG.md`,
 - grüner `fd-ci`-Lauf auf der Spitze von `dev`.
 
+Er behält vorerst das strenge Versions-Gate: Gleiche Version bedeutet No-Op
+(grün), kleinere Version bedeutet Fehler. Ein Katalog-only-Deploy ohne Bump
+läuft deshalb über `fd-deploy-prd`, nicht über `fd-promote-prd`.
+
 Danach wird `dev` nach `main` gemergt und `fd-deploy-prd` gestartet:
-Pages-Deploy, Tag `v<version>`, stabiles Release. Gleiche Version
-bedeutet No-Op (grün), kleinere Version bedeutet Fehler.
+Pages-Deploy, Tag `v<version>`, stabiles Release.
 
 ## Required-Status-Check einrichten
 
@@ -120,10 +240,11 @@ JSON
 
 ## Wo die Version sichtbar ist
 
-Der Footer der Website zeigt `v<version>` und verlinkt auf die
-Releases-Seite. Die Seite wird aus `dev` gebaut, dort steht also die
-Version des laufenden Dev-Builds; sie ändert sich nur mit
-`release:yes`.
+Der Footer der Website zeigt `v<version>` und verlinkt auf die Releases-Seite.
+Auf der Dev-Seite steht die Version des laufenden Dev-Builds; sie ändert sich
+mit `release:yes`. Ein reiner Katalog-Deploy nach `main` lässt `version`
+unverändert, deshalb zeigt auch die Produktionsseite nach dem Deploy weiterhin
+die Version des letzten Releases.
 
 ## Fehlersuche
 

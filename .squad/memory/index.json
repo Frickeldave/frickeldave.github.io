@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "c82e6f71-7c2b-4429-8461-cf7074e1217e",
+    "class": "DECISION",
+    "loadGuidance": "ALWAYS",
+    "title": "Nutzerfreigabe: DE/EN-Doku-Themen aus dieser Session unter #301",
+    "path": ".squad/decisions/inbox/squad-coordinator-nutzerfreigabe-de-en-doku-themen-aus-dieser-session-unter-301-c82e6f71.md",
+    "status": "active",
+    "createdAt": "2026-11-04T07:57:44.305Z",
+    "updatedAt": "2026-11-04T07:57:44.305Z"
+  }
+]
