@@ -16,7 +16,8 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
   änderungsbasierten Deployment-Meldung. Basis 0.2.4 mit der reduzierten Übersicht im
   Veröffentlichungsdialog ist released. Basis 0.2.5 mit der einstellbaren Bildgrenze und der
   Speicherbelegung im Konfigurationspanel ist released. Basis 0.2.6 mit der automatischen
-  Token-Erneuerung im Panel ist in Vorbereitung; Erweiterung 0.1.6 mit dem korrigierten
+  Token-Erneuerung im Panel ist released. Basis 0.2.7 mit dem gemeinsamen Speichern-Button und dem
+  korrigierten `fetchWithAuth`-Aufruf ist in Vorbereitung; Erweiterung 0.1.6 mit dem korrigierten
   Dispatch-Endpoint folgt. Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -66,7 +67,7 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.6` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.7` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6` |
 
 - Basis: `custom_components/frickeldave_store/`.
@@ -323,10 +324,15 @@ seit 0.1.14 beschreiben die folgenden Angaben den tatsächlichen Stand.
   Kante bleibt davon unberührt und liegt weiterhin bei 1600 px (siehe [Bilder](#bilder)).
 - `images.max_bytes` und `storage.usage` liefert `GET /api/frickeldave_store/settings`;
   `storage.usage` ist schreibgeschützt, gesetzt wird nur `images.max_bytes`.
-- Gespeichert wird über `PATCH /api/frickeldave_store/settings`.
+- Ein einziger Button **Einstellungen speichern** schreibt Speicherort samt Backup-Schalter und die
+  Bild-Maximalgröße gemeinsam über `PATCH /api/frickeldave_store/settings`. Den separaten Button
+  „Bildgröße speichern“ gibt es seit 0.2.7 nicht mehr. Der PATCH enthält nur die geänderten
+  Abschnitte: `storage` für den Speicherort, `images` für die Maximalgröße.
+- **Änderung verwerfen** setzt Speicherort samt Backup-Schalter und die Bild-Maximalgröße auf die
+  zuletzt gespeicherten Werte zurück.
 - Ein Wechsel des Speicherorts wird erst nach einem Neuladen der Integration wirksam; die
   Oberfläche teilt das ausdrücklich mit und nennt den Weg **Einstellungen → Geräte & Dienste →
-  Frickeldave Store → Neu laden**.
+  Frickeldave Store → Neu laden**. Eine geänderte Bild-Maximalgröße wirkt ohne Neuladen.
 - Ein Wechsel verschiebt Store-Datei, Bilder und Snapshots an den neuen Ort. Die alte Kopie bleibt
   für die manuelle Bereinigung liegen; die Integration löscht sie nicht.
 - Ist der Zielordner belegt, antwortet der Server mit `409`, fehlt der Mount, mit `400`. Die
@@ -1209,6 +1215,19 @@ Assistant gilt 30 Minuten, ein Refresh-Token 90 Tage.
 
 Kurz gefasst: `401` betrifft die Sitzung, `403` die Rolle. Neuladen behebt keine fehlende Freigabe,
 und eine neue Freigabe hilft nicht, solange die Sitzung abgelaufen ist.
+
+### Verbindung zum Server fehlgeschlagen (0.2.6 bis 0.2.7)
+
+Die Meldung „Verbindung zum Server fehlgeschlagen. Bitte erneut versuchen.“ kam in 0.2.6 von einem
+URL-Fehler im Panel, nicht von einem fehlenden oder abgelaufenen Token.
+
+- Das Panel rief `hass.fetchWithAuth` mit einer absoluten URL auf. Home Assistant setzt den Pfad
+  selbst vor `auth.data.hassUrl` und verdoppelte damit die Instanz-URL; jeder Aufruf scheiterte an
+  der ungültigen Adresse.
+- Ab 0.2.7 bekommt `fetchWithAuth` den relativen Pfad; der rohe `fetch`-Fallback nutzt weiterhin
+  die absolute URL.
+- Ein neues Anmelden oder ein neuer Token hilft bei dieser Meldung nicht. Wer sie unter 0.2.6
+  sieht, aktualisiert auf 0.2.7.
 
 ## Backup und Wiederherstellung
 
