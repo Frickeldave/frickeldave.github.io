@@ -12,9 +12,10 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 - Erweiterung: <https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd>
 - Website-Katalog: [FR003 - Handmade Produktcatalog](../old/features/fr003-catalog.md)
 - Status: Basis 0.2.3 mit dem überarbeiteten Veröffentlichungsdialog ist released, ebenso Erweiterung
-  `frickeldave_store_syncfd` 0.1.4 mit der zielgenauen Meldung beim Prod-Publish. Basis 0.2.4 mit der
-  reduzierten Übersicht im Veröffentlichungsdialog und Erweiterung 0.1.5 mit der änderungsbasierten
-  Deployment-Meldung sind in Vorbereitung; Finanz- und Kundenfunktionen bleiben geplant.
+  `frickeldave_store_syncfd` 0.1.4 mit der zielgenauen Meldung beim Prod-Publish und 0.1.5 mit der
+  änderungsbasierten Deployment-Meldung. Basis 0.2.4 mit der reduzierten Übersicht im
+  Veröffentlichungsdialog ist in Vorbereitung; Erweiterung 0.1.6 mit dem korrigierten
+  Dispatch-Endpoint folgt. Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -64,7 +65,7 @@ und genau einem Integrationsverzeichnis:
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
 | Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.4` |
-| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.5` |
+| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6` |
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -657,16 +658,40 @@ Workflow-Dispatch, der `fd-deploy-prd` startet. Zwei Prüfungen klären die Ursa
    **Prod-Workflow** den Dateinamen mit Endung, also `fd-deploy-prd.yml` und nicht nur
    `fd-deploy-prd`. Der Zielbranch für prod ist `main` (`prod_branch`).
 2. **Fine-grained Token:** Auf `Frickeldave/frickeldave.github.io` muss **Actions: Read and write**
-   gesetzt sein (siehe [Token-Berechtigungen](#token-berechtigungen)). Ohne dieses Recht antwortet
-   GitHub auf den Dispatch mit 404 statt 403.
+   am hinterlegten Token gesetzt sein (siehe [Token-Berechtigungen](#token-berechtigungen)). Ohne
+   dieses Recht antwortet GitHub auf den Dispatch mit 404 statt 403.
 
 Die genaue Anfrage steht im Home-Assistant-Protokoll: Die WARNING-Zeile der Integration, gefiltert
 auf `frickeldave_store_syncfd`, nennt Methode, Pfad und Status im Format
-`GitHub METHOD path → HTTP status (message)`. Der Pfad zeigt, welcher Workflow aufgerufen wurde.
+`GitHub METHOD path → HTTP status (message)`. Der Pfad zeigt, welcher Endpunkt aufgerufen wurde.
+
+#### Falscher Dispatch-Endpoint bis 0.1.5
+
+Bis Erweiterung 0.1.5 rief die Integration
+`POST /repos/{repo}/actions/workflows/{workflow}/run` auf. Diesen Pfad gibt es in der GitHub-API
+nicht; GitHub beantwortet ihn mit 404. Die Meldung sprach deshalb von einem fehlenden Repository
+oder Branch, obwohl beides stimmte und der Token den Workflow hätte starten dürfen. Ein Live-Test
+mit genau diesem Token zeigt den Unterschied: `/run` antwortet 404, `/dispatches` antwortet 204 —
+derselbe Token, dasselbe Repository, derselbe Workflow.
+
+Der Commit nach `dev` war von dem Fehler nicht betroffen, weil er über die Git-Data-API läuft und
+den Workflow nicht braucht. Deshalb stand die Veröffentlichung halb erfolgreich da: Der Katalog war
+geschrieben, nur das Deployment fehlte. Ab 0.1.6 ruft die Erweiterung
+`POST /repos/{repo}/actions/workflows/{workflow}/dispatches` auf; `fd-deploy-prd` startet wieder.
+
+#### Wenn der Dispatch mit 404 antwortet
+
+Zuerst Repository, Workflow-Dateiname und Branch prüfen: `fd-deploy-prd.yml` mit Endung und `main`.
+Stimmen alle drei, hilft die WARNING-Zeile im Home-Assistant-Protokoll (Filter
+`frickeldave_store_syncfd`) weiter. Sie nennt Methode, Pfad und Status; ein Pfad mit `/run` am Ende
+stammt aus einer Erweiterung vor 0.1.6 und belegt den oben beschriebenen Fehler. `Actions: Read and
+write` auf `Frickeldave/frickeldave.github.io` bleibt Voraussetzung für den Dispatch: Ohne dieses
+Recht lehnt GitHub ihn mit 404 statt 403 ab.
 
 Bis Erweiterung 0.1.3 lautet die Meldung in diesem Fall generisch „Repository oder Branch nicht
 gefunden“. Ab 0.1.4 nennt sie den betroffenen Workflow, den Branch und das fehlende Recht
-`Actions: Read and write`.
+`Actions: Read and write`. Ab 0.1.6 geht der Aufruf an den richtigen Endpoint; die Meldung erscheint
+nur noch, wenn Workflow, Branch oder Recht tatsächlich nicht passen.
 
 ### Verwaltete Pfade
 
@@ -1046,9 +1071,9 @@ Die Erweiterung braucht einen Fine-grained Token, der ausschließlich auf
 `Contents` deckt den Commit ab, den beide Ziele nach `dev` schreiben, `Metadata` das Lesen des
 Repositories. Für das Veröffentlichen nach prod ist zusätzlich `Actions: Read and write` auf
 `Frickeldave/frickeldave.github.io` nötig: Der Prod-Pfad löst den Workflow `fd-deploy-prd` über
-`POST /repos/{repo}/actions/workflows/{workflow}/run` aus. Fehlt dieses Recht, beantwortet GitHub den
-Aufruf mit 404 statt 403; die Fehlermeldung spricht dann von einem fehlenden Repository oder Branch,
-obwohl das Recht fehlt (siehe
+`POST /repos/{repo}/actions/workflows/{workflow}/dispatches` aus. Fehlt dieses Recht, beantwortet
+GitHub den Aufruf mit 404 statt 403; die Fehlermeldung spricht dann von einem fehlenden Repository
+oder Branch, obwohl das Recht fehlt (siehe
 [Fehler beim Veröffentlichen nach prod](#fehler-beim-veröffentlichen-nach-prod)).
 
 Der Token wird im Options-Flow der Erweiterung hinterlegt und ist dort write-only: Die Oberfläche
