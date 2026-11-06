@@ -3409,6 +3409,16 @@ und wiederholt die Anfrage; vorher traf Nutzende nach einer halben Stunde die Si
 fehlende Sitzung antwortet jetzt mit 401, ein Rollenentzug bleibt 403 — nur so führt die Meldung zur
 richtigen Abhilfe statt in die falsche Spur einer fehlenden Benutzerfreigabe.
 
+#### 2026-11-06T11:26:55+00:00: fetchWithAuth bekommt relativen Pfad; ein Speichern-Button
+**By:** Natasha
+**What:** `_api()` im Seitenleisten-Panel reicht `hass.fetchWithAuth` jetzt den relativen Pfad durch; die absolute URL bleibt dem rohen `fetch`-Fallback. Die Entscheidung liegt als reiner Helper `authRequestUrl(path, baseUrl, useAuthFetch)` in `frontend/auth-retry.js` und ist mit vier neuen `node --test`-Fällen abgedeckt. Im Konfigurationspanel sind Speicherort und Bildgröße ein Formular mit `_saveGeneral()`/`_discardGeneralChanges()`; „Bildgröße speichern“ und `_saveImages`/`_saveStorage` entfallen, ein `PATCH` sendet nur die geänderten Abschnitte. Version 0.2.7 in `manifest.json`, `pyproject.toml`, `const.py`; CHANGELOG-Einträge unter `[Unreleased]`. Commit `ae9d1b4` auf `fix/289-fetchwithauth-and-save-button`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/9 (nicht gemergt).
+**Why:** `hass.fetchWithAuth` ist als `(path, init) => fetchWithAuth(auth, `${auth.data.hassUrl}${path}`, init)` gebunden und stellt die Instanz-URL selbst voran; die absolute URL aus 0.2.6 ergab `https://ha…https://ha…/api/…` und damit nur „Verbindung zum Server fehlgeschlagen“. Die Bildgröße brauchte keinen eigenen Speichern-Button neben „Einstellungen speichern“.
+
+#### 2026-11-06T11:26:55+00:00: fr008 dokumentiert fetchWithAuth-Fix und gemeinsamen Speichern-Button
+**By:** Maria
+**What:** `docs/features/fr008-ha-manager.md` beschreibt im Tab Allgemeine Einstellungen den gemeinsamen Button **Einstellungen speichern** für Speicherort samt Backup-Schalter und Bild-Maximalgröße, die Wirkung von **Änderung verwerfen** auf beide Bereiche, den PATCH mit ausschließlich geänderten Abschnitten und den Reload nur bei geändertem Speicherort. Neuer Abschnitt „Verbindung zum Server fehlgeschlagen (0.2.6 bis 0.2.7)“ erklärt den URL-Fehler. Versionsbasis in Tabelle und Statuszeile auf 0.2.7 gehoben. `CHANGELOG.md` ergänzt unter `## [Unreleased]` je einen Eintrag in `### Fixed` und `### Changed`.
+**Why:** Die absolute URL verdoppelte `auth.data.hassUrl` über `fetchWithAuth`, sodass jeder Panel-Aufruf mit „Verbindung zum Server fehlgeschlagen“ endete; ein separater Button für die Bildgröße war neben dem allgemeinen Speichern überflüssig.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
