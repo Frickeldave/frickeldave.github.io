@@ -3299,6 +3299,86 @@ Deployment, obwohl weder Commit noch Workflow-Dispatch anfielen.
 **What:** `docs/features/fr008-ha-manager.md` erklärt unter „Fehler beim Veröffentlichen nach prod“, dass die Erweiterung bis 0.1.5 `POST /repos/{repo}/actions/workflows/{workflow}/run` aufrief und GitHub diesen Pfad mit 404 beantwortet; ab 0.1.6 nutzt sie `/dispatches`. Dazu die kurze 404-Prüfliste (Workflow-Dateiname, Branch, WARNING-Zeile mit Methode/Pfad/Status, `Actions: Read and write` als Voraussetzung) und die korrigierte Endpoint-Angabe im Abschnitt „Token-Berechtigungen“. Statuszeile nennt 0.1.5 als released und 0.1.6 als in Vorbereitung, die Repository-Tabelle führt `0.1.6`. `CHANGELOG.md` nennt den Endpoint-Fix unter `[Unreleased]` → `Fixed` (#289).
 **Why:** Der Live-Test mit demselben Token belegt `/run` → 404 und `/dispatches` → 204; der Token war nie die Ursache. Die zuvor geplante Preflight-Logik entfällt, die erste Fassung dieser Notiz (veralteter Token als Ursache) ist damit überholt.
 
+#### 2026-11-06T08:21:37+00:00: Bildgrenze konfigurierbar, Store-Größe in /settings
+**By:** Bruce
+**What:** Backend/API in `homeassistant-frickeldave-store`, Branch `feat/289-image-limit-and-store-size`
+(Commit `4ea6c26`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/5, nicht gemerged).
+Dateien: `store.py` (`settings.images.max_bytes`, Default `DEFAULT_IMAGE_MAX_BYTES = 500 * 1024 = 512000`,
+Grenzen `MIN_IMAGE_MAX_BYTES = 51200` … `MAX_IMAGE_MAX_BYTES = 10485760`; bool ist kein int; deutsche
+`ValidationError`-Texte; defensive Reads für Altbestände ohne `images`; `CatalogStore.image_max_bytes`),
+`imaging.py` (`MAX_IMAGE_BYTES = 500 * 1024`, `is_oversized(width, height, size, max_bytes=...)`, Grenze
+durch alle Pfade gefädelt: `read_info_sync`/`inspect_sync`/`inspect_paths`/`async_inspect_paths` inkl.
+Cache-Key und `optimize_image_sync`/`async_optimize_image`; Call-Sites in `products.py` nutzen
+`store.image_max_bytes`; harte Upload-Grenze bleibt 10 MiB), `storage.py` (`storage_usage()` →
+`total_bytes`, `data_bytes`, `images_bytes`, `backups_bytes`, `files`; rekursiv, keine Symlinks, fehlende
+Ordner 0), `views.py` (`PATCH /settings` erlaubt `images`, `GET`/`PATCH` liefern `storage.usage` einmal pro
+Anfrage über `hass.async_add_executor_job`; `/me` unverändert), `websocket_api.py` (Listener nutzt
+`async_list`). Zusätzlich Sortierung `size`: `SORT_KEYS` = name, price, category, stock, status, size;
+`ProductFilter.from_query` akzeptiert `sort=size`; `ProductService.async_list` summiert die Bild-Bytes
+über `_sync_images_all` + einen `async_inspect_paths`-Lauf (keine N+1-Aufrufe), sortiert numerisch vor
+Limit/Offset, `total` = gefilterte Produkte, Gleichstand nach Name/Artikelnummer (auch bei `desc`).
+API-Vertrag: `GET /api/frickeldave_store/settings` → `"images": {"max_bytes": 512000}` und
+`"storage": {..., "usage": {"total_bytes", "data_bytes", "images_bytes", "backups_bytes", "files"}}`;
+`PATCH` → `{"images": {"max_bytes": 614400}}`; `GET /products?sort=size&order=desc`. Produkt-Payloads
+bleiben unverändert (`images[].bytes`), kein `image_bytes_total`. Version `0.2.5` in `manifest.json`,
+`pyproject.toml`, `const.py`; CHANGELOG (`Added`: konfigurierbare Grenze, `storage.usage`, Sortierung
+`size`; `Changed`: 400 → 500 KiB) und README aktualisiert. Tests: `pytest -q` → 267 passed,
+`ruff check .` → clean, `ruff format --check .` → 44 formatted, `mypy custom_components` → Success,
+`manifest.json` gültig.
+**Why:** 400 KiB war zu streng (Default jetzt 500 KiB und pro Store einstellbar), die Belegung des
+Datenordners soll ohne SSH sichtbar sein, und das Panel braucht einen stabilen, dokumentierten Vertrag
+für Bildgrenze, `storage.usage` und die serverseitige Sortierung nach Produktgröße.
+
+#### 2026-11-06T08:21:37+00:00: Panel zeigt Store-Größe, Bildgrenze einstellbar, kompakter Zeilen-Badge
+**By:** Natasha
+**What:** Konfigurationspanel: neue Gruppe „Bilder“ im Tab „Allgemeine Einstellungen“ mit Feld **Maximalgröße (kB)** (Default 500, validiert 50–10240, Inline-Fehler), gespeichert als `PATCH /api/frickeldave_store/settings {"images":{"max_bytes":kB*1024}}`; ältere Backends ohne `images` fallen auf 500 KiB zurück. Speicherbereich zeigt bei vorhandenem `settings.storage.usage` die Zeile `Belegt: … · Bilder … · Metadaten … · Snapshots …` plus gedämpfte Dateizahl. Listenansicht: neue sortierbare Spalte **Größe** (Summe `images[].bytes`, `—` ohne Bilder), Server-Sortierung über `sort=size`; Kachelansicht unverändert. Zeilen-Badge „Bilder zu groß“ exakt in Badge-Höhe (2 px Padding, 11 px Schrift, Badge-Zeilenhöhe, 14 px Icon, `align-self: center`, kein `min-height`), `.fd-badges` mit `align-items: center`; Karten-Badge unverändert. Client-Fallback der Bildgrenze 400 → 500 KiB. Gemeinsamer reiner Helfer `frontend/format-bytes.js` (binär, deutsches Dezimalkomma) inkl. `node --test` (12 Tests) und eigenem CI-Step. PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/6, Commit `0ea5152`, Branch `feat/289-panel-image-limit-and-size`; kein Versionsbump. Validierung: `node --check` alle Panel-JS, `node --test tests/frontend/*.test.mjs` 12/12, `ruff check .`, `ruff format --check .`, `mypy custom_components`, `pytest -q` 238 passed.
+**Why:** Die feste 400-KiB-Grenze war zu streng; die Bildgrenze muss ohne Deployment einstellbar sein. Speicherverbrauch (gesamt/Bilder/Metadaten/Snapshots) war im Panel unsichtbar. Das Zeilen-Badge „Bilder zu groß“ war höher als das „Personalisierbar“-Badge und zog dieses auf seine Höhe. Die Produktgröße fehlte in der Liste und ließ sich nicht sortieren; `sort=size` benötigt die Server-Seite aus Bruce' Backend-PR (`feat/289-image-limit-and-store-size`).
+
+#### 2026-11-06T08:21:37+00:00: fr008 dokumentiert Bildgrenze 500 kB und Store-Größe
+**By:** Maria
+**What:** `docs/features/fr008-ha-manager.md` beschreibt Basis 0.2.5 (Statuszeile und Repository-Tabelle):
+die einstellbare Bildgrenze im Tab Allgemeine Einstellungen → Bilder (Feld **Maximalgröße (kB)**,
+50–10240 kB, Standard 500 kB, alte 400 KiB als historisch bis 0.2.4 markiert, lange Kante unverändert
+1600 px), die Wirkung (`oversized`, Warnbanner, **Bilder optimieren**), `images.max_bytes` und
+`storage.usage` (`total_bytes`, `data_bytes`, `images_bytes`, `backups_bytes`, `files`) aus
+`GET /settings`, die kompakte Zeile **Belegt: …** samt Aufschlüsselung und den rekursiven Lauf ohne
+symbolische Links über das effektive Datenverzeichnis (config/share/media). Dazu die
+Höhenangleichung der Badges „Personalisierbar“ und „Bilder zu groß“ in der Listenansicht.
+Nachtrag: Die Listenansicht führt die Spalte **Größe** (Summe aller Bild-Bytes je Produkt, alle Bilder
+statt nur Hauptbild, deutsches Zahlenformat in KB/MB, `—` ohne Bilder), sortierbar wie die übrigen
+Spalten; die Sortierung läuft serverseitig vor der Pagination, Gleichstände löst Name, dann
+Artikelnummer. Die Sortierabschnitte nennen jetzt sechs Felder (Produkt, Kategorie, Preis, Größe,
+Bestand, Status). `CHANGELOG.md` ergänzt unter `## [Unreleased]` die Abschnitte `### Added`
+(einstellbare Bildgrenze, Speicherbelegung in den Einstellungen, Produktgröße als Spalte) und
+`### Changed` (Standard 400 → 500 KiB, Konfigurationspanel zeigt die Store-Größe, Badge-Höhe) jeweils
+mit `(#289)`.
+Validierung: `npm run format:check` → „All matched files use Prettier code style!“;
+`npx markdownlint-cli@0.44.0 docs/features/fr008-ha-manager.md` → Exit 0, keine Findings;
+`npm run prose` → „0 errors, 0 warnings and 0 suggestions in 110 files“. Commits `1e819b7` und
+`71cdaa2` auf `fix/issue-289-image-limit-size-docs`, nicht gepusht.
+**Why:** Die „Bild zu groß“-Grenze ist nicht mehr fest, sondern konfigurierbar und liegt per Default
+höher; die Speicherbelegung ist jetzt in den Einstellungen sichtbar; die Badge-Höhe in der Liste war
+optisch ungleich; und der Speicherbedarf je Produkt ist als sortierbare Spalte direkt prüfbar, ohne
+Produkte einzeln zu öffnen. Die Dokumentation muss den Stand 0.2.5 abbilden, ohne Releasedaten zu
+erfinden.
+
+#### 2026-11-06T08:05:34+00:00: Sync-README dokumentiert den gemeinsamen Dev-/Prod-Publish
+**By:** Maria
+**What:** Extension-`README.md` (frickeldave_store_syncfd) um den Abschnitt `## Veröffentlichen: dev und prod`
+ergänzt: Tabelle Ziel/Vergleichsbasis/Commit-Branch/Workflows, Release nur bei Versions-Bump,
+deploy-neutrale vs. seitenrelevante Pfade, Verhalten ohne Änderungen. `### publish` im
+Feature-Vertrag beschreibt jetzt prod-Vergleich gegen `main`, Commit auf `dev` und Dispatch über
+`POST /repos/{repo}/actions/workflows/{workflow}/dispatches`. Basis-URL auf
+`Frickeldave/homeassistant-frickeldave-store` korrigiert, Überschrift auf `Funktionsumfang (0.1.6)`.
+Validierung: `npx --yes markdownlint-cli@0.44.0 README.md` → 15 Findings, alle vorbestehend
+(MD013), keine neuen; `git diff --check` → Exit 0. Commit `58194ba`, Branch
+`docs/289-readme-publish-flow`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/7
+(nicht gemergt, kein Release, kein Versions-Bump).
+**Why:** Ein Prod-Publish committet ebenfalls auf `dev` und promotet danach `dev → main`;
+ein separater Dev-Publish ist nicht nötig, die Dev-Vorschau folgt dem Push. Ein Release entsteht
+nur bei einer höheren Website-Version in `package.json`, reine Katalog-/deploy-neutrale Änderungen
+deployen ohne Release.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
