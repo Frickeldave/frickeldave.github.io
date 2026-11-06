@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Einstellbare Bildgrenze (Basis 0.2.5): Das Feld **Maximalgröße (kB)** im Konfigurationspanel unter Allgemeine Einstellungen → Bilder setzt die zulässige Dateigröße je Produktbild; erlaubt sind 50 bis 10240 kB, Standard 500 kB. Der Server setzt `oversized` entsprechend, das Panel warnt mit Anzahl und Schwellwerten und bietet **Bilder optimieren** an, die lange Kante bleibt bei 1600 px (#289).
 - Speicherbelegung in den Einstellungen (Basis 0.2.5): `GET /api/frickeldave_store/settings` liefert `images.max_bytes` und `storage.usage` mit `total_bytes`, `data_bytes`, `images_bytes`, `backups_bytes` und `files`; das Konfigurationspanel zeigt die kompakte Zeile „Belegt: … · Bilder … · Metadaten … · Snapshots …“ samt Dateizahl (#289).
+- Produktgröße in der Listenansicht (Basis 0.2.5): Die neue Spalte **Größe** zeigt die Summe aller Bild-Bytes eines Produkts, also aller Bilder und nicht nur des Hauptbilds, im deutschen Zahlenformat als KB oder MB; Produkte ohne Bilder zeigen `—`. Sie sortiert wie die übrigen Spalten auf- und absteigend, serverseitig vor der Pagination, damit „größte Produkte“ über alle Treffer gilt; Gleichstände löst Name, dann Artikelnummer. `aria-sort` markiert die aktive Spalte (#289).
 
 ### Changed
 

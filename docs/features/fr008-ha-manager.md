@@ -418,10 +418,10 @@ Regeln:
   sichtbar, sobald ein Filter gesetzt ist.
 - Auf breiten Desktop-Monitoren stehen Kategorien und Tags nebeneinander; erklärende Hilfssätze
   entfallen.
-- Sortierung über fünf Felder: Produkt, Kategorie, Preis, Bestand und Status. In der Listenansicht
-  übernehmen das die Spaltenköpfe, in der Kachelansicht der Umschalter in der Filterleiste; beide
-  teilen denselben Zustand. Die Sortierung bleibt bei Filteränderungen erhalten. Details stehen
-  unter [Sortierung](#sortierung).
+- Sortierung über sechs Felder: Produkt, Kategorie, Preis, Größe, Bestand und Status. In der
+  Listenansicht übernehmen das die Spaltenköpfe, in der Kachelansicht der Umschalter in der
+  Filterleiste; beide teilen denselben Zustand. Die Sortierung bleibt bei Filteränderungen erhalten.
+  Details stehen unter [Sortierung](#sortierung).
 - Bildverwaltung: maximal zehn Bilder je Produkt, Reihenfolge und genau ein Hauptbild. Ein elfter
   Upload wird mit Meldung abgelehnt, ohne Teilpersistenz. Der Server verkleinert Uploads (siehe
   [Bilder](#bilder)).
@@ -435,6 +435,11 @@ Die Produktliste erscheint wahlweise als Kachel- oder Listenansicht. Der Umschal
 (`localStorage`, Schlüssel `fd-store-view`).
 
 - Beide Ansichten zeigen Bild, Name, Artikelnummer, Kategorie, Preis, Tags, Status und Bestände.
+- Die Listenansicht führt die Spalte **Größe**: Sie zeigt die Summe aller Bilddateien des Produkts,
+  also aller Bilder und nicht nur des Hauptbilds. Gemeint ist damit der Speicherbedarf der Bilder,
+  nicht die Größenangabe **Größe** aus den Grunddaten. Die Anzeige nutzt deutsches Zahlenformat in KB
+  oder MB, Produkte ohne Bilder zeigen `—`. Die Spalte sortiert wie die übrigen (siehe
+  [Sortierung](#sortierung)).
 - Die Listenansicht ist kompakt: Thumbnail 40 px statt 56 px, Zell-Padding 4 px statt 8 px, Tags
   einzeilig mit Umbruch. **Bearbeiten** und **Archivieren** sind Icon-Buttons (Stift, Archivbox)
   nebeneinander, jeweils mit `aria-label` und `title` sowie 44 × 44 px Touch-Ziel.
@@ -445,18 +450,21 @@ Die Produktliste erscheint wahlweise als Kachel- oder Listenansicht. Der Umschal
 
 ### Sortierung
 
-Die Spaltenköpfe **Produkt**, **Kategorie**, **Preis**, **Bestand** und **Status** der Listenansicht
-sind klickbar und zeigen einen Sortierpfeil; `aria-sort` markiert die aktive Spalte und die
-Richtung.
+Die Spaltenköpfe **Produkt**, **Kategorie**, **Preis**, **Größe**, **Bestand** und **Status** der
+Listenansicht sind klickbar und zeigen einen Sortierpfeil; `aria-sort` markiert die aktive Spalte und
+die Richtung.
 
 - **Produkt** sortiert nach Name, **Kategorie** nach dem Kategorie-Label, **Preis** nach dem Preis.
+- **Größe** sortiert nach der Summe der Bild-Bytes des Produkts.
 - **Bestand** sortiert nach dem Gesamtbestand über alle Lagerstätten, unabhängig vom
   Lagerstätten-Filter.
 - **Status** sortiert aktiv vor archiviert und sichtbar vor unsichtbar.
+- Die Sortierung läuft serverseitig vor der Pagination. „Größte Produkte“ gilt damit über alle
+  Treffer, nicht nur über die geladene Seite.
 - Der erste Klick sortiert aufsteigend, ein erneuter Klick dreht die Richtung. `desc` dreht nur das
   Hauptkriterium; Gleichstände bleiben aufsteigend, zuerst nach Name, dann nach Artikelnummer.
 
-Der Sortier-Umschalter in der Filterleiste bleibt für die Kachelansicht und bietet jetzt alle fünf
+Der Sortier-Umschalter in der Filterleiste bleibt für die Kachelansicht und bietet jetzt alle sechs
 Felder. Beide Bedienelemente teilen denselben Sortierzustand.
 
 ### Produktdialog
