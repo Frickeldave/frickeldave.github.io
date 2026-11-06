@@ -7,11 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Einstellbare Bildgrenze (Basis 0.2.5): Das Feld **Maximalgröße (kB)** im Konfigurationspanel unter Allgemeine Einstellungen → Bilder setzt die zulässige Dateigröße je Produktbild; erlaubt sind 50 bis 10240 kB, Standard 500 kB. Der Server setzt `oversized` entsprechend, das Panel warnt mit Anzahl und Schwellwerten und bietet **Bilder optimieren** an, die lange Kante bleibt bei 1600 px (#289).
+- Speicherbelegung in den Einstellungen (Basis 0.2.5): `GET /api/frickeldave_store/settings` liefert `images.max_bytes` und `storage.usage` mit `total_bytes`, `data_bytes`, `images_bytes`, `backups_bytes` und `files`; das Konfigurationspanel zeigt die kompakte Zeile „Belegt: … · Bilder … · Metadaten … · Snapshots …“ samt Dateizahl (#289).
+- Produktgröße in der Listenansicht (Basis 0.2.5): Die neue Spalte **Größe** zeigt die Summe aller Bild-Bytes eines Produkts, also aller Bilder und nicht nur des Hauptbilds, im deutschen Zahlenformat als KB oder MB; Produkte ohne Bilder zeigen `—`. Sie sortiert wie die übrigen Spalten auf- und absteigend, serverseitig vor der Pagination, damit „größte Produkte“ über alle Treffer gilt; Gleichstände löst Name, dann Artikelnummer. `aria-sort` markiert die aktive Spalte (#289).
+
 ### Changed
 
+- Standard-Bildgrenze von 400 auf 500 KiB angehoben (Basis 0.2.5) (#289).
 - Produktions-Deploy ohne Versions-Bump: `fd-deploy-prd` mergt `dev` nach `main` und deployt Pages jetzt auch dann, wenn `dev` dieselbe Version wie das letzte stabile Release trägt und der Diff `main..dev` ausschließlich verwaltete Katalog- und Produktbildpfade enthält (`public/data/handmade.json`, `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<Endung>`). Tag und GitHub-Release entstehen weiterhin nur, wenn die Version auf `main` höher ist als das letzte stabile Release; der neue Eingang `force_deploy` wiederholt einen fehlgeschlagenen Pages-Deploy ohne neuen Merge. `fd-promote-prd` behält vorerst das strenge Versions-Gate (#289).
 - Katalog-Schnellweg für deploy-neutrale Pfade: Die Klassifikation `promote_safe` erlaubt bei gleicher Version neben Katalogmaterial auch Dokumentation, `.squad/`, `.github/`, `.husky/`, Tests, `CHANGELOG.md` und Tooling-Konfigurationen, weil sie das gebaute Seitenartefakt nicht verändern; `src/**`, `public/**` außer dem Katalog, Root-Build-Eingaben und `scripts/build-*`/`scripts/install-*` bleiben seitenrelevant und verlangen weiterhin ein Release. Die Promotion-Notice unterscheidet „nur Katalog“ von „Katalog plus unkritische Pfade“ und nennt die Klassifikation (#289).
 - Veröffentlichungsdialog (Basis 0.2.4): Die Übersicht zeigt nur noch **Produkte** und **Bilder**; die filterbare **Dateiliste** bleibt die Dateisicht (#289).
+- Konfigurationspanel (Basis 0.2.5): Der Tab Allgemeine Einstellungen zeigt die Speicherbelegung des Stores; die Größe ermittelt die Integration rekursiv über das effektive Datenverzeichnis und folgt dabei keinen symbolischen Links (#289).
+- Listenansicht (Basis 0.2.5): Das Badge „Bilder zu groß“ ist so hoch wie das Badge „Personalisierbar“; treffen beide zu, stehen sie auf einer Zeile (#289).
 
 ### Fixed
 
