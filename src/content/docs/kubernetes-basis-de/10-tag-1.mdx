@@ -79,11 +79,11 @@ Einstieg in Kubernetes.
 
 ### Wozu K8s?
 
-- **[Container-Orchestrierung](/docs/kubernetes-basis/90-glossar#container-orchestrierung)** -- Verwaltung hunderter Container über mehrere Server
-- **[Self-Healing](/docs/kubernetes-basis/90-glossar#self-healing)** -- Automatischer Neustart ausgefallener Container
-- **[Skalierung](/docs/kubernetes-basis/90-glossar#skalierung)** -- Hoch- und Runterskalieren per Befehl oder automatisch
-- **[Rolling Updates](/docs/kubernetes-basis/90-glossar#rolling-updates)** -- Anwendungen ohne Ausfallzeit aktualisieren
-- **[Service Discovery](/docs/kubernetes-basis/90-glossar#service-discovery)** -- Automatische Namensauflösung zwischen Anwendungen
+- **[Container-Orchestrierung](/docs/kubernetes-basis-de/90-glossar#container-orchestrierung)** -- Verwaltung hunderter Container über mehrere Server
+- **[Self-Healing](/docs/kubernetes-basis-de/90-glossar#self-healing)** -- Automatischer Neustart ausgefallener Container
+- **[Skalierung](/docs/kubernetes-basis-de/90-glossar#skalierung)** -- Hoch- und Runterskalieren per Befehl oder automatisch
+- **[Rolling Updates](/docs/kubernetes-basis-de/90-glossar#rolling-updates)** -- Anwendungen ohne Ausfallzeit aktualisieren
+- **[Service Discovery](/docs/kubernetes-basis-de/90-glossar#service-discovery)** -- Automatische Namensauflösung zwischen Anwendungen
 
 ### DevOps-Workflow
 
@@ -115,13 +115,13 @@ Empfänger (Produktion) -- zuverlässig, automatisch und mit Self-Healing bei Pr
 
 | Kubernetes-Konzept | Analogie                 | Beschreibung                                                              |
 | ------------------ | ------------------------ | ------------------------------------------------------------------------- |
-| [**Cluster**](/docs/kubernetes-basis/90-glossar#cluster)        | Gesamtes Logistikzentrum | Alle Maschinen und Ressourcen, die zusammenarbeiten                       |
-| [**Control Plane**](/docs/kubernetes-basis/90-glossar#control-plane)  | Büro / Zentrale          | Trifft alle Entscheidungen: was läuft wo, was passiert bei Problemen      |
-| [**Worker Node**](/docs/kubernetes-basis/90-glossar#worker-node)    | Arbeitsplatz / LKW       | Die Maschine, auf der Container tatsächlich laufen                        |
-| [**Pod**](/docs/kubernetes-basis/90-glossar#pod)            | Paket / Liefereinheit    | Kleinste deploybare Einheit, enthält einen oder mehrere Container         |
-| [**Deployment**](/docs/kubernetes-basis/90-glossar#deployment)     | Arbeitsanweisung         | Beschreibt den gewünschten Zustand ("2 Chromium-Instanzen sollen laufen") |
-| [**Service**](/docs/kubernetes-basis/90-glossar#service)        | Telefonnummer            | Stabile Adresse, über die eine Anwendung erreichbar bleibt                |
-| [**Namespace**](/docs/kubernetes-basis/90-glossar#namespace)      | Abteilung                | Logische Trennung innerhalb eines Clusters                                |
+| [**Cluster**](/docs/kubernetes-basis-de/90-glossar#cluster)        | Gesamtes Logistikzentrum | Alle Maschinen und Ressourcen, die zusammenarbeiten                       |
+| [**Control Plane**](/docs/kubernetes-basis-de/90-glossar#control-plane)  | Büro / Zentrale          | Trifft alle Entscheidungen: was läuft wo, was passiert bei Problemen      |
+| [**Worker Node**](/docs/kubernetes-basis-de/90-glossar#worker-node)    | Arbeitsplatz / LKW       | Die Maschine, auf der Container tatsächlich laufen                        |
+| [**Pod**](/docs/kubernetes-basis-de/90-glossar#pod)            | Paket / Liefereinheit    | Kleinste deploybare Einheit, enthält einen oder mehrere Container         |
+| [**Deployment**](/docs/kubernetes-basis-de/90-glossar#deployment)     | Arbeitsanweisung         | Beschreibt den gewünschten Zustand ("2 Chromium-Instanzen sollen laufen") |
+| [**Service**](/docs/kubernetes-basis-de/90-glossar#service)        | Telefonnummer            | Stabile Adresse, über die eine Anwendung erreichbar bleibt                |
+| [**Namespace**](/docs/kubernetes-basis-de/90-glossar#namespace)      | Abteilung                | Logische Trennung innerhalb eines Clusters                                |
 
 ### Cluster-Architektur
 
@@ -138,11 +138,11 @@ dafür, dass der gewünschte Soll-Zustand immer mit dem tatsächlichen Ist-Zusta
 
 | Komponente                  | Funktion                                                     |
 | --------------------------- | ------------------------------------------------------------ |
-| [**kube-apiserver**](/docs/kubernetes-basis/90-glossar#kube-apiserver)          | Zentraler Einstiegspunkt. Jeder kubectl-Befehl geht hierhin. |
-| [**etcd**](/docs/kubernetes-basis/90-glossar#etcd)                    | Key-Value-Datenbank. Speichert den gesamten Cluster-Zustand. |
-| [**kube-scheduler**](/docs/kubernetes-basis/90-glossar#kube-scheduler)          | Entscheidet, auf welchem Node ein neuer Pod laufen soll.     |
-| [**kube-controller-manager**](/docs/kubernetes-basis/90-glossar#kube-controller-manager) | Gleicht Ist-Zustand ständig mit Soll-Zustand ab.             |
-| [**CoreDNS**](/docs/kubernetes-basis/90-glossar#coredns)              | DNS-Service für Service Discovery. Übersetzt Service-Namen in ClusterIPs, liest aktuell von etcd. |
+| [**kube-apiserver**](/docs/kubernetes-basis-de/90-glossar#kube-apiserver)          | Zentraler Einstiegspunkt. Jeder kubectl-Befehl geht hierhin. |
+| [**etcd**](/docs/kubernetes-basis-de/90-glossar#etcd)                    | Key-Value-Datenbank. Speichert den gesamten Cluster-Zustand. |
+| [**kube-scheduler**](/docs/kubernetes-basis-de/90-glossar#kube-scheduler)          | Entscheidet, auf welchem Node ein neuer Pod laufen soll.     |
+| [**kube-controller-manager**](/docs/kubernetes-basis-de/90-glossar#kube-controller-manager) | Gleicht Ist-Zustand ständig mit Soll-Zustand ab.             |
+| [**CoreDNS**](/docs/kubernetes-basis-de/90-glossar#coredns)              | DNS-Service für Service Discovery. Übersetzt Service-Namen in ClusterIPs, liest aktuell von etcd. |
 
 ### Worker Nodes
 
@@ -151,9 +151,9 @@ drei Kernkomponenten, die eng mit der Control Plane zusammenarbeiten.
 
 | Komponente            | Funktion                                                          |
 | --------------------- | ----------------------------------------------------------------- |
-| [**kubelet**](/docs/kubernetes-basis/90-glossar#kubelet)           | Agent auf jedem Node. Sorgt dafür, dass Container in Pods laufen. |
-| [**kube-proxy**](/docs/kubernetes-basis/90-glossar#kube-proxy)        | Netzwerk-Proxy. Verwaltet Netzwerkregeln für Services.            |
-| [**Container Runtime**](/docs/kubernetes-basis/90-glossar#container-runtime) | Führt Container aus (z. B. containerd, CRI-O).                     |
+| [**kubelet**](/docs/kubernetes-basis-de/90-glossar#kubelet)           | Agent auf jedem Node. Sorgt dafür, dass Container in Pods laufen. |
+| [**kube-proxy**](/docs/kubernetes-basis-de/90-glossar#kube-proxy)        | Netzwerk-Proxy. Verwaltet Netzwerkregeln für Services.            |
+| [**Container Runtime**](/docs/kubernetes-basis-de/90-glossar#container-runtime) | Führt Container aus (z. B. containerd, CRI-O).                     |
 
 ### Optional: Add-ons & Erweiterungen
 
@@ -1321,7 +1321,7 @@ kubectl patch ingress code-server-ingress --type=merge -p '{"spec":{"ingressClas
 ```
 
 Wer die Zertifikate für diese Hosts nicht selbst ausstellt, landet schnell bei
-[ACME](/docs/kubernetes-basis/90-glossar#acme): dem Protokoll, mit dem der Ingress Controller
+[ACME](/docs/kubernetes-basis-de/90-glossar#acme): dem Protokoll, mit dem der Ingress Controller
 Let's-Encrypt-Zertifikate automatisch beantragt und erneuert.
 
 <Notice type="info">
@@ -1437,7 +1437,7 @@ Erwartete Ausgabe:
 | Ressource   | Anzahl | Details                                     |
 | ----------- | ------ | ------------------------------------------- |
 | Deployments | 2      | chromium, code-server                       |
-| [ReplicaSets](/docs/kubernetes-basis/90-glossar#replicaset) | 2      | je 1 pro Deployment                         |
+| [ReplicaSets](/docs/kubernetes-basis-de/90-glossar#replicaset) | 2      | je 1 pro Deployment                         |
 | Pods        | 2      | je 1 Running pro Deployment                 |
 | Services    | 2      | chromium (4000), code-server (8443)         |
 | Ingresses   | 2      | chromium-ingress, code-server-ingress       |
@@ -1475,13 +1475,13 @@ kubectl get all -n <namespace>                # Alle Ressourcen im Namespace
 
 ### Ausblick Tag 2
 
-Morgen machen wir eure Deployments **produktionsreif**: [Resource Limits](/docs/kubernetes-basis/90-glossar#resource-limits), Health Checks und
-[Rolling Updates](/docs/kubernetes-basis/90-glossar#rollingupdate). Dann lagern wir Konfiguration in
-[**ConfigMaps**](/docs/kubernetes-basis/90-glossar#configmap) und [**Secrets**](/docs/kubernetes-basis/90-glossar#secret) aus, schauen uns
+Morgen machen wir eure Deployments **produktionsreif**: [Resource Limits](/docs/kubernetes-basis-de/90-glossar#resource-limits), Health Checks und
+[Rolling Updates](/docs/kubernetes-basis-de/90-glossar#rollingupdate). Dann lagern wir Konfiguration in
+[**ConfigMaps**](/docs/kubernetes-basis-de/90-glossar#configmap) und [**Secrets**](/docs/kubernetes-basis-de/90-glossar#secret) aus, schauen uns
 **Security-Grundlagen** an und geben dem Code-Server mit einem
-[**PersistentVolumeClaim**](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) einen Workspace,
+[**PersistentVolumeClaim**](/docs/kubernetes-basis-de/90-glossar#persistentvolumeclaim) einen Workspace,
 der Pod-Neustarts überlebt. Wer danach noch Luft hat, deployt **MariaDB und phpMyAdmin** -- mit PVC
 und Init-Container als Vertiefung.
 
 <br />
-Weiter: [Tag 2](/docs/kubernetes-basis/20-tag-2)
+Weiter: [Tag 2](/docs/kubernetes-basis-de/20-tag-2)

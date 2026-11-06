@@ -1,0 +1,1986 @@
+---
+visible: true
+title: 20 Day 2
+description: "Resources, probes, persistence and secrets -- the complete platform."
+draft: false
+image: "@assets/docs/kubernetes-basis/knba-20-000_header.png"
+imageAlt: "Kubernetes Basics - 20 Day 2"
+---
+
+import Notice from "@shortcodes/Notice";
+import InteractiveChecklist from "@components/docs/InteractiveChecklist.astro";
+import { Image } from "astro:assets";
+import knba20010 from "@assets/docs/kubernetes-basis/knba-20-010_init-and-sidecar-container.png";
+import knba20011 from "@assets/docs/kubernetes-basis/knba-20-011_init-and-sidecar-container-logistic.png";
+import knba20020 from "@assets/docs/kubernetes-basis/knba-20-020_requests-and-limits.png";
+import knba20021 from "@assets/docs/kubernetes-basis/knba-20-021_qos-classes.png";
+import knba20030 from "@assets/docs/kubernetes-basis/knba-20-030_heath-checks.png";
+import knba20040 from "@assets/docs/kubernetes-basis/knba-20-040_rolling-update-recreate.png";
+import knba20050 from "@assets/docs/kubernetes-basis/knba-20-050_pvs-and-pvcs.png";
+import knba20080 from "@assets/docs/kubernetes-basis/knba-20-080-mariadb-phpmyadmin.png";
+import knba20090 from "@assets/docs/kubernetes-basis/knba-20-090-conclusion.png";
+
+## Workloads & networking
+
+On the second day we make our Deployments production-ready. We add resource limits, health checks and
+Deployment strategies, move configuration into ConfigMaps and Secrets and give Chromium and
+Code-Server a storage with Persistent Volumes that survives Pod restarts. Anyone who likes deepens
+this afterwards with MariaDB and phpMyAdmin.
+
+## Schedule
+
+| Time            | Block                | Content                                    |
+| -------------- | -------------------- | ------------------------------------------ |
+| 09:00 – 09:15  | Recap                | Status check Day 1                         |
+| 09:15 – 09:45  | Theory               | Pods: multi-container, resources           |
+| 09:45 – 10:15  | ConfigMaps           | Externalising configuration (Code-Server)  |
+| 10:15 – 11:00  | Resource limits      | Applying them to Chromium + Code-Server    |
+| 11:00 – 11:15  | **Break**            |                                            |
+| 11:15 – 11:45  | Theory               | Health checks                              |
+| 11:45 – 12:15  | Configuring probes   | Chromium + Code-Server                     |
+| 12:15 – 12:30  | Theory               | Deployment strategies                      |
+| 12:30 – 13:30  | **Lunch break**      |                                            |
+| 13:30 – 14:00  | Rolling updates      | Update + rollback Code-Server              |
+| 14:00 – 14:45  | Secrets & security   | Externalising passwords, SecurityContext   |
+| 14:45 – 15:15  | Sidecar containers   | Vector as a sidecar for Chromium logs      |
+| 15:15 – 15:30  | **Break**            |                                            |
+| 15:30 – 16:15  | Persistent volumes   | PVCs, StorageClass, the "Pending" failure pattern |
+| 16:15 – 17:00  | **[Optional / deep dive: MariaDB + phpMyAdmin](#optional-deep-dive-deploying-mariadb--phpmyadmin)** | Optional -- Deployments with PVC, init container |
+| 17:00 – 17:15  | Wrap-up              | Summary + outlook                          |
+
+## Recap
+
+Day 1 lies behind us -- but our Deployments still run. Before we make them production-ready, we make
+sure everything still runs and the Services stay reachable. Here comes a short status check, then we
+start with resource limits, health checks and Deployment strategies.
+
+Maybe you do not remember the commands from yesterday that well anymore, before you dive into the
+[glossary](/docs/kubernetes-basis-en/90-glossary): here comes your all-in-one command for every
+purpose:
+
+```bash
+kubectl get all
+```
+
+Checkpoints:
+
+- Do all Pods show the status `Running`?
+- Chromium reachable in the browser?
+- Code-Server reachable in the browser?
+
+When a Pod does not run:
+
+```bash
+kubectl describe pod <pod-name>
+kubectl logs <pod-name>
+```
+
+## ConfigMaps
+
+So far configuration values such as `PUID`, `PGID`, `TZ` and the Code-Server password sit directly in
+the Deployment YAMLs from Day 1. That stays maintainable as long as only one Deployment is affected --
+but with the second Deployment at the latest the values repeat.
+
+A **ConfigMap** is a Kubernetes object that stores configuration data as key-value pairs and passes it
+to containers -- either as an **environment variable** or as a **file** (through a volume).
+
+### Central linuxserver ConfigMap
+
+The linuxserver.io images almost always query the same three values: user ID, group ID and time zone.
+Instead of typing them into every Deployment, we store them once, centrally -- one ConfigMap for all
+applications that need these values.
+
+File `linuxserver-common-config-map.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linuxserver-common
+  namespace: k8s-training
+data:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Europe/Berlin"
+```
+
+<br/>
+```bash
+kubectl apply -f linuxserver-common-config-map.yaml
+```
+
+You bind it with `envFrom` -- that imports all three keys as environment variables:
+
+```yaml
+envFrom:
+  - configMapRef:
+      name: linuxserver-common
+```
+
+The order counts: create the ConfigMap first, then the Deployment. A Pod that references a missing
+ConfigMap does not start and stays with `CreateContainerConfigError`.
+
+### Example: externalising the Code-Server workspace
+
+The Code-Server from Day 1 carries the environment variable `DEFAULT_WORKSPACE` hard-coded in the
+YAML:
+
+```yaml
+env:
+  - name: DEFAULT_WORKSPACE
+    value: "/config/workspace"
+```
+
+We now move that into a ConfigMap.
+
+**1. Create the ConfigMap**
+
+File `code-server-config-map.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: code-server-config
+  namespace: k8s-training
+data:
+  DEFAULT_WORKSPACE: "/config/workspace"
+```
+
+<br/>
+```bash
+kubectl apply -f code-server-config-map.yaml
+```
+
+**2. Use the ConfigMap in the Deployment**
+
+One key suffices for the workspace. `PUID`, `PGID` and `TZ` live in the central ConfigMap
+`linuxserver-common` from above -- the Deployment binds both via `envFrom`:
+
+```yaml
+envFrom:
+  - configMapRef:
+      name: linuxserver-common     # PUID, PGID, TZ
+  - configMapRef:
+      name: code-server-config     # DEFAULT_WORKSPACE
+```
+
+The Deployment then looks like this (excerpt):
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-server
+  namespace: k8s-training
+spec:
+  # ... selector, template etc. ...
+  template:
+    spec:
+      containers:
+        - name: code-server
+          image: lscr.io/linuxserver/code-server:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          ports:
+            - containerPort: 8443
+          envFrom:                          # zwei ConfigMaps als Umgebungsvariablen
+            - configMapRef:
+                name: linuxserver-common
+            - configMapRef:
+                name: code-server-config
+          env:
+            - name: PASSWORD                # Secret bleibt vorerst hart codiert
+              value: "trainingk8s"
+```
+
+<br/>
+```bash
+kubectl apply -f code-server-deployment-configmap.yaml
+```
+
+**Important:** `envFrom` imports **all** keys of a ConfigMap as environment variables.
+`DEFAULT_WORKSPACE` becomes the variable `DEFAULT_WORKSPACE`, `PUID`, `PGID` and `TZ` come from
+`linuxserver-common` unchanged. When the same key exists in both ConfigMaps, the **last** entry wins
+-- therefore the order stays `linuxserver-common` before `code-server-config`.
+
+### ConfigMapKeyRef for a single value from a ConfigMap
+
+Instead of loading a complete ConfigMap, you can also load a single value from a ConfigMap.
+
+spec:
+...
+    spec:
+      containers:
+          ...
+          env:
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: LOG_LEVEL
+
+### ConfigMap as a volume (file)
+
+Besides environment variables a ConfigMap can also be mounted into the container as a **volume**.
+Every key then becomes its own file. That is handy for configuration files such as `nginx.conf`,
+`prometheus.yml` or `vector.toml`.
+
+```yaml
+volumes:
+  - name: config-volume
+    configMap:
+      name: app-config
+```
+
+Inside the container the file `/etc/config/DEFAULT_WORKSPACE` then appears with the content
+`/config/workspace`. We apply this pattern directly in the sidecar exercise.
+
+<Notice type="info">
+  **ConfigMap changed, Pod keeps running? That is what Reloader is for.**
+
+  A Deployment does not restart by itself after a ConfigMap change.
+  [Reloader](https://github.com/stakater/Reloader) is a small controller that watches ConfigMaps and
+  Secrets and lets the affected workload roll out again via an annotation. You install it from the
+  Stakater Helm repository or via the release manifest from the project; both need cluster rights and
+  run once. Afterwards the annotation on the Deployment suffices:
+
+  ```yaml
+  metadata:
+    annotations:
+      reloader.stakater.com/auto: "true"
+  ```
+
+  Without the annotation nothing happens -- Reloader works opt-in per workload.
+
+  **Different with volume mounts:** when the ConfigMap is mounted as a volume, the files inside the
+  container get **updated automatically** (with a slight delay, usually < 1 minute). The application
+  itself must notice or re-read the file change.
+
+</Notice>
+
+**Summary**
+
+| Method | Description | Use |
+|---------|-------------|---------|
+| `envFrom` + `configMapRef` | All keys as environment variables | Several Deployments share configuration |
+| `valueFrom.configMapKeyRef` | Single key as environment variable | Selective binding |
+| Volume mount | ConfigMap as files in the file system | Configuration files for tools (Vector, nginx, ...) |
+
+**Remember:** ConfigMaps serve **non-sensitive** data. Passwords, tokens and certificates belong in
+Secrets.
+
+### Secret: externalising the Code-Server password
+
+The Code-Server password still sits hard-coded in the Deployment. We now move it into a
+[Secret](/docs/kubernetes-basis-en/90-glossary#secret).
+
+**1. Create the Secret**
+
+File `code-server-secret.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: code-server-secret
+  namespace: k8s-training
+type: Opaque
+stringData:
+  PASSWORD: "trainingk8s"
+```
+<br/>
+```bash
+kubectl apply -f code-server-secret.yaml
+```
+
+**2. Check the Secret**
+
+```bash
+kubectl get secret code-server-secret -n k8s-training -o yaml
+```
+
+The output shows `PASSWORD: dHJhaW5pbmcya3M=` – that is Base64 encoded, not encrypted:
+
+```bash
+echo "dHJhaW5pbmcya3M=" | base64 -d
+# Ausgabe: trainingk8s
+```
+
+```powershell
+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("dHJhaW5pbmcya3M="))
+# Ausgabe: trainingk8s
+```
+<br/>
+
+<Notice type="info">
+
+**💡 The most common question: "why is Base64 no security disaster then?"**
+
+Base64 is no encryption, only an encoding – like another spelling. That is intentional: Secrets must
+stay machine-readable and must not contain special characters that break YAML or env variables.
+
+The real security lives not in the encoding, but in these mechanisms:
+
+| Mechanism | Effect |
+|-------------|---------|
+| **RBAC** | Only authorised people/systems may run `kubectl get secret` |
+| **Encryption at rest** | The cluster encrypts Secrets on disk (enabled by default since Kubernetes 1.13+) |
+| **Encryption in transit** | API communication runs over TLS – nobody can read the traffic along the way |
+| **No Git** | Secrets never get committed in YAML files, but stored in the cluster only |
+| **stringData** | You provide the password in plain text – only Kubernetes itself encodes it to Base64 |
+
+**In short:** the Base64 "protection" is an encoding for data transport, not a security feature. The
+protection comes from RBAC, TLS and encryption in the cluster. Anyone allowed to run
+`kubectl get secret` also reaches the values – and exactly that needs steering through permissions.
+
+</Notice>
+<br/>
+
+**3. Use the Secret in the Deployment**
+
+Instead of `value: "trainingk8s"` we reference the value from the Secret:
+
+```yaml
+env:
+  - name: PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: code-server-secret
+        key: PASSWORD
+```
+<br/>
+```bash
+kubectl apply -f code-server-deployment-configmap-secret.yaml
+```
+
+**Important:** create the Secret **in the same Namespace** as the Pod. Adjust it accordingly when the
+Namespace differs (e.g. `k8s-prod` instead of `k8s-training`).
+
+## Pods and container types
+
+So far we only met Pods as simple container wrappers. In fact Pods can hold several containers that
+share the same network namespace and the same volumes. This concept serves to deploy and manage
+tightly coupled processes together.
+
+### Container types
+
+| Type                  | Purpose                                 | Lifetime                      |
+| --------------------- | --------------------------------------- | ----------------------------- |
+| [**App container**](/docs/kubernetes-basis-en/90-glossary#app-container)     | Main application                        | Runs permanently              |
+| [**Init container**](/docs/kubernetes-basis-en/90-glossary#init-container)    | Initialisation before the app starts    | Runs once until completion    |
+| [**Sidecar container**](/docs/kubernetes-basis-en/90-glossary#sidecar-container) | Supporting services (logging, proxy)    | Runs permanently next to the app |
+
+**Rule:** several containers in the same Pod only when they are tightly coupled. Otherwise use
+separate Pods. The containers of ONE app here are NOT tightly coupled, but only loosely connected via
+Services and Ingress. Therefore we deploy them in separate Pods.
+
+<Image src={knba20010} alt="Multiple containers per Pod * Created with Microsoft Copilot" />
+
+### Analogy: container types in the logistics company
+
+To understand the different container types better, consider them in the context of a logistics
+company that delivers parcels worldwide:
+
+**App container = main transport vehicle**
+The app container is like the main transport vehicle (e.g. a truck or a plane) that delivers the
+actual freight to the destination. It is the heart of the delivery process and performs the main task:
+bringing the parcel from sender to recipient. This vehicle stays active during the whole trip and
+makes sure the shipment reaches its destination.
+
+**Init container = preparatory logistics services**
+Init containers correspond to the necessary preparation services that must happen before every
+transport. Before a parcel can even be shipped, several steps must follow one after another:
+- The shipment is accepted and registered at the origin
+- Customs formalities are handled
+- The optimal route is calculated and booked
+- The means of transport is prepared and fuelled
+Each of these steps must complete fully before the main transport can start. Only when all init
+containers finished their work can the app container begin the actual transport.
+
+**Sidecar container = accompanying services during transport**
+Sidecar containers are like the supporting services that accompany the main transport and help
+continuously:
+- GPS tracking sends position data to the headquarters all the time
+- Temperature monitoring checks continuously whether cooling conditions hold
+- Security services watch the parcel for tampering attempts
+- Communication systems keep contact with the control centre
+These services run at the same time as the main transport and provide transparency, safety and
+efficiency without transporting the freight themselves.
+
+<Image src={knba20011} alt="Multiple containers per Pod in the logistics company* Created with Microsoft Copilot" />
+
+
+### Init containers
+
+Init containers start sequentially in the order of their definition, before the app containers start.
+Each one must complete successfully. This serves as a preview only; we use the concept later.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-mit-init
+  namespace: k8s-training
+spec:
+  initContainers:
+    - name: wait-for-db
+      image: busybox:1.28
+      command:
+        - sh
+        - -c
+        - 'until nslookup my-database.k8s-training.svc.cluster.local; do echo "Warte auf DB...";
+          sleep 2; done'
+  containers:
+    - name: app
+      image: nginx:1.27
+      ports:
+        - containerPort: 80
+```
+
+Typical use cases:
+
+- Waiting for a database or an external service
+- Preparing configuration files
+- Running schema migrations
+
+### Sidecar containers
+
+Sidecar containers run permanently next to the main application and share network and volumes.
+Typical patterns:
+
+| Pattern | Description | Example |
+|---------|-------------|----------|
+| **Log shipper** | Reads the logs of the app and sends them to a central logging platform | Vector, Fluent Bit, Promtail |
+| **Reverse proxy** | Takes over SSL termination, auth or rate limiting for the app | nginx, Envoy, oauth2-proxy |
+| **Metrics exporter** | Collects metrics of the app and exposes them for Prometheus | nginx-prometheus-exporter, node-exporter |
+| **Service mesh** | Takes over the entire network communication (TLS, tracing, retries) | Envoy (Istio), Linkerd proxy |
+
+#### Exercise: Chromium with Vector as a sidecar
+
+> **Deep dive:** in the ConfigMap chapter above you learned how ConfigMaps work as environment
+> variables (`envFrom`). Here comes the second variant: **ConfigMap as a volume** -- the key
+> `vector.toml` becomes the file `/etc/vector/vector.toml` inside the container.
+
+In this exercise we equip **our Chromium** with a Vector sidecar.
+Chromium (linuxserver.io) writes logs to `/config/log/` -- the sidecar reads these logs and prints
+them as JSON on the console. Both containers share an `emptyDir` volume.
+
+<br/>
+
+**1. Create the ConfigMap for the Vector configuration**
+
+File `vector-config-map.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-config
+  namespace: k8s-training
+data:
+  vector.toml: |
+    [sources.chromium_logs]
+      type = "file"
+      include = ["/config/log/*.log"]
+      read_from = "beginning"
+
+    [sinks.console]
+      type = "console"
+      inputs = ["chromium_logs"]
+      encoding.codec = "json"
+```
+<br/>
+```bash
+kubectl apply -f vector-config-map.yaml
+```
+<br/>
+
+**2. Extend the Chromium Deployment with a sidecar**
+
+The existing Deployment from Day 1 (`chromium-deployment.yaml`) gets a second container and a shared
+volume. In addition `envFrom` replaces the three individual `env` entries (`PUID`, `PGID`, `TZ`) with
+the ConfigMap `linuxserver-common` from above. The changes are marked with `# NEU`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chromium
+  namespace: k8s-training
+  labels:
+    app: chromium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chromium
+  template:
+    metadata:
+      labels:
+        app: chromium
+    spec:
+      containers:
+        - name: chromium
+          image: lscr.io/linuxserver/chromium:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          ports:
+            - containerPort: 3000
+            - containerPort: 3001
+          envFrom:                          # PUID, PGID, TZ
+            - configMapRef:
+                name: linuxserver-common
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+            - name: chromium-logs          # NEU: gemeinsames Log-Volume
+              mountPath: /config/log
+        - name: vector                     # NEU: Sidecar-Container
+          image: timberio/vector:0.42.0-alpine
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          command:
+            - vector
+            - --config
+            - /etc/vector/vector.toml
+          volumeMounts:
+            - name: chromium-logs          # NEU: gleiches Volume wie Chromium
+              mountPath: /config/log
+            - name: vector-config
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: chromium-logs              # NEU: shared emptyDir für Logs
+          emptyDir: {}
+        - name: vector-config              # NEU: ConfigMap als Volume
+          configMap:
+            name: vector-config
+```
+<br/>
+```bash
+kubectl apply -f chromium-deployment-sidecar.yaml
+```
+<br/>
+
+**3. Check that it works**
+
+```bash
+# Warten, bis der neue Pod läuft
+kubectl get pods -l app=chromium -w
+
+# Logs des Sidecars anzeigen
+kubectl logs -l app=chromium -c vector
+
+# Log-Datei im Chromium-Container anzeigen (identische Quelle wie Vector)
+kubectl exec -c chromium deploy/chromium -- cat /config/log/chromium.log
+
+# Chromium im Browser öffnen und ein paar Seiten besuchen,
+# dann erneut Sidecar-Logs prüfen:
+kubectl logs -l app=chromium -c vector --tail=10
+```
+<br/>
+
+**4. What happens here?**
+
+- Chromium should write the logs to `/config/log/` (e.g. `chromium.log`, `Xorg.log`)
+- The sidecar (`vector`) reads **the same files**
+- Vector parses the logs and prints them as JSON on the console
+- **Important:** both containers run in the same Pod -- they share network (`localhost`) and volume
+- The sidecar joined an existing Deployment **afterwards** -- Kubernetes restarts the Pod
+  automatically with both containers
+
+<br/>
+
+**5. Typical observation: Vector runs, but shows no logs?**
+
+```bash
+kubectl logs -l app=chromium -c vector
+```
+
+You see Vector starting and the healthcheck succeeding:
+
+```
+INFO vector::app: Vector has started.
+INFO vector::topology::builder: Healthcheck passed.
+INFO vector::sources::file: Starting file server. include=["/config/log/*.log"] exclude=[]
+```
+
+But **no JSON logs** arrive. That is **not** an error in your configuration – it comes from how the
+Chromium image handles its logs.
+
+**Why?** The linuxserver/chromium image starts Chromium via the script `/usr/bin/wrapped-chromium`.
+The last line there redirects **all** output to `/dev/null`:
+
+```bash
+${BIN} \
+  --no-sandbox \
+  --password-store=basic \
+  --simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT' \
+  --start-maximized \
+  --test-type \
+  --user-data-dir \
+  ${WAYLAND} \
+   "$@" > /dev/null 2>&1
+```
+
+So Chromium **never** writes logs into files – neither to `/config/log/` nor anywhere else. The
+container logs you see with `kubectl logs -c chromium` come from s6-overlay, not from Chromium
+itself.
+
+**Solution:** we replace the `wrapped-chromium` script with a custom version that writes logs both to
+`/config/log/chromium.log` and to stdout. To do that we mount the adjusted script via ConfigMap with
+`subPath` over the original script.
+<br/>
+
+**6. Enabling logging: custom startup script**
+
+File `chromium-logging-config-map.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chromium-logging
+  namespace: k8s-training
+data:
+  wrapped-chromium: |
+    #!/bin/bash
+
+    BIN=/usr/bin/chromium
+    LOGFILE=/config/log/chromium.log
+
+    # Cleanup
+    if ! pgrep chromium > /dev/null;then
+      rm -f $HOME/.config/chromium/Singleton*
+    fi
+
+    # Wayland check
+    WAYLAND=""
+    if ls -l /dev/dri/* > /dev/null 2>&1; then
+      if pgrep labwc > /dev/null 2>&1; then
+        WAYLAND="--ozone-platform=wayland"
+      fi
+    fi
+
+    # Chromium starten mit Logs in Datei UND stdout
+    ${BIN} \
+      --no-sandbox \
+      --password-store=basic \
+      --simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT' \
+      --start-maximized \
+      --test-type \
+      --user-data-dir \
+      ${WAYLAND} \
+       "$@" > >(tee -a ${LOGFILE}) 2>&1
+```
+<br/>
+```bash
+kubectl apply -f chromium-logging-config-map.yaml
+```
+<br/>
+
+**7. Update the Deployment**
+
+The Chromium Deployment gets an additional volume mount that lays the ConfigMap script over the
+original `wrapped-chromium`. Important: `subPath` mounts the single file only without covering the
+rest of the directory. `defaultMode: 0755` makes the script executable.
+
+File `chromium-deployment-sidecar-wrapped.yaml`
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+      ...
+spec -> templates -> spec -> containers -> volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+            - name: chromium-logs
+              mountPath: /config/log
+            - name: chromium-logging-script     # NEU: Custom wrapped-chromium
+              mountPath: /usr/bin/wrapped-chromium
+              subPath: wrapped-chromium
+      volumes:
+        - name: shm
+          ...
+        - name: chromium-logging-script         # NEU: ConfigMap mit Script
+          configMap:
+            name: chromium-logging
+            defaultMode: 0755
+```
+<br/>
+```bash
+kubectl apply -f chromium-deployment-sidecar-wrapped.yaml
+```
+<br/>
+
+**8. Check that it works**
+
+```bash
+# Warten, bis der neue Pod läuft
+kubectl get pods -l app=chromium -w
+
+# Logs des Sidecars anzeigen – jetzt sollten JSON-Logs kommen!
+kubectl logs -l app=chromium -c vector --tail=10
+
+# Prüfen, ob die Log-Datei im Container existiert
+kubectl exec -c chromium deploy/chromium -- ls -la /config/log/
+
+# Chromium-Logs live verfolgen
+kubectl logs -l app=chromium -c vector -f
+```
+
+**Expected output from Vector:**
+
+```json
+{"file":"/config/log/chromium.log","host":"chromium-...","message":"[381:411:0719/...:ERROR:...] Registration response error message: DEPRECATED_ENDPOINT","source_type":"file","timestamp":"2026-07-19T..."}
+{"file":"/config/log/chromium.log","host":"chromium-...","message":"DevTools listening on ws://...","source_type":"file","timestamp":"2026-07-19T..."}
+```
+
+Now Vector streams the Chromium logs as structured JSON – ready for further processing by
+Elasticsearch, Loki or another logging platform.
+
+**Note:** the logs now also contain Chromium internals such as `ERROR`, `WARNING` and `INFO`
+messages. That is normal – Chromium logs many internal operations (GPU, network, extensions). In
+production you could filter specific log levels or components with Vector transforms (`[transforms]`).
+
+#### Production alternatives
+
+Vector only serves as an example. Production environments often use these tools as a logging
+sidecar:
+
+| Tool | Size | Speciality |
+|------|-------|-------------|
+| [Vector](https://vector.dev/) | ~10 MB | Rust, extremely performant, many outputs |
+| [Fluent Bit](https://fluentbit.io/) | ~5 MB | C, standard in many cloud setups |
+| [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) | ~20 MB | Optimised for Grafana Loki specifically |
+| [Fluentd](https://www.fluentd.org/) | ~50 MB | Ruby, very flexible, many plugins |
+
+## Requests & limits
+
+Picture several departments working side by side in the logistics centre.
+Every department needs a certain amount of space and certain machines.
+
+<Image src={knba20020} alt="Requests and limits * Created with Microsoft Copilot" />
+
+
+- **Without any agreement** one department would simply block the whole storage space, occupy the
+  forklifts permanently and consume the power of everyone else. Chromium is such a department – a
+  memory hog that soaks up the whole node without limits until other Pods starve.
+
+- **`requests`** is the **minimum guarantee**: "This department gets at least
+  3 shelf rows and 1 forklift – nobody may take that away." The
+  warehouse manager (scheduler) places the department only when enough space is free.
+
+- **`limits`** is the **upper bound**: "This department must not use more than 6 shelf rows and
+  2 forklifts – even when space would be left." That way enough stays
+  available for everyone else.
+
+**In short:** without `requests` a department can starve because
+another one blocks everything. Without `limits` a department can paralyse the whole warehouse.
+Requests and limits provide **fairness and stability** in the logistics centre.
+
+- **`requests`** – minimum guarantee. The scheduler places the Pod only on a node
+  that has this amount free for sure.
+- **`limits`** – upper bound. CPU gets throttled when exceeded, memory causes
+  an OOM kill.
+
+> **OOM = Out Of Memory.** When a container exceeds its `limits.memory`, the
+> Linux kernel sends the signal `SIGKILL` (exit code 137). The container stops immediately and
+> the Deployment restarts it automatically. When that keeps happening, it ends in
+> `CrashLoopBackOff`.
+
+The gap between requests and limits determines the [QoS class](#qos-classes) and thereby
+how much priority the Pod receives when the node runs under pressure.
+
+| Concept      | Description                                                                      |
+| ------------ | -------------------------------------------------------------------------------- |
+| [**requests**](/docs/kubernetes-basis-en/90-glossary#resource-limits) | Minimum guarantee -- the scheduler places the Pod only on nodes with enough resources |
+| [**limits**](/docs/kubernetes-basis-en/90-glossary#resource-limits)   | Upper bound -- CPU gets throttled, memory overrun causes an OOM kill             |
+
+**CPU units:** `1` = 1 core, `500m` = 0.5 cores, `250m` = 0.25 cores.
+
+<Notice type="info">
+
+**💡 The `m` stands for "milli"** – one thousandth of a core. `1000m` = 1 full core.
+A container can get at most as many millicores as the node has cores.
+Values above `1000m` (e.g. `2000m`) only make sense on a node with at least 2 cores.
+
+</Notice>
+
+**Memory units:** `128Mi` = 128 mebibytes, `1Gi` = 1 gibibyte.
+
+<Notice type="info">
+
+**💡 `Mi` and `Gi` stand for "mebi" and "gibi"** – binary units (base 1024).
+`1 Mi` = 1024 × 1024 bytes = 1,048,576 bytes (as opposed to `1 MB` = 1,000,000 bytes).
+Kubernetes always calculates in binary. Memory aid:
+
+- `i` = binary (Mi, Gi, Ti) – that is the Kubernetes standard
+- Letter only = decimal (M, G, T) – accepted by Kubernetes as well, but interpreted as binary
+
+| Unit | Bytes | Rounded |
+|---------|-------|----------|
+| `128Mi` | 134,217,728 | ~128 MB |
+| `256Mi` | 268,435,456 | ~256 MB |
+| `512Mi` | 536,870,912 | ~512 MB |
+| `1Gi`   | 1,073,741,824 | ~1 GB |
+| `5Gi`   | 5,368,709,120 | ~5 GB |
+
+</Notice>
+
+### QoS classes
+
+**Analogy to the logistics centre:**
+
+The QoS class says: "How important is this department when space runs short?"
+
+<Image src={knba20021} alt="QoS * Created with Microsoft Copilot" />
+
+- **BestEffort** – a department that never registered how much space it needs.
+  When the warehouse fills up, it leaves first.
+- **Burstable** – a department that reserved 3 shelf rows but may use up to 6.
+  As long as space remains, it gets the extra rows. When things get tight, it has to fall back
+  to its reserved 3.
+- **Guaranteed** – a department that reserved exactly 3 shelf rows and may not use more.
+  It is plannable and touched last.
+
+| [QoS class](/docs/kubernetes-basis-en/90-glossary#qos-classes)     | Condition                               | Eviction priority            | Analogy |
+| -------------- | --------------------------------------- | ---------------------------- | -------- |
+| **Guaranteed** | requests == limits (for CPU and memory) | Lowest (evicted last)        | Firm commitment: exactly 3 shelf rows |
+| **Burstable**  | requests < limits                       | Medium                       | Flexible: 3 reserved, up to 6 |
+| **BestEffort** | No requests/limits set                  | Highest (evicted first)      | No reservation, cleared first |
+
+**Remember:** the more precisely you know requests and limits, the more plannable your Pod becomes.
+`Guaranteed` is the royal road for productive workloads – the Pod only gets evicted when absolutely
+no other way out remains.
+
+### Resource limits
+
+The Deployment of Chromium still runs without resource declarations. We change that now.
+
+**Note:** you do not configure the QoS class directly – it follows automatically
+from the ratio of `requests` and `limits`:
+
+| Constellation | QoS class |
+|---|---|
+| `requests` < `limits` | **Burstable** |
+| `requests` == `limits` | **Guaranteed** |
+| No `resources` | **BestEffort** |
+
+File `chromium-deployment-res.yaml` -- add the `resources` block in the container.
+The rest of the Deployment stays:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chromium
+  namespace: k8s-training    # ⬅️ Namespace ggf. anpassen
+  labels:
+    app: chromium
+spec:
+  # ... replicas, selector, template (unverändert) ...
+  template:
+    spec:
+      containers:
+        - name: chromium
+          # ... image, ports, envFrom (linuxserver-common), volumeMounts (unverändert) ...
+          resources:                          # ⬅️ NEU
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+```
+<br/>
+
+```bash
+kubectl apply -f chromium-deployment-res.yaml
+```
+<br/>
+
+### Checking resources
+
+After the apply you can verify whether the container really keeps the limits you set.
+Three commands give you insight:
+
+**1. Show the set resources in the running Pod:**
+
+```bash
+kubectl describe pod -l app=chromium -n k8s-training
+```
+
+Look for the `Containers.chromium` section in the output – `Limits` and `Requests` appear there.
+
+**2. Check the QoS class** – it shows whether `requests == limits` (Guaranteed) or not (Burstable):
+
+```bash
+kubectl describe pod -l app=chromium -n k8s-training | grep "QoS Class"
+```
+
+```powershell
+kubectl describe pod -l app=chromium -n k8s-training | Select-String "QoS Class"
+```
+
+**3. Show the actual resource usage live:**
+
+```bash
+kubectl top pod -l app=chromium -n k8s-training
+```
+
+**Remember:** `kubectl top` shows the **real** usage – it often stays below the limits.
+Only when Chromium wants more CPU or RAM than the `limits` block allows does Kubernetes step in:
+CPU gets throttled, memory overrun causes an OOM kill.
+
+### LimitRange
+
+A [LimitRange](/docs/kubernetes-basis-en/90-glossary#limitrange) sets default values for all
+containers in the Namespace that declare no resources of their own -- the safety net against forgotten
+`resources` blocks.
+
+<Notice type="warning">
+
+**⚠️ Attention:** a LimitRange is **namespace-scoped** -- Namespace admin rights suffice. On
+corporate clusters RBAC or a ResourceQuota often blocks creation anyway; in that case you skip this
+step and set the resources directly in the Deployment, as we did with Chromium. A ResourceQuota can
+reject the apply with `exceeded quota`. `kubectl describe limitrange default-container-resources`
+shows the effective defaults.
+
+</Notice>
+
+File `limitrange.yaml`:
+
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-container-resources
+  namespace: k8s-training
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+      max:
+        cpu: "2"
+        memory: "2Gi"
+      min:
+        cpu: "50m"
+        memory: "32Mi"
+```
+
+<br/>
+```bash
+kubectl apply -f limitrange.yaml
+
+# Wirksame Defaults und Grenzen anzeigen
+kubectl describe limitrange default-container-resources -n k8s-training
+```
+
+<br/>
+
+### Exercise
+
+1. Apply the resource limits to Chromium and Code-Server.
+2. Check the QoS class of both Deployments:
+
+```bash
+kubectl describe pod -l app=chromium -n k8s-training | grep "QoS Class"
+kubectl describe pod -l app=code-server -n k8s-training | grep "QoS Class"
+```
+
+```powershell
+kubectl describe pod -l app=chromium -n k8s-training | Select-String "QoS Class"
+kubectl describe pod -l app=code-server -n k8s-training | Select-String "QoS Class"
+```
+
+3. Show the resource usage:
+
+```bash
+kubectl top pods -n k8s-training
+```
+
+4. Apply the LimitRange. Create a test Pod without resource declarations and check which defaults
+   get applied:
+
+```bash
+kubectl run test-pod --image=nginx:1.27 -n k8s-training
+kubectl describe pod test-pod -n k8s-training | grep -A 6 "Limits"
+kubectl delete pod test-pod -n k8s-training
+```
+
+```powershell
+kubectl run test-pod --image=nginx:1.27 -n k8s-training
+kubectl describe pod test-pod -n k8s-training | Select-String "Limits" -Context 0,6
+kubectl delete pod test-pod -n k8s-training
+```
+
+**Expected result:** the Pod has no `resources` declarations of its own, but still gets limits and
+requests assigned: `cpu: 1` / `memory: 1Gi` as limits and `cpu: 100m` / `memory: 256Mi` as requests.
+The LimitRange acts as a **safety net** on Namespace level: every Pod gets defaults automatically,
+even when the manifest contains no declarations. That prevents anyone from forgetting to bound
+resources.
+
+5. Crash chromium by playing 2-3 4k videos at once. Check the logs and the Pod status. What happens?
+
+## Health checks
+
+Kubernetes does not know automatically whether an application really works -- only whether a container
+runs. Health checks (probes) give Kubernetes that intelligence: they check the state of a container
+regularly and trigger automatic actions when something goes wrong.
+
+### Probe types
+
+Picture a logistics company: a truck driver delivers parcels. Kubernetes is the dispatcher who makes
+sure everything runs smoothly.
+
+<Image src={knba20030} alt="Health checks * Created with Microsoft Copilot" />
+
+
+- **Liveness probe** – *"Is the driver still alive?"*
+  The dispatcher calls every few minutes. When nobody answers, they send a replacement driver
+  (container restart). The driver may also just be in the toilet briefly --
+  replacement happens only after several failed attempts.
+
+- **Readiness probe** – *"Can the driver accept a parcel right now?"*
+  The driver is stuck in traffic → no parcel acceptance → the dispatcher gives the tour to another
+  driver (Pod removed from Service endpoints). Once the traffic jam is over, they get scheduled
+  again.
+
+- **Startup probe** – *"Did the driver load the truck and check the route?"*
+  Before the first tour the dispatcher asks: "Are you ready to go?" Only when "Yes" comes back do the
+  regular liveness/readiness checks begin. A truck still loading should not be called all the time.
+
+| Probe               | Question                              | Action on failure                          |
+| ------------------- | ------------------------------------- | ------------------------------------------ |
+| [**Liveness probe**](/docs/kubernetes-basis-en/90-glossary#liveness-probe)  | Does the application still run?       | Container gets restarted                   |
+| [**Readiness probe**](/docs/kubernetes-basis-en/90-glossary#readiness-probe) | Can the application accept traffic?   | Pod gets removed from Service endpoints    |
+| [**Startup probe**](/docs/kubernetes-basis-en/90-glossary#startup-probe)   | Did the application finish starting?  | Liveness/readiness paused until startup OK |
+
+
+
+### Probe mechanisms
+
+| Mechanism   | Description                                    |
+| ----------- | ---------------------------------------------- |
+| `httpGet`   | HTTP GET to path+port; status 200-399 = healthy |
+| `exec`      | Command inside the container; exit code 0 = healthy |
+| `tcpSocket` | Checks whether the TCP port is open            |
+
+### Parameters
+
+| Parameter             | Description                    | Default |
+| --------------------- | ------------------------------ | -------- |
+| `initialDelaySeconds` | Wait time before the first check | 0      |
+| `periodSeconds`       | Interval between checks        | 10       |
+| `timeoutSeconds`      | Timeout per check              | 1        |
+| `successThreshold`    | Successes until "healthy"      | 1        |
+| `failureThreshold`    | Failures until "unhealthy"     | 3        |
+
+### Why linuxserver.io images are so robust
+
+The images from linuxserver.io use **s6-overlay** as init system. It is no simple process starter,
+but a full service manager — comparable to a mini systemd. s6-overlay watches all started processes
+and restarts them **automatically** when they crash. That has far-reaching consequences for liveness
+probes:
+
+| Property | Effect |
+|---|---|
+| **Auto-restart** | When Chromium dies, s6 restarts it right away — often before Kubernetes triggers the liveness probe |
+| **PID 1** | s6 runs as PID 1 and reaps zombie processes, preventing orphan processes |
+| **Service dependencies** | Services start in the right order (e.g. Chromium only after X11/Wayland) |
+| **Log redirect** | s6 redirects the logs of all services to stdout — that is why `kubectl logs` shows only s6 messages, not Chromium itself |
+
+**Consequence for liveness probes:** with linuxserver images a liveness probe often stays
+**ineffective** in the auto-restart case — s6 acts faster. The probe only takes effect when the whole
+container hangs (process alive, but no response). That is no defect, but deliberate robustness.
+
+## Applying probes
+
+Now we configure probes for both applications. Chromium and Code-Server have different startup times
+-- Chromium is memory- and rendering-intensive and needs clearly longer to start than Code-Server. The
+probe configuration has to account for that, otherwise Kubernetes marks new containers as "unhealthy"
+too early and restarts them endlessly. We extend the existing YAML manifests with `startupProbe`,
+`livenessProbe` and `readinessProbe`.
+<br/>
+<Notice type="info">
+Chromium comes predefined here, experiment with Code-Server.
+</Notice>
+
+### Chromium probes
+
+Extend the file `chromium-deployment.yaml` (resources + probes):
+
+```yaml
+apiVersion: apps/v1
+    ...
+    spec:
+      containers:
+        - name: chromium
+          ...
+          startupProbe:
+            httpGet:
+              path: /
+              port: 3000
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            periodSeconds: 5
+            failureThreshold: 1
+```
+<br/>
+- StartupProbe (failureThreshold: 30, periodSeconds: 10) — Chromium needs up to 5 minutes to start. The
+  startup probe says: "Stay calm as long as it runs, no panic." While the startup probe runs,
+  liveness and readiness stay ignored.
+- ReadinessProbe (failureThreshold: 1, periodSeconds: 5) — Chromium started, but the browser hangs
+  right now (e.g. a page loads forever). The readiness probe fails → the Pod leaves the endpoints →
+  no more traffic → Chromium can recover. The Pod does not die, it only loses traffic for a moment.
+- LivenessProbe (failureThreshold: 3, periodSeconds: 15) — Chromium crashed (process dead, port does
+  not answer). After 3 failures = 45 seconds Kubernetes says: "It is dead" and restarts the
+  container.
+<br/>
+
+```bash
+kubectl apply -f chromium-deployment-all-probes.yaml
+```
+
+### Exercise: manipulating the readiness probe
+
+In this exercise you watch live how the readiness probe steers traffic. You change the port in the
+`readinessProbe` to a non-existing port — the Pod does not become Ready and disappears from the
+endpoints. The old Pod keeps running and serves the traffic.
+
+1. **Check the initial state** — one Pod runs cleanly (`2/2` Ready):
+
+```bash
+kubectl get pods -n k8s-training
+kubectl get endpointslices -n k8s-training -o wide
+```
+
+<br/>
+
+<Notice type="info">
+
+**💡 What are EndpointSlices?**
+A Service in Kubernetes distributes traffic across several Pods. To know which Pods stay reachable at
+the moment, the Service manages a list of IPs + ports – the endpoints. `EndpointSlices` are the
+modern version of that: they group this list into manageable blocks (slices) and update them live. As
+soon as a readiness probe fails, Kubernetes removes the Pod from the EndpointSlices – the Service then
+sends no more traffic to this Pod. The Pod itself keeps running, it only receives no more requests.
+
+</Notice>
+
+<br/>
+
+2. **Enter a wrong port** — change the port of the `readinessProbe` in
+   `chromium-deployment-all-probes.yaml` from `3000` to a non-existing port, e.g. `3005`:
+
+```yaml
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3005   # ← falsch! Port 3005 existiert nicht
+            periodSeconds: 5
+            failureThreshold: 1
+```
+
+3. **Deploy and observe**:
+
+```bash
+kubectl apply -f chromium-deployment-all-probes.yaml
+kubectl get pods -n k8s-training -w
+```
+
+Now you see **two Pods**:
+- The **old Pod** (`2/2` Ready) — keeps running and serves the traffic
+- The **new Pod** (`1/2` Ready) — Chromium is not Ready because the probe fails on port 3005. The
+  Vector container keeps running anyway (hence `1/2`).
+
+4. **Check the endpoints** — the new Pod shows `1/2` Ready (only Vector runs, Chromium is not
+   Ready). Still its IP already appears in the EndpointSlice, because the Service sends traffic to
+   the Pod as long as at least one container stays ready:
+
+```bash
+kubectl get endpointslices -n k8s-training -o wide
+```
+
+The EndpointSlice contains both IPs – the old Pod (`2/2`) and the new one (`1/2`).
+So the new Pod receives traffic even though Chromium itself is not ready yet.
+
+5. **Fix the port** — set the port in the `readinessProbe` back to `3000` and deploy again:
+
+```bash
+kubectl apply -f chromium-deployment-all-probes.yaml
+kubectl get pods -n k8s-training -w
+```
+
+The old Pod gets replaced by the new one, which now shows `2/2` Ready. The EndpointSlice shows
+only the IP of the new Pod.
+
+6. **Clean up old ReplicaSets** — after the exercise several ReplicaSets often remain that still
+   carry the faulty configuration. They show `DESIRED: 1` and keep creating new Pods with the broken
+   probe.
+
+   **What is a ReplicaSet?** It is the layer between Deployment and Pod. The Deployment creates a new
+   ReplicaSet for every change to the Pod template (e.g. a new image). The ReplicaSet makes sure the
+   desired number of Pods always runs with a specific configuration. Old ReplicaSets stay with 0
+   replicas – they enable rollbacks by simply scaling the previous ReplicaSet up again.
+
+   Check whether such ghost ReplicaSets exist:
+
+```bash
+kubectl get replicasets -l app=chromium -n k8s-training
+```
+
+Look for entries with `DESIRED: 1` that do not belong to the current Pod. You can either scale these
+ReplicaSets to 0 or delete them:
+
+```bash
+kubectl scale replicaset <name-des-alten-rs> --replicas=0 -n k8s-training
+# oder
+kubectl delete replicaset <name-des-alten-rs> -n k8s-training
+```
+
+Afterwards only one Pod with `2/2` Ready should run.
+
+## Deployment strategies
+
+How Kubernetes replaces old Pods with new ones is no small matter -- configured wrongly it causes
+downtime or data conflicts. Kubernetes offers two strategies; you choose between them depending on
+the application type.
+
+### Comparison
+
+Picture a logistics fleet: you own 10 trucks and receive 10 new models.
+How do you swap them?
+
+<Image src={knba20040} alt="Deployment strategies * Created with Microsoft Copilot" />
+
+
+- **RollingUpdate** – *"One out, one in."*
+  You send truck after truck into the workshop. While truck 1 gets converted, the other 9 keep
+  driving. Once truck 1 is done, truck 2 follows. The fleet stays 90% operational at any time – no
+  tour gets cancelled.
+
+- **Recreate** – *"All into the workshop, then all new."*
+  You bring all 10 trucks into the workshop at once. Only when all conversions finished do they
+  return to the road. A short downtime, but the switch may be simpler,
+  because you do not have to care about compatibility between old and new trucks.
+
+| Strategy          | Behaviour                                    | Downtime | Use                                                   |
+| ----------------- | -------------------------------------------- | ----------- | ----------------------------------------------------- |
+| [**RollingUpdate**](/docs/kubernetes-basis-en/90-glossary#rollingupdate) | Pods get replaced step by step               | None        | Standard, production                                  |
+| **Recreate**      | All old Pods stopped, then new ones started  | Brief       | When old + new version cannot run in parallel         |
+
+
+
+### Configuration
+
+```yaml
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1 # Wie viele zusätzliche Pods während des Updates erlaubt
+      maxUnavailable: 0 # Wie viele Pods gleichzeitig fehlen dürfen
+```
+
+- `maxSurge: 1` -- during the update 1 Pod more than `replicas` may run
+- `maxUnavailable: 0` -- no Pod may be missing (no traffic loss)
+
+
+With the configured RollingUpdate strategy we now perform a real update -- and learn to roll back
+immediately in a failure case. As an example we change the Chromium image to another version and
+watch the process live.
+
+### Image update
+
+```bash
+kubectl set image deployment/chromium chromium=lscr.io/linuxserver/chromium:version-11e602ae -n k8s-training
+```
+
+### Rollout status
+
+```bash
+kubectl rollout status deployment/chromium -n k8s-training
+```
+
+### ReplicaSets
+
+```bash
+kubectl get replicasets -l app=chromium -n k8s-training -o wide
+```
+
+Two ReplicaSets exist now -- the old one (0 replicas) and the new one (1 replica). The old one stays
+around for rollbacks.
+
+### Failure case
+
+Set a faulty image:
+
+```bash
+kubectl set image deployment/chromium chromium=lscr.io/linuxserver/chromium:nicht-existent -n k8s-training
+```
+
+Observe:
+
+```bash
+kubectl get pods -l app=chromium -n k8s-training
+```
+
+The new Pod stays stuck in `ImagePullBackOff`. The old ReplicaSet keeps the previous Pod running
+(thanks to `maxUnavailable: 0`).
+
+### Rollback
+
+```bash
+kubectl rollout undo deployment/chromium -n k8s-training
+kubectl rollout status deployment/chromium -n k8s-training
+```
+
+### Rollout history
+
+```bash
+kubectl rollout history deployment/chromium -n k8s-training
+```
+
+### Scaling
+
+```bash
+# Hochskalieren
+kubectl scale deployment/chromium --replicas=3 -n k8s-training
+kubectl get pods -l app=chromium -n k8s-training
+
+# Runterskalieren
+kubectl scale deployment/chromium --replicas=1 -n k8s-training
+kubectl get pods -l app=chromium -n k8s-training
+```
+<br/>
+<Notice type="info">
+Do not get impatient, bringing the Pods up or down can take a while. With `kubectl get pods -w` you
+watch live how the Pods are created and terminated.
+</Notice>
+<br/>
+
+## PVs & PVCs
+
+Container file systems are volatile -- when a Pod dies, all data is gone. For applications such as
+MariaDB that is no option. Persistent Volumes (PVs) and Persistent Volume Claims (PVCs) decouple
+storage from the Pod lifetime.
+
+
+
+### Analogy: the logistics warehouse
+
+Picture running a logistics warehouse with several halls (nodes). Space abounds,
+but not every space stays reachable at the same speed -- and not every one costs the same. Storage in
+the cluster behaves exactly like that.
+
+<Image src={knba20050} alt="PVs and PVCs * Created with Microsoft Copilot" />
+
+- **Without persistent storage** every work order (Pod) uses a disposable table: you put
+  your boxes on it, but when the order finishes, the table gets thrown away –
+  boxes included. Exactly that happens with `emptyDir`: the Pod dies, the data is
+  gone.
+
+- **A PersistentVolume (PV)** is like a **permanently installed shelf** in the hall. It
+  stays there, independent of individual orders. The warehouse manager (admin) built it,
+  or it was ordered automatically (dynamic provisioning).
+
+- **A PersistentVolumeClaim (PVC)** is the **warehouse slip** that an employee (Pod)
+  fills in: "I need a shelf with 1 metre of shelf width that I can use alone
+  (`ReadWriteOnce`)." The warehouse manager checks whether a matching shelf (PV) stays free and
+  assigns it to the employee.
+
+- **The StorageClass** is the **catalogue with shelf types**: "shelf that is hard to reach
+  (hard disk)", "shelf space at shoulder height near the entrance (SSD)", "cooling shelf (archive)".
+  The employee only says which type they need – the StorageClass takes care that exactly such a
+  shelf gets delivered and installed.
+
+| Shelf type                            | Way through the hall       | Access time  | Cost       |
+| ------------------------------------- | ------------------------- | ------------ | ---------- |
+| Shelf that is hard to reach (hard disk) | long way, far back      | high         | cheap      |
+| Shelf space at shoulder height near the entrance (SSD) | short way, at hand | low | more expensive |
+| Cooling shelf (archive)               | rarely needed, far away   | very slow    | very cheap |
+
+**In short:** PV = the shelf in the hall. PVC = the slip that reserves it.
+StorageClass = the catalogue that decides which shelf gets delivered. The Pod works at the
+shelf – and when the Pod leaves, the shelf stays, content included.
+
+### Concepts
+
+| Concept                         | Description                                                           |
+| ------------------------------- | --------------------------------------------------------------------- |
+| [**PersistentVolume (PV)**](/docs/kubernetes-basis-en/90-glossary#persistentvolume)       | A piece of storage in the cluster, provided by an admin or dynamically |
+| [**PersistentVolumeClaim (PVC)**](/docs/kubernetes-basis-en/90-glossary#persistentvolumeclaim) | Request of a Pod for storage (size, access type)                      |
+| [**StorageClass**](/docs/kubernetes-basis-en/90-glossary#storageclass)                | Defines how PVs get created dynamically (provisioner, parameters)     |
+
+### StorageClass: which shelf gets delivered?
+
+Before you write a PVC, take a look at the StorageClasses of your cluster:
+
+```bash
+kubectl get storageclass
+```
+
+The line with `(default)` is the class Kubernetes takes automatically when your PVC names no
+`storageClassName`. The same query including the column explanation appears in
+[03 Preparation](/docs/kubernetes-basis-en/03-preparation#get-storageclass) under the section
+"get storageclass". Without a default class the PVC stays in `Pending` -- that is the most common
+reason when a Pod waits for its volume forever.
+
+When you do not want to guess, set the class explicitly. The name must match the `NAME` from the
+table exactly:
+
+```yaml
+spec:
+  storageClassName: <name-aus-kubectl-get-storageclass>
+  accessModes:
+    - ReadWriteOnce
+```
+
+**Failure pattern "PVC stays Pending":** the three commands show you who blocks:
+
+```bash
+kubectl get pvc -n k8s-training
+kubectl describe pvc code-server-config -n k8s-training
+kubectl get events -n k8s-training --sort-by=.metadata.creationTimestamp
+```
+
+`describe` names the reason under `Events` -- mostly `no persistent volumes available for this claim`
+or a typo in the `storageClassName`. The events additionally reveal whether the provisioner rejected
+the request.
+
+### Access modes
+
+A PVC defines **how** the volume may be mounted. The `accessModes` value steers that:
+
+| Mode     | One Pod   | Several Pods on the same node  | Several nodes |
+| -------- | --------- | ------------------------------ | -------------- |
+| **RWO** (ReadWriteOnce)     | ✅        | ✅                              | ❌              |
+| **RWOP** (ReadWriteOncePod) | ✅        | ❌                              | ❌              |
+| **ROX** (ReadOnlyMany)      | ✅ Read   | ✅ Read                         | ✅ Read         |
+| **RWX** (ReadWriteMany)     | ✅        | ✅                              | ✅              |
+
+**Remember:** `RWO` allows write access from Pods on **one** node at a time (several Pods on the same
+node may still write at the same time). `RWOP` is stricter and limits access to **exactly one Pod** in
+the whole cluster. `RWX` allows write access from any number of Pods on any number of nodes -- but
+that requires a storage provider that supports it (e.g. NFS), which most cloud block storage does not
+offer.
+
+### Lifecycle
+
+```
+PVC-Anforderung → StorageClass erstellt PV → Pod mountet PVC
+```
+
+1. A PVC gets created with the desired size and access type
+2. The StorageClass provisions a matching PV automatically
+3. The Pod references the PVC as a volume and mounts it
+
+**Reminder of Day 1:** when you deleted the Code-Server Pod, the file you created was gone. That comes
+from `emptyDir` volumes dying with the Pod. PVCs survive Pod restarts and even
+Pod deletions.
+
+### Exercise: experiencing volatility
+
+Before we work with PVCs, feel for yourself what "volatile" means.
+
+1. **Open Code-Server in the browser** and create any file in the workspace
+   (e.g. `test.txt` with some content).
+
+2. **Restart the Pod** -- delete the Pod, the Deployment creates a new one automatically:
+
+   ```bash
+   kubectl delete pod -l app=code-server -n k8s-training
+   ```
+
+3. **Wait** until the new Pod runs:
+
+   ```bash
+   kubectl get pods -l app=code-server -n k8s-training -w
+   ```
+
+4. **Reload Code-Server** -- the file is gone (possibly still open in the editor, browser cache). The
+   workspace was mounted with `emptyDir` and does not exist anymore.
+
+5. **Insight:** container file systems are volatile. Without persistent storage
+   all data is lost after a Pod restart.
+
+### Code-Server: PVC (persistent)
+
+The Code-Server from Day 1 uses `emptyDir` for `/config` -- you saw that already in the
+exercise "experiencing volatility" above. Now we upgrade it to a **PVC** so the
+workspace survives Pod restarts.
+
+Two things are needed: the PVC and an updated Deployment that uses the PVC instead of
+`emptyDir`. The Service stays unchanged -- the Code-Server remains reachable under
+the same address.
+
+File `code-server-pvc.yaml`:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: code-server-config
+  namespace: k8s-training
+spec:
+  # storageClassName: <name>   # nur setzen, wenn du bewusst eine andere Klasse willst
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+Without `storageClassName` Kubernetes takes the default class of the cluster. The line therefore stays
+commented out -- activate it only when you need a specific class (names from
+`kubectl get storageclass`).
+
+The Deployment from Day 1 (`code-server-deployment.yaml`) gets one small change only:
+instead of `emptyDir: {}` we reference the PVC. The rest stays identical.
+
+**Old version (Day 1):**
+
+```yaml
+      volumes:
+        - name: config
+          emptyDir: {}
+```
+
+**New version with PVC:**
+
+```yaml
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: code-server-config
+```
+<br/>
+```bash
+kubectl apply -f code-server-pvc.yaml
+kubectl apply -f code-server-deployment-pvc.yaml
+```
+
+**Important:** the update restarts the Pod -- but because we had no PVC before, the workspace starts
+empty on this first start. Only from now on the data stays.
+
+### Persistence test: data survives the Pod restart
+
+Check the PVC status:
+
+```bash
+kubectl get pvc -n k8s-training
+```
+
+The PVC should show the status `Bound`.
+
+Now comes the decisive test: you create a file in the workspace, delete the Pod and check whether it
+still exists when the new Pod runs.
+
+```bash
+# Datei im persistenten Volume erstellen
+kubectl exec $(kubectl get pod -l app=code-server -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- touch /config/workspace/test.txt
+
+# Pod löschen (Deployment erstellt neuen)
+kubectl delete pod -l app=code-server -n k8s-training
+
+# Warten bis neuer Pod läuft
+kubectl get pods -l app=code-server -n k8s-training -w
+
+# Datei prüfen -- sie überlebt!
+kubectl exec $(kubectl get pod -l app=code-server -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- ls /config/workspace/test.txt
+```
+
+**Insight:** before (exercise "experiencing volatility") the file was gone after the Pod restart --
+now, with the PVC, it stays. PVCs survive Pod restarts, `emptyDir` does not.
+
+## 🧪 Deep dive: deploying MariaDB + phpMyAdmin (optional)
+
+This exercise serves as a **repetition of all concepts from Day 1 and Day 2** – without a
+step-by-step guide. You only get the requirements and write and apply the YAML manifests yourself.
+Use `kubectl explain` when questions come up or flip back to the previous chapters.
+
+<br/>
+<Notice type="info">
+One of the participants shares their screen and shows live how they solve the task. You can use that
+for orientation, but try to work out the solution yourself.
+</Notice>
+<br/>
+
+### Task
+
+<Image src={knba20080} alt="Exercise: deploying MariaDB and PHPMyAdmin * Created with Microsoft Copilot" />
+
+
+Deploy **MariaDB** and **phpMyAdmin** into the Namespace `k8s-training`. Both containers
+run in the **same Pod** – MariaDB as app container, phpMyAdmin as sidecar. They share
+the network stack (`localhost`) and a common volume for the session data.
+
+| Property | MariaDB | phpMyAdmin |
+|-------------|---------|------------|
+| Image | `lscr.io/linuxserver/mariadb:latest` | `lscr.io/linuxserver/phpmyadmin:latest` |
+| Container port | `3306` | `80` |
+| Service port | `3306` | `80` |
+| Service type | `ClusterIP` | `NodePort` |
+| Namespace | `k8s-training` | `k8s-training` |
+| PVC | `mariadb-config` (1Gi, `ReadWriteOnce`) | – (uses `emptyDir` for sessions) |
+| Mount path | `/config` | – |
+| Environment variables | `PUID=1000`, `PGID=1000`, `TZ=Europe/Berlin`, `MYSQL_ROOT_PASSWORD=trainingk8s` | `PUID=1000`, `PGID=1000`, `TZ=Europe/Berlin` |
+
+**Important:** the root password (`MYSQL_ROOT_PASSWORD`) is a Secret – move it into a
+Kubernetes Secret, not into the ConfigMap!
+
+### Requirements (checklist)
+
+Your solution must cover the following concepts from Day 1 and Day 2:
+
+<InteractiveChecklist
+  items={[
+    "Declarative Deployment via YAML (no kubectl create deployment)",
+    "Labels (app: database) for selector and Service",
+    "Service (ClusterIP) for MariaDB (port 3306), so other Pods reach the database",
+    "Service (NodePort) for phpMyAdmin (port 80), so you can access it in the browser. Alternative to Ingress: this way suffices for the browser test; an Ingress route is not needed for that.",
+    "ConfigMap for the environment variables (PUID, PGID, TZ)",
+    "Secret for MYSQL_ROOT_PASSWORD",
+    "PersistentVolumeClaim (1Gi, ReadWriteOnce) for MariaDB under /config",
+    "Resource limits for both containers (requests: 256Mi/250m, limits: 1Gi/1000m)",
+    "Health checks – StartupProbe, LivenessProbe, ReadinessProbe (each on port 80 for phpMyAdmin)",
+    "RollingUpdate strategy (maxSurge: 1, maxUnavailable: 0)",
+    "Multi-container Pod – MariaDB + phpMyAdmin share localhost",
+    "Ingress route (optional) – PhpMyAdmin is reachable via an Ingress route. Extra task: anyone who wants to repeat the Ingress route from Day 1 additionally creates an Ingress resource with the host phpmyadmin.k8s-training.frickeldave.de; the NodePort Service stays mandatory.",
+  ]}
+/>
+
+
+### Tips
+
+- Start with the PVC, then the Secret, then the ConfigMap, then the Deployment, then **two Services**
+- The PVC must show `Bound` before the Pod starts
+- phpMyAdmin connects to `localhost:3306` via its config – that works because both containers run in
+  the same Pod
+- **MariaDB gets its own `ClusterIP` Service** (port `3306`). Other Pods (e.g. a Nextcloud) can then
+  reach the database via the DNS name `mariadb.k8s-training.svc.cluster.local:3306`
+- The probes for phpMyAdmin point to HTTP `:80/`
+- MariaDB needs no probe of its own – when the DB is gone, phpMyAdmin notices
+- After the deploy: `kubectl get all -n k8s-training` – the new Deployment should appear as the third
+  one
+
+### Expected result
+
+```bash
+kubectl get deployments -n k8s-training
+# NAME            READY   UP-TO-DATE   AVAILABLE
+# chromium        1/1     1            1
+# code-server     1/1     1            1
+# database        1/1     1            1
+
+kubectl get pods -n k8s-training
+# NAME                        READY   STATUS
+# chromium-xxx                2/2     Running
+# code-server-xxx             1/1     Running
+# database-xxx                2/2     Running
+
+kubectl get pvc -n k8s-training
+# NAME                    STATUS   VOLUME
+# code-server-config      Bound    ...
+# mariadb-config          Bound    ...
+```
+
+### Persistence test
+
+1. Open phpMyAdmin in the browser
+2. Log in with `root` / `trainingk8s`
+3. Create a new database (e.g. `testdb`) and a table
+4. Delete the Pod: `kubectl delete pod -l app=database -n k8s-training`
+5. Wait until the new Pod runs
+6. Reload phpMyAdmin – the created database should **still exist** (thanks to the PVC!)
+
+## 🧪 Deep dive: init container for MariaDB wait time (optional)
+
+In the sidecar exercise with Vector you saw how two containers start in parallel.
+With MariaDB + phpMyAdmin it works differently: phpMyAdmin **needs** a running MariaDB,
+otherwise it only shows an error page. An init container solves that: it runs **before** the
+app containers and blocks until MariaDB stays ready. Only then phpMyAdmin starts
+(and MariaDB again – but it already runs).
+
+<br/>
+<Notice type="info">
+One of the participants shares their screen and shows live how they solve the task. You can use that
+for orientation, but try to work out the solution yourself.
+</Notice>
+<br/>
+
+> **Reminder:** init containers appeared earlier in the chapter [Init containers](#init-container)
+> already. There you saw an example with `busybox` and `nslookup`. Here we put
+> the concept into practice.
+
+### Task
+
+Extend the Deployment from the previous exercise with an **init container** that checks before the
+start of phpMyAdmin whether MariaDB answers on `localhost:3306`. The init container
+uses the official `mariadb:11` image and runs `mysqladmin ping`.
+
+### Solution (step by step)
+
+The complete manifest lives in the training material as `examplefiles/database-deployment.yaml` --
+following the file name convention `<app>-<kind>.yaml` and with exactly one object per file. You
+create the PVC `mariadb-config` (1Gi, `ReadWriteOnce`) beforehand yourself; it deliberately stays
+**outside** the file, and without it the Pod stays in `Pending`.
+
+**1. Adjust the Deployment**
+
+Insert an `initContainers` block into the Deployment. The init container sits on
+the same level as `containers` and `volumes`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+  namespace: k8s-training
+  labels:
+    app: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      initContainers:                          # ⬅️ NEU: läuft vor den App-Containern
+        - name: wait-for-mariadb
+          image: mariadb:11
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          command:
+            - sh
+            - -c
+            - |
+              echo "Warte auf MariaDB auf localhost:3306 ..."
+              until mysqladmin ping -h localhost -u root -ptrainingk8s --silent; do
+                echo "MariaDB noch nicht bereit – warte 2s ..."
+                sleep 2
+              done
+              echo "MariaDB ist bereit!"
+      containers:
+        - name: mariadb
+          # ... bestehende Konfiguration ...
+        - name: phpmyadmin
+          # ... bestehende Konfiguration ...
+```
+
+**What happens here?**
+
+| Step | Description |
+|---------|-------------|
+| `image: mariadb:11` | The init container uses the official MariaDB image – it contains `mysqladmin` |
+| `mysqladmin ping` | Checks whether the MariaDB server answers on `localhost:3306`. Exit code 0 = ready |
+| `-h localhost` | MariaDB runs in the same Pod – therefore reachable via `localhost` |
+| `-u root -ptrainingk8s` | Authentication with the root password from the Secret |
+| `--silent` | Exit code only, no output |
+| `until ...; do sleep 2; done` | Repeat the check every 2 seconds until MariaDB answers |
+| `echo "MariaDB ist bereit!"` | As soon as MariaDB answers, the init container exits with code 0 |
+
+**2. Update the Deployment**
+
+```bash
+kubectl apply -f database-deployment.yaml
+```
+
+**3. Observe what happens**
+
+Open two terminals:
+
+**Terminal 1 – Pod status live:**
+
+```bash
+kubectl get pods -l app=database -n k8s-training -w
+```
+
+You see:
+
+```
+NAME                        READY   STATUS     RESTARTS
+database-xxx                0/2     Init:0/1   0       ← Init-Container läuft
+database-xxx                0/2     Init:0/1   0       ← Init-Container wartet auf MariaDB
+database-xxx                0/2     Init:0/1   0       ← (wiederholt sich bis MariaDB bereit)
+database-xxx                0/2     PodInitializing    ← Init-Container fertig, App-Container starten
+database-xxx                1/2     Running            ← MariaDB läft, phpMyAdmin startet
+database-xxx                2/2     Running            ← Beide Container laufen
+```
+
+**Terminal 2 – show the logs of the init container:**
+
+```bash
+kubectl logs -l app=database -n k8s-training -c wait-for-mariadb
+```
+
+Expected output:
+
+```
+Warte auf MariaDB auf localhost:3306 ...
+MariaDB noch nicht bereit – warte 2s ...
+MariaDB noch nicht bereit – warte 2s ...
+MariaDB ist bereit!
+```
+
+**4. Test: the init container really blocks**
+
+Restart the Pod and observe: as long as the init container runs, the Pod shows
+`Init:0/1` – the app containers (MariaDB, phpMyAdmin) do **not start at all**.
+
+```bash
+kubectl delete pod -l app=database -n k8s-training
+kubectl get pods -l app=database -n k8s-training -w
+```
+
+**5. Bonus: what happens when MariaDB never starts?**
+
+Change the host in the init container from `localhost` to a non-existing host
+(e.g. `localhost2`) and deploy again:
+
+```bash
+kubectl apply -f database-deployment.yaml
+kubectl get pods -l app=database -n k8s-training -w
+```
+
+The init container runs endlessly – and the Pod stays stuck in `Init:0/1`. The app containers
+never start. Kubernetes does nothing, because init containers have **no restart**
+(unlike liveness probes). Correct the host back to free the Pod.
+
+### Summary init containers
+
+| Aspect | Behaviour |
+|--------|-----------|
+| **Order** | Init containers run **sequentially** before all app containers |
+| **Lifetime** | Once until the successful exit code 0 |
+| **On failure** | The Pod does not start app containers – stays in `Init:` status |
+| **Restart** | Init containers do **not** restart automatically (no crash loop) |
+| **Typical use** | Waiting for dependencies, schema migrations, preparing files |
+| **Image** | Any image – need not match the app image |
+
+
+## Summary
+
+<Image src={knba20090} alt="Conclusion * Created with Microsoft Copilot" />
+
+Day 2 made your Deployments production-ready. Here comes the current state in the cluster:
+
+```bash
+kubectl get all -n k8s-training
+```
+
+| Resource        | Count  | Details                                              |
+| --------------- | ------ | ---------------------------------------------------- |
+| Deployments     | 3      | chromium, code-server, database                      |
+| ReplicaSets     | 3+     | 1 per Deployment (+ old ones for rollback)           |
+| Pods            | 3      | chromium (2 containers), code-server (1 container), database (2 containers) |
+| Services        | 3      | chromium (4000), code-server (8443), database (80)   |
+| ConfigMaps      | 3      | code-server-config, vector-config, database-config   |
+| Secrets         | 2      | code-server-secret, database-secret                  |
+| PVCs            | 2      | code-server-config (1Gi), mariadb-config (1Gi)       |
+
+| Topic                         | Learned                                                       |
+| ----------------------------- | ------------------------------------------------------------- |
+| ConfigMaps & Secrets          | Externalising configuration and passwords                     |
+| Multi-container Pods          | Init containers (preparatory logistics services), sidecar containers (accompanying services), app containers (main transport vehicle) |
+| Resource limits               | requests, limits, QoS classes (BestEffort/Burstable/Guaranteed) |
+| Health checks                 | Startup, liveness and readiness probes                        |
+| Deployment strategies         | RollingUpdate vs. Recreate, rollback, rollout history         |
+| Persistent storage            | PV, PVC, StorageClass – data survives Pod restarts            |
+
+### Cheat sheet Day 2
+
+```bash
+# ConfigMaps & Secrets
+kubectl create configmap <name> --from-literal=key=value
+kubectl create secret generic <name> --from-literal=key=value
+kubectl get configmaps
+kubectl get secrets
+
+# Ressourcen & Metriken
+kubectl describe pod <name> | grep -A 6 "Limits"
+kubectl top pods
+kubectl top nodes
+
+# Health Checks & Rollouts
+kubectl rollout status deployment/<name>
+kubectl rollout history deployment/<name>
+kubectl rollout undo deployment/<name>
+kubectl rollout undo deployment/<name> --to-revision=<n>
+
+# Skalierung
+kubectl scale deployment/<name> --replicas=<n>
+kubectl get replicasets
+
+# Storage
+kubectl get pvc
+kubectl get pv
+kubectl get storageclass
+
+# Multi-Container Pods
+kubectl logs -l app=<name> -c <container-name>
+kubectl logs -l app=<name> -c <container-name> -f
+kubectl exec -c <container-name> deploy/<name> -- <command>
+```
+
+### Outlook
+
+You now hold a solid Kubernetes basis:
+
+- **Day 1:** first steps, imperative and declarative Deployment, Services, Ingress
+- **Day 2:** ConfigMaps, Secrets, resource limits, health checks, rolling updates, persistent storage
+
+With that you cover most application cases in the cluster. Deep-dive topics for practice:
+
+- **Helm** – package manager for Kubernetes (chart-based Deployments)
+- **Monitoring** – Prometheus + Grafana for metrics and alerting
+- **Autoscaling** – Horizontal Pod Autoscaler (HPA) based on CPU/memory
+- **Service mesh** – Istio or Linkerd for advanced networking (TLS, tracing, traffic splitting)
+- **GitOps** – ArgoCD or Flux for declarative deployment from Git
+- **Backup & restore** – Velero for cluster backups
+
+<br />
+Next: [Glossary](/docs/kubernetes-basis-en/90-glossary)

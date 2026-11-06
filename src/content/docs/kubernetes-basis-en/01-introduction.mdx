@@ -1,0 +1,67 @@
+---
+visible: true
+title: 01 Introduction
+description: Introduction to the 2-day Kubernetes Basics training -- what you build, who it is for and how it is structured.
+draft: false
+image: "@assets/docs/kubernetes-basis/knba-01-000_header.png"
+imageAlt: "Kubernetes Basics - 01 Introduction"
+---
+
+import { Image } from "astro:assets";
+import knba01010 from "@assets/docs/kubernetes-basis/knba-01-010_overview.png";
+
+## What is this about?
+
+This training teaches the fundamentals of Kubernetes in two hands-on days. The focus is not on
+memorising terms, but on building a working container platform yourself -- step by step, inside your
+own cluster.
+
+Kubernetes is the de-facto standard platform for container orchestration in modern IT
+infrastructure. Anyone who wants to run, scale and manage container applications reliably cannot get
+around Kubernetes.
+
+## What do you build by the end?
+
+At the end of the two days, two real applications run inside your own Kubernetes cluster -- both
+reachable behind a shared Ingress controller:
+
+| Application      | Image                             | URL                                |
+| ---------------- | --------------------------------- | ---------------------------------- |
+| Chromium Browser | `lscr.io/linuxserver/chromium`    | chrome.k8s-training.frickeldave.de |
+| Code-Server IDE  | `lscr.io/linuxserver/code-server` | code.k8s-training.frickeldave.de   |
+
+Both applications come from [linuxserver.io](https://www.linuxserver.io/) -- a community that
+maintains standardised, well-documented Docker images. You get visual web UIs right away and see
+your progress in the cluster immediately.
+
+On the second day a third application joins in optionally -- a real database with web
+administration:
+
+| Application         | Image                            | URL                                      |
+| ------------------- | -------------------------------- | ---------------------------------------- |
+| MariaDB (database)  | `lscr.io/linuxserver/mariadb`    | -- (only reachable internally via ClusterIP) |
+| phpMyAdmin          | `lscr.io/linuxserver/phpmyadmin` | phpmyadmin.k8s-training.frickeldave.de   |
+
+This exercise is designed as a **deep dive** and brings together every concept from Day 1 and Day 2
+-- including PersistentVolumeClaim, Secret, init container and a custom Ingress route.
+
+<Image src={knba01010} alt="2 containers behind an ingress controller" />
+
+## Who is this training for?
+
+The training targets IT professionals who want to use Kubernetes in their daily work: developers,
+DevOps engineers and system administrators with Linux basics and a basic understanding of
+containers (Docker basics).
+
+Prior Kubernetes knowledge is not required -- the training starts at zero and builds all concepts
+step by step.
+
+## How is the training structured?
+
+| Day   | Focus                        | Result at the end of the day                        |
+| ----- | ---------------------------- | --------------------------------------------------- |
+| [Day 1](/docs/kubernetes-basis-en/10-day-1) | Fundamentals & first steps   | Chromium and Code-Server run in the cluster, reachable via Ingress |
+| [Day 2](/docs/kubernetes-basis-en/20-day-2) | Production readiness & networking | Chromium and Code-Server production-ready (resources, probes, rolling updates, PVC); optional: MariaDB + phpMyAdmin as a third application |
+
+<br />
+Next: [Learning objectives and didactic concept](/docs/kubernetes-basis-en/02-goals-methods)

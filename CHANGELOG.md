@@ -7,14 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.13] - 2026-11-06
+
+### Added
+
+- Kubernetes-Schulung auf Englisch: unter `/docs/kubernetes-basis-en/` liegt der vollständige Kurs
+  mit sieben Kapiteln und englischem Glossar, während die deutsche Fassung unter
+  `/docs/kubernetes-basis-de/` erreichbar bleibt und die alten `/docs/kubernetes-basis/`-URLs
+  dorthin weiterleiten. Die Beispielmanifeste liegen sprachneutral unter
+  `src/content/docs/examplefiles/` und sind englisch kommentiert (#301).
+- Einstellbare Bildgrenze (Basis 0.2.5): Das Feld **Maximalgröße (kB)** im Konfigurationspanel unter Allgemeine Einstellungen → Bilder setzt die zulässige Dateigröße je Produktbild; erlaubt sind 50 bis 10240 kB, Standard 500 kB. Der Server setzt `oversized` entsprechend, das Panel warnt mit Anzahl und Schwellwerten und bietet **Bilder optimieren** an, die lange Kante bleibt bei 1600 px (#289).
+- Speicherbelegung in den Einstellungen (Basis 0.2.5): `GET /api/frickeldave_store/settings` liefert `images.max_bytes` und `storage.usage` mit `total_bytes`, `data_bytes`, `images_bytes`, `backups_bytes` und `files`; das Konfigurationspanel zeigt die kompakte Zeile „Belegt: … · Bilder … · Metadaten … · Snapshots …“ samt Dateizahl (#289).
+- Produktgröße in der Listenansicht (Basis 0.2.5): Die neue Spalte **Größe** zeigt die Summe aller Bild-Bytes eines Produkts, also aller Bilder und nicht nur des Hauptbilds, im deutschen Zahlenformat als KB oder MB; Produkte ohne Bilder zeigen `—`. Sie sortiert wie die übrigen Spalten auf- und absteigend, serverseitig vor der Pagination, damit „größte Produkte“ über alle Treffer gilt; Gleichstände löst Name, dann Artikelnummer. `aria-sort` markiert die aktive Spalte (#289).
+
 ### Changed
 
+- Bildgröße speichern (Basis 0.2.7): Die Bild-Maximalgröße wird mit dem Button **Einstellungen speichern** im Tab Allgemeine Einstellungen gespeichert; der separate Button „Bildgröße speichern“ entfällt. Ein PATCH enthält nur die geänderten Abschnitte (#289).
+- Standard-Bildgrenze von 400 auf 500 KiB angehoben (Basis 0.2.5) (#289).
 - Produktions-Deploy ohne Versions-Bump: `fd-deploy-prd` mergt `dev` nach `main` und deployt Pages jetzt auch dann, wenn `dev` dieselbe Version wie das letzte stabile Release trägt und der Diff `main..dev` ausschließlich verwaltete Katalog- und Produktbildpfade enthält (`public/data/handmade.json`, `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<Endung>`). Tag und GitHub-Release entstehen weiterhin nur, wenn die Version auf `main` höher ist als das letzte stabile Release; der neue Eingang `force_deploy` wiederholt einen fehlgeschlagenen Pages-Deploy ohne neuen Merge. `fd-promote-prd` behält vorerst das strenge Versions-Gate (#289).
 - Katalog-Schnellweg für deploy-neutrale Pfade: Die Klassifikation `promote_safe` erlaubt bei gleicher Version neben Katalogmaterial auch Dokumentation, `.squad/`, `.github/`, `.husky/`, Tests, `CHANGELOG.md` und Tooling-Konfigurationen, weil sie das gebaute Seitenartefakt nicht verändern; `src/**`, `public/**` außer dem Katalog, Root-Build-Eingaben und `scripts/build-*`/`scripts/install-*` bleiben seitenrelevant und verlangen weiterhin ein Release. Die Promotion-Notice unterscheidet „nur Katalog“ von „Katalog plus unkritische Pfade“ und nennt die Klassifikation (#289).
 - Veröffentlichungsdialog (Basis 0.2.4): Die Übersicht zeigt nur noch **Produkte** und **Bilder**; die filterbare **Dateiliste** bleibt die Dateisicht (#289).
+- Konfigurationspanel (Basis 0.2.5): Der Tab Allgemeine Einstellungen zeigt die Speicherbelegung des Stores; die Größe ermittelt die Integration rekursiv über das effektive Datenverzeichnis und folgt dabei keinen symbolischen Links (#289).
+- Listenansicht (Basis 0.2.5): Das Badge „Bilder zu groß“ ist so hoch wie das Badge „Personalisierbar“; treffen beide zu, stehen sie auf einer Zeile (#289).
 
 ### Fixed
 
+- Panel-URL (Basis 0.2.7): Das Panel rief `hass.fetchWithAuth` mit einer absoluten URL auf; Home Assistant setzt den Pfad selbst vor `auth.data.hassUrl`, sodass die Instanz-URL doppelt erschien und jeder Aufruf mit „Verbindung zum Server fehlgeschlagen. Bitte erneut versuchen.“ endete. Ab 0.2.7 bekommt `fetchWithAuth` den relativen Pfad, der rohe `fetch`-Fallback weiterhin die absolute URL (#289).
+- Sitzung im Panel (Basis 0.2.6): Das Panel holt seine Daten über Home Assistants `fetchWithAuth` und erneuert bei HTTP 401 den abgelaufenen Access-Token einmal, bevor es die Anfrage wiederholt; erst eine gescheiterte Erneuerung zeigt die Meldung „Die Sitzung ist abgelaufen“. Eine fehlende oder abgelaufene Sitzung antwortet jetzt mit `401 not_authenticated` statt mit einem irreführenden `403`, das wie eine fehlende Benutzerfreigabe aussah; Rollenentzug bleibt `403 forbidden` (#289).
 - Prod-Publish (Erweiterung 0.1.6): Der Workflow-Dispatch nutzt jetzt den korrekten Endpoint `POST /repos/{repo}/actions/workflows/{workflow}/dispatches` statt des nicht existierenden `/run`. Bis 0.1.5 beantwortete GitHub den Aufruf mit 404, sodass `fd-deploy-prd` trotz geschriebenem Katalog-Commit nicht startete; `fd-deploy-prd` startet wieder, und `Actions: Read and write` bleibt die einzige zusätzliche Token-Anforderung (#289).
 - Prod-Publish: Ein 404 beim Workflow-Dispatch nennt jetzt den betroffenen Workflow, den Branch und das fehlende Recht `Actions: Read and write`, statt generisch „Repository oder Branch nicht gefunden“ zu melden; die Dokumentation erklärt die beiden Prüfungen im Options-Flow (Repository, Prod-Workflow `fd-deploy-prd.yml`) und am Fine-grained Token (#289).
 - Dry-Run und Prod-Publish (Erweiterung 0.1.5): Ein Lauf ohne Änderungen meldet kein Deployment mehr, und `fd-deploy-prd` wird nur noch bei neuen, geänderten oder entfernten Dateien ausgelöst (#289).

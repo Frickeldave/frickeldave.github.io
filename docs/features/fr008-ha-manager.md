@@ -14,7 +14,10 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
 - Status: Basis 0.2.3 mit dem überarbeiteten Veröffentlichungsdialog ist released, ebenso Erweiterung
   `frickeldave_store_syncfd` 0.1.4 mit der zielgenauen Meldung beim Prod-Publish und 0.1.5 mit der
   änderungsbasierten Deployment-Meldung. Basis 0.2.4 mit der reduzierten Übersicht im
-  Veröffentlichungsdialog ist in Vorbereitung; Erweiterung 0.1.6 mit dem korrigierten
+  Veröffentlichungsdialog ist released. Basis 0.2.5 mit der einstellbaren Bildgrenze und der
+  Speicherbelegung im Konfigurationspanel ist released. Basis 0.2.6 mit der automatischen
+  Token-Erneuerung im Panel ist released. Basis 0.2.7 mit dem gemeinsamen Speichern-Button und dem
+  korrigierten `fetchWithAuth`-Aufruf ist in Vorbereitung; Erweiterung 0.1.6 mit dem korrigierten
   Dispatch-Endpoint folgt. Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -64,7 +67,7 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.4` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.7` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6` |
 
 - Basis: `custom_components/frickeldave_store/`.
@@ -94,7 +97,9 @@ und genau einem Integrationsverzeichnis:
 - Panel und Konfigurationspanel zeigen die geladene Version an; dieselbe Information liefert die
   API: `GET /api/frickeldave_store/me` gibt `version`, `storage_schema_version` und
   `panel_module_url` zurück, `GET /api/frickeldave_store/settings` und
-  `PATCH /api/frickeldave_store/settings` geben `version` zurück.
+  `PATCH /api/frickeldave_store/settings` geben `version` zurück. `GET /settings` liefert zusätzlich
+  die Bildgrenze `images.max_bytes` und die Speicherbelegung `storage.usage` (siehe
+  [Tab Allgemeine Einstellungen](#tab-allgemeine-einstellungen)).
 - `require_admin` ist keine Zugangskontrolle, sondern steuert nur die Sichtbarkeit des Panels. Jede
   geschützte Route prüft die Berechtigung serverseitig (siehe [Berechtigungen](#berechtigungen)).
 
@@ -138,6 +143,10 @@ Bilder gehören bewusst nicht in `.storage`. Beim Speicherort `config` liegen Da
 vollständig und bietet keine Ausnahme für einzelne Unterordner; `share` und `media` sind nur
 enthalten, wenn der Ordner in einem Teil-Backup ausgewählt oder vom Host gesichert wird. Wer Home
 Assistant Container betreibt, muss das gewählte Volume selbst in den Container einhängen.
+
+Die im Konfigurationspanel angezeigte Belegung bezieht sich auf dieses effektive Datenverzeichnis.
+Sie entsteht rekursiv aus den enthaltenen Dateien und Ordnern und folgt dabei keinen symbolischen
+Links.
 
 Datei-, Bild- und Netzwerkoperationen laufen nicht blockierend (Executor beziehungsweise `aiohttp`
 mit Timeouts). Fehler externer Dienste werden abgefangen und dürfen Home Assistant nicht
@@ -292,9 +301,9 @@ Der Tab bildet die Rollenfreigaben aus [Berechtigungen](#berechtigungen) ab.
 
 ### Tab Allgemeine Einstellungen
 
-Der Tab steht an erster Stelle des Konfigurationspanels und zeigt, wo der Katalog liegt. Frühere
-Fassungen dieses Dokuments nannten ihn bereits, obwohl er im Code fehlte; seit 0.1.14 beschreiben
-die folgenden Angaben den tatsächlichen Stand.
+Der Tab steht an erster Stelle des Konfigurationspanels und zeigt, wo der Katalog liegt und wie viel
+Platz er belegt. Frühere Fassungen dieses Dokuments nannten ihn bereits, obwohl er im Code fehlte;
+seit 0.1.14 beschreiben die folgenden Angaben den tatsächlichen Stand.
 
 - Ein Schalter zeigt, ob der Produktkatalog im Home-Assistant-Backup enthalten ist. Sein Zustand
   folgt dem Speicherort und ist kein eigenes Feld: `config` heißt enthalten, `share` und `media`
@@ -302,10 +311,28 @@ die folgenden Angaben den tatsächlichen Stand.
 - Die Auswahl des Speicherorts bietet die angebotenen Optionen mit einer Beschreibung je Option.
 - Schreibgeschützt darunter stehen der effektive Pfad und die drei Unterpfade für Metadaten, Bilder
   und Snapshots (siehe [Datenhaltung](#datenhaltung)).
-- Gespeichert wird über `PATCH /api/frickeldave_store/settings`.
+- Eine kompakte Zeile **Belegt: …** fasst die Speicherbelegung des Stores zusammen, etwa
+  „Belegt: 128 MB · Bilder 96 MB · Metadaten 2 MB · Snapshots 30 MB · 412 Dateien“. Die Werte
+  stammen aus `storage.usage` in `GET /api/frickeldave_store/settings`; das Objekt führt
+  `total_bytes` (Gesamt), `data_bytes` (Metadaten), `images_bytes` (Bilder), `backups_bytes`
+  (Snapshots) und `files` (Anzahl der Dateien).
+- Die Belegung berechnet die Integration rekursiv über das effektive Datenverzeichnis — je nach
+  Speicherort `config`, `share` oder `media` — und folgt dabei keinen symbolischen Links. Nach einem
+  Wechsel des Speicherorts zeigt die Zeile deshalb den neuen Ordner.
+- Der Abschnitt **Bilder** führt das Feld **Maximalgröße (kB)**. Es setzt die Obergrenze für die
+  Dateigröße eines Produktbilds; erlaubt sind 50 bis 10240 kB, der Standard ist 500 kB. Die lange
+  Kante bleibt davon unberührt und liegt weiterhin bei 1600 px (siehe [Bilder](#bilder)).
+- `images.max_bytes` und `storage.usage` liefert `GET /api/frickeldave_store/settings`;
+  `storage.usage` ist schreibgeschützt, gesetzt wird nur `images.max_bytes`.
+- Ein einziger Button **Einstellungen speichern** schreibt Speicherort samt Backup-Schalter und die
+  Bild-Maximalgröße gemeinsam über `PATCH /api/frickeldave_store/settings`. Den separaten Button
+  „Bildgröße speichern“ gibt es seit 0.2.7 nicht mehr. Der PATCH enthält nur die geänderten
+  Abschnitte: `storage` für den Speicherort, `images` für die Maximalgröße.
+- **Änderung verwerfen** setzt Speicherort samt Backup-Schalter und die Bild-Maximalgröße auf die
+  zuletzt gespeicherten Werte zurück.
 - Ein Wechsel des Speicherorts wird erst nach einem Neuladen der Integration wirksam; die
   Oberfläche teilt das ausdrücklich mit und nennt den Weg **Einstellungen → Geräte & Dienste →
-  Frickeldave Store → Neu laden**.
+  Frickeldave Store → Neu laden**. Eine geänderte Bild-Maximalgröße wirkt ohne Neuladen.
 - Ein Wechsel verschiebt Store-Datei, Bilder und Snapshots an den neuen Ort. Die alte Kopie bleibt
   für die manuelle Bereinigung liegen; die Integration löscht sie nicht.
 - Ist der Zielordner belegt, antwortet der Server mit `409`, fehlt der Mount, mit `400`. Die
@@ -398,10 +425,10 @@ Regeln:
   sichtbar, sobald ein Filter gesetzt ist.
 - Auf breiten Desktop-Monitoren stehen Kategorien und Tags nebeneinander; erklärende Hilfssätze
   entfallen.
-- Sortierung über fünf Felder: Produkt, Kategorie, Preis, Bestand und Status. In der Listenansicht
-  übernehmen das die Spaltenköpfe, in der Kachelansicht der Umschalter in der Filterleiste; beide
-  teilen denselben Zustand. Die Sortierung bleibt bei Filteränderungen erhalten. Details stehen
-  unter [Sortierung](#sortierung).
+- Sortierung über sechs Felder: Produkt, Kategorie, Preis, Größe, Bestand und Status. In der
+  Listenansicht übernehmen das die Spaltenköpfe, in der Kachelansicht der Umschalter in der
+  Filterleiste; beide teilen denselben Zustand. Die Sortierung bleibt bei Filteränderungen erhalten.
+  Details stehen unter [Sortierung](#sortierung).
 - Bildverwaltung: maximal zehn Bilder je Produkt, Reihenfolge und genau ein Hauptbild. Ein elfter
   Upload wird mit Meldung abgelehnt, ohne Teilpersistenz. Der Server verkleinert Uploads (siehe
   [Bilder](#bilder)).
@@ -415,26 +442,36 @@ Die Produktliste erscheint wahlweise als Kachel- oder Listenansicht. Der Umschal
 (`localStorage`, Schlüssel `fd-store-view`).
 
 - Beide Ansichten zeigen Bild, Name, Artikelnummer, Kategorie, Preis, Tags, Status und Bestände.
+- Die Listenansicht führt die Spalte **Größe**: Sie zeigt die Summe aller Bilddateien des Produkts,
+  also aller Bilder und nicht nur des Hauptbilds. Gemeint ist damit der Speicherbedarf der Bilder,
+  nicht die Größenangabe **Größe** aus den Grunddaten. Die Anzeige nutzt deutsches Zahlenformat in KB
+  oder MB, Produkte ohne Bilder zeigen `—`. Die Spalte sortiert wie die übrigen (siehe
+  [Sortierung](#sortierung)).
 - Die Listenansicht ist kompakt: Thumbnail 40 px statt 56 px, Zell-Padding 4 px statt 8 px, Tags
   einzeilig mit Umbruch. **Bearbeiten** und **Archivieren** sind Icon-Buttons (Stift, Archivbox)
   nebeneinander, jeweils mit `aria-label` und `title` sowie 44 × 44 px Touch-Ziel.
 - Status und Bestände folgen den konfigurierten Lagerstätten; die Bezeichnungen der Bestandsfilter
   richten sich nach deren Namen (siehe [Lagerstätten](#lagerstätten)).
+- In der Statusspalte sitzen die Badges **Personalisierbar** und „Bilder zu groß“ in gleicher Höhe;
+  treffen beide zu, stehen sie auf einer Zeile.
 
 ### Sortierung
 
-Die Spaltenköpfe **Produkt**, **Kategorie**, **Preis**, **Bestand** und **Status** der Listenansicht
-sind klickbar und zeigen einen Sortierpfeil; `aria-sort` markiert die aktive Spalte und die
-Richtung.
+Die Spaltenköpfe **Produkt**, **Kategorie**, **Preis**, **Größe**, **Bestand** und **Status** der
+Listenansicht sind klickbar und zeigen einen Sortierpfeil; `aria-sort` markiert die aktive Spalte und
+die Richtung.
 
 - **Produkt** sortiert nach Name, **Kategorie** nach dem Kategorie-Label, **Preis** nach dem Preis.
+- **Größe** sortiert nach der Summe der Bild-Bytes des Produkts.
 - **Bestand** sortiert nach dem Gesamtbestand über alle Lagerstätten, unabhängig vom
   Lagerstätten-Filter.
 - **Status** sortiert aktiv vor archiviert und sichtbar vor unsichtbar.
+- Die Sortierung läuft serverseitig vor der Pagination. „Größte Produkte“ gilt damit über alle
+  Treffer, nicht nur über die geladene Seite.
 - Der erste Klick sortiert aufsteigend, ein erneuter Klick dreht die Richtung. `desc` dreht nur das
   Hauptkriterium; Gleichstände bleiben aufsteigend, zuerst nach Name, dann nach Artikelnummer.
 
-Der Sortier-Umschalter in der Filterleiste bleibt für die Kachelansicht und bietet jetzt alle fünf
+Der Sortier-Umschalter in der Filterleiste bleibt für die Kachelansicht und bietet jetzt alle sechs
 Felder. Beide Bedienelemente teilen denselben Sortierzustand.
 
 ### Produktdialog
@@ -480,14 +517,20 @@ Der Tab **Bilder** des Produktdialogs nimmt Uploads entgegen; der Server verarbe
 legt keine unveränderten Handyfotos mehr ab. Bis 0.1.13 wanderten die Bildbytes in voller Größe in
 Backup und Export, begrenzt nur durch das Upload-Limit von 10 MB.
 
-| Fall                                                          | Ergebnis                                       |
-| ------------------------------------------------------------- | ---------------------------------------------- |
-| Lange Kante über 1600 px                                      | auf 1600 px verkleinert, nie hochskaliert      |
-| JPEG                                                          | Qualität 82, progressiv, EXIF und ICC entfernt |
-| PNG oder WebP mit Transparenz                                 | WebP, Qualität 85, Alpha erhalten              |
-| PNG ohne Transparenz                                          | JPEG, Qualität 82                              |
-| GIF und animiertes WebP                                       | unverändert übernommen                         |
-| Bereits passend (höchstens 1600 px **und** höchstens 400 KiB) | Bytes unverändert, kein Re-Encoding            |
+Die Grenze für die lange Kante bleibt bei 1600 px. Die zulässige Dateigröße ist seit Basis 0.2.5
+einstellbar: Im Tab [Allgemeine Einstellungen](#tab-allgemeine-einstellungen) setzt das Feld
+**Maximalgröße (kB)** unter **Bilder** die Grenze; erlaubt sind 50 bis 10240 kB, voreingestellt sind
+500 kB. Bis 0.2.4 lag die Grenze fest bei 400 KiB. Jedes Bild über der eingestellten Grenze trägt
+`oversized`, das Panel warnt mit Anzahl und Schwellwerten und bietet **Bilder optimieren** an.
+
+| Fall                                                            | Ergebnis                                       |
+| --------------------------------------------------------------- | ---------------------------------------------- |
+| Lange Kante über 1600 px                                        | auf 1600 px verkleinert, nie hochskaliert      |
+| JPEG                                                            | Qualität 82, progressiv, EXIF und ICC entfernt |
+| PNG oder WebP mit Transparenz                                   | WebP, Qualität 85, Alpha erhalten              |
+| PNG ohne Transparenz                                            | JPEG, Qualität 82                              |
+| GIF und animiertes WebP                                         | unverändert übernommen                         |
+| Bereits passend (höchstens 1600 px **und** eingestellte Grenze) | Bytes unverändert, kein Re-Encoding            |
 
 Die Verarbeitung liegt im neuen Modul `imaging.py` und läuft im Executor. Pillow ist in Home
 Assistant enthalten und damit keine zusätzliche Abhängigkeit; gegen Dekomprimierungsbomben gilt eine
@@ -497,9 +540,9 @@ Grenze von 40 Megapixeln. Die Dateiendung folgt dem Ergebnis, ein PNG mit Transp
 (4032×3024 → 1600×1200)“.
 
 **Metadaten in der API.** Jedes Bild führt `bytes`, `width`, `height`, `content_type` und
-`oversized` (lange Kante über 1600 px oder mehr als 400 KiB). Die Werte ermittelt die Integration
-beim Lesen aus den Dateien und speichert sie nicht im Store; eine Migration entfällt. Ein
-prozesslokaler LRU-Cache (Schlüssel: Pfad, mtime, Größe) hält die Produktliste schnell — gemessen
+`oversized` (lange Kante über 1600 px oder Dateigröße über `images.max_bytes`). Die Werte ermittelt
+die Integration beim Lesen aus den Dateien und speichert sie nicht im Store; eine Migration entfällt.
+Ein prozesslokaler LRU-Cache (Schlüssel: Pfad, mtime, Größe) hält die Produktliste schnell — gemessen
 26 ms für 600 Bilder im warmen Zustand, 153 ms kalt.
 
 **Sammel-Optimierung.** `POST /api/frickeldave_store/products/{artikelnummer}/images/optimize`
@@ -511,11 +554,13 @@ Die Antwort liefert je Bild vorher und nachher sowie eine Statistik (`count`, `b
 **Oberfläche.** Nach jedem Upload erscheint die Verkleinerungsmeldung, bei bereits passenden Bildern
 eine ruhige Bestätigung und bei einem GIF der Hinweis, dass es unverändert übernommen wurde. Im Tab
 **Bilder** steht je Bild „1600 × 1200 · 278 KB“; zu große Bilder tragen ein Warndreieck mit
-Detailhinweis, über der Liste steht ein Warnbanner mit Anzahl und Schwellwerten und darunter der
-Button **Bilder optimieren** — deaktiviert, wenn nichts zu tun ist, sonst mit Ergebnis und Ersparnis
-in Prozent. In der Kachel sitzt das Warndreieck als Badge am Bild, in der Liste in der Statusspalte
-mit dem Text „Bilder zu groß“; sein Tooltip lautet „Mindestens ein Bild ist zu groß. Produkt öffnen
-und Bilder optimieren.“, und ein Klick öffnet den Bilder-Tab.
+Detailhinweis, über der Liste steht ein Warnbanner mit Anzahl und den geltenden Schwellwerten
+(1600 px lange Kante und eingestellte Maximalgröße) und darunter der Button **Bilder optimieren** —
+deaktiviert, wenn nichts zu tun ist, sonst mit Ergebnis und Ersparnis in Prozent. In der Kachel sitzt
+das Warndreieck als Badge am Bild, in der Liste in der Statusspalte mit dem Text „Bilder zu groß“;
+sein Tooltip lautet „Mindestens ein Bild ist zu groß. Produkt öffnen und Bilder optimieren.“, und ein
+Klick öffnet den Bilder-Tab. In der Liste ist das Badge genauso hoch wie das Badge
+**Personalisierbar**; treffen beide zu, stehen sie auf einer Zeile.
 
 ### Katalogimport
 
@@ -1146,6 +1191,43 @@ deinstallieren, damit nicht zwei Stellen denselben Katalog schreiben. Nach einem
   Steuerrücklagen) getrennt.
 - Die Zuordnung der Kundenverwaltung zu einer Rolle ist Teil der Rechte-Matrix aus der
   Architekturphase.
+
+### Sitzung abgelaufen und fehlende Freigabe (ab 0.2.6)
+
+Das Panel kennt zwei Meldungen, die verschiedene Ursachen haben. Ein Access-Token von Home
+Assistant gilt 30 Minuten, ein Refresh-Token 90 Tage.
+
+- Bis 0.2.5 holte das Panel seine Daten per `fetch` mit dem aktuellen Access-Token und erneuerte es
+  nie. Nach 30 Minuten Laufzeit erschien deshalb „Die Sitzung ist abgelaufen. Bitte die Seite neu
+  laden.“. Fehlte `hass_user`, antwortete die API mit 403; dieselbe Lage erschien dann als „Ihr
+  Home-Assistant-Benutzer ist für diese Verwaltung nicht freigegeben.“ und führte in die falsche
+  Richtung.
+- Ab 0.2.6 läuft der Zugriff über `fetchWithAuth`. Antwortet der Server mit 401, erneuert das Panel
+  den Access-Token einmal und wiederholt die Anfrage. Erst wenn die Erneuerung scheitert, erscheint
+  die Sitzungsmeldung.
+- Ein Neuladen der Seite ist damit nur nötig, wenn die Meldung nach diesem automatischen Versuch
+  bleibt.
+
+| Meldung                                                                   | Status | Code                | Ursache und Abhilfe                                                                                                                                                                                   |
+| ------------------------------------------------------------------------- | ------ | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| „Die Sitzung ist abgelaufen. Bitte die Seite neu laden.“                  | `401`  | `not_authenticated` | Die Sitzung fehlt oder ist abgelaufen. Seite neu laden; bleibt die Meldung, in Home Assistant neu anmelden.                                                                                           |
+| „Ihr Home-Assistant-Benutzer ist für diese Verwaltung nicht freigegeben.“ | `403`  | `forbidden`         | Sitzung gültig, Rolle fehlt. Freigabe im Tab **Benutzerverwaltung** setzen (Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad), siehe [Tab Benutzerverwaltung](#tab-benutzerverwaltung). |
+
+Kurz gefasst: `401` betrifft die Sitzung, `403` die Rolle. Neuladen behebt keine fehlende Freigabe,
+und eine neue Freigabe hilft nicht, solange die Sitzung abgelaufen ist.
+
+### Verbindung zum Server fehlgeschlagen (0.2.6 bis 0.2.7)
+
+Die Meldung „Verbindung zum Server fehlgeschlagen. Bitte erneut versuchen.“ kam in 0.2.6 von einem
+URL-Fehler im Panel, nicht von einem fehlenden oder abgelaufenen Token.
+
+- Das Panel rief `hass.fetchWithAuth` mit einer absoluten URL auf. Home Assistant setzt den Pfad
+  selbst vor `auth.data.hassUrl` und verdoppelte damit die Instanz-URL; jeder Aufruf scheiterte an
+  der ungültigen Adresse.
+- Ab 0.2.7 bekommt `fetchWithAuth` den relativen Pfad; der rohe `fetch`-Fallback nutzt weiterhin
+  die absolute URL.
+- Ein neues Anmelden oder ein neuer Token hilft bei dieser Meldung nicht. Wer sie unter 0.2.6
+  sieht, aktualisiert auf 0.2.7.
 
 ## Backup und Wiederherstellung
 

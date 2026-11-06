@@ -18,6 +18,13 @@ spec:
       containers:
         - name: chromium
           image: lscr.io/linuxserver/chromium:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
           ports:
             - containerPort: 3000
             - containerPort: 3001
@@ -29,23 +36,9 @@ spec:
               mountPath: /dev/shm
             - name: chromium-logs
               mountPath: /config/log
-            - name: chromium-logging-script
+            - name: chromium-logging-script     # NEW: Custom wrapped-chromium
               mountPath: /usr/bin/wrapped-chromium
               subPath: wrapped-chromium
-          resources:                          # NEU
-            requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            failureThreshold: 2
         - name: vector
           image: timberio/vector:0.42.0-alpine
           resources:
@@ -74,7 +67,7 @@ spec:
         - name: vector-config
           configMap:
             name: vector-config
-        - name: chromium-logging-script
+        - name: chromium-logging-script         # NEW: ConfigMap mit Script
           configMap:
             name: chromium-logging
             defaultMode: 0755

@@ -1,0 +1,468 @@
+---
+visible: true
+title: 03 Preparation
+description: Preparation and training environment for the Kubernetes Basics training.
+draft: false
+image: "@assets/docs/kubernetes-basis/knba-03-000_header.png"
+imageAlt: "Kubernetes Basics - 03 Preparation"
+---
+
+import Notice from "@shortcodes/Notice";
+
+## Prerequisites
+
+- Basic Linux or PowerShell command line (cd, ls, cat, vi/nano)
+- Basic understanding of containers (Docker basics)
+- Text editor basics (editing YAML files)
+
+## Hardware
+
+If you run your Kubernetes cluster locally (for example with k3d), the following hardware
+requirements are recommended.
+
+| Component  | Minimum        | Recommended    |
+| ---------- | -------------- | -------------- |
+| RAM        | 8 GB           | 16 GB          |
+| CPU        | 4 cores        | 8 cores        |
+| Disk       | 50 GB free     | 100 GB free    |
+| Network    | Internet access| Internet access|
+
+The higher requirements come from the linuxserver.io containers (Chromium is memory-hungry).
+
+## Installing kubectl
+
+[kubectl](/docs/kubernetes-basis-en/90-glossary#kubectl) is the command-line tool for controlling
+Kubernetes clusters.
+
+- **Windows (winget):** `winget install Kubernetes.kubectl`
+- **macOS (Homebrew):** `brew install kubectl`
+- **Linux (apt):** `sudo apt-get update && sudo apt-get install -y kubectl`
+- **Check the installation:** `kubectl version --client`
+
+To configure the connection you still need a "kubeconfig" file. On Windows the kubeconfig lives in
+the file ```%USERPROFILE%\.kube\config```, on Linux and macOS in the file ```~/.kube/config```. For
+a corporate cluster you get a correctly configured kubeconfig from your k8s portal (Rancher, AWS,
+Azure, ...). For a local installation with k3d see below.
+
+You can store several configs and reference them either with the parameter
+`--kubeconfig=<path to file>` or with the environment variable `KUBECONFIG` (path to the config).
+
+### Optional: Linux tuning
+
+The following script sets up the `k` alias for kubectl and bash autocompletion permanently in your
+`.bashrc`. It works with a marker block: an existing block is replaced, not appended a second time
+-- running it repeatedly therefore stays harmless. If `.bashrc` is missing, the script creates it.
+The completion is also generated exactly once and cached under `~/.bash_completion.d/kubectl`
+instead of being recomputed on every shell start. After restarting the terminal or running
+`source ~/.bashrc` you can use `k get pods` instead of `kubectl get pods` and navigate through the
+resources with the tab key.
+
+```bash
+# Richtet den Alias `k` und die Bash-Completion für kubectl dauerhaft ein.
+# Idempotent: Ein vorhandener Marker-Block wird ersetzt, nicht dupliziert.
+
+setup_kubectl_shell() {
+    if ! command -v kubectl >/dev/null 2>&1; then
+        echo "kubectl ist nicht im PATH – bitte zuerst kubectl installieren (siehe oben)." >&2
+        return 1
+    fi
+
+    start_marker="# >>> kubectl completion >>>"
+    end_marker="# <<< kubectl completion <<<"
+    bashrc="$HOME/.bashrc"
+    completion_file="$HOME/.bash_completion.d/kubectl"
+
+    # .bashrc und Completion-Verzeichnis anlegen, falls noch nicht vorhanden
+    mkdir -p "$HOME/.bash_completion.d"
+    touch "$bashrc"
+
+    # Completion einmalig erzeugen und cachen – nicht bei jedem Shell-Start neu
+    if [ ! -s "$completion_file" ]; then
+        kubectl completion bash > "$completion_file"
+    fi
+
+    # Vorhandenen Marker-Block entfernen – bis zum End-Marker oder bis zum Dateiende
+    if grep -qF "$start_marker" "$bashrc"; then
+        awk -v start="$start_marker" -v end="$end_marker" '
+            index($0, start) { skip = 1 }
+            !skip { print }
+            index($0, end) { skip = 0 }
+        ' "$bashrc" > "$bashrc.new" && mv "$bashrc.new" "$bashrc"
+    fi
+
+    # Sicherstellen, dass die Datei mit einem Zeilenumbruch endet
+    if [ -s "$bashrc" ] && [ -n "$(tail -c 1 "$bashrc")" ]; then
+        echo "" >> "$bashrc"
+    fi
+
+    # Block genau einmal anhängen; `complete` läuft nur, wenn __start_kubectl existiert
+    {
+        echo "$start_marker"
+        echo 'alias k=kubectl'
+        echo 'if [ -f "$HOME/.bash_completion.d/kubectl" ]; then'
+        echo '    . "$HOME/.bash_completion.d/kubectl"'
+        echo 'fi'
+        echo 'if declare -F __start_kubectl >/dev/null 2>&1; then'
+        echo '    complete -o default -F __start_kubectl k'
+        echo 'fi'
+        echo "$end_marker"
+    } >> "$bashrc"
+
+    # Aktuelle Session direkt mitnehmen
+    alias k=kubectl
+    if [ -s "$completion_file" ]; then
+        . "$completion_file"
+    fi
+    if declare -F __start_kubectl >/dev/null 2>&1; then
+        complete -o default -F __start_kubectl k
+    fi
+
+    echo "✓ Alias und Completion eingerichtet – Block in ~/.bashrc aktualisiert."
+    echo "  Neues Terminal starten oder 'source ~/.bashrc' ausführen."
+}
+
+setup_kubectl_shell
+```
+
+More info: <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#enable-shell-autocompletion" target="_blank" rel="noopener noreferrer">kubectl on Linux</a>.
+
+### Optional: Windows tuning
+
+The following PowerShell script sets up kubectl autocompletion and the `k` alias permanently in
+your PowerShell profile. It creates the profile automatically when needed and extends existing
+configurations without leaving duplicate entries behind. After restarting PowerShell you can type
+`k get pods` instead of `kubectl get pods` -- tab completion then works for the alias too.
+
+``` powershell
+
+$profilePath = $PROFILE
+$profileDir  = Split-Path -Parent $profilePath
+
+if (-not (Test-Path $profileDir)) {
+    New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+}
+
+if (-not (Test-Path $profilePath)) {
+    New-Item -ItemType File -Path $profilePath -Force | Out-Null
+}
+
+$startMarker = "# >>> kubectl completion >>>"
+$endMarker   = "# <<< kubectl completion <<<"
+
+$snippet = @"
+$startMarker
+if (Get-Command kubectl -ErrorAction SilentlyContinue) {
+    kubectl completion powershell | Out-String | Invoke-Expression
+    Set-Alias -Name k -Value kubectl
+    Register-ArgumentCompleter -CommandName k -ScriptBlock `$__kubectlCompleterBlock
+}
+$endMarker
+"@
+
+$content = Get-Content -Path $profilePath -Raw -ErrorAction SilentlyContinue
+if ($null -eq $content) { $content = "" }
+
+$pattern = [regex]::Escape($startMarker) + '.*?' + [regex]::Escape($endMarker)
+
+if ($content -match $pattern) {
+    $newContent = [regex]::Replace($content, $pattern, $snippet, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+} else {
+    if ($content.Length -gt 0 -and -not $content.EndsWith("`r`n")) {
+        $content += "`r`n"
+    }
+    $newContent = $content + "`r`n" + $snippet + "`r`n"
+}
+
+Set-Content -Path $profilePath -Value $newContent -Encoding UTF8
+
+. $PROFILE
+
+```
+
+More info: <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/" target="_blank" rel="noopener noreferrer">kubectl on Windows</a>.
+
+### Optional: macOS tuning
+
+``` bash
+
+brew install bash-completion@2
+
+```
+
+Autocompletion can be enabled with the same script as for linux. More info:
+<a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/" target="_blank" rel="noopener noreferrer">kubectl on macOS</a>.
+
+## Editor (recommended)
+
+**VS Code** with extensions:
+
+- **Kubernetes** (ms-kubernetes-tools.vscode-kubernetes-tools)
+- **YAML** (redhat.vscode-yaml)
+
+## Training cluster
+
+The training requires a **3-node cluster**:
+
+| Node   | Role           | Description                                     |
+| ------ | -------------- | ----------------------------------------------- |
+| node-1 | [Control Plane](/docs/kubernetes-basis-en/90-glossary#control-plane) | API server, etcd, scheduler, controller manager |
+| node-2 | [Worker Node](/docs/kubernetes-basis-en/90-glossary#worker-node)    | Workload execution                              |
+| node-3 | [Worker Node](/docs/kubernetes-basis-en/90-glossary#worker-node)    | Workload execution                              |
+
+The following chapters describe the possible options for installing / providing the cluster.
+
+### WSL environment
+
+With this option Kubernetes runs as a k3d installation inside a local WSL (Windows Subsystem for
+Linux). k3d creates docker containers for the master node/control node and 2 worker nodes. Physical
+systems are therefore simulated as docker containers in this setup. Important: this setup suits
+trainings and lab environments, but it is not intended for production use.
+
+**Prerequisites**
+
+- Win11 24H2 or later
+- Administrative permissions
+
+**Enable / install WSL**
+
+Install the following features
+
+- Windows Subsystem for Linux
+- Virtual Machine Platform
+- Windows Hypervisor Platform (optional, but recommended for WSL2)
+
+**In PowerShell**
+
+- `wsl --install debian`
+- Open the WSL window in Windows Terminal or switch into the Linux environment with `wsl`
+
+**Install Kubernetes inside WSL**
+
+The following steps happen in the wsl. You can open it simply with `wsl`.
+
+- Bring it up to date with `sudo apt update && sudo apt upgrade -y`
+- Install Docker `sudo apt install curl docker.io containerd -y`
+- Enable Docker `sudo systemctl enable --now docker`
+- Grant permissions to the user `sudo usermod -aG docker $USER`
+- Restart the terminal session
+- Download [k3d](/docs/kubernetes-basis-en/90-glossary#k3d) `curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
+- Install kubectl as described above
+- Bring the cluster up `k3d cluster create mycluster --servers 1 --agents 2 -p "443:443@loadbalancer" -p "80:80@loadbalancer"`
+- Check the installation `kubectl get nodes`
+
+**A look at docker**
+
+`docker ps`
+
+```bash
+CONTAINER ID   IMAGE                            COMMAND                  CREATED        STATUS        PORTS                             NAMES 
+b0eb80b8d8ba   ghcr.io/k3d-io/k3d-proxy:5.8.3   "/bin/sh -c nginx-pr…"   20 hours ago   Up 17 hours   80/tcp, 0.0.0.0:41597->6443/tcp   k3d-mycluster-serverlb 
+eb207e4211cf   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   20 hours ago   Up 17 hours                                     k3d-mycluster-agent-2 
+246bc67def5d   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   20 hours ago   Up 17 hours                                     k3d-mycluster-agent-1 
+9520af54f61d   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   20 hours ago   Up 17 hours                                     k3d-mycluster-agent-0 
+20ce57831256   rancher/k3s:v1.31.5-k3s1         "/bin/k3d-entrypoint…"   20 hours ago   Up 17 hours                                     k3d-mycluster-server-0
+```
+
+**Connect from the host to the Kubernetes installation**
+
+- Create the [kubeconfig](/docs/kubernetes-basis-en/90-glossary#kubeconfig): `wsl k3d kubeconfig get mycluster > $env:USERPROFILE\.kube\wsl`
+- Call it with the new config: `kubectl --kubeconfig=$env:USERPROFILE\.kube\wsl get nodes`
+
+### Using a corporate cluster
+
+| Aspect           | WSL option                  | Corporate cluster           |
+| --- | --- | --- |
+| Setup effort | Medium (about 30-60 min.) | Low (just configure the kubeconfig) |
+| Realism | Simulated environment | Real infrastructure |
+| Own control | Full control | Limited by IT policies |
+| Internet access | Available locally | Depends on the corporate network |
+| Approval needed | No | Yes (IT department) |
+
+**Choose the WSL option if** you do not need approval, want full control over the environment and
+your machine has at least 8 GB RAM.
+
+**Choose the corporate cluster if** you already have access, that access is approved and you want to
+learn in a real infrastructure.
+
+Anyone who already has access to a Kubernetes cluster in their own company can generally use it for
+the training as well. That saves the effort of a local setup and at the same time provides a more
+realistic environment.
+
+<br />
+
+<Notice type="warning">
+  Clarify with your IT department or the cluster administrator in advance whether using the
+  corporate cluster for training purposes is allowed. Not every company permits deploying test
+  workloads in environments close to production.
+</Notice>
+
+<br />
+
+**Requirements for attending the training with a corporate cluster**
+
+| Requirement | Details |
+| --- | --- |
+| [Namespace](/docs/kubernetes-basis-en/90-glossary#namespace) access | You need your own Namespace with full rights (create, delete, patch for Pods, Services, Deployments, Ingress, PVC) |
+| [kubectl](/docs/kubernetes-basis-en/90-glossary#kubectl) access | A valid [kubeconfig](/docs/kubernetes-basis-en/90-glossary#kubeconfig) must be available locally (`kubectl get nodes` works) |
+| At least 2 [Worker Nodes](/docs/kubernetes-basis-en/90-glossary#worker-node) | Some exercises demonstrate Pod scheduling decisions across several nodes |
+| [StorageClass](/docs/kubernetes-basis-en/90-glossary#storageclass) available | [PersistentVolumeClaims](/docs/kubernetes-basis-en/90-glossary#persistentvolumeclaim) need a default StorageClass (`kubectl get storageclass`) |
+| [Ingress Controller](/docs/kubernetes-basis-en/90-glossary#ingress-controller) | An Ingress Controller must run in the cluster (e.g. nginx or traefik) so the training projects are reachable via URL |
+| Internet access of the cluster | The nodes must be able to pull images from external registries (e.g. `lscr.io`, `ghcr.io`)--or a local mirror is configured |
+| DNS / hostnames | Either a real DNS record for your training URLs or the use of `/etc/hosts` on your local machine |
+
+<br />
+
+**What you do not need**
+
+- `Cluster admin rights` are not required, `Namespace admin rights` suffice for every training exercise
+- An own Control Plane -- an existing cluster is used
+
+<br />
+
+**Limitations and notes**
+
+- Corporate clusters often have restricted NetworkPolicies or Pod Security Standards. If individual
+  exercises fail because of that, you can switch to the WSL variant locally.
+- Image pull secrets for private registries are often necessary in corporate environments -- in
+  those cases the setup deviates briefly.
+- Production Namespaces are off limits. Use a dedicated training Namespace only -- `k8s-training`
+  in this training.
+
+<br />
+
+**Common problems with corporate clusters**
+
+| Problem | Possible cause | Solution |
+| --- | --- | --- |
+| `pods is forbidden` | Missing RBAC rights in the Namespace | Ask the administrator for Namespace admin rights |
+| Image pull fails | External internet is blocked | Configure an image pull secret for an internal registry or a mirror |
+| PVC stays in `Pending` | No default StorageClass | Ask the administrator for the available StorageClass |
+| Creating a LimitRange fails (`limitranges is forbidden`) | RBAC forbids creation, or a ResourceQuota rejects it with `exceeded quota` | Skip the step and set `resources` directly in the Deployment; `kubectl describe limitrange default-container-resources` shows the effective defaults |
+| Ingress does not respond | No Ingress Controller installed | Check `kubectl get ingressclass`; deploy your own nginx ingress if needed |
+| NetworkPolicy blocks traffic | Restrictive network rules | Contact the administrator or switch to the WSL option |
+
+<Notice type="info">
+  If individual exercises fail in the corporate cluster, you can switch to the WSL option at any
+  time. The training content stays identical in both environments.
+</Notice>
+
+## Check the kubeconfig
+
+**Linux / macOS (Bash)**
+
+```bash
+# Zeigt an, welcher Cluster gerade als Ziel eingestellt ist
+kubectl config current-context
+# Listet alle Cluster-Knoten und deren Status (Ready/NotReady)
+kubectl get nodes
+# Prüft, ob eine Speicherklasse für PersistentVolumes existiert
+kubectl get storageclass
+# Prüft, ob ein Ingress-Controller (z. B. nginx) installiert ist
+kubectl get ingressclass
+# Zeigt, ob du die wichtigsten Ressourcentypen verwenden darfst
+kubectl api-resources | grep -E "(pods|services|deployments|ingress)"
+```
+
+<br />
+
+**Windows (PowerShell)**
+
+```powershell
+# Zeigt an, welcher Cluster gerade als Ziel eingestellt ist
+kubectl config current-context
+# Listet alle Cluster-Knoten und deren Status (Ready/NotReady)
+kubectl get nodes
+# Prüft, ob eine Speicherklasse für PersistentVolumes existiert
+kubectl get storageclass
+# Prüft, ob ein Ingress-Controller (z. B. nginx) installiert ist
+kubectl get ingressclass
+# Zeigt, ob du die wichtigsten Ressourcentypen verwenden darfst
+kubectl api-resources | Select-String -Pattern "(pods|services|deployments|ingress)"
+```
+
+### get storageclass
+
+```powershell 
+k get storageclass
+```
+
+This table shows which **storage types** (StorageClasses) are available in your cluster --
+comparable to different disk types inside a PC:
+
+```text
+NAME                   PROVISIONER           RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+example-examplefs-sc   cephfs.csi.ceph.com   Delete          Immediate           true                   399d
+ex-exrbd-sc (default)  rbd.csi.ceph.com      Delete          Immediate           true                   91d
+```
+<br />
+
+| Column | Meaning | Simply explained |
+|---|---|---|
+| `NAME` | Name of the storage class | This is how you address the storage type later, when you create a PersistentVolumeClaim. |
+| `PROVISIONER` | Driver that provides the storage | Tells which system really delivers the storage -- here two variants of **Ceph** (a distributed storage system). |
+| `RECLAIMPOLICY` | What happens when you release the storage? | `Delete` = the storage is deleted automatically once you no longer need it. |
+| `VOLUMEBINDINGMODE` | When is the storage reserved? | `Immediate` = right away, even when no Pod runs yet. |
+| `ALLOWVOLUMEEXPANSION` | Can the size be changed later? | `true` = yes, you can request more storage afterwards. |
+| `AGE` | Since when does this class exist? | `399d` = almost 400 days old, so no newcomer. |
+
+**The most important part for you:** the line with `(default)` -- here `csi-rbd-sc` -- is used
+automatically when you create a PersistentVolumeClaim without naming a specific StorageClass. As long
+as at least one StorageClass exists, the basic requirement for the training exercises is met.
+
+### api-resources
+
+```bash
+kubectl api-resources | grep -E "(pods|services|deployments|ingress)"
+```
+
+The command lists all resource types of your cluster and filters for the four you need in the
+training. Under PowerShell you filter with
+`Select-String -Pattern "(pods|services|deployments|ingress)"` in the same pipe.
+
+```text
+pods                                         po                    v1                                     true    Pod
+services                                     svc                   v1                                     true    Service
+deployments                                  deploy                apps/v1                                true    Deployment
+ingresses                                    ing                   networking.k8s.io/v1                   true    Ingress
+```
+<br />
+The filtered output shows whether you may use the **most important resource types** in your
+Namespace. The table shows which building blocks are available to you:
+
+| Column | Example | Simply explained |
+|---|---|---|
+| **Name** | `pods`, `services`, `deployments`, `ingresses` | The technical term for the building block -- this is how you address it in kubectl commands. |
+| **Short form** | `po`, `svc`, `deploy`, `ing` | The abbreviation -- `kubectl get po` works just as well as `kubectl get pods`. |
+| **API version** | `v1`, `apps/v1`, `networking.k8s.io/v1` | Tells which version of Kubernetes provides this building block -- `v1` is the most stable one, `apps/v1` is also very common. |
+| **Namespaced** | `true` / `false` | `true` = the resource lives in your own Namespace (your area). `false` = it applies cluster-wide (visible to admins only). |
+| **KIND** | `Pod`, `Service`, `Deployment`, `Ingress` | The exact type name -- the "assembly instructions" for this building block. |
+
+**The most important rows for you:**
+
+| Resource | Short form | What do you need it for in the training? |
+|---|---|---|
+| `pods` | `po` | A Pod is the smallest unit -- your containers run inside it (e.g. a web app). |
+| `services` | `svc` | A Service makes a Pod reachable inside the cluster -- like an "extension number" for your app. |
+| `deployments` | `deploy` | A Deployment takes care that the right number of Pods always runs -- like an "automatic reviver". |
+| `ingresses` | `ing` | An Ingress makes your app reachable from outside via web URL -- like a "door sign" at the building entrance. |
+
+**The most important part for you:** when you see all four entries (`pods`, `services`,
+`deployments`, `ingresses`) with `true` in the "Namespaced" column, you hold sufficient permissions
+for the whole training. If one of them is missing or shows `false`, rights are missing -- then ask
+your cluster admin for a Namespace with full rights.
+
+## Checklist
+
+**General (all options)**
+
+- [ ] Kubernetes cluster available (WSL/k3d or corporate cluster)
+- [ ] kubectl installed (`kubectl version --client`)
+- [ ] kubeconfig stored and active context set (`kubectl config current-context`)
+- [ ] `kubectl get nodes` shows 2-3 nodes in state `Ready`
+- [ ] Editor/IDE set up
+- [ ] Internet access available (for image downloads)
+- [ ] Default StorageClass available in the cluster (`kubectl get storageclass`)
+- [ ] Rights available (`kubectl get api-resources`)
+
+<br />
+Next: [Day 1](/docs/kubernetes-basis-en/10-day-1)

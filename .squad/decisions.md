@@ -3126,6 +3126,102 @@ von 0.2.0 nicht mehr gelesen werden.
 
 **Why:** Der Nutzer arbeitet allein am Projekt und will den Rollout von #303 (16 GiB, neue Diagnose) mit einem Klick auslösen können, statt Handle, Image und vier Ressourcenwerte jedes Mal zu tippen.
 
+#### 2026-11-03T19:50:00Z: Layout und Terminologie der zweisprachigen Kubernetes-Schulung
+
+**By:** Maria
+
+**What:** Drei Festlegungen für die zweisprachige Kubernetes-Schulung (#301):
+
+1. Sprachordner heißen `kubernetes-basis-de` und `kubernetes-basis-en` (Top-Level in
+   `src/content/docs/`). Die Beispielmanifeste liegen sprachneutral unter
+   `src/content/docs/examplefiles/` und enthalten keine Markdown-Dateien, damit der Glob-Loader sie
+   nicht als Content lädt und die 3-Segment-IDs des Routing nicht entstehen.
+2. Englische Kapitel behalten die Zahlenpräfixe (`01 Introduction` … `91 kubectl Reference`), weil
+   `sortByTitle` per `localeCompare` sortiert. Die Kapitelliste im EN-Gruppenindex heißt
+   `Chapter overview` -- `Table of contents` würde von `remarkToc`/`remarkCollapse` überschrieben.
+3. Englische Glossaranker: `container-orchestration`, `scaling`, `labels-and-selectors` und
+   `qos-classes` ersetzen die deutschen Anker; alle Verweise in beiden Sprachfassungen zeigen auf die
+   jeweils eigene Fassung. Code-Fences bleiben in beiden Sprachen byte-identisch (402 Fences pro
+   Sprache, inklusive deutscher Kommentare in Skripten und Manifesten) -- übersetzt werden nur
+   Fließtext, Überschriften, Tabellenzellen, Bild-Alt-Texte und die Kommentare in
+   `src/content/docs/examplefiles/`.
+
+**Why:** Ordnername = URL-Segment; nur Top-Level-Ordner mit `-index.md` werden als Gruppe erkannt.
+Sortier- und Remark-Verhalten sind im Repo verifiziert. Die Trennung zwischen übersetzbarer Prosa und
+unveränderten technischen Blöcken hält Kommandos, Namespace, FQDNs, Images und Secret-Werte in beiden
+Sprachen identisch und macht Diffs prüfbar.
+
+#### 2026-11-03T20:45:00Z: Legacy /docs/kubernetes-basis URLs redirect via static Astro redirects
+
+**By:** Nick
+
+**What:** `astro.config.mjs` now carries a `redirects` block with eight keys (no trailing slash on the keys,
+trailing slash on the targets) mapping the old Kubernetes training URLs to `/docs/kubernetes-basis-de/…`. With
+`output: "static"` Astro emits meta-refresh stub pages (HTTP 200) that also carry `robots: noindex` and a canonical
+link to the `-de` target. Sitemap and Pagefind exclude these stubs automatically (sitemap only sees page routes;
+Pagefind skips documents without an `<html>` element).
+
+**Why:** Old inbound links and bookmarks must keep working after the German course moved to `kubernetes-basis-de`
+and an English twin (`kubernetes-basis-en`) was added. Real 301s would require hosting/Cloudflare redirect rules,
+which the spec explicitly excludes from this issue; the static stubs are the in-repo mechanism and stay reversible.
+
+#### 2026-11-03T20:55:00Z: Bilingual Kubernetes e2e tests — detector design and the literal-grep contradiction
+
+**By:** Clint
+
+**What:** `test/e2e/docs-kubernetes-bilingual.spec.mjs` covers chapter coverage (set equality of the seven slugs per
+group), HTTP 200 plus exactly one `<h1>` for both group pages and all 14 chapters, the eight legacy redirects, link
+hygiene, the docs overview and the sitemap. Two design decisions:
+
+1. The "no German running prose" check removes `pre`, `code`, `script` and `style` before scanning `#main-content` and
+   looks for unambiguous German function words plus umlauts. Code fences stay German by design (spec step 5), so
+   scanning raw page text would produce false positives. A negative-control test runs the same detector against the
+   German `10-tag-1` chapter and requires >20 marker hits — without it a broken selector would make the check pass
+   vacuously.
+2. Redirect tests accept both shapes the spec allows: 3xx with `location` starting `/docs/kubernetes-basis-de`, or
+   200 with meta refresh, `robots noindex`, canonical link and no `<h1>`. Astro's static build emits the 200 variant,
+   but the test documents and tolerates the 3xx variant.
+
+**Why:** Deterministic assertions that cannot pass by accident, while keeping code blocks (untranslatable technical
+payloads) out of the prose signal. The prose check and the redirect/navigation check are split into one test per page
+so a single failure names the affected chapter instead of aborting a seven-page loop, and the 30 s default timeout
+stays comfortable on a loaded shared host.
+
+**Known contradiction in acceptance criterion 10:** `grep -rn "/docs/kubernetes-basis/" src/content` cannot be 0:
+48 hits remain, all of them Vite asset specifiers `@assets/docs/kubernetes-basis/…`, which the spec explicitly keeps
+unchanged (step 2 and "Nicht enthalten"). Zero non-asset hits hold, and the built-page test asserts that no rendered
+DE/EN page contains `href="/docs/kubernetes-basis/` or `localhost:4321`, which is the meaningful version of the
+criterion.
+
+#### 2026-11-04T07:57:19+00:00: Nutzerfreigabe für Scope-Erweiterungen von #301
+
+**By:** David Koenig (via Copilot Squad)
+
+**What:** Alles, was die deutsch/englische Doku betrifft und in dieser Session aufkam, darf unter Ticket #301 bearbeitet werden. Konkret bestätigt: (1) Badge "Deutsch"/"Englisch" auf den Docs-Kacheln plus neues optionales Frontmatter-Feld `languageLabel`; (2) linke Doku-Navigation und rechtes ToC auf allen Gruppen-Landingpages (/docs, astro-workshop, kubernetes-basis-de, kubernetes-basis-en), ToC aus den Überschriften des Gruppen-Index.
+
+**Why:** Der Nutzer reviewt die laufende #301-Implementierung und will Nacharbeiten am selben Ticket statt in neuen Issues; Tony muss die erweiterte Spec jeweils mit approven.
+
+#### 2026-11-04T13:15:00+00:00: Sprach-Badge und Gruppen-Navigation auf den Docs-Landingpages
+
+**By:** Natasha
+
+**What:** (1) Neues optionales Schema-Feld `languageLabel` (`z.string().optional()`, ohne Default) in `src/content.config.ts`. (2) Badge in `Card.astro` als `<span class="glass-t ... absolute top-2 left-2 z-10 ..." data-language-label={languageLabel}>` innerhalb des bestehenden `<a>`, nur bei gesetztem Feld; zusätzlich `text-txt-h dark:text-darkmode-txt-h`, damit die Badge-Schrift exakt die Farbe der `h4`-Titelbox hat (#111 in Light, #fff in Dark) und über beliebigen Kachelbildern lesbar bleibt — kein `text-transform`, das Attribut trägt zusätzlich den Label-Wert für stabile e2e-Lokatoren. (3) `CollectionLayout.astro` baut `browserMenu` jetzt selbst: auf `/docs/` alle Gruppen mit ihren Kapiteln, auf einer Gruppen-Landingpage nur die eigene Gruppe (Filter über die Collection-ID, nicht über Props), Aufbau in einer sequenziellen `for`-Schleife statt `Promise.all` + `push`, damit die Menüreihenfolge deterministisch bleibt (die Page-Variante in `[...id].astro` bleibt unverändert). (4) Der Index-Body wird nur bei nicht-leerem `body` gerendert (`collectionIndex.body?.trim()`), damit `/docs/` keine leere Glas-Box und kein leeres ToC erhält; `headings` gehen mit `tocDepth = 3` an `TableOfContents`, die `hideNav`/`hideToc`-Staffelung ist 1:1 aus `EntryLayout` übernommen.
+
+**Why:** Kriterien 13–24 verlangen Badge-Sichtbarkeit ohne Layout-Regress der Kachel, lesbare Beschriftung und ein ToC, dessen `#`-Links auf tatsächlich gerenderte IDs zeigen — daher Body-Rendering oberhalb des Kachel-Grids als Ankerquelle. Menüaufbau im Layout hält `src/pages/docs/**` unangetastet (Abgrenzung AK 25). Offen bis zur Content-Ebene (Maria): die Frontmatter-Werte `Deutsch`/`Englisch`, die Umbenennung der Index-Überschriften (`Überblick`/`Overview`) und die Entlinkung der Kapitellisten in den Gruppen-Indizes (AK 13/14/22/26).
+
+#### 2026-11-04T13:23:00+00:00: Sprachlabels und entlinkte Kapitellisten in den drei Gruppen-Indizes
+
+**By:** Maria
+
+**What:** (1) `kubernetes-basis-de/-index.md` trägt `languageLabel: "Deutsch"`, `kubernetes-basis-en/-index.md` `languageLabel: "Englisch"` (je direkt nach `description`, alle übrigen Felder unverändert); `astro-workshop/-index.md` und `src/content/docs/-index.md` bleiben ohne Feld. (2) Überschriften umbenannt: `## Inhaltsverzeichnis` → `## Überblick` (DE), `## Chapter overview` → `## Overview` (EN), `## Inhaltsverzeichnis` → `## Workshop-Überblick` (Workshop). Die sechs bzw. zehn Einträge sind reiner Text ohne `href`; die beschreibenden Halbsätze und die vorhandenen Trenner (` -- ` in den Kubernetes-Indizes, `—` im Workshop) bleiben unverändert. (3) Workshop-Liste auf die zehn real vorhandenen Kapitel korrigiert: `31 Deployment` entfällt (Deployment steckt in `10-astro-setup`), `32 KI-Integration` wird zu `30 KI-Übersetzung`, neu ergänzt wird `40 Weiter lernen`; die vier `### Phase …`-Überschriften bleiben unverändert, `30`/`40` stehen unter `### Phase 3—Deployment & KI`.
+
+**Why:** Nach dem Body-Rendering in `CollectionLayout.astro` würde jede manuelle Kapitelliste das Kachel-Grid duplizieren; als Text bleibt die didaktische Ordnung lesbar, ohne dritte Navigation und ohne 404-Ziele. Die Workshop-Korrektur hält die Liste mit dem tatsächlichen Kapitelbestand deckungsgleich (AC 22 erwartet sechs ToC-Einträge: zwei `h2` plus die vier Phasen-Überschriften). `src/content/docs/-index.md` bleibt unverändert, damit `/docs/` keine leere Body-Box und kein leeres ToC erhält (AC 22/26).
+
+#### 2026-11-04T13:40:38Z: e2e-Abdeckung der Gruppen-Landingpages: Hydration abwarten, Link-Zählungen auf das Kachel-Grid begrenzen
+
+- Navigation und Inhaltsverzeichnis liegen in `ScrollArea` (`client:only="react"`) und stehen im statischen HTML nur in `<template data-astro-template>`. Die neuen Helfer `navPanel`/`tocPanel` filtern `astro-island` nach der gerenderten `h2` („Documents“/„Contents“); `waitForHydratedNav`/`waitForHydratedToc` warten mit 15 s Timeout auf die sichtbare Überschrift. Dadurch prüfen die Tests den hydratisierten DOM statt des Template-Inhalts und sind nicht von Timing-Zufällen abhängig.
+- Alle Link-Zählungen auf den Landingpages (Kapitelabdeckung beider Kubernetes-Gruppen sowie die Ein-Link-Prüfung auf `/docs/`) sind auf `section.section div.row` begrenzt. Die linke Navigation verwendet dieselben `href`-Werte; ohne Eingrenzung wären die Zahlen doppelt so hoch. Die Absicht der bisherigen Zusicherungen bleibt unverändert.
+- Neue Fälle decken Sprachbadges (genau zwei, „Deutsch“/„Englisch“, keine an `astro-workshop`), Navigation aller vier Landingpages inkl. Auflösung jedes `href`, ToC-Einträge und Anker-Existenz, entlinkte Index-Bodies ohne `31-deployment`/`32-ki-integration` sowie die unveränderte Kapitelseite `/docs/kubernetes-basis-de/10-tag-1/` ab.
 ### 2026-11-04T09:40:39+00:00: #289 Versionskonstante korrigiert und GitHub-Publish-Fehler diagnostizierbar gemacht
 **By:** Bruce
 **What:**
@@ -3298,6 +3394,126 @@ Deployment, obwohl weder Commit noch Workflow-Dispatch anfielen.
 **By:** Maria
 **What:** `docs/features/fr008-ha-manager.md` erklärt unter „Fehler beim Veröffentlichen nach prod“, dass die Erweiterung bis 0.1.5 `POST /repos/{repo}/actions/workflows/{workflow}/run` aufrief und GitHub diesen Pfad mit 404 beantwortet; ab 0.1.6 nutzt sie `/dispatches`. Dazu die kurze 404-Prüfliste (Workflow-Dateiname, Branch, WARNING-Zeile mit Methode/Pfad/Status, `Actions: Read and write` als Voraussetzung) und die korrigierte Endpoint-Angabe im Abschnitt „Token-Berechtigungen“. Statuszeile nennt 0.1.5 als released und 0.1.6 als in Vorbereitung, die Repository-Tabelle führt `0.1.6`. `CHANGELOG.md` nennt den Endpoint-Fix unter `[Unreleased]` → `Fixed` (#289).
 **Why:** Der Live-Test mit demselben Token belegt `/run` → 404 und `/dispatches` → 204; der Token war nie die Ursache. Die zuvor geplante Preflight-Logik entfällt, die erste Fassung dieser Notiz (veralteter Token als Ursache) ist damit überholt.
+
+#### 2026-11-06T08:21:37+00:00: Bildgrenze konfigurierbar, Store-Größe in /settings
+**By:** Bruce
+**What:** Backend/API in `homeassistant-frickeldave-store`, Branch `feat/289-image-limit-and-store-size`
+(Commit `4ea6c26`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/5, nicht gemerged).
+Dateien: `store.py` (`settings.images.max_bytes`, Default `DEFAULT_IMAGE_MAX_BYTES = 500 * 1024 = 512000`,
+Grenzen `MIN_IMAGE_MAX_BYTES = 51200` … `MAX_IMAGE_MAX_BYTES = 10485760`; bool ist kein int; deutsche
+`ValidationError`-Texte; defensive Reads für Altbestände ohne `images`; `CatalogStore.image_max_bytes`),
+`imaging.py` (`MAX_IMAGE_BYTES = 500 * 1024`, `is_oversized(width, height, size, max_bytes=...)`, Grenze
+durch alle Pfade gefädelt: `read_info_sync`/`inspect_sync`/`inspect_paths`/`async_inspect_paths` inkl.
+Cache-Key und `optimize_image_sync`/`async_optimize_image`; Call-Sites in `products.py` nutzen
+`store.image_max_bytes`; harte Upload-Grenze bleibt 10 MiB), `storage.py` (`storage_usage()` →
+`total_bytes`, `data_bytes`, `images_bytes`, `backups_bytes`, `files`; rekursiv, keine Symlinks, fehlende
+Ordner 0), `views.py` (`PATCH /settings` erlaubt `images`, `GET`/`PATCH` liefern `storage.usage` einmal pro
+Anfrage über `hass.async_add_executor_job`; `/me` unverändert), `websocket_api.py` (Listener nutzt
+`async_list`). Zusätzlich Sortierung `size`: `SORT_KEYS` = name, price, category, stock, status, size;
+`ProductFilter.from_query` akzeptiert `sort=size`; `ProductService.async_list` summiert die Bild-Bytes
+über `_sync_images_all` + einen `async_inspect_paths`-Lauf (keine N+1-Aufrufe), sortiert numerisch vor
+Limit/Offset, `total` = gefilterte Produkte, Gleichstand nach Name/Artikelnummer (auch bei `desc`).
+API-Vertrag: `GET /api/frickeldave_store/settings` → `"images": {"max_bytes": 512000}` und
+`"storage": {..., "usage": {"total_bytes", "data_bytes", "images_bytes", "backups_bytes", "files"}}`;
+`PATCH` → `{"images": {"max_bytes": 614400}}`; `GET /products?sort=size&order=desc`. Produkt-Payloads
+bleiben unverändert (`images[].bytes`), kein `image_bytes_total`. Version `0.2.5` in `manifest.json`,
+`pyproject.toml`, `const.py`; CHANGELOG (`Added`: konfigurierbare Grenze, `storage.usage`, Sortierung
+`size`; `Changed`: 400 → 500 KiB) und README aktualisiert. Tests: `pytest -q` → 267 passed,
+`ruff check .` → clean, `ruff format --check .` → 44 formatted, `mypy custom_components` → Success,
+`manifest.json` gültig.
+**Why:** 400 KiB war zu streng (Default jetzt 500 KiB und pro Store einstellbar), die Belegung des
+Datenordners soll ohne SSH sichtbar sein, und das Panel braucht einen stabilen, dokumentierten Vertrag
+für Bildgrenze, `storage.usage` und die serverseitige Sortierung nach Produktgröße.
+
+#### 2026-11-06T08:21:37+00:00: Panel zeigt Store-Größe, Bildgrenze einstellbar, kompakter Zeilen-Badge
+**By:** Natasha
+**What:** Konfigurationspanel: neue Gruppe „Bilder“ im Tab „Allgemeine Einstellungen“ mit Feld **Maximalgröße (kB)** (Default 500, validiert 50–10240, Inline-Fehler), gespeichert als `PATCH /api/frickeldave_store/settings {"images":{"max_bytes":kB*1024}}`; ältere Backends ohne `images` fallen auf 500 KiB zurück. Speicherbereich zeigt bei vorhandenem `settings.storage.usage` die Zeile `Belegt: … · Bilder … · Metadaten … · Snapshots …` plus gedämpfte Dateizahl. Listenansicht: neue sortierbare Spalte **Größe** (Summe `images[].bytes`, `—` ohne Bilder), Server-Sortierung über `sort=size`; Kachelansicht unverändert. Zeilen-Badge „Bilder zu groß“ exakt in Badge-Höhe (2 px Padding, 11 px Schrift, Badge-Zeilenhöhe, 14 px Icon, `align-self: center`, kein `min-height`), `.fd-badges` mit `align-items: center`; Karten-Badge unverändert. Client-Fallback der Bildgrenze 400 → 500 KiB. Gemeinsamer reiner Helfer `frontend/format-bytes.js` (binär, deutsches Dezimalkomma) inkl. `node --test` (12 Tests) und eigenem CI-Step. PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/6, Commit `0ea5152`, Branch `feat/289-panel-image-limit-and-size`; kein Versionsbump. Validierung: `node --check` alle Panel-JS, `node --test tests/frontend/*.test.mjs` 12/12, `ruff check .`, `ruff format --check .`, `mypy custom_components`, `pytest -q` 238 passed.
+**Why:** Die feste 400-KiB-Grenze war zu streng; die Bildgrenze muss ohne Deployment einstellbar sein. Speicherverbrauch (gesamt/Bilder/Metadaten/Snapshots) war im Panel unsichtbar. Das Zeilen-Badge „Bilder zu groß“ war höher als das „Personalisierbar“-Badge und zog dieses auf seine Höhe. Die Produktgröße fehlte in der Liste und ließ sich nicht sortieren; `sort=size` benötigt die Server-Seite aus Bruce' Backend-PR (`feat/289-image-limit-and-store-size`).
+
+#### 2026-11-06T08:21:37+00:00: fr008 dokumentiert Bildgrenze 500 kB und Store-Größe
+**By:** Maria
+**What:** `docs/features/fr008-ha-manager.md` beschreibt Basis 0.2.5 (Statuszeile und Repository-Tabelle):
+die einstellbare Bildgrenze im Tab Allgemeine Einstellungen → Bilder (Feld **Maximalgröße (kB)**,
+50–10240 kB, Standard 500 kB, alte 400 KiB als historisch bis 0.2.4 markiert, lange Kante unverändert
+1600 px), die Wirkung (`oversized`, Warnbanner, **Bilder optimieren**), `images.max_bytes` und
+`storage.usage` (`total_bytes`, `data_bytes`, `images_bytes`, `backups_bytes`, `files`) aus
+`GET /settings`, die kompakte Zeile **Belegt: …** samt Aufschlüsselung und den rekursiven Lauf ohne
+symbolische Links über das effektive Datenverzeichnis (config/share/media). Dazu die
+Höhenangleichung der Badges „Personalisierbar“ und „Bilder zu groß“ in der Listenansicht.
+Nachtrag: Die Listenansicht führt die Spalte **Größe** (Summe aller Bild-Bytes je Produkt, alle Bilder
+statt nur Hauptbild, deutsches Zahlenformat in KB/MB, `—` ohne Bilder), sortierbar wie die übrigen
+Spalten; die Sortierung läuft serverseitig vor der Pagination, Gleichstände löst Name, dann
+Artikelnummer. Die Sortierabschnitte nennen jetzt sechs Felder (Produkt, Kategorie, Preis, Größe,
+Bestand, Status). `CHANGELOG.md` ergänzt unter `## [Unreleased]` die Abschnitte `### Added`
+(einstellbare Bildgrenze, Speicherbelegung in den Einstellungen, Produktgröße als Spalte) und
+`### Changed` (Standard 400 → 500 KiB, Konfigurationspanel zeigt die Store-Größe, Badge-Höhe) jeweils
+mit `(#289)`.
+Validierung: `npm run format:check` → „All matched files use Prettier code style!“;
+`npx markdownlint-cli@0.44.0 docs/features/fr008-ha-manager.md` → Exit 0, keine Findings;
+`npm run prose` → „0 errors, 0 warnings and 0 suggestions in 110 files“. Commits `1e819b7` und
+`71cdaa2` auf `fix/issue-289-image-limit-size-docs`, nicht gepusht.
+**Why:** Die „Bild zu groß“-Grenze ist nicht mehr fest, sondern konfigurierbar und liegt per Default
+höher; die Speicherbelegung ist jetzt in den Einstellungen sichtbar; die Badge-Höhe in der Liste war
+optisch ungleich; und der Speicherbedarf je Produkt ist als sortierbare Spalte direkt prüfbar, ohne
+Produkte einzeln zu öffnen. Die Dokumentation muss den Stand 0.2.5 abbilden, ohne Releasedaten zu
+erfinden.
+
+#### 2026-11-06T08:05:34+00:00: Sync-README dokumentiert den gemeinsamen Dev-/Prod-Publish
+**By:** Maria
+**What:** Extension-`README.md` (frickeldave_store_syncfd) um den Abschnitt `## Veröffentlichen: dev und prod`
+ergänzt: Tabelle Ziel/Vergleichsbasis/Commit-Branch/Workflows, Release nur bei Versions-Bump,
+deploy-neutrale vs. seitenrelevante Pfade, Verhalten ohne Änderungen. `### publish` im
+Feature-Vertrag beschreibt jetzt prod-Vergleich gegen `main`, Commit auf `dev` und Dispatch über
+`POST /repos/{repo}/actions/workflows/{workflow}/dispatches`. Basis-URL auf
+`Frickeldave/homeassistant-frickeldave-store` korrigiert, Überschrift auf `Funktionsumfang (0.1.6)`.
+Validierung: `npx --yes markdownlint-cli@0.44.0 README.md` → 15 Findings, alle vorbestehend
+(MD013), keine neuen; `git diff --check` → Exit 0. Commit `58194ba`, Branch
+`docs/289-readme-publish-flow`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/7
+(nicht gemergt, kein Release, kein Versions-Bump).
+**Why:** Ein Prod-Publish committet ebenfalls auf `dev` und promotet danach `dev → main`;
+ein separater Dev-Publish ist nicht nötig, die Dev-Vorschau folgt dem Push. Ein Release entsteht
+nur bei einer höheren Website-Version in `package.json`, reine Katalog-/deploy-neutrale Änderungen
+deployen ohne Release.
+
+
+#### 2026-11-06T10:33:35+00:00: Fehlende Sitzung liefert 401 statt 403
+**By:** Bruce
+**What:** Neue Fehlerklasse `NotAuthenticated` (`code = "not_authenticated"`) in `models.py`; `STATUS_BY_CODE["not_authenticated"] = 401` und `_user()` wirft in `views.py` `NotAuthenticated("Die Sitzung ist abgelaufen. Bitte die Seite neu laden.")` statt `PermissionDenied`. Rollenbasierte `PermissionDenied` bleibt `403 forbidden`. Tests: `/me` und `/settings` ohne `hass_user` → `401 not_authenticated`, Benutzer ohne Rolle weiterhin `403 forbidden` (`tests/test_views.py`, `tests/test_users_api.py`). Version `0.2.6` in `manifest.json`, `pyproject.toml`, `const.py`; CHANGELOG `[Unreleased]`/`Fixed`. PR: https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/7, Commit `d30b4a4d0463297f1cfaec864d5bfcf4885c302a` (Branch `fix/289-session-401`). Validierung: `ruff check .`, `ruff format --check .`, `mypy custom_components` grün, `pytest -q` 270 passed, `manifest.json` gültiges JSON.
+**Why:** Eine fehlende/abgelaufene HA-Sitzung (`hass_user` fehlt) wurde als `forbidden` gemappt; Nutzer sahen „nicht freigegeben“ statt einer Sitzungsmeldung. `401` erlaubt dem Panel, die Ablaufmeldung korrekt anzuzeigen.
+
+#### 2026-11-06T10:33:35+00:00: Panel erneuert abgelaufene Access-Tokens
+**By:** Natasha
+**What:** `_api()` nutzt jetzt bevorzugt `hass.fetchWithAuth` (roher `fetch` bleibt als Fallback für ältere HA-Versionen). Bei HTTP 401 wird `hass.auth.refreshAccessToken()` genau einmal aufgerufen und die Anfrage genau einmal wiederholt; 403 wird nie wiederholt und der Berechtigungspfad bleibt unverändert. Ein 401 zeigt nicht mehr die „nicht freigegeben“-Ansicht. Die reine Entscheidung liegt in `frontend/auth-retry.js` (`shouldRefreshToken`) und ist über `node --test` abgedeckt. Commit `7043e9c`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/8. Validierung: 15 Frontend-Tests, ruff, ruff format, mypy und 267 pytest-Tests grün; kein Versionsbump.
+**Why:** Der rohe fetch hat den 30-Minuten-Token nie erneuert; Nutzer sahen Sitzungsfehler statt einer nahtlosen Erneuerung.
+
+#### 2026-11-06T10:33:35+00:00: fr008 erklärt Sitzungsablauf und Token-Refresh
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md` hat den neuen Unterabschnitt „Sitzung abgelaufen und
+fehlende Freigabe (ab 0.2.6)“ unter „Berechtigungen“: Access-Token 30 Minuten, Refresh-Token 90
+Tage, bis 0.2.5 ohne Erneuerung per `fetch`, ab 0.2.6 `fetchWithAuth` mit einmaligem Refresh und
+Wiederholung bei 401; eine Tabelle trennt die Meldung „Die Sitzung ist abgelaufen“ (`401
+not_authenticated`, neu laden) von „Ihr Home-Assistant-Benutzer ist für diese Verwaltung nicht
+freigegeben“ (`403 forbidden`, Rolle im Tab Benutzerverwaltung setzen). Die Versionstabelle führt
+die Basis mit `0.2.6`, die Statuszeile nennt 0.2.5 als released und 0.2.6 als in Vorbereitung, ohne
+Release-Datum. `CHANGELOG.md` ergänzt unter `## [Unreleased]` → `### Fixed` einen Punkt zur
+einmaligen Token-Erneuerung und zum 401 statt des irreführenden 403 (#289).
+
+**Why:** Der Access-Token läuft nach 30 Minuten ab, und das Panel erneuert ihn seit 0.2.6 einmal
+und wiederholt die Anfrage; vorher traf Nutzende nach einer halben Stunde die Sitzungsmeldung. Eine
+fehlende Sitzung antwortet jetzt mit 401, ein Rollenentzug bleibt 403 — nur so führt die Meldung zur
+richtigen Abhilfe statt in die falsche Spur einer fehlenden Benutzerfreigabe.
+
+#### 2026-11-06T11:26:55+00:00: fetchWithAuth bekommt relativen Pfad; ein Speichern-Button
+**By:** Natasha
+**What:** `_api()` im Seitenleisten-Panel reicht `hass.fetchWithAuth` jetzt den relativen Pfad durch; die absolute URL bleibt dem rohen `fetch`-Fallback. Die Entscheidung liegt als reiner Helper `authRequestUrl(path, baseUrl, useAuthFetch)` in `frontend/auth-retry.js` und ist mit vier neuen `node --test`-Fällen abgedeckt. Im Konfigurationspanel sind Speicherort und Bildgröße ein Formular mit `_saveGeneral()`/`_discardGeneralChanges()`; „Bildgröße speichern“ und `_saveImages`/`_saveStorage` entfallen, ein `PATCH` sendet nur die geänderten Abschnitte. Version 0.2.7 in `manifest.json`, `pyproject.toml`, `const.py`; CHANGELOG-Einträge unter `[Unreleased]`. Commit `ae9d1b4` auf `fix/289-fetchwithauth-and-save-button`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/9 (nicht gemergt).
+**Why:** `hass.fetchWithAuth` ist als `(path, init) => fetchWithAuth(auth, `${auth.data.hassUrl}${path}`, init)` gebunden und stellt die Instanz-URL selbst voran; die absolute URL aus 0.2.6 ergab `https://ha…https://ha…/api/…` und damit nur „Verbindung zum Server fehlgeschlagen“. Die Bildgröße brauchte keinen eigenen Speichern-Button neben „Einstellungen speichern“.
+
+#### 2026-11-06T11:26:55+00:00: fr008 dokumentiert fetchWithAuth-Fix und gemeinsamen Speichern-Button
+**By:** Maria
+**What:** `docs/features/fr008-ha-manager.md` beschreibt im Tab Allgemeine Einstellungen den gemeinsamen Button **Einstellungen speichern** für Speicherort samt Backup-Schalter und Bild-Maximalgröße, die Wirkung von **Änderung verwerfen** auf beide Bereiche, den PATCH mit ausschließlich geänderten Abschnitten und den Reload nur bei geändertem Speicherort. Neuer Abschnitt „Verbindung zum Server fehlgeschlagen (0.2.6 bis 0.2.7)“ erklärt den URL-Fehler. Versionsbasis in Tabelle und Statuszeile auf 0.2.7 gehoben. `CHANGELOG.md` ergänzt unter `## [Unreleased]` je einen Eintrag in `### Fixed` und `### Changed`.
+**Why:** Die absolute URL verdoppelte `auth.data.hassUrl` über `fetchWithAuth`, sodass jeder Panel-Aufruf mit „Verbindung zum Server fehlgeschlagen“ endete; ein separater Button für die Bildgröße war neben dem allgemeinen Speichern überflüssig.
 
 ## Governance
 

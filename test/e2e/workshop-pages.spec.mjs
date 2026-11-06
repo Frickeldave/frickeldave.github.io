@@ -3,9 +3,11 @@ import { test, expect } from '@playwright/test';
 /**
  * End-to-End-Smoke-Test für den Docs-Bereich der gebauten Seite.
  *
- * Prüft, dass die beiden Workshop-Landingpages mit HTTP 200 ausgeliefert werden und
- * die erwartete Hauptüberschrift (h1) rendern. Die Seiten sind Gruppen-Indexseiten,
- * gerendert von `src/pages/docs/[...id].astro` → `CollectionLayout`.
+ * Prüft, dass die Workshop-Landingpages mit HTTP 200 ausgeliefert werden und die
+ * erwartete Hauptüberschrift (h1) rendern. Die Seiten sind Gruppen-Indexseiten,
+ * gerendert von `src/pages/docs/[...id].astro` → `CollectionLayout`. Die
+ * Kubernetes-Schulung ist zweisprachig (#301): deutsche Fassung unter `-de`,
+ * englische Fassung unter `-en`.
  */
 
 const workshopPages = [
@@ -14,8 +16,12 @@ const workshopPages = [
     heading: 'Astro Workshop',
   },
   {
-    path: '/docs/kubernetes-basis/',
+    path: '/docs/kubernetes-basis-de/',
     heading: 'Kubernetes Basis',
+  },
+  {
+    path: '/docs/kubernetes-basis-en/',
+    heading: 'Kubernetes Basics',
   },
 ];
 
