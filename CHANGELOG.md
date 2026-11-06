@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Sitzung im Panel (Basis 0.2.6): Das Panel holt seine Daten über Home Assistants `fetchWithAuth` und erneuert bei HTTP 401 den abgelaufenen Access-Token einmal, bevor es die Anfrage wiederholt; erst eine gescheiterte Erneuerung zeigt die Meldung „Die Sitzung ist abgelaufen“. Eine fehlende oder abgelaufene Sitzung antwortet jetzt mit `401 not_authenticated` statt mit einem irreführenden `403`, das wie eine fehlende Benutzerfreigabe aussah; Rollenentzug bleibt `403 forbidden` (#289).
 - Prod-Publish (Erweiterung 0.1.6): Der Workflow-Dispatch nutzt jetzt den korrekten Endpoint `POST /repos/{repo}/actions/workflows/{workflow}/dispatches` statt des nicht existierenden `/run`. Bis 0.1.5 beantwortete GitHub den Aufruf mit 404, sodass `fd-deploy-prd` trotz geschriebenem Katalog-Commit nicht startete; `fd-deploy-prd` startet wieder, und `Actions: Read and write` bleibt die einzige zusätzliche Token-Anforderung (#289).
 - Prod-Publish: Ein 404 beim Workflow-Dispatch nennt jetzt den betroffenen Workflow, den Branch und das fehlende Recht `Actions: Read and write`, statt generisch „Repository oder Branch nicht gefunden“ zu melden; die Dokumentation erklärt die beiden Prüfungen im Options-Flow (Repository, Prod-Workflow `fd-deploy-prd.yml`) und am Fine-grained Token (#289).
 - Dry-Run und Prod-Publish (Erweiterung 0.1.5): Ein Lauf ohne Änderungen meldet kein Deployment mehr, und `fd-deploy-prd` wird nur noch bei neuen, geänderten oder entfernten Dateien ausgelöst (#289).
