@@ -15,8 +15,9 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
   `frickeldave_store_syncfd` 0.1.4 mit der zielgenauen Meldung beim Prod-Publish und 0.1.5 mit der
   änderungsbasierten Deployment-Meldung. Basis 0.2.4 mit der reduzierten Übersicht im
   Veröffentlichungsdialog ist released. Basis 0.2.5 mit der einstellbaren Bildgrenze und der
-  Speicherbelegung im Konfigurationspanel ist in Vorbereitung; Erweiterung 0.1.6 mit dem
-  korrigierten Dispatch-Endpoint folgt. Finanz- und Kundenfunktionen bleiben geplant.
+  Speicherbelegung im Konfigurationspanel ist released. Basis 0.2.6 mit der automatischen
+  Token-Erneuerung im Panel ist in Vorbereitung; Erweiterung 0.1.6 mit dem korrigierten
+  Dispatch-Endpoint folgt. Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -65,7 +66,7 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.5` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.6` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6` |
 
 - Basis: `custom_components/frickeldave_store/`.
@@ -1184,6 +1185,30 @@ deinstallieren, damit nicht zwei Stellen denselben Katalog schreiben. Nach einem
   Steuerrücklagen) getrennt.
 - Die Zuordnung der Kundenverwaltung zu einer Rolle ist Teil der Rechte-Matrix aus der
   Architekturphase.
+
+### Sitzung abgelaufen und fehlende Freigabe (ab 0.2.6)
+
+Das Panel kennt zwei Meldungen, die verschiedene Ursachen haben. Ein Access-Token von Home
+Assistant gilt 30 Minuten, ein Refresh-Token 90 Tage.
+
+- Bis 0.2.5 holte das Panel seine Daten per `fetch` mit dem aktuellen Access-Token und erneuerte es
+  nie. Nach 30 Minuten Laufzeit erschien deshalb „Die Sitzung ist abgelaufen. Bitte die Seite neu
+  laden.“. Fehlte `hass_user`, antwortete die API mit 403; dieselbe Lage erschien dann als „Ihr
+  Home-Assistant-Benutzer ist für diese Verwaltung nicht freigegeben.“ und führte in die falsche
+  Richtung.
+- Ab 0.2.6 läuft der Zugriff über `fetchWithAuth`. Antwortet der Server mit 401, erneuert das Panel
+  den Access-Token einmal und wiederholt die Anfrage. Erst wenn die Erneuerung scheitert, erscheint
+  die Sitzungsmeldung.
+- Ein Neuladen der Seite ist damit nur nötig, wenn die Meldung nach diesem automatischen Versuch
+  bleibt.
+
+| Meldung                                                                   | Status | Code                | Ursache und Abhilfe                                                                                                                                                                                   |
+| ------------------------------------------------------------------------- | ------ | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| „Die Sitzung ist abgelaufen. Bitte die Seite neu laden.“                  | `401`  | `not_authenticated` | Die Sitzung fehlt oder ist abgelaufen. Seite neu laden; bleibt die Meldung, in Home Assistant neu anmelden.                                                                                           |
+| „Ihr Home-Assistant-Benutzer ist für diese Verwaltung nicht freigegeben.“ | `403`  | `forbidden`         | Sitzung gültig, Rolle fehlt. Freigabe im Tab **Benutzerverwaltung** setzen (Einstellungen → Geräte & Dienste → Frickeldave Store → Zahnrad), siehe [Tab Benutzerverwaltung](#tab-benutzerverwaltung). |
+
+Kurz gefasst: `401` betrifft die Sitzung, `403` die Rolle. Neuladen behebt keine fehlende Freigabe,
+und eine neue Freigabe hilft nicht, solange die Sitzung abgelaufen ist.
 
 ## Backup und Wiederherstellung
 
