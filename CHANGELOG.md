@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.13] - 2026-11-06
+
 ### Added
 
 - Kubernetes-Schulung auf Englisch: unter `/docs/kubernetes-basis-en/` liegt der vollständige Kurs
