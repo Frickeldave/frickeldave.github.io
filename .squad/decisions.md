@@ -3379,6 +3379,36 @@ ein separater Dev-Publish ist nicht nötig, die Dev-Vorschau folgt dem Push. Ein
 nur bei einer höheren Website-Version in `package.json`, reine Katalog-/deploy-neutrale Änderungen
 deployen ohne Release.
 
+
+#### 2026-11-06T10:33:35+00:00: Fehlende Sitzung liefert 401 statt 403
+**By:** Bruce
+**What:** Neue Fehlerklasse `NotAuthenticated` (`code = "not_authenticated"`) in `models.py`; `STATUS_BY_CODE["not_authenticated"] = 401` und `_user()` wirft in `views.py` `NotAuthenticated("Die Sitzung ist abgelaufen. Bitte die Seite neu laden.")` statt `PermissionDenied`. Rollenbasierte `PermissionDenied` bleibt `403 forbidden`. Tests: `/me` und `/settings` ohne `hass_user` → `401 not_authenticated`, Benutzer ohne Rolle weiterhin `403 forbidden` (`tests/test_views.py`, `tests/test_users_api.py`). Version `0.2.6` in `manifest.json`, `pyproject.toml`, `const.py`; CHANGELOG `[Unreleased]`/`Fixed`. PR: https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/7, Commit `d30b4a4d0463297f1cfaec864d5bfcf4885c302a` (Branch `fix/289-session-401`). Validierung: `ruff check .`, `ruff format --check .`, `mypy custom_components` grün, `pytest -q` 270 passed, `manifest.json` gültiges JSON.
+**Why:** Eine fehlende/abgelaufene HA-Sitzung (`hass_user` fehlt) wurde als `forbidden` gemappt; Nutzer sahen „nicht freigegeben“ statt einer Sitzungsmeldung. `401` erlaubt dem Panel, die Ablaufmeldung korrekt anzuzeigen.
+
+#### 2026-11-06T10:33:35+00:00: Panel erneuert abgelaufene Access-Tokens
+**By:** Natasha
+**What:** `_api()` nutzt jetzt bevorzugt `hass.fetchWithAuth` (roher `fetch` bleibt als Fallback für ältere HA-Versionen). Bei HTTP 401 wird `hass.auth.refreshAccessToken()` genau einmal aufgerufen und die Anfrage genau einmal wiederholt; 403 wird nie wiederholt und der Berechtigungspfad bleibt unverändert. Ein 401 zeigt nicht mehr die „nicht freigegeben“-Ansicht. Die reine Entscheidung liegt in `frontend/auth-retry.js` (`shouldRefreshToken`) und ist über `node --test` abgedeckt. Commit `7043e9c`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/8. Validierung: 15 Frontend-Tests, ruff, ruff format, mypy und 267 pytest-Tests grün; kein Versionsbump.
+**Why:** Der rohe fetch hat den 30-Minuten-Token nie erneuert; Nutzer sahen Sitzungsfehler statt einer nahtlosen Erneuerung.
+
+#### 2026-11-06T10:33:35+00:00: fr008 erklärt Sitzungsablauf und Token-Refresh
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md` hat den neuen Unterabschnitt „Sitzung abgelaufen und
+fehlende Freigabe (ab 0.2.6)“ unter „Berechtigungen“: Access-Token 30 Minuten, Refresh-Token 90
+Tage, bis 0.2.5 ohne Erneuerung per `fetch`, ab 0.2.6 `fetchWithAuth` mit einmaligem Refresh und
+Wiederholung bei 401; eine Tabelle trennt die Meldung „Die Sitzung ist abgelaufen“ (`401
+not_authenticated`, neu laden) von „Ihr Home-Assistant-Benutzer ist für diese Verwaltung nicht
+freigegeben“ (`403 forbidden`, Rolle im Tab Benutzerverwaltung setzen). Die Versionstabelle führt
+die Basis mit `0.2.6`, die Statuszeile nennt 0.2.5 als released und 0.2.6 als in Vorbereitung, ohne
+Release-Datum. `CHANGELOG.md` ergänzt unter `## [Unreleased]` → `### Fixed` einen Punkt zur
+einmaligen Token-Erneuerung und zum 401 statt des irreführenden 403 (#289).
+
+**Why:** Der Access-Token läuft nach 30 Minuten ab, und das Panel erneuert ihn seit 0.2.6 einmal
+und wiederholt die Anfrage; vorher traf Nutzende nach einer halben Stunde die Sitzungsmeldung. Eine
+fehlende Sitzung antwortet jetzt mit 401, ein Rollenentzug bleibt 403 — nur so führt die Meldung zur
+richtigen Abhilfe statt in die falsche Spur einer fehlenden Benutzerfreigabe.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
