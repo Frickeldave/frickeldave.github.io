@@ -3289,6 +3289,16 @@ filterbare **Dateiliste** bleibt die Dateisicht. Ein neuer Abschnitt „Deployme
 **Bilder** (Bilddateien) in einer zweiten Zählachse; ein Prod-Lauf ohne Änderungen meldete ein
 Deployment, obwohl weder Commit noch Workflow-Dispatch anfielen.
 
+#### 2026-11-06T05:52:19+00:00: Prod-Dispatch rief den nicht existierenden Endpoint `/run` auf
+**By:** Bruce
+**What:** `GitHubClient.async_dispatch_workflow()` in der Erweiterung postete auf `actions/workflows/<workflow>/run`; die GitHub-API kennt nur `POST actions/workflows/<workflow>/dispatches` und antwortet auf `/run` mit 404. Ab 0.1.6 wird `/dispatches` aufgerufen (Payload, Retry-Semantik, Commit-Flow und `would_trigger` unverändert). Der 404-Fallback (`github_not_found`) nennt weiterhin Workflow, Branch und den Hinweis „Actions: Read and write“; die zuvor geplante Preflight-Logik (`GET actions/workflows/...`) wurde verworfen. Regressionstest prüft die exakte URL, den Body `{"ref": "main", "inputs": {"dry_run": false}}` und dass `/run` nicht mehr vorkommt. Version 0.1.6 in `manifest.json`, `pyproject.toml`, `const.py`; CHANGELOG `[Unreleased]`/`Fixed` beschreibt den Endpoint-Fix. Validierung: `ruff check .` ok, `ruff format --check .` ok, `mypy custom_components` ok, `pytest -q` 147 passed, Manifest-JSON gültig. Commit `ed2903e5aa1439b4426cdb82915f2a9c5b159673`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/6 (nicht gemerged).
+**Why:** Der Live-Test mit demselben Token belegt `POST .../run` → 404 und `POST .../dispatches` → 204 bei `GET` Repository/Workflow → 200 und funktionierendem Contents-Write. Die Ursache war nie ein fehlendes `Actions: Read and write`, sondern der falsche Pfad; die alte 404-Meldung konnte das nicht unterscheiden, weil der Prod-Dispatch zuvor nie erfolgreich lief.
+
+#### 2026-11-06T05:52:19+00:00: fr008 dokumentiert korrigierten Workflow-Dispatch-Endpoint
+**By:** Maria
+**What:** `docs/features/fr008-ha-manager.md` erklärt unter „Fehler beim Veröffentlichen nach prod“, dass die Erweiterung bis 0.1.5 `POST /repos/{repo}/actions/workflows/{workflow}/run` aufrief und GitHub diesen Pfad mit 404 beantwortet; ab 0.1.6 nutzt sie `/dispatches`. Dazu die kurze 404-Prüfliste (Workflow-Dateiname, Branch, WARNING-Zeile mit Methode/Pfad/Status, `Actions: Read and write` als Voraussetzung) und die korrigierte Endpoint-Angabe im Abschnitt „Token-Berechtigungen“. Statuszeile nennt 0.1.5 als released und 0.1.6 als in Vorbereitung, die Repository-Tabelle führt `0.1.6`. `CHANGELOG.md` nennt den Endpoint-Fix unter `[Unreleased]` → `Fixed` (#289).
+**Why:** Der Live-Test mit demselben Token belegt `/run` → 404 und `/dispatches` → 204; der Token war nie die Ursache. Die zuvor geplante Preflight-Logik entfällt, die erste Fassung dieser Notiz (veralteter Token als Ursache) ist damit überholt.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
