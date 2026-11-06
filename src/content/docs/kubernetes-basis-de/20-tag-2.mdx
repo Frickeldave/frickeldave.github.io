@@ -277,7 +277,7 @@ Zertifikate gibt es Secrets.
 ### Secret: Code-Server-Passwort auslagern
 
 Das Code-Server-Passwort steht noch hart codiert im Deployment. Das lagern wir jetzt in ein
-[Secret](/docs/kubernetes-basis/90-glossar#secret) aus.
+[Secret](/docs/kubernetes-basis-de/90-glossar#secret) aus.
 
 **1. Secret erstellen**
 
@@ -373,9 +373,9 @@ Konzept wird genutzt, um eng gekoppelte Prozesse gemeinsam zu deployen und zu ve
 
 | Typ                   | Zweck                                   | Lebensdauer                   |
 | --------------------- | --------------------------------------- | ----------------------------- |
-| [**App-Container**](/docs/kubernetes-basis/90-glossar#app-container)     | Hauptanwendung                          | Läuft dauerhaft               |
-| [**Init-Container**](/docs/kubernetes-basis/90-glossar#init-container)    | Initialisierung vor dem App-Start       | Läuft einmalig bis Abschluss  |
-| [**Sidecar-Container**](/docs/kubernetes-basis/90-glossar#sidecar-container) | Unterstützende Dienste (Logging, Proxy) | Läuft dauerhaft neben der App |
+| [**App-Container**](/docs/kubernetes-basis-de/90-glossar#app-container)     | Hauptanwendung                          | Läuft dauerhaft               |
+| [**Init-Container**](/docs/kubernetes-basis-de/90-glossar#init-container)    | Initialisierung vor dem App-Start       | Läuft einmalig bis Abschluss  |
+| [**Sidecar-Container**](/docs/kubernetes-basis-de/90-glossar#sidecar-container) | Unterstützende Dienste (Logging, Proxy) | Läuft dauerhaft neben der App |
 
 **Regel:** Mehrere Container im selben Pod nur, wenn sie eng gekoppelt sind. Ansonsten separate Pods
 verwenden. Die Container EINER App sind hier NICHT eng gekoppelt, sondern nur lose verbunden über Services und Ingress. Daher deployen wir sie in separaten Pods.
@@ -806,8 +806,8 @@ wie prioritär der Pod behandelt wird, wenn die Node unter Druck gerät.
 
 | Konzept      | Beschreibung                                                                     |
 | ------------ | -------------------------------------------------------------------------------- |
-| [**requests**](/docs/kubernetes-basis/90-glossar#resource-limits) | Mindestgarantie -- Scheduler platziert Pod nur auf Nodes mit genügend Ressourcen |
-| [**limits**](/docs/kubernetes-basis/90-glossar#resource-limits)   | Obergrenze -- CPU wird gedrosselt, bei Speicherüberschreitung OOM-Kill           |
+| [**requests**](/docs/kubernetes-basis-de/90-glossar#resource-limits) | Mindestgarantie -- Scheduler platziert Pod nur auf Nodes mit genügend Ressourcen |
+| [**limits**](/docs/kubernetes-basis-de/90-glossar#resource-limits)   | Obergrenze -- CPU wird gedrosselt, bei Speicherüberschreitung OOM-Kill           |
 
 **CPU-Einheiten:** `1` = 1 Kern, `500m` = 0,5 Kerne, `250m` = 0,25 Kerne.
 
@@ -856,7 +856,7 @@ Die QoS-Klasse sagt: "Wie wichtig ist diese Abteilung, wenn der Platz knapp wird
 - **Guaranteed** – eine Abteilung, die genau 3 Regalreihen reserviert und auch nicht mehr
   nutzen darf. Sie ist planbar und wird als Letzte angerührt.
 
-| [QoS-Klasse](/docs/kubernetes-basis/90-glossar#qos-klassen)     | Bedingung                               | Eviction-Priorität           | Analogie |
+| [QoS-Klasse](/docs/kubernetes-basis-de/90-glossar#qos-klassen)     | Bedingung                               | Eviction-Priorität           | Analogie |
 | -------------- | --------------------------------------- | ---------------------------- | -------- |
 | **Guaranteed** | requests == limits (für CPU und Memory) | Niedrigste (zuletzt evicted) | Feste Zusage: genau 3 Regalreihen |
 | **Burstable**  | requests < limits                       | Mittel                       | Flexibel: 3 reserviert, bis zu 6 |
@@ -947,7 +947,7 @@ CPU wird gedrosselt, bei Memory-Überschreitung gibt es einen OOM-Kill.
 
 ### LimitRange
 
-Eine [LimitRange](/docs/kubernetes-basis/90-glossar#limitrange) setzt Standardwerte für alle
+Eine [LimitRange](/docs/kubernetes-basis-de/90-glossar#limitrange) setzt Standardwerte für alle
 Container im Namespace, die keine eigenen Resources angeben -- das Sicherheitsnetz gegen vergessene
 `resources`-Blöcke.
 
@@ -1071,9 +1071,9 @@ der Disponent, der sicherstellt, dass alles rund läuft.
 
 | Probe               | Frage                                 | Aktion bei Fehlschlag                      |
 | ------------------- | ------------------------------------- | ------------------------------------------ |
-| [**Liveness Probe**](/docs/kubernetes-basis/90-glossar#liveness-probe)  | Läuft die Anwendung noch?             | Container wird neu gestartet               |
-| [**Readiness Probe**](/docs/kubernetes-basis/90-glossar#readiness-probe) | Kann die Anwendung Traffic empfangen? | Pod wird aus Service-Endpoints entfernt    |
-| [**Startup Probe**](/docs/kubernetes-basis/90-glossar#startup-probe)   | Ist die Anwendung fertig gestartet?   | Liveness/Readiness pausiert bis Startup OK |
+| [**Liveness Probe**](/docs/kubernetes-basis-de/90-glossar#liveness-probe)  | Läuft die Anwendung noch?             | Container wird neu gestartet               |
+| [**Readiness Probe**](/docs/kubernetes-basis-de/90-glossar#readiness-probe) | Kann die Anwendung Traffic empfangen? | Pod wird aus Service-Endpoints entfernt    |
+| [**Startup Probe**](/docs/kubernetes-basis-de/90-glossar#startup-probe)   | Ist die Anwendung fertig gestartet?   | Liveness/Readiness pausiert bis Startup OK |
 
 
 
@@ -1293,7 +1293,7 @@ Wie tauschst du sie aus?
 
 | Strategie         | Verhalten                                    | Ausfallzeit | Einsatz                                               |
 | ----------------- | -------------------------------------------- | ----------- | ----------------------------------------------------- |
-| [**RollingUpdate**](/docs/kubernetes-basis/90-glossar#rollingupdate) | Pods werden schrittweise ersetzt             | Keine       | Standard, Produktion                                  |
+| [**RollingUpdate**](/docs/kubernetes-basis-de/90-glossar#rollingupdate) | Pods werden schrittweise ersetzt             | Keine       | Standard, Produktion                                  |
 | **Recreate**      | Alle alten Pods beendet, dann neue gestartet | Kurz        | Wenn alte + neue Version nicht parallel laufen können |
 
 
@@ -1434,9 +1434,9 @@ Regal – und wenn der Pod weg ist, bleibt das Regal stehen, samt Inhalt.
 
 | Konzept                         | Beschreibung                                                          |
 | ------------------------------- | --------------------------------------------------------------------- |
-| [**PersistentVolume (PV)**](/docs/kubernetes-basis/90-glossar#persistentvolume)       | Ein Stück Storage im Cluster, bereitgestellt von Admin oder dynamisch |
-| [**PersistentVolumeClaim (PVC)**](/docs/kubernetes-basis/90-glossar#persistentvolumeclaim) | Anforderung eines Pods an Storage (Größe, Zugriffsart)                |
-| [**StorageClass**](/docs/kubernetes-basis/90-glossar#storageclass)                | Definiert, wie PVs dynamisch erstellt werden (Provisioner, Parameter) |
+| [**PersistentVolume (PV)**](/docs/kubernetes-basis-de/90-glossar#persistentvolume)       | Ein Stück Storage im Cluster, bereitgestellt von Admin oder dynamisch |
+| [**PersistentVolumeClaim (PVC)**](/docs/kubernetes-basis-de/90-glossar#persistentvolumeclaim) | Anforderung eines Pods an Storage (Größe, Zugriffsart)                |
+| [**StorageClass**](/docs/kubernetes-basis-de/90-glossar#storageclass)                | Definiert, wie PVs dynamisch erstellt werden (Provisioner, Parameter) |
 
 ### StorageClass: Welches Regal wird geliefert?
 
@@ -1448,7 +1448,7 @@ kubectl get storageclass
 
 Die Zeile mit `(default)` ist die Klasse, die Kubernetes automatisch nimmt, wenn dein PVC keine
 `storageClassName` nennt. Dieselbe Abfrage samt Spaltenerklärung steht in
-[03 Vorbereitung](/docs/kubernetes-basis/03-vorbereitung#get-storageclass) unter §
+[03 Vorbereitung](/docs/kubernetes-basis-de/03-vorbereitung#get-storageclass) unter §
 "get storageclass". Gibt es keine Default-Klasse, bleibt der PVC in `Pending` -- das ist der
 häufigste Grund, wenn ein Pod ewig auf sein Volume wartet.
 
@@ -1970,4 +1970,4 @@ Damit könnt ihr die meisten Anwendungsfälle im Cluster abdecken. Vertiefungsth
 - **Backup & Restore** – Velero für Cluster-Backups
 
 <br />
-Weiter: [Glossar](/docs/kubernetes-basis/90-glossar)
+Weiter: [Glossar](/docs/kubernetes-basis-de/90-glossar)

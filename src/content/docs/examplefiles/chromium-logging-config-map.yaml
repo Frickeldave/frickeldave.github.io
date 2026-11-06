@@ -23,7 +23,7 @@ data:
       fi
     fi
 
-    # Chromium starten mit Logs in Datei UND stdout
+    # start Chromium with logs to file AND stdout
     ${BIN} \
       --no-sandbox \
       --password-store=basic \

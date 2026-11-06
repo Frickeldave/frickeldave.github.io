@@ -10,8 +10,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1 # Wie viele zusätzliche Pods während des Updates erlaubt
-      maxUnavailable: 0 # Wie viele Pods gleichzeitig fehlen dürfen
+      maxSurge: 1 # how many extra Pods are allowed during the update
+      maxUnavailable: 0 # how many Pods may be unavailable at the same time
   selector:
     matchLabels:
       app: chromium
@@ -41,7 +41,7 @@ spec:
               mountPath: /dev/shm
             - name: chromium-logs
               mountPath: /config/log
-            - name: chromium-logging-script     # NEU: Custom wrapped-chromium
+            - name: chromium-logging-script     # NEW: Custom wrapped-chromium
               mountPath: /usr/bin/wrapped-chromium
               subPath: wrapped-chromium
           startupProbe:
@@ -90,7 +90,7 @@ spec:
         - name: vector-config
           configMap:
             name: vector-config
-        - name: chromium-logging-script         # NEU: ConfigMap mit Script
+        - name: chromium-logging-script         # NEW: ConfigMap mit Script
           configMap:
             name: chromium-logging
             defaultMode: 0755

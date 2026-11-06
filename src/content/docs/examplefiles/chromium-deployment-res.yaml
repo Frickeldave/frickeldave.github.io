@@ -34,12 +34,9 @@ spec:
           volumeMounts:
             - name: shm
               mountPath: /dev/shm
-            - name: chromium-logs
+            - name: chromium-logs          # NEW: gemeinsames Log-Volume
               mountPath: /config/log
-            - name: chromium-logging-script     # NEU: Custom wrapped-chromium
-              mountPath: /usr/bin/wrapped-chromium
-              subPath: wrapped-chromium
-        - name: vector
+        - name: vector                     # NEW: Sidecar-Container
           image: timberio/vector:0.42.0-alpine
           resources:
             requests:
@@ -53,7 +50,7 @@ spec:
             - --config
             - /etc/vector/vector.toml
           volumeMounts:
-            - name: chromium-logs
+            - name: chromium-logs          # NEW: gleiches Volume wie Chromium
               mountPath: /config/log
             - name: vector-config
               mountPath: /etc/vector
@@ -62,12 +59,8 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 1Gi
-        - name: chromium-logs
+        - name: chromium-logs              # NEW: shared emptyDir for logs
           emptyDir: {}
-        - name: vector-config
+        - name: vector-config              # NEW: ConfigMap als Volume
           configMap:
             name: vector-config
-        - name: chromium-logging-script         # NEU: ConfigMap mit Script
-          configMap:
-            name: chromium-logging
-            defaultMode: 0755

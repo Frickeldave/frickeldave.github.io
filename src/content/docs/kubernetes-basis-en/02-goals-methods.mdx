@@ -1,0 +1,108 @@
+---
+visible: true
+title: 02 Goals / Methods
+description: Learning objectives, didactic concept and methods of the Kubernetes Basics training.
+draft: false
+image: "@assets/docs/kubernetes-basis/knba-02-000_header.png"
+imageAlt: "Kubernetes Basics - 02 Goals / Methods"
+---
+
+## Overall learning objectives
+
+After completing the 2-day training, participants are able to:
+
+1. **Understand the Kubernetes architecture** -- Name the core components of a cluster, explain how
+   they interact and trace the path of a deployment command through the system.
+
+2. **Deploy and manage workloads** -- Deploy, configure, monitor and, when needed, roll back
+   applications in a Kubernetes cluster on their own.
+
+3. **Configure networking and storage** -- Set up Services, Ingress routing and
+   PersistentVolumeClaims to make applications reachable internally and externally and to store
+   data persistently.
+
+4. **Build production-ready Deployments** -- Apply resource limits, health checks, ConfigMaps,
+   Secrets and basic security settings to make Deployments fit for real-world use.
+
+---
+
+## Detailed learning objectives
+
+### Day 1 -- Fundamentals and first Deployments
+
+After the first training day, participants can:
+
+- Explain the Kubernetes architecture (Control Plane, Worker Nodes) and the job of each component
+  (kube-apiserver, etcd, kube-scheduler, kube-controller-manager, kubelet, kube-proxy)
+- Use `kubectl` to query, create, update and delete resources
+- Create Namespaces for the logical separation of workloads and set one as the default context
+- Explain and apply the difference between imperative and declarative work
+- Read, understand and write YAML manifests for Pods, Deployments and Services
+- Observe the self-healing behaviour of Kubernetes and explain how it works
+- Configure NodePort Services for external access to applications
+- Get two real applications (Chromium Browser, Code-Server) up and running in the cluster
+
+### Day 2 -- Production readiness and a complete platform
+
+After the second training day, participants can:
+
+- Define resource requests and limits for CPU and memory and explain their impact on scheduling and
+  QoS classes
+- Configure liveness, readiness and startup probes and explain the differences
+- Perform rolling updates, monitor the rollout status and trigger a rollback
+- Externalise configuration with ConfigMaps and manage sensitive data in Secrets
+- Apply SecurityContext settings (runAsNonRoot, readOnlyRootFilesystem, capabilities.drop)
+- Create PersistentVolumeClaims, bind them to Deployments and explain the difference to emptyDir
+- Run Chromium and Code-Server in a production-ready way and optionally deploy MariaDB and
+  phpMyAdmin with a PersistentVolumeClaim
+
+---
+
+## Methods
+
+### Didactic approach
+
+The training follows the principle **"theory meets immediate practice"**: every theory block stays
+short and is deepened right away with a hands-on exercise on a real cluster. Participants learn by
+doing the work themselves, not by watching.
+
+### Methods in use
+
+| Method                            | Description                                                                |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| **Instruction (short lecture)**   | Compact theory input (15-60 min) with visualisations and analogies          |
+| **Hands-on exercises**            | Practical tasks on the own cluster directly after each theory block         |
+| **Analogy-based learning**        | Logistics centre analogy for abstract cluster concepts                      |
+| **Outcome-oriented learning**     | All exercises build towards one concrete goal (four running applications)   |
+| **Progressive build-up**          | Exercises from Day 1 are extended on Day 2 instead of started from scratch  |
+| **Productive failure**            | Deliberately built-in failure situations (e.g. data loss with emptyDir)     |
+| **Reference material**            | kubectl cheat sheet and glossary for follow-up work and as a learning aid   |
+
+### Analogy: the logistics centre
+
+For abstract Kubernetes concepts the training uses a logistics centre analogy throughout. It helps
+you translate technical terms into familiar images:
+
+| Kubernetes concept | Analogy              |
+| ------------------ | -------------------- |
+| Cluster            | Logistics centre     |
+| Control Plane      | Office / headquarters|
+| Worker Node        | Workstation / truck  |
+| Pod                | Parcel               |
+| Deployment         | Work instruction     |
+| Service            | Phone number         |
+| Namespace          | Department           |
+
+---
+
+## Assessing learning success
+
+A formal exam is not part of the training. Learning success shows up in practice:
+
+- **Day 1 -- checkpoint**: Chromium and Code-Server run in the own Namespace and are reachable via
+  NodePort
+- **Day 2 -- checkpoint**: Chromium and Code-Server run production-ready (resource limits, probes,
+  PVCs); optionally MariaDB with phpMyAdmin joins in
+
+<br />
+Next: [Preparation](/docs/kubernetes-basis-en/03-preparation)

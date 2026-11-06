@@ -54,7 +54,7 @@ spec:
               value: "1000"
             - name: TZ
               value: "Europe/Berlin"
-            # Schulungswert im Klartext; in Produktion per secretKeyRef aus einem Secret
+            # training value in plain text; in production use secretKeyRef from a Secret
             - name: MYSQL_ROOT_PASSWORD
               value: "trainingk8s"
           volumeMounts:

@@ -3126,6 +3126,102 @@ von 0.2.0 nicht mehr gelesen werden.
 
 **Why:** Der Nutzer arbeitet allein am Projekt und will den Rollout von #303 (16 GiB, neue Diagnose) mit einem Klick auslösen können, statt Handle, Image und vier Ressourcenwerte jedes Mal zu tippen.
 
+#### 2026-11-03T19:50:00Z: Layout und Terminologie der zweisprachigen Kubernetes-Schulung
+
+**By:** Maria
+
+**What:** Drei Festlegungen für die zweisprachige Kubernetes-Schulung (#301):
+
+1. Sprachordner heißen `kubernetes-basis-de` und `kubernetes-basis-en` (Top-Level in
+   `src/content/docs/`). Die Beispielmanifeste liegen sprachneutral unter
+   `src/content/docs/examplefiles/` und enthalten keine Markdown-Dateien, damit der Glob-Loader sie
+   nicht als Content lädt und die 3-Segment-IDs des Routing nicht entstehen.
+2. Englische Kapitel behalten die Zahlenpräfixe (`01 Introduction` … `91 kubectl Reference`), weil
+   `sortByTitle` per `localeCompare` sortiert. Die Kapitelliste im EN-Gruppenindex heißt
+   `Chapter overview` -- `Table of contents` würde von `remarkToc`/`remarkCollapse` überschrieben.
+3. Englische Glossaranker: `container-orchestration`, `scaling`, `labels-and-selectors` und
+   `qos-classes` ersetzen die deutschen Anker; alle Verweise in beiden Sprachfassungen zeigen auf die
+   jeweils eigene Fassung. Code-Fences bleiben in beiden Sprachen byte-identisch (402 Fences pro
+   Sprache, inklusive deutscher Kommentare in Skripten und Manifesten) -- übersetzt werden nur
+   Fließtext, Überschriften, Tabellenzellen, Bild-Alt-Texte und die Kommentare in
+   `src/content/docs/examplefiles/`.
+
+**Why:** Ordnername = URL-Segment; nur Top-Level-Ordner mit `-index.md` werden als Gruppe erkannt.
+Sortier- und Remark-Verhalten sind im Repo verifiziert. Die Trennung zwischen übersetzbarer Prosa und
+unveränderten technischen Blöcken hält Kommandos, Namespace, FQDNs, Images und Secret-Werte in beiden
+Sprachen identisch und macht Diffs prüfbar.
+
+#### 2026-11-03T20:45:00Z: Legacy /docs/kubernetes-basis URLs redirect via static Astro redirects
+
+**By:** Nick
+
+**What:** `astro.config.mjs` now carries a `redirects` block with eight keys (no trailing slash on the keys,
+trailing slash on the targets) mapping the old Kubernetes training URLs to `/docs/kubernetes-basis-de/…`. With
+`output: "static"` Astro emits meta-refresh stub pages (HTTP 200) that also carry `robots: noindex` and a canonical
+link to the `-de` target. Sitemap and Pagefind exclude these stubs automatically (sitemap only sees page routes;
+Pagefind skips documents without an `<html>` element).
+
+**Why:** Old inbound links and bookmarks must keep working after the German course moved to `kubernetes-basis-de`
+and an English twin (`kubernetes-basis-en`) was added. Real 301s would require hosting/Cloudflare redirect rules,
+which the spec explicitly excludes from this issue; the static stubs are the in-repo mechanism and stay reversible.
+
+#### 2026-11-03T20:55:00Z: Bilingual Kubernetes e2e tests — detector design and the literal-grep contradiction
+
+**By:** Clint
+
+**What:** `test/e2e/docs-kubernetes-bilingual.spec.mjs` covers chapter coverage (set equality of the seven slugs per
+group), HTTP 200 plus exactly one `<h1>` for both group pages and all 14 chapters, the eight legacy redirects, link
+hygiene, the docs overview and the sitemap. Two design decisions:
+
+1. The "no German running prose" check removes `pre`, `code`, `script` and `style` before scanning `#main-content` and
+   looks for unambiguous German function words plus umlauts. Code fences stay German by design (spec step 5), so
+   scanning raw page text would produce false positives. A negative-control test runs the same detector against the
+   German `10-tag-1` chapter and requires >20 marker hits — without it a broken selector would make the check pass
+   vacuously.
+2. Redirect tests accept both shapes the spec allows: 3xx with `location` starting `/docs/kubernetes-basis-de`, or
+   200 with meta refresh, `robots noindex`, canonical link and no `<h1>`. Astro's static build emits the 200 variant,
+   but the test documents and tolerates the 3xx variant.
+
+**Why:** Deterministic assertions that cannot pass by accident, while keeping code blocks (untranslatable technical
+payloads) out of the prose signal. The prose check and the redirect/navigation check are split into one test per page
+so a single failure names the affected chapter instead of aborting a seven-page loop, and the 30 s default timeout
+stays comfortable on a loaded shared host.
+
+**Known contradiction in acceptance criterion 10:** `grep -rn "/docs/kubernetes-basis/" src/content` cannot be 0:
+48 hits remain, all of them Vite asset specifiers `@assets/docs/kubernetes-basis/…`, which the spec explicitly keeps
+unchanged (step 2 and "Nicht enthalten"). Zero non-asset hits hold, and the built-page test asserts that no rendered
+DE/EN page contains `href="/docs/kubernetes-basis/` or `localhost:4321`, which is the meaningful version of the
+criterion.
+
+#### 2026-11-04T07:57:19+00:00: Nutzerfreigabe für Scope-Erweiterungen von #301
+
+**By:** David Koenig (via Copilot Squad)
+
+**What:** Alles, was die deutsch/englische Doku betrifft und in dieser Session aufkam, darf unter Ticket #301 bearbeitet werden. Konkret bestätigt: (1) Badge "Deutsch"/"Englisch" auf den Docs-Kacheln plus neues optionales Frontmatter-Feld `languageLabel`; (2) linke Doku-Navigation und rechtes ToC auf allen Gruppen-Landingpages (/docs, astro-workshop, kubernetes-basis-de, kubernetes-basis-en), ToC aus den Überschriften des Gruppen-Index.
+
+**Why:** Der Nutzer reviewt die laufende #301-Implementierung und will Nacharbeiten am selben Ticket statt in neuen Issues; Tony muss die erweiterte Spec jeweils mit approven.
+
+#### 2026-11-04T13:15:00+00:00: Sprach-Badge und Gruppen-Navigation auf den Docs-Landingpages
+
+**By:** Natasha
+
+**What:** (1) Neues optionales Schema-Feld `languageLabel` (`z.string().optional()`, ohne Default) in `src/content.config.ts`. (2) Badge in `Card.astro` als `<span class="glass-t ... absolute top-2 left-2 z-10 ..." data-language-label={languageLabel}>` innerhalb des bestehenden `<a>`, nur bei gesetztem Feld; zusätzlich `text-txt-h dark:text-darkmode-txt-h`, damit die Badge-Schrift exakt die Farbe der `h4`-Titelbox hat (#111 in Light, #fff in Dark) und über beliebigen Kachelbildern lesbar bleibt — kein `text-transform`, das Attribut trägt zusätzlich den Label-Wert für stabile e2e-Lokatoren. (3) `CollectionLayout.astro` baut `browserMenu` jetzt selbst: auf `/docs/` alle Gruppen mit ihren Kapiteln, auf einer Gruppen-Landingpage nur die eigene Gruppe (Filter über die Collection-ID, nicht über Props), Aufbau in einer sequenziellen `for`-Schleife statt `Promise.all` + `push`, damit die Menüreihenfolge deterministisch bleibt (die Page-Variante in `[...id].astro` bleibt unverändert). (4) Der Index-Body wird nur bei nicht-leerem `body` gerendert (`collectionIndex.body?.trim()`), damit `/docs/` keine leere Glas-Box und kein leeres ToC erhält; `headings` gehen mit `tocDepth = 3` an `TableOfContents`, die `hideNav`/`hideToc`-Staffelung ist 1:1 aus `EntryLayout` übernommen.
+
+**Why:** Kriterien 13–24 verlangen Badge-Sichtbarkeit ohne Layout-Regress der Kachel, lesbare Beschriftung und ein ToC, dessen `#`-Links auf tatsächlich gerenderte IDs zeigen — daher Body-Rendering oberhalb des Kachel-Grids als Ankerquelle. Menüaufbau im Layout hält `src/pages/docs/**` unangetastet (Abgrenzung AK 25). Offen bis zur Content-Ebene (Maria): die Frontmatter-Werte `Deutsch`/`Englisch`, die Umbenennung der Index-Überschriften (`Überblick`/`Overview`) und die Entlinkung der Kapitellisten in den Gruppen-Indizes (AK 13/14/22/26).
+
+#### 2026-11-04T13:23:00+00:00: Sprachlabels und entlinkte Kapitellisten in den drei Gruppen-Indizes
+
+**By:** Maria
+
+**What:** (1) `kubernetes-basis-de/-index.md` trägt `languageLabel: "Deutsch"`, `kubernetes-basis-en/-index.md` `languageLabel: "Englisch"` (je direkt nach `description`, alle übrigen Felder unverändert); `astro-workshop/-index.md` und `src/content/docs/-index.md` bleiben ohne Feld. (2) Überschriften umbenannt: `## Inhaltsverzeichnis` → `## Überblick` (DE), `## Chapter overview` → `## Overview` (EN), `## Inhaltsverzeichnis` → `## Workshop-Überblick` (Workshop). Die sechs bzw. zehn Einträge sind reiner Text ohne `href`; die beschreibenden Halbsätze und die vorhandenen Trenner (` -- ` in den Kubernetes-Indizes, `—` im Workshop) bleiben unverändert. (3) Workshop-Liste auf die zehn real vorhandenen Kapitel korrigiert: `31 Deployment` entfällt (Deployment steckt in `10-astro-setup`), `32 KI-Integration` wird zu `30 KI-Übersetzung`, neu ergänzt wird `40 Weiter lernen`; die vier `### Phase …`-Überschriften bleiben unverändert, `30`/`40` stehen unter `### Phase 3—Deployment & KI`.
+
+**Why:** Nach dem Body-Rendering in `CollectionLayout.astro` würde jede manuelle Kapitelliste das Kachel-Grid duplizieren; als Text bleibt die didaktische Ordnung lesbar, ohne dritte Navigation und ohne 404-Ziele. Die Workshop-Korrektur hält die Liste mit dem tatsächlichen Kapitelbestand deckungsgleich (AC 22 erwartet sechs ToC-Einträge: zwei `h2` plus die vier Phasen-Überschriften). `src/content/docs/-index.md` bleibt unverändert, damit `/docs/` keine leere Body-Box und kein leeres ToC erhält (AC 22/26).
+
+#### 2026-11-04T13:40:38Z: e2e-Abdeckung der Gruppen-Landingpages: Hydration abwarten, Link-Zählungen auf das Kachel-Grid begrenzen
+
+- Navigation und Inhaltsverzeichnis liegen in `ScrollArea` (`client:only="react"`) und stehen im statischen HTML nur in `<template data-astro-template>`. Die neuen Helfer `navPanel`/`tocPanel` filtern `astro-island` nach der gerenderten `h2` („Documents“/„Contents“); `waitForHydratedNav`/`waitForHydratedToc` warten mit 15 s Timeout auf die sichtbare Überschrift. Dadurch prüfen die Tests den hydratisierten DOM statt des Template-Inhalts und sind nicht von Timing-Zufällen abhängig.
+- Alle Link-Zählungen auf den Landingpages (Kapitelabdeckung beider Kubernetes-Gruppen sowie die Ein-Link-Prüfung auf `/docs/`) sind auf `section.section div.row` begrenzt. Die linke Navigation verwendet dieselben `href`-Werte; ohne Eingrenzung wären die Zahlen doppelt so hoch. Die Absicht der bisherigen Zusicherungen bleibt unverändert.
+- Neue Fälle decken Sprachbadges (genau zwei, „Deutsch“/„Englisch“, keine an `astro-workshop`), Navigation aller vier Landingpages inkl. Auflösung jedes `href`, ToC-Einträge und Anker-Existenz, entlinkte Index-Bodies ohne `31-deployment`/`32-ki-integration` sowie die unveränderte Kapitelseite `/docs/kubernetes-basis-de/10-tag-1/` ab.
 ### 2026-11-04T09:40:39+00:00: #289 Versionskonstante korrigiert und GitHub-Publish-Fehler diagnostizierbar gemacht
 **By:** Bruce
 **What:**

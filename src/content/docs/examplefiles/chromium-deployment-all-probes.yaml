@@ -36,7 +36,7 @@ spec:
               mountPath: /dev/shm
             - name: chromium-logs
               mountPath: /config/log
-            - name: chromium-logging-script     # NEU: Custom wrapped-chromium
+            - name: chromium-logging-script     # NEW: Custom wrapped-chromium
               mountPath: /usr/bin/wrapped-chromium
               subPath: wrapped-chromium
           startupProbe:
@@ -54,7 +54,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-              port: 3005
+              port: 3000
             periodSeconds: 5
             failureThreshold: 1
         - name: vector
@@ -85,7 +85,7 @@ spec:
         - name: vector-config
           configMap:
             name: vector-config
-        - name: chromium-logging-script         # NEU: ConfigMap mit Script
+        - name: chromium-logging-script         # NEW: ConfigMap mit Script
           configMap:
             name: chromium-logging
             defaultMode: 0755

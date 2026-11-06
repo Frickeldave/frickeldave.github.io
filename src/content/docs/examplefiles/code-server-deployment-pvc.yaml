@@ -27,7 +27,7 @@ spec:
               memory: "1Gi"
           ports:
             - containerPort: 8443
-          envFrom:                          # ConfigMap als Umgebungsvariablen
+          envFrom:                          # ConfigMap as environment variables
             - configMapRef:
                 name: code-server-config
           env:

@@ -4,7 +4,7 @@ metadata:
   name: code-server-config
   namespace: k8s-training
 spec:
-  # storageClassName: <name>   # nur setzen, wenn du bewusst eine andere Klasse willst
+  # storageClassName: <name>   # only set this if you want a different class on purpose
   accessModes:
     - ReadWriteOnce
   resources:
