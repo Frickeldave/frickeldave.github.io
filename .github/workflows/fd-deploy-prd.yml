@@ -30,16 +30,22 @@ on:
 # dev_version  > latest_stable → `relation=greater`: promote=true, Merge dev→main
 #                                (ein zweiter Lauf ist ein No-Op: „Already up to date").
 # dev_version == latest_stable → `relation=equal`:
-#                                Diff `origin/main..origin/dev` besteht ausschließlich
-#                                aus verwalteten Katalog-/Produktbildpfaden und ist
-#                                nicht leer (scripts/catalog-only.mjs, Allowlist wie
+#                                Diff `origin/main..origin/dev` enthält mindestens
+#                                einen verwalteten Katalog-/Produktbildpfad und
+#                                keinen seitenrelevanten Pfad (scripts/catalog-only.mjs,
+#                                Klassifikation `promote_safe`; Allowlist wie
 #                                `_is_managed_path` in der Store-Sync-Integration)
-#                                → promote=true, ::notice:: „Katalog-Merge ohne Release".
-#                                sonst → promote=false, kein Merge, Lauf bleibt grün.
+#                                → promote=true, ::notice:: unterscheidet „nur Katalog"
+#                                von „Katalog plus unkritische Pfade".
+#                                sonst (leer, nur Docs, oder seitenrelevante Pfade)
+#                                → promote=false, kein Merge, Lauf bleibt grün.
 # dev_version  < latest_stable → `relation=less`: ::error:: und exit 1 (dev liegt
 #                                hinter main zurück, echter Anomaliezustand).
 # `main` darf damit Daten-Commits ohne Release enthalten; die Footer-Version bleibt
-# bei einem reinen Daten-Deploy unverändert.
+# bei einem reinen Daten-Deploy unverändert. Deploy-neutral sind z. B. `docs/**`,
+# `.squad/**`, `.github/**`, `.husky/**`, `test/**`, CHANGELOG/README und
+# Tooling-Configs; `src/**`, `public/**` (außer dem Katalog), Root-Build-Eingaben und
+# `scripts/build-*`/`scripts/install-*` verlangen weiterhin ein Release.
 #
 # Gate 2 — „ist das ein Release?" (`decide`, Outputs: main_version, tag,
 # should_deploy, should_release)
@@ -120,6 +126,8 @@ jobs:
       latest_stable: ${{ steps.latest.outputs.tag }}
       main_version: ${{ steps.decide.outputs.main_version }}
       catalog_only: ${{ steps.diff.outputs.catalog_only }}
+      promote_safe: ${{ steps.diff.outputs.promote_safe }}
+      classification: ${{ steps.diff.outputs.classification }}
       changed_files: ${{ steps.diff.outputs.changed_files }}
       should_deploy: ${{ steps.decide.outputs.should_deploy }}
       should_release: ${{ steps.decide.outputs.should_release }}
@@ -170,40 +178,55 @@ jobs:
           fi
           echo "tag=$LATEST" >> "$GITHUB_OUTPUT"
 
-      # Allowlist exakt wie `_is_managed_path`/`_MANAGED_IMAGE_RE` in der
-      # Store-Sync-Integration: nur public/data/handmade.json und Produktbilder unter
-      # src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<ext>.
-      # 3dmodels/**, public/data/news.json und public/data/link-mappings.json sind
-      # Website-Inhalt und damit kein reiner Katalog-Deploy.
+      # Klassifikation in zwei Stufen (scripts/catalog-only.mjs):
+      #   catalog_only — Diff besteht ausschließlich aus Katalogmaterial (Reporting,
+      #                  Allowlist exakt wie `_is_managed_path`/`_MANAGED_IMAGE_RE`:
+      #                  public/data/handmade.json plus Produktbilder unter
+      #                  src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<ext>).
+      #   promote_safe — mindestens ein Katalogpfad und kein seitenrelevanter Pfad;
+      #                  deploy-neutrale Pfade (Docs, .squad, .github, Tests, CHANGELOG …)
+      #                  sind erlaubt. `src/**`, `public/**` außer dem Katalog, Root-Build-
+      #                  Eingaben und scripts/build-*|install-* sind seitenrelevant.
       - name: Classify dev → main diff
         id: diff
         run: |
           set -euo pipefail
-          CHANGED_LIST=$(git diff --name-only origin/main origin/dev)
-          CHANGED_FILES=0
-          if [ -n "$CHANGED_LIST" ]; then
-            CHANGED_FILES=$(printf '%s\n' "$CHANGED_LIST" | wc -l | tr -d ' ')
-          fi
-          echo "changed_files=$CHANGED_FILES" >> "$GITHUB_OUTPUT"
-          if printf '%s\n' "$CHANGED_LIST" | node scripts/catalog-only.mjs; then
-            echo "catalog_only=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "catalog_only=false" >> "$GITHUB_OUTPUT"
-          fi
-          echo "🔎 $CHANGED_FILES geänderte Datei(en) zwischen main und dev"
+          CLASSIFICATION_JSON=$(git diff --name-only origin/main origin/dev | node scripts/catalog-only.mjs --json)
+          printf '%s\n' "$CLASSIFICATION_JSON" | node -e '
+            let raw = "";
+            process.stdin.on("data", (chunk) => (raw += chunk));
+            process.stdin.on("end", () => {
+              const result = JSON.parse(raw);
+              const lines = [
+                `catalog_only=${result.catalog_only}`,
+                `promote_safe=${result.promote_safe}`,
+                `changed_files=${result.files}`,
+                `classification=${result.classification}`,
+              ];
+              require("node:fs").appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join("\n")}\n`);
+              console.log(result.summary);
+              console.log(
+                `🔎 ${result.files} geänderte Datei(en) zwischen main und dev — ` +
+                  `${result.managed} Katalog, ${result.neutral} neutral, ${result.site.length} seitenrelevant`,
+              );
+            });
+          '
 
       # Drei Relationen plus Katalog-Sonderfall. „Gleich" ist der Normalfall nach
       # einer Promotion und darf keinen roten Lauf erzeugen — es sei denn, der Diff
-      # ist nicht leer und besteht ausschließlich aus verwalteten Katalog-/
-      # Produktbildpfaden. Dann darf auch ohne Versions-Bump nach main promotet
-      # werden (Gate 1). „Kleiner" heißt, dass `dev` hinter `main` zurückliegt — ein
-      # echter Anomaliezustand, der laut scheitern muss.
+      # enthält mindestens einen verwalteten Katalog-/Produktbildpfad und keinen
+      # seitenrelevanten Pfad (deploy-neutrale Pfade wie Docs/.squad/CHANGELOG sind
+      # erlaubt). Dann darf auch ohne Versions-Bump nach main promotet werden
+      # (Gate 1). „Kleiner" heißt, dass `dev` hinter `main` zurückliegt — ein echter
+      # Anomaliezustand, der laut scheitern muss.
       - name: Decide whether dev is ahead of the latest stable release
         id: dev_gate
         env:
           DEV_VERSION: ${{ steps.version.outputs.version }}
           LATEST_TAG: ${{ steps.latest.outputs.tag }}
           CATALOG_ONLY: ${{ steps.diff.outputs.catalog_only }}
+          PROMOTE_SAFE: ${{ steps.diff.outputs.promote_safe }}
+          CLASSIFICATION: ${{ steps.diff.outputs.classification }}
           CHANGED_FILES: ${{ steps.diff.outputs.changed_files }}
         run: |
           set -euo pipefail
@@ -237,12 +260,16 @@ jobs:
             equal)
               echo "newer=false" >> "$GITHUB_OUTPUT"
               echo "should_release=false" >> "$GITHUB_OUTPUT"
-              if [ "$CATALOG_ONLY" = "true" ] && [ "$CHANGED_FILES" -gt 0 ]; then
+              if [ "$PROMOTE_SAFE" = "true" ] && [ "$CHANGED_FILES" -gt 0 ]; then
                 echo "promote=true" >> "$GITHUB_OUTPUT"
-                echo "::notice::dev entspricht dem letzten stabilen Release $LATEST_TAG, aber der Diff ist ausschließlich Katalog-/Produktbildmaterial ($CHANGED_FILES Datei(en)) — Merge nach main ohne Release, die Footer-Version bleibt unverändert."
+                if [ "$CATALOG_ONLY" = "true" ]; then
+                  echo "::notice::dev entspricht dem letzten stabilen Release $LATEST_TAG. Der Diff ($CHANGED_FILES Datei(en), Klassifikation $CLASSIFICATION) besteht ausschließlich aus Katalog-/Produktbildmaterial — nur Katalog, Merge nach main ohne Release, die Footer-Version bleibt unverändert."
+                else
+                  echo "::notice::dev entspricht dem letzten stabilen Release $LATEST_TAG. Der Diff ($CHANGED_FILES Datei(en), Klassifikation $CLASSIFICATION) enthält Katalogmaterial plus unkritische, deploy-neutrale Pfade und keinen seitenrelevanten Pfad — Merge nach main ohne Release, die Footer-Version bleibt unverändert."
+                fi
               else
                 echo "promote=false" >> "$GITHUB_OUTPUT"
-                echo "::notice::dev entspricht bereits dem letzten stabilen Release $LATEST_TAG — nichts zu promoten, kein Merge."
+                echo "::notice::dev entspricht bereits dem letzten stabilen Release $LATEST_TAG — nichts zu promoten, kein Merge (Klassifikation $CLASSIFICATION)."
               fi
               ;;
             less)
@@ -280,13 +307,13 @@ jobs:
         run: echo "sha=$(git rev-parse origin/main)" >> "$GITHUB_OUTPUT"
 
       - name: Merge dev → main
-        # Gate 1: nur wenn `promote=true` (neuere Version oder nicht-leerer,
-        # ausschließlich verwalteter Katalog-Diff). Ein wiederholter Lauf merged nichts.
+        # Gate 1: nur wenn `promote=true` (neuere Version oder Katalog-Diff mit
+        # ausschließlich deploy-neutralen Zusatzpfaden). Ein wiederholter Lauf merged nichts.
         if: ${{ !inputs.dry_run && steps.dev_gate.outputs.promote == 'true' }}
         run: |
           git checkout main
           if [ "${{ steps.dev_gate.outputs.relation }}" = "equal" ]; then
-            git merge origin/dev --no-ff -m "chore(deploy): promote catalog-only changes from dev"
+            git merge origin/dev --no-ff -m "chore(deploy): promote catalog changes with deploy-neutral paths from dev"
           else
             git merge origin/dev --no-ff -m "chore(release): promote dev to main v${{ steps.version.outputs.version }}"
           fi
@@ -375,7 +402,10 @@ jobs:
           echo "latest stable rel: ${{ steps.latest.outputs.tag }}"
           echo "relation         : ${{ steps.dev_gate.outputs.relation }}"
           echo "promote to main  : ${{ steps.dev_gate.outputs.promote }}"
-          echo "catalog only     : ${{ steps.diff.outputs.catalog_only }} (${{ steps.diff.outputs.changed_files }} Datei(en) main..dev)"
+          echo "changed files    : ${{ steps.diff.outputs.changed_files }} (main..dev)"
+          echo "promote safe     : ${{ steps.diff.outputs.promote_safe }}"
+          echo "classification   : ${{ steps.diff.outputs.classification }}"
+          echo "catalog only     : ${{ steps.diff.outputs.catalog_only }} (informativ)"
           echo "version on main  : ${{ steps.decide.outputs.main_version }}"
           echo "would deploy     : ${{ steps.decide.outputs.should_deploy }}"
           echo "would release    : ${{ steps.decide.outputs.should_release }}"
@@ -395,7 +425,9 @@ jobs:
             echo "| dev version | \`${{ steps.version.outputs.version }}\` |"
             echo "| latest stable release | \`${{ steps.latest.outputs.tag }}\` |"
             echo "| relation | \`${{ steps.dev_gate.outputs.relation }}\` |"
-            echo "| catalog only (main..dev) | \`${{ steps.diff.outputs.catalog_only }}\` (${{ steps.diff.outputs.changed_files }} Datei(en)) |"
+            echo "| promote safe (main..dev) | \`${{ steps.diff.outputs.promote_safe }}\` |"
+            echo "| classification (main..dev) | \`${{ steps.diff.outputs.classification }}\` |"
+            echo "| catalog only (main..dev) | \`${{ steps.diff.outputs.catalog_only }}\` (informativ, ${{ steps.diff.outputs.changed_files }} Datei(en)) |"
             echo "| promote dev → main | \`${{ steps.dev_gate.outputs.promote }}\` |"
             echo "| version on main | \`${{ steps.decide.outputs.main_version }}\` |"
             echo "| deploy | \`${{ steps.decide.outputs.should_deploy }}\` |"

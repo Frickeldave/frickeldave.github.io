@@ -3221,6 +3221,84 @@ enthielt; die Dokumentation beschreibt jetzt, welche Vergleichsbasis für welche
 
 **Why:** Nick hat in `fd-deploy-prd.yml` (Commit `f2620d2`, PR #310) den Katalog-Schnellweg umgesetzt; die Dokumentation behauptete bis dahin, `main` brauche immer einen Versions-Bump. Belegt am echten Diff: `scripts/catalog-only.mjs`, der `equal`-Zweig in `dev_gate`, `decide` mit `should_deploy`/`should_release` und der neue Eingang `force_deploy`.
 
+#### 2026-11-05T12:56:29+00:00: Dispatch-404 nennt Workflow, Branch und Actions-Recht
+**By:** Bruce
+**What:** `custom_components/frickeldave_store_syncfd/publish.py` ordnet 404-Antworten jetzt endpunktspezifisch ein: Dispatch (`actions/workflows/<workflow>/run`) nennt den konfigurierten Workflow (`prod_workflow`) und Branch (`prod_branch`) plus „Actions: Read and write“; `git/ref(s)` nennt Repository und den Branch aus dem Pfad (URL-dekodiert) plus „Contents: Read and write“; alle anderen 404 behalten die generische Meldung. Konfigurationswerte laufen einzeilig/limitiert durch `_one_line`; der WARNING-Log bleibt unverändert. Drei neue Tests in `tests/test_publish.py` (Dispatch, Ref, Blob/generisch), Version 0.1.4 in `manifest.json`, `pyproject.toml`, `const.py`, CHANGELOG-Bullet unter `Unreleased/Fixed`. Commit `085d441`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/4 (Basis `main`, nicht gemerged). Validierung: `ruff check .` ok, `ruff format --check .` 18 Dateien formatiert, `mypy custom_components` ok, `pytest -q` 144 passed, manifest.json gültig.
+**Why:** Der Prod-404 kam vom `POST actions/workflows/.../run`, nicht von einem fehlenden Repository/Branch; die alte Meldung „Repository oder Branch nicht gefunden“ führte in die Irre. Wahrscheinlichste Ursachen sind ein falscher Workflow-Name/Branch oder ein Fine-Grained-Token ohne Actions-Schreibrecht (GitHub antwortet dann mit 404 statt 403).
+
+#### 2026-11-05T12:56:29+00:00: fr008 erklärt den Prod-Publish-404 und die Token-Rechte
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md` macht im Abschnitt Token-Berechtigungen explizit, dass
+das Veröffentlichen nach prod zusätzlich `Actions: Read and write` auf
+`Frickeldave/frickeldave.github.io` braucht, weil der Prod-Pfad `fd-deploy-prd` per
+`POST /repos/{repo}/actions/workflows/{workflow}/run` auslöst; neu ist der Unterabschnitt „Fehler beim
+Veröffentlichen nach prod“ mit den zwei Prüfungen (Options-Flow: Repository
+`Frickeldave/frickeldave.github.io`, Prod-Workflow `fd-deploy-prd.yml`, Zielbranch `main`; Token:
+Actions Read and write) und dem Verweis auf die WARNING-Zeile im HA-Protokoll (Filter
+`frickeldave_store_syncfd`, Format `GitHub METHOD path → HTTP status (message)`). Versionsbuchhaltung:
+Erweiterung 0.1.4 in der Repository-Tabelle, Statuszeile nennt 0.1.3 als released und 0.1.4 als in
+Vorbereitung. `CHANGELOG.md` ergänzt unter `[Unreleased]` einen `### Fixed`-Eintrag mit `(#289)`.
+
+**Why:** Ein Prod-Publish scheiterte am Workflow-Dispatch mit „Repository oder Branch nicht
+gefunden“, obwohl der Commit nach `dev` bereits geschrieben war. Realistische Ursachen sind ein
+falscher Prod-Workflow-Wert (ohne `.yml`), ein falscher `prod_branch` oder ein Fine-grained Token
+ohne Actions-Recht — GitHub antwortet in diesem Fall mit 404 statt 403. Die generische Meldung
+verschleiert das; ab 0.1.4 benennt sie Workflow, Branch und fehlende Berechtigung.
+
+#### 2026-11-05T13:43:14+00:00: Fast-Path erlaubt Katalog-Deploys mit unkritischen Dev-Änderungen
+
+**By:** Nick
+
+**What:** `scripts/catalog-only.mjs` klassifiziert den Diff `main..dev` jetzt zweistufig. `catalog_only` bleibt das Reporting für den reinen Katalog-Diff (`public/data/handmade.json` plus `src/assets/handmade/<3D|EP|LA|SB|WO>/<Artikel>/<Artikel>-NN.<ext>`, Allowlist unverändert wie `_is_managed_path`). Neu ist `promote_safe`: mindestens ein Katalogpfad und kein seitenrelevanter Pfad. Seitenrelevant ist eine explizite Deny-List — `src/**`, `public/**` außer dem Katalog, die Root-Build-Eingaben (`astro.config.mjs`, `tailwind.config.js`, `tailwind.config.mjs`, `postcss.config.js`, `tsconfig.json`, `package.json`, `package-lock.json`, `wrangler.jsonc`) und `scripts/build-*`/`scripts/install-*`; nicht auswertbare Pfade (Traversal, absolut, Backslash) gelten fail-closed als seitenrelevant. Alles andere (docs, `.squad`, `.github`, `.husky`, `test`, README, CHANGELOG, `.vale`, Lint-/Format-Configs, LICENSE) ist deploy-neutral. `classifyPaths()` liefert `{ catalog_only, promote_safe, managed, neutral, site, files, classification, summary }` (plus kompatible `count`/`catalogOnly`/`offending`); die CLI hat `--mode=is-managed` für das alte strenge Verhalten und `--json`, Exit 0 nur bei `promote_safe`. `fd-deploy-prd` nutzt im `Classify`-Step die JSON-Ausgabe (`catalog_only`, `promote_safe`, `changed_files`, `classification`) und Gate 1 promotet bei `relation=equal` über `promote_safe` mit getrennter Notice für „nur Katalog" vs. „Katalog plus unkritische Pfade"; Dry-Run, Promotion-Summary und Header dokumentieren die Klassifikation. Gate 2, `force_deploy`, Deploy-/Release-Bedingungen und Versionssemantik sind unverändert. Tests: 34 in `scripts/catalog-only.test.mjs` (jede Grenzkategorie, Docs-only, leere Liste, Traversal/absolut/Backslash, CLI), `npm run test:scripts` 413/414 (vorbestehender umgebungsspezifischer Worktree-Fehler). PR https://github.com/Frickeldave/frickeldave.github.io/pull/313, Commit `586a157`, Branch `ci/289-fast-path-neutral-paths`.
+
+**Why:** Das strenge Katalog-only-Gate blockierte jede Katalog-Veröffentlichung, sobald `dev` zusätzlich Docs, `.squad`-Entscheidungen oder `CHANGELOG.md` trug — in diesem Repo der Normalfall. Deploy-neutrale Pfade verändern das gebaute Artefakt nicht und dürfen den Fast-Path nicht verhindern; seitenrelevante Pfade verlangen weiterhin einen Versions-Bump und ein Release. Belegt am echten Diff: `origin/main..origin/dev` enthält derzeit nur `.squad/decisions.md`, `CHANGELOG.md`, `docs/features/fr008-ha-manager.md` (deshalb korrekt `kein Katalogpfad enthalten`, Exit 1); derselbe Diff plus `public/data/handmade.json` ergibt Exit 0, plus `src/types/index.d.ts` Exit 1.
+
+#### 2026-11-05T14:19:03+00:00: Deploy-neutrale Pfade im Katalog-Schnellweg dokumentiert
+
+**By:** Maria
+
+**What:** `docs/workflow/versionierung und release.md`: Gate-1-Bullets auf `promote_safe` umgestellt (mindestens ein Katalogpfad, kein seitenrelevanter Pfad; leerer, rein neutraler oder seitenrelevanter Diff promotet nicht) und der Unterabschnitt „Allowlist“ zu „Klassifikation des Katalog-Schnellwegs“ erweitert: Tabelle mit `catalog_only` (Reporting) und `promote_safe` (entscheidet Gate 1), explizite Deny-List (`src/**` inklusive `src/assets/handmade/3dmodels/**`, `public/**` außer dem Katalog, `astro.config.mjs`, `tailwind.config.*`, `postcss.config.js`, `tsconfig.json`, `package.json`, `package-lock.json`, `wrangler.jsonc`, `scripts/build-*`, `scripts/install-*`), deploy-neutrale Beispiele (`docs/**`, `.squad/**`, `.github/**`, `.husky/**`, `test/**`, `README.md`, `CHANGELOG.md`, `LICENSE`, `metadata.json`, `scripts/*` ohne Build-Präfix, Tooling-Configs), Fail-closed für nicht auswertbare Pfade, Begründung (angesammelte Docs-/Entscheidungs-Commits auf `dev` sollen Katalog-Publishes nicht blockieren) sowie die beiden Notice-Varianten. `docs/features/fr008-ha-manager.md`: Abschnitt „Produktions-Deploy ohne Versions-Bump“ nennt den Mitlauf neutraler Änderungen und die weiterhin release-pflichtigen Seitenpfade; Versionstabelle bleibt bei Basis 0.2.3 und Erweiterung 0.1.4. `CHANGELOG.md`: ein `### Changed`-Bullet unter `## [Unreleased]` mit `(#289)`.
+
+**Why:** Nick hat mit `586a157` (PR #313) die Klassifikation in `scripts/catalog-only.mjs` und `fd-deploy-prd.yml` zweistufig gemacht; die bisherige Doku behauptete, Workflows und Dokumentation seien seitenrelevant und ein gemischter Diff brauche immer einen Bump. Belegt am Diff: `isSitePath`/`isNeutralPath`, `promote_safe`-Berechnung, `equal`-Zweig mit den zwei Notices.
+
+### 2026-11-05T15:34:36+00:00: Kein Prod-Deployment ohne tatsächliche Änderung
+**By:** Bruce
+**What:** `has_changes` (added/changed/removed aus dem Berichtsdiff) ersetzt das feste `would_trigger = true` für prod; `would_trigger` gilt jetzt für beide Ziele aus dem Diff. Der Prod-Dispatch von `fd-deploy-prd.yml` läuft nur noch bei Änderungen, sonst `triggered = false`, `commit = null`, `changed = false` und die Summary „Keine Änderungen: nichts committet, kein Deployment ausgelöst.“; Commit-Logik, Retry, Löschschutz bleiben unverändert. Tests: 2 neue Regressionstests, bestehende erweitert (146 passed), ruff/mypy/json grün. Version 0.1.5, CHANGELOG unter `[Unreleased]`/`Fixed`. PR: https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/5, Commit e08417c5eb7f7d79e6637180af35ae7aca4ea7e3.
+**Why:** `would_trigger` war für prod hart auf `true` gesetzt und `async_publish()` rief den Workflow unbedingt auf, sodass ein leerer Diff fälschlich ein Deployment meldete und auslöste.
+
+### 2026-11-05T15:34:36+00:00: Publish-Dialog zeigt nur noch Produkte und Bilder
+**By:** Natasha
+**What:** Die Übersicht „Dateien“ (`<section aria-labelledby="fd-publish-files-title">` samt `_renderCounts(result.counts)`) ist aus dem Veröffentlichungsdialog in `frickeldave-store-panel.js` entfernt; „Produkte“, „Bilder“, das Deployment-Banner und die filterbare Dateiliste bleiben. `result.counts` bleibt unverändert in der API. Version 0.2.4 in `manifest.json`, `pyproject.toml` und `VERSION`; CHANGELOG-Eintrag unter `[Unreleased]`. Tests: node --check 5/5, node --test 10 passed, ruff check/format grün, mypy grün, pytest 238 passed, manifest JSON gültig. Commit b0651ef, PR https://github.com/Frickeldave/homeassistant-frickeldave-store/pull/4 (nicht gemergt).
+**Why:** Die Datei-Zählung war die Byte-Vergleichssumme aus `public/data/handmade.json` plus den verwalteten Bilddateien — also genau die Information, die „Produkte“ (Katalogeinträge) und „Bilder“ (Bilddateien) bereits beschreiben. Die Sektion war redundant und hat die Übersicht nur verlängert.
+
+### 2026-11-05T15:34:36+00:00: fr008 zeigt nur Produkte und Bilder und koppelt Deployment an Änderungen
+
+**By:** Maria
+
+**What:** `docs/features/fr008-ha-manager.md` beschreibt die Übersicht im Veröffentlichungsdialog ab
+Basis 0.2.4 nur noch mit **Produkte** und **Bilder**; der frühere Block **Dateien** war der byteweise
+Vergleich von `public/data/handmade.json` plus den verwalteten Bilddateien und ist entfallen, die
+filterbare **Dateiliste** bleibt die Dateisicht. Ein neuer Abschnitt „Deployment nur bei Änderungen
+(ab 0.1.5)“ erklärt, dass ohne neue, geänderte oder entfernte Datei kein Deployment gemeldet und
+`fd-deploy-prd` nicht ausgelöst wird. Versionsstand: Basis 0.2.3 und Erweiterung 0.1.4 released,
+0.2.4/0.1.5 in Vorbereitung. `CHANGELOG.md` ergänzt je einen Eintrag unter **Changed** und **Fixed**.
+
+**Why:** Der Block **Dateien** zeigte dieselbe Information wie **Produkte** (Katalogeinträge) und
+**Bilder** (Bilddateien) in einer zweiten Zählachse; ein Prod-Lauf ohne Änderungen meldete ein
+Deployment, obwohl weder Commit noch Workflow-Dispatch anfielen.
+
+#### 2026-11-06T05:52:19+00:00: Prod-Dispatch rief den nicht existierenden Endpoint `/run` auf
+**By:** Bruce
+**What:** `GitHubClient.async_dispatch_workflow()` in der Erweiterung postete auf `actions/workflows/<workflow>/run`; die GitHub-API kennt nur `POST actions/workflows/<workflow>/dispatches` und antwortet auf `/run` mit 404. Ab 0.1.6 wird `/dispatches` aufgerufen (Payload, Retry-Semantik, Commit-Flow und `would_trigger` unverändert). Der 404-Fallback (`github_not_found`) nennt weiterhin Workflow, Branch und den Hinweis „Actions: Read and write“; die zuvor geplante Preflight-Logik (`GET actions/workflows/...`) wurde verworfen. Regressionstest prüft die exakte URL, den Body `{"ref": "main", "inputs": {"dry_run": false}}` und dass `/run` nicht mehr vorkommt. Version 0.1.6 in `manifest.json`, `pyproject.toml`, `const.py`; CHANGELOG `[Unreleased]`/`Fixed` beschreibt den Endpoint-Fix. Validierung: `ruff check .` ok, `ruff format --check .` ok, `mypy custom_components` ok, `pytest -q` 147 passed, Manifest-JSON gültig. Commit `ed2903e5aa1439b4426cdb82915f2a9c5b159673`, PR https://github.com/Frickeldave/homeassistant-frickeldave-store-syncfd/pull/6 (nicht gemerged).
+**Why:** Der Live-Test mit demselben Token belegt `POST .../run` → 404 und `POST .../dispatches` → 204 bei `GET` Repository/Workflow → 200 und funktionierendem Contents-Write. Die Ursache war nie ein fehlendes `Actions: Read and write`, sondern der falsche Pfad; die alte 404-Meldung konnte das nicht unterscheiden, weil der Prod-Dispatch zuvor nie erfolgreich lief.
+
+#### 2026-11-06T05:52:19+00:00: fr008 dokumentiert korrigierten Workflow-Dispatch-Endpoint
+**By:** Maria
+**What:** `docs/features/fr008-ha-manager.md` erklärt unter „Fehler beim Veröffentlichen nach prod“, dass die Erweiterung bis 0.1.5 `POST /repos/{repo}/actions/workflows/{workflow}/run` aufrief und GitHub diesen Pfad mit 404 beantwortet; ab 0.1.6 nutzt sie `/dispatches`. Dazu die kurze 404-Prüfliste (Workflow-Dateiname, Branch, WARNING-Zeile mit Methode/Pfad/Status, `Actions: Read and write` als Voraussetzung) und die korrigierte Endpoint-Angabe im Abschnitt „Token-Berechtigungen“. Statuszeile nennt 0.1.5 als released und 0.1.6 als in Vorbereitung, die Repository-Tabelle führt `0.1.6`. `CHANGELOG.md` nennt den Endpoint-Fix unter `[Unreleased]` → `Fixed` (#289).
+**Why:** Der Live-Test mit demselben Token belegt `/run` → 404 und `/dispatches` → 204; der Token war nie die Ursache. Die zuvor geplante Preflight-Logik entfällt, die erste Fassung dieser Notiz (veralteter Token als Ursache) ist damit überholt.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
