@@ -61,6 +61,9 @@ public/version.json
 # OpenSCAD generated models (generated at build time)
 public/3dmodels/
 
+# ZIP der Trainings-Beispieldateien (Build-Artefakt)
+public/downloads/kubernetes-basis-examplefiles.zip
+
 # OpenSCAD/core dumps
 core
 core.*

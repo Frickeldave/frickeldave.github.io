@@ -10,9 +10,12 @@
   },
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
+    "predev": "npm run zip:examples",
+    "zip:examples": "node scripts/build-examplefiles-zip.mjs",
     "scad:render": "node scripts/build-scad.mjs",
     "scad:install": "node scripts/install-openscad.mjs",
     "build": "npm run scad:render && astro build",
+    "prebuild": "npm run zip:examples",
     "postbuild": "pagefind --site dist",
     "prepare": "husky",
     "postinstall": "npm run prose-install && npm run scad:install",
