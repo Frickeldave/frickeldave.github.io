@@ -9,10 +9,11 @@ imageAlt: "Kubernetes Basics - 10 Day 1"
 
 import { Image } from "astro:assets";
 import knba10010 from "@assets/docs/kubernetes-basis/knba-10-010_why-and-why-not-k8s.png";
+import knba10015 from "@assets/docs/kubernetes-basis/knba-10-015_deploy-workflow.png";
 import knba10020 from "@assets/docs/kubernetes-basis/knba-10-020_cluster-architecture.png";
 import knba10030 from "@assets/docs/kubernetes-basis/knba-10-030_labels.png";
 import knba10040 from "@assets/docs/kubernetes-basis/knba-10-040_service.png";
-import knba10042 from "@assets/docs/kubernetes-basis/knba-10-042_service-im-cluster.png";
+import knba10050 from "@assets/docs/kubernetes-basis/knba-10-050_service_ingress.png";
 import knba10090 from "@assets/docs/kubernetes-basis/knba-10-090_conclusion.png";
 import Notice from "@shortcodes/Notice";
 
@@ -83,18 +84,12 @@ resilience are explicit requirements, Kubernetes pays off.
 - **[Rolling updates](/docs/kubernetes-basis-en/90-glossary#rolling-updates)** -- Updating applications without downtime
 - **[Service discovery](/docs/kubernetes-basis-en/90-glossary#service-discovery)** -- Automatic name resolution between applications
 
-### DevOps workflow
+### Deployment workflow
 
 In practice every application travels a clearly defined path from development to production --
 Kubernetes takes the role of the central delivery system along the way:
 
-```mermaid
-graph LR
-    A["Code"] --> B["Container Image / Docker Build"]
-    B --> C["Registry (Harbor / GHCR / Docker Hub)"]
-    C --> D["Kubernetes -> Deployment / Service / Ingress"]
-    D --> E["Produktion"]
-```
+<Image src={knba10015} alt="Deployment workflow * Created with OpenAI Imagegen" />
 
 ---
 
@@ -268,19 +263,19 @@ With these commands you get a first overview of your cluster -- which nodes exis
 the current context is configured.
 
 ```bash
-# Cluster-Verbindung prüfen
+# Check the cluster connection.
 kubectl cluster-info
 
-# Alle Nodes anzeigen
+# List all nodes.
 kubectl get nodes
 
-# Detaillierte Node-Informationen
+# Show detailed node information.
 kubectl describe node <node-name>
 
-# Kubernetes-Version
+# Kubernetes version.
 kubectl version
 
-# Aktuelle Konfiguration anzeigen
+# Show the current configuration.
 kubectl config view
 kubectl config current-context
 ```
@@ -292,7 +287,7 @@ teams, projects or environments (e.g. `dev`, `staging`, `prod`) from each other 
 separate clusters. You can assign permissions and resource limits per Namespace.
 
 ```bash
-# Vorhandene Namespaces anzeigen
+# List existing Namespaces.
 kubectl get namespaces
 ```
 
@@ -315,7 +310,7 @@ Kubernetes offers two ways to create resources:
 
 - **Declarative**--You define the desired state in a YAML file
   and let Kubernetes establish that state.
-  Example: `kubectl apply -f namespace.yaml`
+  Example: `kubectl apply -f create-namespace.yaml`
   The standard in practice, because manifests can be versioned, shared and
   reviewed.
 <br/>
@@ -353,7 +348,7 @@ metadata:
 ```
 
 ```bash
-kubectl apply -f namespace.yaml
+kubectl apply -f create-namespace.yaml
 ```
 
 <br/>
@@ -453,10 +448,10 @@ When you want to change the Deployment (e.g. a different image or a different nu
 use `kubectl set image` or `kubectl scale`:
 
 ```bash
-# Zu anderer Version upgraden (z. B. latest → v2.0)
+# Upgrade to a different version (e.g. latest → v2.0).
 kubectl set image deployment/chromium chromium=lscr.io/linuxserver/chromium:v2.0
 
-# Anzahl der Replicas ändern
+# Change the number of replicas.
 kubectl scale deployment chromium --replicas=3
 
 ```
@@ -467,7 +462,7 @@ team.
 **Delete the Deployment:**
 
 ```bash
-# Deployment + alle dazugehörigen Pods löschen
+# Delete the Deployment and all its Pods.
 kubectl delete deployment chromium
 ```
 
@@ -488,37 +483,115 @@ The command addresses the Deployment and therefore exactly one Pod: `4000` is th
 machine, `3000` the port inside the container. Open `http://localhost:4000` and stop the forwarding
 later with `Ctrl+C`. No Service is needed for that -- it comes later.
 
-<br/>
 <Notice type="info">
-  Port forwardings are great, above all for tests. But also, for example, when you want to run your
-  harness as an SSH container on the cluster. In that case a proxy command suits better:
+**Example: an SSH container as a "harness"**
 
-  ```bash
-  ssh -t -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=c:\Users\<USER>\.ssh\known_hosts -o HostKeyAlias=fd-dev -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o 'ProxyCommand=kubectl --kubeconfig C:/Users/dakoenig/.kube/MYCLUSTER.yaml --context MYCLUSTER -n fd-infra exec -i fd-dev-container -- nc localhost 2222' -i C:\Users\<USER>\.ssh\mykey.key appuser@localhost
-  ```
+Not every application has a web UI. SSH access to the cluster is a classic "harness": start a
+bastion in the Namespace, reach it exclusively through `port-forward`, and use it as a shell for
+everything running in the cluster.
 
-  Broken down:
-  --kubeconfig ... uses this Kubernetes configuration.
-  -n fd-infra selects the Namespace fd-infra.
-  exec ... -- runs a command inside the Pod.
-  -i keeps the standard input open, so you can pass input to nc.
-  nc localhost 2222 opens a TCP connection to port 2222 inside the network namespace of the Pod.
+File `ssh-bastion-deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh-bastion
+  namespace: k8s-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssh-bastion
+  template:
+    metadata:
+      labels:
+        app: ssh-bastion
+    spec:
+      containers:
+        - name: sshd
+          image: lscr.io/linuxserver/openssh-server
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          ports:
+            - containerPort: 2222
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Berlin"
+            - name: USER_NAME
+              value: "training"
+            - name: PUBLIC_KEY
+              value: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... insert your own public key here"
+```
+
+File `ssh-bastion-service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh-bastion
+  namespace: k8s-training
+spec:
+  type: ClusterIP          # reachable only inside the cluster
+  selector:
+    app: ssh-bastion
+  ports:
+    - port: 22
+      targetPort: 2222
+```
+
+```bash
+kubectl apply -f ssh-bastion-deployment.yaml
+kubectl apply -f ssh-bastion-service.yaml
+kubectl port-forward svc/ssh-bastion 2222:22 -n k8s-training
+```
+
+On the client side, add an entry to `~/.ssh/config`:
+
+```text
+Host ssh-bastion
+  HostName 127.0.0.1
+  Port 2222
+  User training
+  IdentityFile ~/.ssh/id_ed25519_training
+  StrictHostKeyChecking accept-new
+  UserKnownHostsFile ~/.ssh/known_hosts_training
+```
+
+Afterwards, `ssh ssh-bastion` is all you need. The key is a placeholder for your own **public**
+key, never the private one.
+
+Alternatively, you can use an SSH tunnel instead of `kubectl port-forward`:
+
+```bash
+ssh -t -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=c:\Users\<USER>\.ssh\known_hosts -o HostKeyAlias=fd-dev -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o 'ProxyCommand=kubectl --kubeconfig C:/Users/dakoenig/.kube/MYCLUSTER.yaml --context MYCLUSTER -n fd-infra exec -i fd-dev-container -- nc localhost 2222' -i C:\Users\<USER>\.ssh\mykey.key appuser@localhost
+```
 </Notice>
 
 ### Checking the status
 
 ```bash
-# Deployment-Status prüfen
+# Check the Deployment status.
 kubectl get deployments
 
-# Pods anzeigen
+# List the Pods.
 kubectl get pods
 kubectl get pods -o wide
 
-# Detaillierte Deployment-Informationen
+# Show detailed Deployment information.
 kubectl describe deployment chromium
 
-# Prüfen ob der container auf port 3000 lauscht
+# Check whether the container is listening on port 3000.
 kubectl exec -it deploy/chromium -- curl -I http://localhost:3000
 
 ```
@@ -528,13 +601,13 @@ kubectl exec -it deploy/chromium -- curl -I http://localhost:3000
 Kubernetes makes sure the desired state (1 replica) always holds:
 
 ```bash
-# Pods beobachten (in einem Terminal)
+# Watch the Pods in one terminal.
 kubectl get pods -w
 
-# In einem zweiten Terminal: Pod absichtlich löschen
+# In a second terminal, deliberately delete a Pod.
 kubectl delete pod <pod-name>
 
-# Beobachten: Kubernetes erstellt automatisch einen neuen Pod!
+# Watch Kubernetes automatically create a new Pod.
 ```
 
 ### Setting up a Service
@@ -592,9 +665,9 @@ always stays the same -- no matter how often Pods get recreated or their IP addr
 
 ```bash
 kubectl get service chromium
-# Ausgabe: chromium   NodePort   10.43.25.123   3000:30123/TCP   ...
-#                        ^^^^^^^^^^^ Das ist die ClusterIP (intern)
-#                                   ^^^^^^^ Das ist der NodePort (extern)
+# Output: chromium   NodePort   10.43.25.123   3000:30123/TCP   ...
+#                        ^^^^^^^^^^^ This is the ClusterIP (internal).
+#                                   ^^^^^^^ This is the NodePort (external).
 ```
 
 **Why do you need the ClusterIP?**
@@ -652,11 +725,6 @@ Kubernetes picks a NodePort from the range 30000-32767 automatically. Check the 
 port.
 
 
-<br/>
-<Image src={knba10042} alt="Node service communication * Created with Microsoft Copilot" />
-
-<br/>
-
 Now you have to do 3 things to reach your container:
 
 1. Find out the node port
@@ -675,22 +743,27 @@ that should not stop real pros.
 
 So we craft a small container in the cluster from which we can reach the Chromium container.
 
+`kubectl run debug` creates a Pod named `debug`:
+
+- `-it` keeps input and the terminal open so you can work in the Pod.
+- `--rm` deletes the Pod when you exit the shell.
+- `--image=alpine:latest` uses the Alpine Linux image.
+- `--restart=Never` creates a single Pod, not a Deployment controller.
+- `--override-type=strategic` applies the following Pod changes as a Strategic Merge Patch.
+- `--overrides='…'` sets resources for the `debug` container:
+  - Requests: 100m CPU (0.1 core) and 64Mi memory as minimum requested resources.
+  - Limits: at most 200m CPU (0.2 core) and 128Mi memory.
+- `-- sh` runs `sh` in the container. `--` separates kubectl options from the container command.
+
+```powershell
+kubectl --% run -it --rm debug --image=alpine:latest --restart=Never --override-type=strategic --overrides="{\"spec\":{\"containers\":[{\"name\":\"debug\",\"resources\":{\"requests\":{\"cpu\":\"100m\",\"memory\":\"64Mi\"},\"limits\":{\"cpu\":\"200m\",\"memory\":\"128Mi\"}}}]}}" -- sh
+```
+
 ```bash
-
-# kubectl run debug – erstellt einen Pod namens debug.
-# -it – hält Eingabe und Terminal offen, damit du darin arbeiten kannst.
-# --rm – löscht den Pod, wenn du die Shell beendest.
-# --image=alpine:latest – verwendet das Alpine-Linux-Image.
-# --restart=Never – erstellt einen einzelnen Pod, keinen Deployment-Controller.
-# --override-type=strategic – wendet die folgenden Pod-Anpassungen als Strategic Merge Patch an.
-# --overrides='…' – setzt die Ressourcen für den Container debug:
-
-# Requests: 100m CPU (0,1 Kern) und 64Mi Speicher als angeforderte Mindestressourcen.
-# Limits: höchstens 200m CPU (0,2 Kern) und 128Mi Speicher.
-# -- sh – führt im Container den Befehl sh aus. Das -- trennt die kubectl-Optionen von diesem Container-Befehl.
-
 kubectl run -it --rm debug --image=alpine:latest --restart=Never --override-type=strategic --overrides='{"spec":{"containers":[{"name":"debug","resources":{"requests":{"cpu":"100m","memory":"64Mi"},"limits":{"cpu":"200m","memory":"128Mi"}}}]}}' -- sh
+```
 
+```bash
 apk add curl
 curl -L http://chromium:4000
 curl -L http://<Node-IP>:<NodePort>
@@ -717,7 +790,7 @@ After setting the environment variables, Kubernetes creates new Pods with the up
 automatically:
 
 ```bash
-# Warte, bis der neue Pod ready ist
+# Wait for the new Pod to become ready.
 kubectl get pods -w
 ```
 
@@ -726,10 +799,10 @@ kubectl get pods -w
 Check whether the environment variables were set successfully:
 
 ```bash
-# Alle Umgebungsvariablen des Deployments anzeigen
+# Show all Deployment environment variables.
 kubectl exec <pod-name> -- env"
 
-# Erwartete Ausgabe:
+# Expected output:
 # PUID=1000
 # PGID=1000
 # TZ=Europe/Berlin
@@ -805,11 +878,11 @@ carry the label `app: chromium` -- regardless of which node they run on.
 # Service
 spec:
   selector:
-    app: chromium       # <-- trifft alle Pods mit diesem Label
+    app: chromium       # <-- matches all Pods with this label
 ```
 
 ```yaml
-# Pod (muss dieses Label tragen, damit der Service ihn findet)
+# Pod (must have this label for the Service to find it)
 metadata:
   labels:
     app: chromium
@@ -820,13 +893,13 @@ metadata:
 Labels let you filter resources with `kubectl` in a targeted way, without searching every object:
 
 ```bash
-# Alle Pods mit Label app=chromium anzeigen
+# List all Pods with the label app=chromium.
 kubectl get pods -l app=chromium
 
-# Pods mit mehreren Bedingungen filtern
+# Filter Pods by multiple conditions.
 kubectl get pods -l app=chromium,environment=training
 
-# Alle Deployments eines bestimmten Teams
+# List all Deployments for a specific team.
 kubectl get deployments -l team=devops
 ```
 
@@ -868,11 +941,11 @@ Labels often get confused with **annotations**. The difference stays clear:
 spec:
   selector:
     matchLabels:
-      app: chromium     # <-- muss identisch sein mit ...
+      app: chromium     # <-- must match ...
   template:
     metadata:
       labels:
-        app: chromium   # <-- ... diesem Label
+        app: chromium   # <-- ... this label
 ```
 
 ---
@@ -952,10 +1025,10 @@ Now we build Chromium from scratch **declaratively** -- that means we first dele
 created imperatively and then recreate it cleanly via YAML.
 
 ```bash
-# Deployment + alle dazugehörigen Pods löschen
+# Delete the Deployment and all its Pods.
 kubectl delete deployment chromium
 
-# Service löschen
+# Delete the Service.
 kubectl delete service chromium
 ```
 
@@ -968,7 +1041,7 @@ Check that everything is gone:
 kubectl get deployments
 kubectl get services
 kubectl get pods
-# Chromium sollte nirgends mehr auftauchen!
+# Chromium should no longer appear anywhere.
 ```
 
 ### Creating Chromium declaratively
@@ -1052,18 +1125,18 @@ spec:
 **Apply:**
 
 ```bash
-# Deployment erstellen
+# Create the Deployment.
 kubectl apply -f chromium-deployment.yaml
 
-# Service erstellen
+# Create the Service.
 kubectl apply -f chromium-service.yaml
 
-# Status prüfen
+# Check the status.
 kubectl get deployments
 kubectl get services
 kubectl get pods
 kubectl run -it --rm debug --image=alpine:latest -- sh 
-# Anschliessend folgendes ausführen
+# Then run the following command.
 # wget -qO- http://<Node-IP>:<NodePort>
 
 ```
@@ -1194,7 +1267,7 @@ spec:
 kubectl apply -f code-server-deployment.yaml
 kubectl apply -f code-server-service.yaml
 
-# Status prüfen
+# Check the status.
 kubectl get deployments
 kubectl get pods
 ```
@@ -1210,109 +1283,16 @@ kubectl get pods
 
 ## Making containers reachable
 
-Using the node IP and the NodePort all the time to reach the containers clearly is not the idea.
-Several options exist for reaching both containers from outside.
+You can reach both containers from outside in several ways. You have already seen some of them:
 
-### Port forwarding
+- [ ] **Port forwarding** creates a connection from your machine directly to a Pod or Service.
+- [ ] **Node IP** provides access through a port on one of the nodes. This is useful with an external
+  load balancer.
+- [ ] **SSH tunnel** is an elegant alternative to port forwarding.
 
-You know the principle from "Deploying Chromium" → "Imperative": `kubectl port-forward` lays a line
-from your machine directly into a Pod. For a Service the form reads
-`kubectl port-forward -n k8s-training svc/chromium 4000:4000`, for Code-Server accordingly
-`svc/code-server 8443:8443`. That is handy for quick tests and for everything that should stay
-reachable locally only -- it does not make an application permanently reachable.
+### Ingress route
 
-<Notice type="info">
-
-**Example: an SSH container as "harness"**
-
-Not every application has a web UI. SSH access into the cluster is the classic "harness": you start
-a bastion in the Namespace, reach it exclusively via `port-forward` -- and thereby hold a shell for
-everything that runs in the cluster.
-
-File `ssh-bastion-deployment.yaml`:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ssh-bastion
-  namespace: k8s-training
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ssh-bastion
-  template:
-    metadata:
-      labels:
-        app: ssh-bastion
-    spec:
-      containers:
-        - name: sshd
-          image: lscr.io/linuxserver/openssh-server
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "200m"
-              memory: "128Mi"
-          ports:
-            - containerPort: 2222
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
-            - name: USER_NAME
-              value: "training"
-            - name: PUBLIC_KEY
-              value: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... hier euren eigenen öffentlichen Schlüssel einsetzen"
-```
-
-File `ssh-bastion-service.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: ssh-bastion
-  namespace: k8s-training
-spec:
-  type: ClusterIP          # nur clusterintern erreichbar
-  selector:
-    app: ssh-bastion
-  ports:
-    - port: 22
-      targetPort: 2222
-```
-
-```bash
-kubectl apply -f ssh-bastion-deployment.yaml
-kubectl apply -f ssh-bastion-service.yaml
-kubectl port-forward svc/ssh-bastion 2222:22 -n k8s-training
-```
-
-On the client side an entry in `~/.ssh/config` suffices:
-
-```text
-Host ssh-bastion
-  HostName 127.0.0.1
-  Port 2222
-  User training
-  IdentityFile ~/.ssh/id_ed25519_training
-  StrictHostKeyChecking accept-new
-  UserKnownHostsFile ~/.ssh/known_hosts_training
-```
-
-Afterwards `ssh ssh-bastion` suffices. The key stays a placeholder: your own **public** key belongs
-there, never the private one.
-
-</Notice>
-
-### Ingress route via Rancher dashboard
+<Image src={knba10050} alt="Service and Ingress * Created with Microsoft Copilot" />
 
 When your cluster comes with a dashboard (for example Rancher), you can click the route together
 there. The following instructions show the result that you then rebuild for the Code-Server: a route
@@ -1353,19 +1333,19 @@ As an alternative to the Rancher dashboard you can create the Ingress route dire
 #### Imperative
 
 Which **IngressClass** your cluster uses depends on the installation. Common values are `nginx`,
-`traefik` and -- depending on the installation -- `traefik-ingress-controller`; running instances on
-the OASIS platform may deviate. Do not guess, but ask the cluster:
+`traefik` and -- depending on the installation -- `traefik-ingress-controller`. Do not guess, but
+ask the cluster:
 
 ```bash
 kubectl get ingressclass
 ```
 
 ```bash
-# Code-Server Ingress anlegen
+# Create the Code-Server Ingress.
 kubectl create ingress code-server-ingress --rule="code.k8s-training.frickeldave.de/*=code-server:8443"
 
-# Ingress-Class nachträglich setzen -- Wert aus `kubectl get ingressclass`
-# Kandidaten: nginx, traefik, traefik-ingress-controller
+# Set the Ingress class afterwards -- use a value from `kubectl get ingressclass`.
+# Candidates: nginx, traefik, traefik-ingress-controller.
 kubectl patch ingress code-server-ingress --type=merge -p '{"spec":{"ingressClassName":"nginx"}}'
 ```
 
@@ -1444,13 +1424,13 @@ kubectl apply -f code-server-ingress.yaml
 ### Determining the Ingress URL
 
 ```bash
-# Alle Routen im Namespace
+# List all routes in the Namespace.
 kubectl get ingress -n k8s-training
 
-# Zusätzlich mit Host und Ports in einer Zeile
+# Also show the host and ports on one line.
 kubectl get ingress -n k8s-training -o wide
 
-# Details: HOST, ADDRESS, Default-Backend, Events
+# Details: HOST, ADDRESS, default backend, and events.
 kubectl describe ingress code-server-ingress -n k8s-training
 ```
 
@@ -1473,10 +1453,10 @@ Without a DNS entry you test the route directly against the controller. `-H 'Hos
 hostname in the header, `--resolve` resolves the name locally to the controller IP:
 
 ```bash
-# Variante 1: Host-Header setzen
+# Option 1: set the Host header.
 curl -H 'Host: code.k8s-training.frickeldave.de' http://<ADDRESS>/
 
-# Variante 2: Namen lokal auf die Controller-IP auflösen
+# Option 2: resolve the name locally to the controller IP.
 curl --resolve code.k8s-training.frickeldave.de:80:<ADDRESS> http://code.k8s-training.frickeldave.de/
 ```
 
@@ -1520,20 +1500,20 @@ Expected output:
 ### Cheat sheet
 
 ```bash
-kubectl get <ressource>                         # Auflisten
-kubectl get <ressource> -o wide                 # Auflisten mit Details
-kubectl describe <ressource> <name>             # Details anzeigen
-kubectl logs <pod>                              # Logs lesen
-kubectl logs -f <pod>                           # Logs live verfolgen
-kubectl apply -f <datei.yaml>                   # Erstellen/Aktualisieren
-kubectl delete -f <datei.yaml>                  # Löschen
-kubectl delete <ressource> <name>               # Einzelne Ressource löschen
-kubectl set env deployment/<name> KEY=VALUE     # Umgebungsvariable setzen
-kubectl explain <ressource>                     # Dokumentation anzeigen
-kubectl get pods -w                             # Pods live beobachten
-kubectl get ingress                            # Ingress-Routen anzeigen
-kubectl create ingress <name> --rule="..."    # Ingress-Route anlegen (imperativ)
-kubectl get all -n <namespace>                # Alle Ressourcen im Namespace
+kubectl get <resource>                          # List resources
+kubectl get <resource> -o wide                  # List resources with details
+kubectl describe <resource> <name>              # Show details
+kubectl logs <pod>                              # Read logs
+kubectl logs -f <pod>                           # Follow logs live
+kubectl apply -f <file.yaml>                    # Create or update
+kubectl delete -f <file.yaml>                   # Delete
+kubectl delete <resource> <name>                # Delete a single resource
+kubectl set env deployment/<name> KEY=VALUE     # Set an environment variable
+kubectl explain <resource>                      # Show documentation
+kubectl get pods -w                             # Watch Pods live
+kubectl get ingress                             # List Ingress routes
+kubectl create ingress <name> --rule="..."      # Create an Ingress route (imperative)
+kubectl get all -n <namespace>                  # List all resources in the Namespace
 ```
 
 ### Outlook Day 2

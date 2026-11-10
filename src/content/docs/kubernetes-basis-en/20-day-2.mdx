@@ -10,8 +10,9 @@ imageAlt: "Kubernetes Basics - 20 Day 2"
 import Notice from "@shortcodes/Notice";
 import InteractiveChecklist from "@components/docs/InteractiveChecklist.astro";
 import { Image } from "astro:assets";
-import knba20010 from "@assets/docs/kubernetes-basis/knba-20-010_init-and-sidecar-container.png";
-import knba20011 from "@assets/docs/kubernetes-basis/knba-20-011_init-and-sidecar-container-logistic.png";
+import knba20010 from "@assets/docs/kubernetes-basis/knba-20-010_configmaps.png";
+import knba20011 from "@assets/docs/kubernetes-basis/knba-20-011_init-container-logistic.png";
+import knba20012 from "@assets/docs/kubernetes-basis/knba-20-012_sidecar-container-logistic.png";
 import knba20020 from "@assets/docs/kubernetes-basis/knba-20-020_requests-and-limits.png";
 import knba20021 from "@assets/docs/kubernetes-basis/knba-20-021_qos-classes.png";
 import knba20030 from "@assets/docs/kubernetes-basis/knba-20-030_heath-checks.png";
@@ -80,6 +81,8 @@ kubectl logs <pod-name>
 So far configuration values such as `PUID`, `PGID`, `TZ` and the Code-Server password sit directly in
 the Deployment YAMLs from Day 1. That stays maintainable as long as only one Deployment is affected --
 but with the second Deployment at the latest the values repeat.
+
+<Image src={knba20010} alt="ConfigMaps * Created with OpenAI Imagegen" />
 
 A **ConfigMap** is a Kubernetes object that stores configuration data as key-value pairs and passes it
 to containers -- either as an **environment variable** or as a **file** (through a volume).
@@ -189,13 +192,13 @@ spec:
               memory: "1Gi"
           ports:
             - containerPort: 8443
-          envFrom:                          # zwei ConfigMaps als Umgebungsvariablen
+          envFrom:                          # two ConfigMaps as environment variables
             - configMapRef:
                 name: linuxserver-common
             - configMapRef:
                 name: code-server-config
           env:
-            - name: PASSWORD                # Secret bleibt vorerst hart codiert
+            - name: PASSWORD                # The Secret is still hard-coded for now.
               value: "trainingk8s"
 ```
 
@@ -309,12 +312,12 @@ The output shows `PASSWORD: dHJhaW5pbmcya3M=` – that is Base64 encoded, not en
 
 ```bash
 echo "dHJhaW5pbmcya3M=" | base64 -d
-# Ausgabe: trainingk8s
+# Output: trainingk8s
 ```
 
 ```powershell
 [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("dHJhaW5pbmcya3M="))
-# Ausgabe: trainingk8s
+# Output: trainingk8s
 ```
 <br/>
 
@@ -380,8 +383,6 @@ tightly coupled processes together.
 separate Pods. The containers of ONE app here are NOT tightly coupled, but only loosely connected via
 Services and Ingress. Therefore we deploy them in separate Pods.
 
-<Image src={knba20010} alt="Multiple containers per Pod * Created with Microsoft Copilot" />
-
 ### Analogy: container types in the logistics company
 
 To understand the different container types better, consider them in the context of a logistics
@@ -412,9 +413,6 @@ continuously:
 - Communication systems keep contact with the control centre
 These services run at the same time as the main transport and provide transparency, safety and
 efficiency without transporting the freight themselves.
-
-<Image src={knba20011} alt="Multiple containers per Pod in the logistics company* Created with Microsoft Copilot" />
-
 
 ### Init containers
 
@@ -449,6 +447,8 @@ Typical use cases:
 - Preparing configuration files
 - Running schema migrations
 
+<Image src={knba20011} alt="Init containers in the logistics company * Created with OpenAI Imagegen" />
+
 ### Sidecar containers
 
 Sidecar containers run permanently next to the main application and share network and volumes.
@@ -460,6 +460,8 @@ Typical patterns:
 | **Reverse proxy** | Takes over SSL termination, auth or rate limiting for the app | nginx, Envoy, oauth2-proxy |
 | **Metrics exporter** | Collects metrics of the app and exposes them for Prometheus | nginx-prometheus-exporter, node-exporter |
 | **Service mesh** | Takes over the entire network communication (TLS, tracing, retries) | Envoy (Istio), Linkerd proxy |
+
+<Image src={knba20012} alt="Sidecar containers accompany the app container * Created with OpenAI Imagegen" />
 
 #### Exercise: Chromium with Vector as a sidecar
 
@@ -544,9 +546,9 @@ spec:
           volumeMounts:
             - name: shm
               mountPath: /dev/shm
-            - name: chromium-logs          # NEU: gemeinsames Log-Volume
+            - name: chromium-logs          # NEW: shared log volume
               mountPath: /config/log
-        - name: vector                     # NEU: Sidecar-Container
+        - name: vector                     # NEW: sidecar container
           image: timberio/vector:0.42.0-alpine
           resources:
             requests:
@@ -560,7 +562,7 @@ spec:
             - --config
             - /etc/vector/vector.toml
           volumeMounts:
-            - name: chromium-logs          # NEU: gleiches Volume wie Chromium
+            - name: chromium-logs          # NEW: same volume as Chromium
               mountPath: /config/log
             - name: vector-config
       volumes:
@@ -568,9 +570,9 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 1Gi
-        - name: chromium-logs              # NEU: shared emptyDir für Logs
+        - name: chromium-logs              # NEW: shared emptyDir for logs
           emptyDir: {}
-        - name: vector-config              # NEU: ConfigMap als Volume
+        - name: vector-config              # NEW: ConfigMap mounted as a volume
           configMap:
             name: vector-config
 ```
@@ -583,17 +585,17 @@ kubectl apply -f chromium-deployment-sidecar.yaml
 **3. Check that it works**
 
 ```bash
-# Warten, bis der neue Pod läuft
+# Wait for the new Pod to run.
 kubectl get pods -l app=chromium -w
 
-# Logs des Sidecars anzeigen
+# Show the sidecar logs.
 kubectl logs -l app=chromium -c vector
 
-# Log-Datei im Chromium-Container anzeigen (identische Quelle wie Vector)
+# Show the log file in the Chromium container (the same source Vector reads).
 kubectl exec -c chromium deploy/chromium -- cat /config/log/chromium.log
 
-# Chromium im Browser öffnen und ein paar Seiten besuchen,
-# dann erneut Sidecar-Logs prüfen:
+# Open Chromium in the browser and visit a few pages,
+# then check the sidecar logs again:
 kubectl logs -l app=chromium -c vector --tail=10
 ```
 <br/>
@@ -680,7 +682,7 @@ data:
       fi
     fi
 
-    # Chromium starten mit Logs in Datei UND stdout
+    # Start Chromium with logs written to both a file and stdout.
     ${BIN} \
       --no-sandbox \
       --password-store=basic \
@@ -714,13 +716,13 @@ spec -> templates -> spec -> containers -> volumeMounts:
               mountPath: /dev/shm
             - name: chromium-logs
               mountPath: /config/log
-            - name: chromium-logging-script     # NEU: Custom wrapped-chromium
+            - name: chromium-logging-script     # NEW: custom wrapped Chromium command
               mountPath: /usr/bin/wrapped-chromium
               subPath: wrapped-chromium
       volumes:
         - name: shm
           ...
-        - name: chromium-logging-script         # NEU: ConfigMap mit Script
+        - name: chromium-logging-script         # NEW: ConfigMap containing the script
           configMap:
             name: chromium-logging
             defaultMode: 0755
@@ -734,16 +736,16 @@ kubectl apply -f chromium-deployment-sidecar-wrapped.yaml
 **8. Check that it works**
 
 ```bash
-# Warten, bis der neue Pod läuft
+# Wait for the new Pod to run.
 kubectl get pods -l app=chromium -w
 
-# Logs des Sidecars anzeigen – jetzt sollten JSON-Logs kommen!
+# Show the sidecar logs -- JSON logs should appear now.
 kubectl logs -l app=chromium -c vector --tail=10
 
-# Prüfen, ob die Log-Datei im Container existiert
+# Check whether the log file exists in the container.
 kubectl exec -c chromium deploy/chromium -- ls -la /config/log/
 
-# Chromium-Logs live verfolgen
+# Follow the Chromium logs live.
 kubectl logs -l app=chromium -c vector -f
 ```
 
@@ -778,7 +780,7 @@ sidecar:
 Picture several departments working side by side in the logistics centre.
 Every department needs a certain amount of space and certain machines.
 
-<Image src={knba20020} alt="Requests and limits * Created with Microsoft Copilot" />
+<Image src={knba20020} alt="Requests and limits * Created with OpenAI Imagegen" />
 
 
 - **Without any agreement** one department would simply block the whole storage space, occupy the
@@ -852,7 +854,7 @@ Kubernetes always calculates in binary. Memory aid:
 
 The QoS class says: "How important is this department when space runs short?"
 
-<Image src={knba20021} alt="QoS * Created with Microsoft Copilot" />
+<Image src={knba20021} alt="QoS * Created with OpenAI Imagegen" />
 
 - **BestEffort** – a department that never registered how much space it needs.
   When the warehouse fills up, it leaves first.
@@ -893,17 +895,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: chromium
-  namespace: k8s-training    # ⬅️ Namespace ggf. anpassen
+  namespace: k8s-training    # ⬅️ Adjust the Namespace if needed.
   labels:
     app: chromium
 spec:
-  # ... replicas, selector, template (unverändert) ...
+  # ... replicas, selector, template (unchanged) ...
   template:
     spec:
       containers:
         - name: chromium
-          # ... image, ports, envFrom (linuxserver-common), volumeMounts (unverändert) ...
-          resources:                          # ⬅️ NEU
+          # ... image, ports, envFrom (linuxserver-common), volumeMounts (unchanged) ...
+          resources:                          # ⬅️ NEW
             requests:
               cpu: "250m"
               memory: "512Mi"
@@ -996,7 +998,7 @@ spec:
 ```bash
 kubectl apply -f limitrange.yaml
 
-# Wirksame Defaults und Grenzen anzeigen
+# Show the effective defaults and limits.
 kubectl describe limitrange default-container-resources -n k8s-training
 ```
 
@@ -1057,7 +1059,7 @@ regularly and trigger automatic actions when something goes wrong.
 Picture a logistics company: a truck driver delivers parcels. Kubernetes is the dispatcher who makes
 sure everything runs smoothly.
 
-<Image src={knba20030} alt="Health checks * Created with Microsoft Copilot" />
+<Image src={knba20030} alt="Health checks * Created with OpenAI Imagegen" />
 
 
 - **Liveness probe** – *"Is the driver still alive?"*
@@ -1211,7 +1213,7 @@ sends no more traffic to this Pod. The Pod itself keeps running, it only receive
           readinessProbe:
             httpGet:
               path: /
-              port: 3005   # ← falsch! Port 3005 existiert nicht
+              port: 3005   # ← incorrect: port 3005 does not exist
             periodSeconds: 5
             failureThreshold: 1
 ```
@@ -1269,7 +1271,7 @@ ReplicaSets to 0 or delete them:
 
 ```bash
 kubectl scale replicaset <name-des-alten-rs> --replicas=0 -n k8s-training
-# oder
+# or
 kubectl delete replicaset <name-des-alten-rs> -n k8s-training
 ```
 
@@ -1286,7 +1288,7 @@ the application type.
 Picture a logistics fleet: you own 10 trucks and receive 10 new models.
 How do you swap them?
 
-<Image src={knba20040} alt="Deployment strategies * Created with Microsoft Copilot" />
+<Image src={knba20040} alt="Deployment strategies * Created with OpenAI Imagegen" />
 
 
 - **RollingUpdate** – *"One out, one in."*
@@ -1313,8 +1315,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1 # Wie viele zusätzliche Pods während des Updates erlaubt
-      maxUnavailable: 0 # Wie viele Pods gleichzeitig fehlen dürfen
+      maxSurge: 1 # Maximum number of additional Pods allowed during the update.
+      maxUnavailable: 0 # Maximum number of Pods that can be unavailable at once.
 ```
 
 - `maxSurge: 1` -- during the update 1 Pod more than `replicas` may run
@@ -1379,11 +1381,11 @@ kubectl rollout history deployment/chromium -n k8s-training
 ### Scaling
 
 ```bash
-# Hochskalieren
+# Scale up.
 kubectl scale deployment/chromium --replicas=3 -n k8s-training
 kubectl get pods -l app=chromium -n k8s-training
 
-# Runterskalieren
+# Scale down.
 kubectl scale deployment/chromium --replicas=1 -n k8s-training
 kubectl get pods -l app=chromium -n k8s-training
 ```
@@ -1408,7 +1410,7 @@ Picture running a logistics warehouse with several halls (nodes). Space abounds,
 but not every space stays reachable at the same speed -- and not every one costs the same. Storage in
 the cluster behaves exactly like that.
 
-<Image src={knba20050} alt="PVs and PVCs * Created with Microsoft Copilot" />
+<Image src={knba20050} alt="PVs and PVCs * Created with OpenAI Imagegen" />
 
 - **Without persistent storage** every work order (Pod) uses a disposable table: you put
   your boxes on it, but when the order finishes, the table gets thrown away –
@@ -1558,7 +1560,7 @@ metadata:
   name: code-server-config
   namespace: k8s-training
 spec:
-  # storageClassName: <name>   # nur setzen, wenn du bewusst eine andere Klasse willst
+  # storageClassName: <name>   # Set this only when you intentionally want a different class.
   accessModes:
     - ReadWriteOnce
   resources:
@@ -1612,16 +1614,16 @@ Now comes the decisive test: you create a file in the workspace, delete the Pod 
 still exists when the new Pod runs.
 
 ```bash
-# Datei im persistenten Volume erstellen
+# Create a file in the persistent volume.
 kubectl exec $(kubectl get pod -l app=code-server -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- touch /config/workspace/test.txt
 
-# Pod löschen (Deployment erstellt neuen)
+# Delete the Pod (the Deployment creates a new one).
 kubectl delete pod -l app=code-server -n k8s-training
 
-# Warten bis neuer Pod läuft
+# Wait for the new Pod to run.
 kubectl get pods -l app=code-server -n k8s-training -w
 
-# Datei prüfen -- sie überlebt!
+# Check that the file survived.
 kubectl exec $(kubectl get pod -l app=code-server -n k8s-training -o jsonpath='{.items[0].metadata.name}') -n k8s-training -- ls /config/workspace/test.txt
 ```
 
@@ -1643,12 +1645,10 @@ for orientation, but try to work out the solution yourself.
 
 ### Task
 
-<Image src={knba20080} alt="Exercise: deploying MariaDB and PHPMyAdmin * Created with Microsoft Copilot" />
+<Image src={knba20080} alt="Exercise: deploying MariaDB and phpMyAdmin * Created with OpenAI Imagegen" />
 
 
-Deploy **MariaDB** and **phpMyAdmin** into the Namespace `k8s-training`. Both containers
-run in the **same Pod** – MariaDB as app container, phpMyAdmin as sidecar. They share
-the network stack (`localhost`) and a common volume for the session data.
+Deploy **MariaDB** and **phpMyAdmin** into the Namespace `k8s-training`.
 
 | Property | MariaDB | phpMyAdmin |
 |-------------|---------|------------|
@@ -1673,7 +1673,8 @@ Your solution must cover the following concepts from Day 1 and Day 2:
     "Declarative Deployment via YAML (no kubectl create deployment)",
     "Labels (app: database) for selector and Service",
     "Service (ClusterIP) for MariaDB (port 3306), so other Pods reach the database",
-    "Service (NodePort) for phpMyAdmin (port 80), so you can access it in the browser. Alternative to Ingress: this way suffices for the browser test; an Ingress route is not needed for that.",
+    "Service (ClusterIP) for phpMyAdmin (port 80), so Ingress can reach it.",
+    "Ingress for phpMyAdmin (port 80)",
     "ConfigMap for the environment variables (PUID, PGID, TZ)",
     "Secret for MYSQL_ROOT_PASSWORD",
     "PersistentVolumeClaim (1Gi, ReadWriteOnce) for MariaDB under /config",
@@ -1706,13 +1707,15 @@ kubectl get deployments -n k8s-training
 # NAME            READY   UP-TO-DATE   AVAILABLE
 # chromium        1/1     1            1
 # code-server     1/1     1            1
-# database        1/1     1            1
+# mariadb         1/1     1            1
+# phpmyadmin      1/1     1            1
 
 kubectl get pods -n k8s-training
 # NAME                        READY   STATUS
 # chromium-xxx                2/2     Running
 # code-server-xxx             1/1     Running
-# database-xxx                2/2     Running
+# database-xxx                1/1     Running
+# phpmyadmin-xxx              1/1     Running
 
 kubectl get pvc -n k8s-training
 # NAME                    STATUS   VOLUME
@@ -1723,19 +1726,18 @@ kubectl get pvc -n k8s-training
 ### Persistence test
 
 1. Open phpMyAdmin in the browser
-2. Log in with `root` / `trainingk8s`
+2. Log in
 3. Create a new database (e.g. `testdb`) and a table
 4. Delete the Pod: `kubectl delete pod -l app=database -n k8s-training`
 5. Wait until the new Pod runs
-6. Reload phpMyAdmin – the created database should **still exist** (thanks to the PVC!)
+6. Reload phpMyAdmin – the created database should still exist (thanks to the PVC!)
 
 ## 🧪 Deep dive: init container for MariaDB wait time (optional)
 
 In the sidecar exercise with Vector you saw how two containers start in parallel.
 With MariaDB + phpMyAdmin it works differently: phpMyAdmin **needs** a running MariaDB,
 otherwise it only shows an error page. An init container solves that: it runs **before** the
-app containers and blocks until MariaDB stays ready. Only then phpMyAdmin starts
-(and MariaDB again – but it already runs).
+app containers and blocks until MariaDB is ready.
 
 <br/>
 <Notice type="info">
@@ -1755,11 +1757,6 @@ start of phpMyAdmin whether MariaDB answers on `localhost:3306`. The init contai
 uses the official `mariadb:11` image and runs `mysqladmin ping`.
 
 ### Solution (step by step)
-
-The complete manifest lives in the training material as `examplefiles/database-deployment.yaml` --
-following the file name convention `<app>-<kind>.yaml` and with exactly one object per file. You
-create the PVC `mariadb-config` (1Gi, `ReadWriteOnce`) beforehand yourself; it deliberately stays
-**outside** the file, and without it the Pod stays in `Pending`.
 
 **1. Adjust the Deployment**
 
@@ -1784,7 +1781,7 @@ spec:
       labels:
         app: database
     spec:
-      initContainers:                          # ⬅️ NEU: läuft vor den App-Containern
+      initContainers:                          # ⬅️ NEW: runs before the app containers
         - name: wait-for-mariadb
           image: mariadb:11
           resources:
@@ -1798,17 +1795,17 @@ spec:
             - sh
             - -c
             - |
-              echo "Warte auf MariaDB auf localhost:3306 ..."
+              echo "Waiting for MariaDB on localhost:3306 ..."
               until mysqladmin ping -h localhost -u root -ptrainingk8s --silent; do
-                echo "MariaDB noch nicht bereit – warte 2s ..."
+                echo "MariaDB is not ready yet -- waiting 2s ..."
                 sleep 2
               done
-              echo "MariaDB ist bereit!"
+              echo "MariaDB is ready!"
       containers:
         - name: mariadb
-          # ... bestehende Konfiguration ...
+          # ... existing configuration ...
         - name: phpmyadmin
-          # ... bestehende Konfiguration ...
+          # ... existing configuration ...
 ```
 
 **What happens here?**
@@ -1821,7 +1818,7 @@ spec:
 | `-u root -ptrainingk8s` | Authentication with the root password from the Secret |
 | `--silent` | Exit code only, no output |
 | `until ...; do sleep 2; done` | Repeat the check every 2 seconds until MariaDB answers |
-| `echo "MariaDB ist bereit!"` | As soon as MariaDB answers, the init container exits with code 0 |
+| `echo "MariaDB is ready!"` | As soon as MariaDB answers, the init container exits with code 0 |
 
 **2. Update the Deployment**
 
@@ -1843,12 +1840,12 @@ You see:
 
 ```
 NAME                        READY   STATUS     RESTARTS
-database-xxx                0/2     Init:0/1   0       ← Init-Container läuft
-database-xxx                0/2     Init:0/1   0       ← Init-Container wartet auf MariaDB
-database-xxx                0/2     Init:0/1   0       ← (wiederholt sich bis MariaDB bereit)
-database-xxx                0/2     PodInitializing    ← Init-Container fertig, App-Container starten
-database-xxx                1/2     Running            ← MariaDB läft, phpMyAdmin startet
-database-xxx                2/2     Running            ← Beide Container laufen
+database-xxx                0/2     Init:0/1   0       ← Init container is running
+database-xxx                0/2     Init:0/1   0       ← Init container is waiting for MariaDB
+database-xxx                0/2     Init:0/1   0       ← (repeats until MariaDB is ready)
+database-xxx                0/2     PodInitializing    ← Init container finished; app containers start
+database-xxx                1/2     Running            ← MariaDB is running; phpMyAdmin starts
+database-xxx                2/2     Running            ← Both containers are running
 ```
 
 **Terminal 2 – show the logs of the init container:**
@@ -1860,35 +1857,11 @@ kubectl logs -l app=database -n k8s-training -c wait-for-mariadb
 Expected output:
 
 ```
-Warte auf MariaDB auf localhost:3306 ...
-MariaDB noch nicht bereit – warte 2s ...
-MariaDB noch nicht bereit – warte 2s ...
-MariaDB ist bereit!
+Waiting for MariaDB on localhost:3306 ...
+MariaDB is not ready yet -- waiting 2s ...
+MariaDB is not ready yet -- waiting 2s ...
+MariaDB is ready!
 ```
-
-**4. Test: the init container really blocks**
-
-Restart the Pod and observe: as long as the init container runs, the Pod shows
-`Init:0/1` – the app containers (MariaDB, phpMyAdmin) do **not start at all**.
-
-```bash
-kubectl delete pod -l app=database -n k8s-training
-kubectl get pods -l app=database -n k8s-training -w
-```
-
-**5. Bonus: what happens when MariaDB never starts?**
-
-Change the host in the init container from `localhost` to a non-existing host
-(e.g. `localhost2`) and deploy again:
-
-```bash
-kubectl apply -f database-deployment.yaml
-kubectl get pods -l app=database -n k8s-training -w
-```
-
-The init container runs endlessly – and the Pod stays stuck in `Init:0/1`. The app containers
-never start. Kubernetes does nothing, because init containers have **no restart**
-(unlike liveness probes). Correct the host back to free the Pod.
 
 ### Summary init containers
 
@@ -1904,9 +1877,9 @@ never start. Kubernetes does nothing, because init containers have **no restart*
 
 ## Summary
 
-<Image src={knba20090} alt="Conclusion * Created with Microsoft Copilot" />
+<Image src={knba20090} alt="Conclusion * Created with OpenAI Imagegen" />
 
-Day 2 made your Deployments production-ready. Here comes the current state in the cluster:
+Day 2 made your Deployments production-ready.
 
 ```bash
 kubectl get all -n k8s-training
@@ -1940,7 +1913,7 @@ kubectl create secret generic <name> --from-literal=key=value
 kubectl get configmaps
 kubectl get secrets
 
-# Ressourcen & Metriken
+# Resources & metrics
 kubectl describe pod <name> | grep -A 6 "Limits"
 kubectl top pods
 kubectl top nodes
@@ -1951,7 +1924,7 @@ kubectl rollout history deployment/<name>
 kubectl rollout undo deployment/<name>
 kubectl rollout undo deployment/<name> --to-revision=<n>
 
-# Skalierung
+# Scaling
 kubectl scale deployment/<name> --replicas=<n>
 kubectl get replicasets
 
