@@ -82,9 +82,7 @@ test.describe("code copy button", () => {
     await waitForButtons(page);
 
     const counts = await collectCounts(page);
-    expect(counts.mermaid, "expected one mermaid block on the docs page").toBe(
-      1
-    );
+    expect(counts.mermaid).toBe(0);
     expect(counts.copyable).toBeGreaterThan(0);
     expect(counts.buttons).toBe(counts.copyable);
     expect(counts.wrappers).toBe(counts.copyable);
@@ -123,7 +121,14 @@ test.describe("code copy button", () => {
     });
     expect(contract).toEqual([]);
 
-    // `pre.mermaid` rendert clientseitig und bleibt ohne Wrapper.
+    // A Mermaid block stays excluded even when added after initial enhancement.
+    await page.evaluate(() => {
+      const pre = document.createElement("pre");
+      pre.classList.add("mermaid");
+      pre.append(document.createElement("code"));
+      document.body.append(pre);
+      document.dispatchEvent(new Event("astro:page-load"));
+    });
     await expect(page.locator("pre.mermaid")).toHaveCount(1);
     const mermaidWrapped = await page
       .locator("pre.mermaid")
@@ -152,6 +157,23 @@ test.describe("code copy button", () => {
     await expect(status).toHaveAttribute("role", "status");
     await expect(status).toHaveClass(/\bsr-only\b/);
     await expect(status).toHaveText("");
+  });
+
+  test("uses English labels on English documentation pages", async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.goto("/docs/kubernetes-basis-en/10-day-1");
+    await waitForButtons(page);
+
+    const button = page.locator(BUTTON).first();
+    await expect(button).toHaveAttribute("aria-label", "Copy code");
+    await expect(button.locator(LABEL)).toHaveText("Copy");
+
+    await button.click();
+    await expect(button.locator(LABEL)).toHaveText("Copied!");
+    await expect(page.locator(STATUS).first()).toHaveText("Copied!");
   });
 
   test("copies the code text of the clicked block into the clipboard", async ({

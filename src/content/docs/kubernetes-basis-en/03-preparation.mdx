@@ -47,7 +47,7 @@ Azure, ...). For a local installation with k3d see below.
 You can store several configs and reference them either with the parameter
 `--kubeconfig=<path to file>` or with the environment variable `KUBECONFIG` (path to the config).
 
-### Optional: Linux tuning
+### Optional: Linux / macOS tuning
 
 The following script sets up the `k` alias for kubectl and bash autocompletion permanently in your
 `.bashrc`. It works with a marker block: an existing block is replaced, not appended a second time
@@ -58,12 +58,12 @@ instead of being recomputed on every shell start. After restarting the terminal 
 resources with the tab key.
 
 ```bash
-# Richtet den Alias `k` und die Bash-Completion für kubectl dauerhaft ein.
-# Idempotent: Ein vorhandener Marker-Block wird ersetzt, nicht dupliziert.
+# Permanently configures the `k` alias and Bash completion for kubectl.
+# Idempotent: replaces an existing marker block instead of duplicating it.
 
 setup_kubectl_shell() {
     if ! command -v kubectl >/dev/null 2>&1; then
-        echo "kubectl ist nicht im PATH – bitte zuerst kubectl installieren (siehe oben)." >&2
+        echo "kubectl is not in PATH — install kubectl first (see above)." >&2
         return 1
     fi
 
@@ -72,16 +72,16 @@ setup_kubectl_shell() {
     bashrc="$HOME/.bashrc"
     completion_file="$HOME/.bash_completion.d/kubectl"
 
-    # .bashrc und Completion-Verzeichnis anlegen, falls noch nicht vorhanden
+    # Create .bashrc and the completion directory if they do not exist.
     mkdir -p "$HOME/.bash_completion.d"
     touch "$bashrc"
 
-    # Completion einmalig erzeugen und cachen – nicht bei jedem Shell-Start neu
+    # Generate and cache completion once instead of on every shell startup.
     if [ ! -s "$completion_file" ]; then
         kubectl completion bash > "$completion_file"
     fi
 
-    # Vorhandenen Marker-Block entfernen – bis zum End-Marker oder bis zum Dateiende
+    # Remove the existing marker block through its end marker or end of file.
     if grep -qF "$start_marker" "$bashrc"; then
         awk -v start="$start_marker" -v end="$end_marker" '
             index($0, start) { skip = 1 }
@@ -90,12 +90,12 @@ setup_kubectl_shell() {
         ' "$bashrc" > "$bashrc.new" && mv "$bashrc.new" "$bashrc"
     fi
 
-    # Sicherstellen, dass die Datei mit einem Zeilenumbruch endet
+    # Ensure the file ends with a newline.
     if [ -s "$bashrc" ] && [ -n "$(tail -c 1 "$bashrc")" ]; then
         echo "" >> "$bashrc"
     fi
 
-    # Block genau einmal anhängen; `complete` läuft nur, wenn __start_kubectl existiert
+    # Append the block once; run `complete` only when __start_kubectl exists.
     {
         echo "$start_marker"
         echo 'alias k=kubectl'
@@ -108,7 +108,7 @@ setup_kubectl_shell() {
         echo "$end_marker"
     } >> "$bashrc"
 
-    # Aktuelle Session direkt mitnehmen
+    # Apply the configuration to the current session as well.
     alias k=kubectl
     if [ -s "$completion_file" ]; then
         . "$completion_file"
@@ -122,6 +122,12 @@ setup_kubectl_shell() {
 }
 
 setup_kubectl_shell
+```
+
+### Optional: macOS tuning
+
+```bash
+brew install bash-completion@2
 ```
 
 More info: <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#enable-shell-autocompletion" target="_blank" rel="noopener noreferrer">kubectl on Linux</a>.
@@ -176,18 +182,9 @@ if ($content -match $pattern) {
 Set-Content -Path $profilePath -Value $newContent -Encoding UTF8
 
 . $PROFILE
-
 ```
 
 More info: <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/" target="_blank" rel="noopener noreferrer">kubectl on Windows</a>.
-
-### Optional: macOS tuning
-
-``` bash
-
-brew install bash-completion@2
-
-```
 
 Autocompletion can be enabled with the same script as for linux. More info:
 <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/" target="_blank" rel="noopener noreferrer">kubectl on macOS</a>.
@@ -351,15 +348,15 @@ realistic environment.
 **Linux / macOS (Bash)**
 
 ```bash
-# Zeigt an, welcher Cluster gerade als Ziel eingestellt ist
+# Show the currently selected cluster.
 kubectl config current-context
-# Listet alle Cluster-Knoten und deren Status (Ready/NotReady)
+# List all cluster nodes and their status (Ready/NotReady).
 kubectl get nodes
-# Prüft, ob eine Speicherklasse für PersistentVolumes existiert
+# Check whether a StorageClass for PersistentVolumes exists.
 kubectl get storageclass
-# Prüft, ob ein Ingress-Controller (z. B. nginx) installiert ist
+# Check whether an Ingress controller (e.g. nginx) is installed.
 kubectl get ingressclass
-# Zeigt, ob du die wichtigsten Ressourcentypen verwenden darfst
+# Check whether you can use the essential resource types.
 kubectl api-resources | grep -E "(pods|services|deployments|ingress)"
 ```
 
@@ -368,15 +365,15 @@ kubectl api-resources | grep -E "(pods|services|deployments|ingress)"
 **Windows (PowerShell)**
 
 ```powershell
-# Zeigt an, welcher Cluster gerade als Ziel eingestellt ist
+# Show the currently selected cluster.
 kubectl config current-context
-# Listet alle Cluster-Knoten und deren Status (Ready/NotReady)
+# List all cluster nodes and their status (Ready/NotReady).
 kubectl get nodes
-# Prüft, ob eine Speicherklasse für PersistentVolumes existiert
+# Check whether a StorageClass for PersistentVolumes exists.
 kubectl get storageclass
-# Prüft, ob ein Ingress-Controller (z. B. nginx) installiert ist
+# Check whether an Ingress controller (e.g. nginx) is installed.
 kubectl get ingressclass
-# Zeigt, ob du die wichtigsten Ressourcentypen verwenden darfst
+# Check whether you can use the essential resource types.
 kubectl api-resources | Select-String -Pattern "(pods|services|deployments|ingress)"
 ```
 

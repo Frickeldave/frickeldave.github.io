@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.14] - 2026-11-10
+
+### Added
+
+- Fünf neue Schaubilder in der Kubernetes-Schulung: Deploy-Workflow (`knba-10-015`), Service und
+  Ingress (`knba-10-050`), ConfigMaps (`knba-20-010`) sowie Init- und Sidecar-Container
+  (`knba-20-011`, `knba-20-012`); deutsche und englische Fassung verweisen darauf (#301).
+- Abschnitt „Optional: Tuning Linux / macOS“ mit einem eigenen `brew`-Schnipsel für die
+  Bash-Completion auf dem Mac (#301).
+
+### Changed
+
+- Dreizehn Schaubilder in `src/assets/docs/kubernetes-basis/` neu gerendert und die Kapitel beider
+  Sprachfassungen daran angeglichen; das Kapitel „DevOps-Workflow“ heißt jetzt „Deploy-Workflow“
+  und zeigt statt des Mermaid-Diagramms ein Schaubild, das Port-Forwarding-Kapitel beschreibt einen
+  SSH-Bastion-Container als Beispiel. Englische Kommentare in den Beispielmanifesten sind
+  durchgehend englisch, und die nicht mehr benötigte Quelldatei `k8s architecture.pptx` entfällt
+  (#301).
+- Kopierknopf für Codeblöcke: Auf den englischen Schulungsseiten unter
+  `/docs/kubernetes-basis-en/` beschriftet er sich mit „Copy“/„Copied!“ und einem englischen
+  `aria-label`; alle übrigen Seiten bleiben bei „Kopieren“/„Kopiert!“ (#301).
+
 ## [1.0.13] - 2026-11-06
 
 ### Added

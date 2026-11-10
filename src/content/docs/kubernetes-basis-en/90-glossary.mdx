@@ -28,8 +28,8 @@ decreasing the number of running Pods:
 - **Manually** -- via `kubectl scale` or by adjusting `spec.replicas` in a [Deployment](#deployment)
 
 ```bash
-kubectl scale deployment chromium --replicas=3   # Auf 3 Instanzen skalieren
-kubectl scale deployment chromium --replicas=1   # Wieder auf 1 reduzieren
+kubectl scale deployment chromium --replicas=3   # Scale up to 3 instances
+kubectl scale deployment chromium --replicas=1   # Scale back down to 1
 ```
 
 ### Rolling updates
@@ -40,9 +40,9 @@ exist at the same time for a moment -- one for the old, one for the new version.
 `kubectl rollout undo` rolls back to the previous version.
 
 ```bash
-kubectl rollout status deployment/chromium      # Laufenden Rollout beobachten
-kubectl rollout undo deployment/chromium        # Auf vorherige Version zurückrollen
-kubectl rollout history deployment/chromium     # Rollout-Verlauf anzeigen
+kubectl rollout status deployment/chromium      # Watch the rollout
+kubectl rollout undo deployment/chromium        # Roll back to the previous version
+kubectl rollout history deployment/chromium     # Show the rollout history
 ```
 
 ### Service discovery
@@ -54,7 +54,7 @@ automatically receives a fully qualified DNS name in the format
 name, regardless of which node they currently run on.
 
 ```bash
-# Beispiel: Code-Server spricht Chromium über DNS an
+# Example: Code-Server reaches Chromium through DNS
 curl http://chromium.k8s-training.svc.cluster.local:3000
 ```
 
@@ -117,10 +117,10 @@ and resource limits per Namespace.
 Default Namespaces: `default`, `kube-system`, `kube-public`, `kube-node-lease`.
 
 ```bash
-kubectl create namespace k8s-training         # Namespace anlegen
-kubectl get pods -n k8s-training              # Pods in einem Namespace anzeigen
+kubectl create namespace k8s-training         # Create a Namespace
+kubectl get pods -n k8s-training              # List Pods in a Namespace
 kubectl config set-context --current \
-  --namespace=k8s-training                    # Standard-Namespace setzen
+  --namespace=k8s-training                    # Set the default Namespace
 ```
 
 ### Labels and selectors
@@ -136,7 +136,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: chromium        # Selector -- findet Pods mit diesem Label
+      app: chromium        # Selector -- finds Pods with this label
 ```
 
 ### Self-healing
@@ -162,7 +162,7 @@ and forwards the traffic to the target Services accordingly. Without an Ingress 
 Ingress resources have no effect.
 
 ```bash
-kubectl get ingressclass    # Verfügbare Ingress Controller anzeigen
+kubectl get ingressclass    # List available Ingress controllers
 kubectl get ingress -n k8s-training
 ```
 
@@ -195,7 +195,7 @@ other Pod in the cluster. Corporate clusters often preconfigure NetworkPolicies 
 individual training exercises.
 
 ```bash
-kubectl get networkpolicies -n k8s-training   # Aktive Policies anzeigen
+kubectl get networkpolicies -n k8s-training   # List active policies
 ```
 
 ## Storage
@@ -252,7 +252,7 @@ which provisioner (e.g. for AWS EBS, NFS or local storage) it uses. With the
 default StorageClass PVCs get fulfilled automatically, without creating a PV manually.
 
 ```bash
-kubectl get storageclass    # Verfügbare StorageClasses anzeigen
+kubectl get storageclass    # List available StorageClasses
 ```
 
 ## Configuration
@@ -283,7 +283,7 @@ Vault).
 ```bash
 kubectl get secret <name> -n k8s-training -o yaml
 kubectl get secret <name> -n k8s-training \
-  -o jsonpath='{.data.PASSWORD}' | base64 -d   # Wert dekodieren
+  -o jsonpath='{.data.PASSWORD}' | base64 -d   # Decode the value
 ```
 
 ### kubeconfig
@@ -293,9 +293,9 @@ connect to. It holds cluster addresses, authentication details and contexts. Sev
 can be combined in one kubeconfig and switched between via context.
 
 ```bash
-kubectl config view              # kubeconfig anzeigen
-kubectl config current-context   # aktiven Kontext anzeigen
-kubectl config use-context <name>  # Kontext wechseln
+kubectl config view              # Show the kubeconfig
+kubectl config current-context   # Show the active context
+kubectl config use-context <name>  # Switch contexts
 ```
 
 ### YAML manifest
@@ -305,12 +305,12 @@ have four mandatory fields: `apiVersion`, `kind`, `metadata` and `spec`. You app
 cluster with `kubectl apply -f <file.yaml>` (declarative approach).
 
 ```yaml
-apiVersion: apps/v1     # API-Version
-kind: Deployment        # Ressourcentyp
+apiVersion: apps/v1     # API version
+kind: Deployment        # Resource type
 metadata:
   name: chromium        # Name
   namespace: k8s-training
-spec:                   # Gewünschter Zustand
+spec:                   # Desired state
   replicas: 1
 ```
 
@@ -344,11 +344,11 @@ OOM kill. CPU gets throttled, but not terminated hard.
 ```yaml
 resources:
   requests:
-    cpu: "250m"       # 0,25 CPU-Kerne (Mindestgarantie)
-    memory: "512Mi"   # 512 MiB RAM (Mindestgarantie)
+    cpu: "250m"       # 0.25 CPU cores (minimum guaranteed)
+    memory: "512Mi"   # 512 MiB RAM (minimum guaranteed)
   limits:
-    cpu: "1000m"      # 1 CPU-Kern (Obergrenze)
-    memory: "1Gi"     # 1 GiB RAM (Obergrenze -- OOM-Kill bei Überschreitung)
+    cpu: "1000m"      # 1 CPU core (limit)
+    memory: "1Gi"     # 1 GiB RAM (limit -- OOM kill if exceeded)
 ```
 
 ### QoS classes
@@ -480,14 +480,14 @@ The command-line tool for controlling Kubernetes clusters. It communicates with 
 [kubeconfig](#kubeconfig) file.
 
 ```bash
-kubectl get <ressource>                    # Auflisten
-kubectl get <ressource> -o wide            # Mit Details
-kubectl describe <ressource> <name>        # Detailansicht
-kubectl logs <pod>                         # Container-Logs
-kubectl apply -f <datei.yaml>              # Erstellen/Aktualisieren
-kubectl delete <ressource> <name>          # Löschen
-kubectl exec -it <pod> -- bash             # Shell im Container öffnen
-kubectl explain <ressource>                # Eingebaute Dokumentation
+kubectl get <resource>                     # List resources
+kubectl get <resource> -o wide             # Include additional details
+kubectl describe <resource> <name>         # Show details
+kubectl logs <pod>                         # Show container logs
+kubectl apply -f <file.yaml>               # Create or update
+kubectl delete <resource> <name>           # Delete
+kubectl exec -it <pod> -- bash             # Open a shell in the container
+kubectl explain <resource>                 # Show built-in documentation
 ```
 
 ### k3d
