@@ -9,10 +9,12 @@ imageAlt: "Kubernetes Basis - 10 Tag 1"
 
 import { Image } from "astro:assets";
 import knba10010 from "@assets/docs/kubernetes-basis/knba-10-010_why-and-why-not-k8s.png";
+import knba10015 from "@assets/docs/kubernetes-basis/knba-10-015_deploy-workflow.png";
 import knba10020 from "@assets/docs/kubernetes-basis/knba-10-020_cluster-architecture.png";
 import knba10030 from "@assets/docs/kubernetes-basis/knba-10-030_labels.png";
 import knba10040 from "@assets/docs/kubernetes-basis/knba-10-040_service.png";
 import knba10042 from "@assets/docs/kubernetes-basis/knba-10-042_service-im-cluster.png";
+import knba10050 from "@assets/docs/kubernetes-basis/knba-10-050_service_ingress.png";
 import knba10090 from "@assets/docs/kubernetes-basis/knba-10-090_conclusion.png";
 import Notice from "@shortcodes/Notice";
 
@@ -85,18 +87,13 @@ Einstieg in Kubernetes.
 - **[Rolling Updates](/docs/kubernetes-basis-de/90-glossar#rolling-updates)** -- Anwendungen ohne Ausfallzeit aktualisieren
 - **[Service Discovery](/docs/kubernetes-basis-de/90-glossar#service-discovery)** -- Automatische Namensauflösung zwischen Anwendungen
 
-### DevOps-Workflow
+### Deploy-Workflow
 
 In der Praxis durchläuft jede Anwendung einen klar definierten Weg von der Entwicklung bis zur
 Produktion -- Kubernetes übernimmt dabei die Rolle des zentralen Auslieferungssystems:
 
-```mermaid
-graph LR
-    A["Code"] --> B["Container Image / Docker Build"]
-    B --> C["Registry (Harbor / GHCR / Docker Hub)"]
-    C --> D["Kubernetes -> Deployment / Service / Ingress"]
-    D --> E["Produktion"]
-```
+<Image src={knba10015} alt="Deploy-Workflow * Erstellt mit OpenAI Imagegen" />
+
 
 ---
 
@@ -324,7 +321,7 @@ metadata:
 ```
 
 ```bash
-kubectl apply -f namespace.yaml
+kubectl apply -f create-namespace.yaml
 ```
 
 <br/>
@@ -454,21 +451,100 @@ Der Befehl adressiert das Deployment und damit genau einen Pod: `4000` ist der P
 Rechner, `3000` der Port im Container. Öffne `http://localhost:4000`, und beende die Weiterleitung
 später mit `Ctrl+C`. Ein Service ist dafür nicht nötig -- der kommt später.
 
-<br/>
 <Notice type="info">
-  Port forwardings sind vor allem für Tests gut. Aber zum Beispiel auch, wenn du deinen Harness als SSH Container auf dem Cluster betreiben willst. 
-  In diesem Fall wäre ein Proxy Command allerdings besser geeignet: 
 
-  ```bash
-  ssh -t -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=c:\Users\<USER>\.ssh\known_hosts -o HostKeyAlias=fd-dev -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o 'ProxyCommand=kubectl --kubeconfig C:/Users/dakoenig/.kube/MYCLUSTER.yaml --context MYCLUSTER -n fd-infra exec -i fd-dev-container -- nc localhost 2222' -i C:\Users\<USER>\.ssh\mykey.key appuser@localhost
-  ```
+**Beispiel: ein SSH-Container als „Harness“**
 
-  Aufgedröselt:
-  --kubeconfig ... verwendet diese Kubernetes-Konfiguration.
-  -n fd-infra wählt den Namespace fd-infra.
-  exec ... -- führt einen Befehl im Pod aus.
-  -i lässt die Standardeingabe offen, damit du Eingaben an nc weitergeben kannst.
-  nc localhost 2222 baut eine TCP-Verbindung zu Port 2222 innerhalb der Netzwerkumgebung des Pods auf.
+Nicht jede Anwendung hat eine Weboberfläche. Ein SSH-Zugang in den Cluster ist der klassische
+„Harness“: Du startest eine Bastion im Namespace, erreichst sie ausschließlich über
+`port-forward` -- und hast damit eine Shell für alles, was im Cluster läuft.
+
+Datei `ssh-bastion-deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh-bastion
+  namespace: k8s-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssh-bastion
+  template:
+    metadata:
+      labels:
+        app: ssh-bastion
+    spec:
+      containers:
+        - name: sshd
+          image: lscr.io/linuxserver/openssh-server
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          ports:
+            - containerPort: 2222
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Berlin"
+            - name: USER_NAME
+              value: "training"
+            - name: PUBLIC_KEY
+              value: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... hier euren eigenen öffentlichen Schlüssel einsetzen"
+```
+
+Datei `ssh-bastion-service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh-bastion
+  namespace: k8s-training
+spec:
+  type: ClusterIP          # nur clusterintern erreichbar
+  selector:
+    app: ssh-bastion
+  ports:
+    - port: 22
+      targetPort: 2222
+```
+
+```bash
+kubectl apply -f ssh-bastion-deployment.yaml
+kubectl apply -f ssh-bastion-service.yaml
+kubectl port-forward svc/ssh-bastion 2222:22 -n k8s-training
+```
+
+Auf der Client-Seite genügt ein Eintrag in `~/.ssh/config`:
+
+```text
+Host ssh-bastion
+  HostName 127.0.0.1
+  Port 2222
+  User training
+  IdentityFile ~/.ssh/id_ed25519_training
+  StrictHostKeyChecking accept-new
+  UserKnownHostsFile ~/.ssh/known_hosts_training
+```
+
+Danach reicht `ssh ssh-bastion`. 
+
+
+Alternativ zu kubectl port-forward kannst du auch einen SSH Tunnel verwenden. 
+```bash
+ssh -t -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=c:\Users\<USER>\.ssh\known_hosts -o HostKeyAlias=fd-dev -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o 'ProxyCommand=kubectl --kubeconfig C:/Users/dakoenig/.kube/MYCLUSTER.yaml --context MYCLUSTER -n fd-infra exec -i fd-dev-container -- nc localhost 2222' -i C:\Users\<USER>\.ssh\mykey.key appuser@localhost
+```
+
 </Notice>
 
 ### Status prüfen
@@ -603,12 +679,6 @@ Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den 
 
 Kubernetes wählt automatisch einen NodePort im Bereich 30000-32767. Prüfe den **tatsächlichen** zugewiesenen Port.
 
-
-<br/>
-<Image src={knba10042} alt="Node service Kommunikation * Erstellt mit Microsoft Copilot" />
-
-<br/>
-
 Nun musst du 3 Dinge tun, um deinen Container zu erreichen: 
 
 1. Finde den node port heraus
@@ -625,22 +695,27 @@ Hier gibt es eine schlechte Nachricht, in vielen k8s Umgebungen kann auf diese W
 
 Wir basteln uns nun einen kleinen Container im Cluster, von dem aus wir den Chromium-Container erreichen können. 
 
+kubectl run debug – erstellt einen Pod namens debug.
+- -it – hält Eingabe und Terminal offen, damit du darin arbeiten kannst.
+- --rm – löscht den Pod, wenn du die Shell beendest.
+- --image=alpine:latest – verwendet das Alpine-Linux-Image.
+- --restart=Never – erstellt einen einzelnen Pod, keinen Deployment-Controller.
+- --override-type=strategic – wendet die folgenden Pod-Anpassungen als Strategic Merge Patch an.
+- --overrides='…' – setzt die Ressourcen für den Container debug:
+- Requests: 100m CPU (0,1 Kern) und 64Mi Speicher als angeforderte Mindestressourcen.
+- Limits: höchstens 200m CPU (0,2 Kern) und 128Mi Speicher.
+- -- sh – führt im Container den Befehl sh aus. Das -- trennt die kubectl-Optionen von diesem Container-Befehl.
+
+
+```powershell
+kubectl --% run -it --rm debug --image=alpine:latest --restart=Never --override-type=strategic --overrides="{\"spec\":{\"containers\":[{\"name\":\"debug\",\"resources\":{\"requests\":{\"cpu\":\"100m\",\"memory\":\"64Mi\"},\"limits\":{\"cpu\":\"200m\",\"memory\":\"128Mi\"}}}]}}" -- sh
+```
+
 ```bash
-
-# kubectl run debug – erstellt einen Pod namens debug.
-# -it – hält Eingabe und Terminal offen, damit du darin arbeiten kannst.
-# --rm – löscht den Pod, wenn du die Shell beendest.
-# --image=alpine:latest – verwendet das Alpine-Linux-Image.
-# --restart=Never – erstellt einen einzelnen Pod, keinen Deployment-Controller.
-# --override-type=strategic – wendet die folgenden Pod-Anpassungen als Strategic Merge Patch an.
-# --overrides='…' – setzt die Ressourcen für den Container debug:
-
-# Requests: 100m CPU (0,1 Kern) und 64Mi Speicher als angeforderte Mindestressourcen.
-# Limits: höchstens 200m CPU (0,2 Kern) und 128Mi Speicher.
-# -- sh – führt im Container den Befehl sh aus. Das -- trennt die kubectl-Optionen von diesem Container-Befehl.
-
 kubectl run -it --rm debug --image=alpine:latest --restart=Never --override-type=strategic --overrides='{"spec":{"containers":[{"name":"debug","resources":{"requests":{"cpu":"100m","memory":"64Mi"},"limits":{"cpu":"200m","memory":"128Mi"}}}]}}' -- sh
+```
 
+```bash
 apk add curl
 curl -L http://chromium:4000
 curl -L http://<Node-IP>:<NodePort>
@@ -1161,109 +1236,16 @@ kubectl get pods
 
 ## Container erreichbar machen
 
-Natürlich ist es nicht die Idee, immer die Node-IP und den NodePort zu verwenden, um auf die Container zuzugreifen. 
-Es gibt verschiedene Möglichkeiten, wie du die beiden Container nun von außen erreichen kannst.
+Es gibt verschiedene Möglichkeiten, wie du die beiden Container nun von außen erreichen kannst. Einige hast
+Du shcon kennengelernt.
 
-### Port-Forwarding
+[ ] Port-Forwarding - Legt eine Leitung von deinem Rechner direkt in einen Pod. Ein Forward kann für einen Pod oder einen Service eingerichtet werden. 
+[ ] NodeIP - Verbindung über einen Port auf einem der Nodes. Sinnvoll für externe Load Balancer.
+[ ] SSH Tunnel - Elegante Alternative zum port-forwarding
 
-Das Prinzip kennst du schon aus "Chromium deployen" → "Imperativ": `kubectl port-forward` legt
-eine Leitung von deinem Rechner direkt in einen Pod. Für einen Service lautet die Form
-`kubectl port-forward -n k8s-training svc/chromium 4000:4000`, für Code-Server entsprechend
-`svc/code-server 8443:8443`. Praktisch ist das für schnelle Tests und für alles, was nur lokal
-erreichbar sein soll -- dauerhaft erreichbar wird eine Anwendung damit nicht.
+### Ingress route
 
-<Notice type="info">
-
-**Beispiel: ein SSH-Container als „Harness“**
-
-Nicht jede Anwendung hat eine Weboberfläche. Ein SSH-Zugang in den Cluster ist der klassische
-„Harness“: Du startest eine Bastion im Namespace, erreichst sie ausschließlich über
-`port-forward` -- und hast damit eine Shell für alles, was im Cluster läuft.
-
-Datei `ssh-bastion-deployment.yaml`:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ssh-bastion
-  namespace: k8s-training
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ssh-bastion
-  template:
-    metadata:
-      labels:
-        app: ssh-bastion
-    spec:
-      containers:
-        - name: sshd
-          image: lscr.io/linuxserver/openssh-server
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "200m"
-              memory: "128Mi"
-          ports:
-            - containerPort: 2222
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
-            - name: USER_NAME
-              value: "training"
-            - name: PUBLIC_KEY
-              value: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... hier euren eigenen öffentlichen Schlüssel einsetzen"
-```
-
-Datei `ssh-bastion-service.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: ssh-bastion
-  namespace: k8s-training
-spec:
-  type: ClusterIP          # nur clusterintern erreichbar
-  selector:
-    app: ssh-bastion
-  ports:
-    - port: 22
-      targetPort: 2222
-```
-
-```bash
-kubectl apply -f ssh-bastion-deployment.yaml
-kubectl apply -f ssh-bastion-service.yaml
-kubectl port-forward svc/ssh-bastion 2222:22 -n k8s-training
-```
-
-Auf der Client-Seite genügt ein Eintrag in `~/.ssh/config`:
-
-```text
-Host ssh-bastion
-  HostName 127.0.0.1
-  Port 2222
-  User training
-  IdentityFile ~/.ssh/id_ed25519_training
-  StrictHostKeyChecking accept-new
-  UserKnownHostsFile ~/.ssh/known_hosts_training
-```
-
-Danach reicht `ssh ssh-bastion`. Der Schlüssel bleibt ein Platzhalter: Dort steht euer eigener
-**öffentlicher** Schlüssel, niemals der private.
-
-</Notice>
-
-### Ingress route via Rancher dashboard
+<Image src={knba10050} alt="Service und Ingress * Erstellt mit Microsoft Copilot" />
 
 Wenn dein Cluster ein Dashboard (Beispiel Rancher) mitbringt, kannst du die Route dort zusammenklicken. Die
 folgende Anleitung zeigt das Ergebnis, das du anschließend für den Code-Server nachbaust: eine
@@ -1304,8 +1286,7 @@ Alternativ zum Rancher-Dashboard kannst du die Ingress-Route auch direkt per `ku
 #### Imperativ
 
 Welche **IngressClass** dein Cluster benutzt, hängt von der Installation ab. Üblich sind `nginx`,
-`traefik` und -- je nach Installation -- `traefik-ingress-controller`; laufende Instanzen auf der
-OASIS-Plattform können davon abweichen. Rate nicht, sondern frag den Cluster:
+`traefik` und -- je nach Installation -- `traefik-ingress-controller`. Rate nicht, sondern frag den Cluster:
 
 ```bash
 kubectl get ingressclass

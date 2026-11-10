@@ -10,8 +10,9 @@ imageAlt: "Kubernetes Basis - 20 Tag 2"
 import Notice from "@shortcodes/Notice";
 import InteractiveChecklist from "@components/docs/InteractiveChecklist.astro";
 import { Image } from "astro:assets";
-import knba20010 from "@assets/docs/kubernetes-basis/knba-20-010_init-and-sidecar-container.png";
-import knba20011 from "@assets/docs/kubernetes-basis/knba-20-011_init-and-sidecar-container-logistic.png";
+import knba20010 from "@assets/docs/kubernetes-basis/knba-20-010_configmaps.png";
+import knba20011 from "@assets/docs/kubernetes-basis/knba-20-011_init-container-logistic.png";
+import knba20012 from "@assets/docs/kubernetes-basis/knba-20-012_sidecar-container-logistic.png";
 import knba20020 from "@assets/docs/kubernetes-basis/knba-20-020_requests-and-limits.png";
 import knba20021 from "@assets/docs/kubernetes-basis/knba-20-021_qos-classes.png";
 import knba20030 from "@assets/docs/kubernetes-basis/knba-20-030_heath-checks.png";
@@ -75,6 +76,9 @@ kubectl logs <pod-name>
 ```
 
 ## ConfigMaps
+
+<Image src={knba20010} alt="ConfigMaps *Erstellt mit OpenAI Imagen" />
+
 
 Bisher stehen Konfigurationswerte wie `PUID`, `PGID`, `TZ` und das Code-Server-Passwort direkt
 in den Deployment-YAMLs aus Tag 1. Das ist wartbar, solange es nur ein Deployment betrifft --
@@ -380,8 +384,6 @@ Konzept wird genutzt, um eng gekoppelte Prozesse gemeinsam zu deployen und zu ve
 **Regel:** Mehrere Container im selben Pod nur, wenn sie eng gekoppelt sind. Ansonsten separate Pods
 verwenden. Die Container EINER App sind hier NICHT eng gekoppelt, sondern nur lose verbunden über Services und Ingress. Daher deployen wir sie in separaten Pods.
 
-<Image src={knba20010} alt="Multiple container pro Pod * Erstellt mit Microsoft Copilot" />
-
 ### Analogie: Container-Typen im Logistikunternehmen
 
 Um die unterschiedlichen Container-Typen besser zu verstehen, betrachten wir sie im Kontext eines Logistikunternehmens, das Pakete weltweit ausliefert:
@@ -404,9 +406,6 @@ Sidecar-Container sind wie die unterstützenden Dienste, die den Haupttransport 
 - Sicherheitsdienste überwachen das Paket auf Manipulationsversuche
 - Kommunikationssysteme halten Kontakt mit der Leitstelle
 Diese Services laufen zeitgleich mit dem Haupttransport und sorgen für Transparenz, Sicherheit und Effizienz, ohne selbst die Fracht zu transportieren.
-
-<Image src={knba20011} alt="Multiple container pro Pod im Logistikunternehmen* Erstellt mit Microsoft Copilot" />
-
 
 ### Init-Container
 
@@ -441,6 +440,8 @@ Typische Anwendungsfälle:
 - Konfigurationsdateien vorbereiten
 - Schema-Migrationen ausführen
 
+<Image src={knba20011} alt="Multiple container pro Pod im Logistikunternehmen *Erstellt mit OpenAI Imagen" />
+
 ### Sidecar-Container
 
 Sidecar-Container laufen dauerhaft neben der Hauptanwendung und teilen sich Netzwerk und Volumes.
@@ -452,6 +453,8 @@ Typische Einsatzmuster:
 | **Reverse-Proxy** | Übernimmt SSL-Terminierung, Auth oder Raten-Limiting für die App | nginx, Envoy, oauth2-proxy |
 | **Metrics-Exporter** | Sammelt Metriken der App und exponiert sie für Prometheus | nginx-prometheus-exporter, node-exporter |
 | **Service Mesh** | Übernimmt gesamte Netzwerk-Kommunikation (TLS, Tracing, Retries) | Envoy (Istio), Linkerd-proxy |
+
+<Image src={knba20012} alt="Sidecar container begleiten den App-Container *Erstellt mit OpenAI Imagen" />
 
 #### Übung: Chromium mit Vector als Sidecar
 
@@ -771,7 +774,7 @@ Vector ist nur ein Beispiel. In Produktivumgebungen werden häufig diese Tools a
 Stell dir vor, im Logistikzentrum arbeiten mehrere Abteilungen nebeneinander.
 Jede Abteilung hat einen bestimmten Platzbedarf und bestimmte Maschinen.
 
-<Image src={knba20020} alt="Requests und Limits * Erstellt mit Microsoft Copilot" />
+<Image src={knba20020} alt="Requests und Limits * Erstellt mit OpenAI Imagegen" />
 
 
 - **Ohne Absprache** würde eine Abteilung einfach den ganzen Lagerplatz blockieren,
@@ -846,7 +849,7 @@ Kubernetes rechnet immer binär. Merkregel:
 
 Die QoS-Klasse sagt: "Wie wichtig ist diese Abteilung, wenn der Platz knapp wird?"
 
-<Image src={knba20021} alt="QoS * Erstellt mit Microsoft Copilot" />
+<Image src={knba20021} alt="QoS * Erstellt mit OpenAI Imagegen" />
 
 - **BestEffort** – eine Abteilung, die nie angemeldet hat, wie viel Platz sie braucht.
   Wenn das Lager voll wird, fliegt sie als Erste raus.
@@ -1051,7 +1054,7 @@ eines Containers und lösen automatische Aktionen aus, wenn etwas nicht stimmt.
 Stell dir ein Logistik-Unternehmen vor: Ein LKW-Fahrer liefert Pakete aus. Kubernetes ist
 der Disponent, der sicherstellt, dass alles rund läuft.
 
-<Image src={knba20030} alt="Health checks * Erstellt mit Microsoft Copilot" />
+<Image src={knba20030} alt="Health checks * Erstellt mit OpenAI Imagegen" />
 
 
 - **Liveness Probe** – *"Lebt der Fahrer noch?"*  
@@ -1278,7 +1281,7 @@ Anwendungstyp wählen kannst.
 Stell dir eine Logistik-Flotte vor: Du hast 10 LKWs und bekommst 10 neue Modelle.
 Wie tauschst du sie aus?
 
-<Image src={knba20040} alt="Deployment Strategien * Erstellt mit Microsoft Copilot" />
+<Image src={knba20040} alt="Deployment Strategien * Erstellt mit OpenAI Imagegen" />
 
 
 - **RollingUpdate** – *"Einer raus, einer rein."*  
@@ -1399,7 +1402,7 @@ Stell dir vor, du betreibst ein Logistiklager mit mehreren Hallen (Nodes). Platz
 aber nicht jeder Platz ist gleich schnell erreichbar -- und nicht jeder kostet dasselbe. Genau so
 verhält sich Speicher im Cluster.
 
-<Image src={knba20050} alt="PVs und PVCs * Erstellt mit Microsoft Copilot" />
+<Image src={knba20050} alt="PVs und PVCs * Erstellt mit OpenAI Imagegen" />
 
 - **Ohne Persistent Storage** ist jeder Arbeitsauftrag (Pod) ein Einweg-Tisch: Du stellst
   deine Kisten drauf, aber wenn der Auftrag erledigt ist, wird der Tisch weggeworfen –
@@ -1634,12 +1637,10 @@ Einer der Teilnehmer teilt seinen Bildschirm und zeigt live, wie er die Aufgabe 
 
 ### Aufgabe
 
-<Image src={knba20080} alt="Übung: MariaDB und PHPMyAdmin deployen * Erstellt mit Microsoft Copilot" />
+<Image src={knba20080} alt="Übung: MariaDB und PHPMyAdmin deployen * Erstellt mit OpenAI Imagegen" />
 
 
-Deploye **MariaDB** und **phpMyAdmin** in den Namespace `k8s-training`. Die beiden Container
-laufen im **selben Pod** – MariaDB als App-Container, phpMyAdmin als Sidecar. Sie teilen sich
-den Netzwerk-Stack (`localhost`) und ein gemeinsames Volume für die Session-Daten.
+Deploye **MariaDB** und **phpMyAdmin** in den Namespace `k8s-training`. 
 
 | Eigenschaft | MariaDB | phpMyAdmin |
 |-------------|---------|------------|
@@ -1664,7 +1665,8 @@ Deine Lösung muss folgende Konzepte aus Tag 1 und Tag 2 abdecken:
     "Deklaratives Deployment per YAML (kein kubectl create deployment)",
     "Labels (app: database) für Selektor und Service",
     "Service (ClusterIP) für MariaDB (Port 3306), damit andere Pods die Datenbank erreichen",
-    "Service (NodePort) für phpMyAdmin (Port 80), damit du im Browser darauf zugreifen kannst. Alternative zum Ingress: dieser Weg genügt für den Browser-Test; eine Ingress-Route ist dafür nicht nötig.",
+    "Service (ClusterIP) für phpMyAdmin (Port 80), damit Ingress darauf zugreifen kann.",
+    "Ingress für phpMyAdmin (Port 80)",
     "ConfigMap für die Umgebungsvariablen (PUID, PGID, TZ)",
     "Secret für MYSQL_ROOT_PASSWORD",
     "PersistentVolumeClaim (1Gi, ReadWriteOnce) für MariaDB unter /config",
@@ -1694,13 +1696,15 @@ kubectl get deployments -n k8s-training
 # NAME            READY   UP-TO-DATE   AVAILABLE
 # chromium        1/1     1            1
 # code-server     1/1     1            1
-# database        1/1     1            1
+# mariadb         1/1     1            1
+# phpmyadmin      1/1     1            1
 
 kubectl get pods -n k8s-training
 # NAME                        READY   STATUS
 # chromium-xxx                2/2     Running
 # code-server-xxx             1/1     Running
-# database-xxx                2/2     Running
+# database-xxx                1/1     Running
+# phpmyadmin-xxx              1/1     Running
 
 kubectl get pvc -n k8s-training
 # NAME                    STATUS   VOLUME
@@ -1711,19 +1715,18 @@ kubectl get pvc -n k8s-training
 ### Persistenz-Test
 
 1. Öffne phpMyAdmin im Browser
-2. Logge dich mit `root` / `trainingk8s` ein
+2. Logge dich ein
 3. Erstelle eine neue Datenbank (z. B. `testdb`) und eine Tabelle
 4. Lösche den Pod: `kubectl delete pod -l app=database -n k8s-training`
 5. Warte, bis der neue Pod läuft
-6. Lade phpMyAdmin neu – die erstellte Datenbank sollte **noch vorhanden** sein (Dank PVC!)
+6. Lade phpMyAdmin neu – die erstellte Datenbank sollte noch vorhanden sein (Dank PVC!)
 
 ## 🧪 Vertiefung: Init-Container für MariaDB-Wartezeit (optional)
 
 In der Sidecar-Übung mit Vector hast du gesehen, wie zwei Container parallel starten.
 Bei MariaDB + phpMyAdmin ist das anders: phpMyAdmin **braucht** eine laufende MariaDB,
 sonst zeigt es nur eine Fehlerseite. Ein Init-Container löst das: Er läuft **vor** den
-App-Containern und blockiert so lange, bis MariaDB bereit ist. Erst dann starten
-phpMyAdmin (und MariaDB neu – aber die ist ja schon da).
+App-Containern und blockiert so lange, bis MariaDB bereit ist. 
 
 <br/>
 <Notice type="info">
@@ -1742,11 +1745,6 @@ Start von phpMyAdmin prüft, ob MariaDB auf `localhost:3306` antwortet. Der Init
 verwendet das offizielle `mariadb:11`-Image und führt `mysqladmin ping` aus.
 
 ### Lösung (Schritt für Schritt)
-
-Das vollständige Manifest liegt als `examplefiles/database-deployment.yaml` im Schulungsmaterial --
-nach der Dateinamen-Konvention `<app>-<kind>.yaml` und mit genau einem Objekt pro Datei. Den PVC
-`mariadb-config` (1Gi, `ReadWriteOnce`) legst du vorher selbst an; er ist bewusst **nicht** Teil der
-Datei, und ohne ihn bleibt der Pod in `Pending`.
 
 **1. Deployment anpassen**
 
@@ -1853,30 +1851,6 @@ MariaDB noch nicht bereit – warte 2s ...
 MariaDB ist bereit!
 ```
 
-**4. Test: Init-Container blockiert wirklich**
-
-Starte den Pod neu und beobachte: Solange der Init-Container läuft, zeigt der Pod
-`Init:0/1` – die App-Container (MariaDB, phpMyAdmin) starten **gar nicht erst**.
-
-```bash
-kubectl delete pod -l app=database -n k8s-training
-kubectl get pods -l app=database -n k8s-training -w
-```
-
-**5. Bonus: Was passiert, wenn MariaDB nie startet?**
-
-Ändere im Init-Container den Host von `localhost` auf einen nicht existierenden Host
-(z. B. `localhost2`) und deploye erneut:
-
-```bash
-kubectl apply -f database-deployment.yaml
-kubectl get pods -l app=database -n k8s-training -w
-```
-
-Der Init-Container läuft endlos – und der Pod bleibt in `Init:0/1` hängen. Die App-Container
-starten nie. Kubernetes unternimmt nichts, weil Init-Container **keinen Restart** haben
-(im Gegensatz zu Liveness Probes). Korrigiere den Host zurück, um den Pod freizubekommen.
-
 ### Zusammenfassung Init-Container
 
 | Aspekt | Verhalten |
@@ -1891,9 +1865,9 @@ starten nie. Kubernetes unternimmt nichts, weil Init-Container **keinen Restart*
 
 ## Zusammenfassung
 
-<Image src={knba20090} alt="Conclusion * Erstellt mit Microsoft Copilot" />
+<Image src={knba20090} alt="Conclusion * Erstellt mit OpenAI Imagegen" />
 
-Tag 2 hat eure Deployments produktionsreif gemacht. Hier der aktuelle Stand im Cluster:
+Tag 2 hat eure Deployments produktionsreif gemacht. 
 
 ```bash
 kubectl get all -n k8s-training
@@ -1917,6 +1891,8 @@ kubectl get all -n k8s-training
 | Health Checks                 | Startup-, Liveness- und Readiness-Probes                      |
 | Deployment-Strategien         | RollingUpdate vs. Recreate, Rollback, Rollout-Historie        |
 | Persistent Storage            | PV, PVC, StorageClass – Daten überleben Pod-Neustarts        |
+
+
 
 ### Spickzettel Tag 2
 

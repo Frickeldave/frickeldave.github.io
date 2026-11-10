@@ -25,9 +25,16 @@ const BUTTON_SELECTOR = "[data-code-copy-button]";
 const LABEL_SELECTOR = "[data-code-copy-label]";
 const STATUS_SELECTOR = "[data-code-copy-status]";
 
-/** Beschriftung im Ruhezustand und während der Bestätigung (beide gleich breit). */
-const IDLE_LABEL = "Kopieren";
-const COPIED_LABEL = "Kopiert!";
+interface CopyLabels {
+  idle: string;
+  copied: string;
+  ariaLabel: string;
+}
+
+const getCopyLabels = (): CopyLabels =>
+  window.location.pathname.startsWith("/docs/kubernetes-basis-en/")
+    ? { idle: "Copy", copied: "Copied!", ariaLabel: "Copy code" }
+    : { idle: "Kopieren", copied: "Kopiert!", ariaLabel: "Code kopieren" };
 
 /** Wert von `data-state`, solange ein Knopf seine Bestätigung zeigt. */
 const FEEDBACK_STATE = "copied";
@@ -56,11 +63,15 @@ const supportsClipboard = (): boolean =>
   typeof navigator.clipboard?.writeText === "function";
 
 /** Setzt die Bestätigung auf Knopf und Live-Region und plant das Zurücksetzen. */
-const showFeedback = (button: HTMLElement, status: HTMLElement): void => {
+const showFeedback = (
+  button: HTMLElement,
+  status: HTMLElement,
+  labels: CopyLabels
+): void => {
   const label = button.querySelector<HTMLElement>(LABEL_SELECTOR);
 
-  if (label) label.textContent = COPIED_LABEL;
-  status.textContent = COPIED_LABEL;
+  if (label) label.textContent = labels.copied;
+  status.textContent = labels.copied;
   button.dataset.state = FEEDBACK_STATE;
 
   const pending = feedbackTimers.get(button);
@@ -69,7 +80,7 @@ const showFeedback = (button: HTMLElement, status: HTMLElement): void => {
   feedbackTimers.set(
     button,
     window.setTimeout(() => {
-      if (label) label.textContent = IDLE_LABEL;
+      if (label) label.textContent = labels.idle;
       status.textContent = "";
       delete button.dataset.state;
       feedbackTimers.delete(button);
@@ -81,7 +92,8 @@ const showFeedback = (button: HTMLElement, status: HTMLElement): void => {
 const copyCode = async (
   pre: HTMLPreElement,
   button: HTMLElement,
-  status: HTMLElement
+  status: HTMLElement,
+  labels: CopyLabels
 ): Promise<void> => {
   if (!supportsClipboard()) return;
 
@@ -94,7 +106,7 @@ const copyCode = async (
     return;
   }
 
-  showFeedback(button, status);
+  showFeedback(button, status, labels);
 };
 
 /** Entscheidet, ob ein Codeblock einen Kopierknopf bekommen darf. */
@@ -110,7 +122,8 @@ const isCopyable = (pre: HTMLPreElement): boolean => {
 /** Klont die Vorlage, hängt den Codeblock hinein und verdrahtet den Klick. */
 const enhancePre = (
   pre: HTMLPreElement,
-  template: HTMLTemplateElement
+  template: HTMLTemplateElement,
+  labels: CopyLabels
 ): void => {
   const parent = pre.parentElement;
   if (!parent) return;
@@ -122,8 +135,12 @@ const enhancePre = (
 
   if (!wrapper || !button || !status) return;
 
+  const label = button.querySelector<HTMLElement>(LABEL_SELECTOR);
+  if (label) label.textContent = labels.idle;
+  button.setAttribute("aria-label", labels.ariaLabel);
+
   button.addEventListener("click", () => {
-    void copyCode(pre, button, status);
+    void copyCode(pre, button, status, labels);
   });
 
   parent.insertBefore(wrapper, pre);
@@ -137,6 +154,7 @@ const enhanceCodeBlocks = (): void => {
   const template =
     document.querySelector<HTMLTemplateElement>(TEMPLATE_SELECTOR);
   if (!template) return;
+  const labels = getCopyLabels();
 
   document
     .querySelectorAll<HTMLElement>(COPYABLE_CODE_SELECTOR)
@@ -145,7 +163,7 @@ const enhanceCodeBlocks = (): void => {
       if (!(pre instanceof HTMLPreElement)) return;
       if (!isCopyable(pre)) return;
 
-      enhancePre(pre, template);
+      enhancePre(pre, template, labels);
     });
 };
 

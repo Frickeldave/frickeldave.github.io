@@ -22,7 +22,7 @@ whether client and server stay compatible -- a frequent stumbling block with ver
 
 ```bash
 kubectl version
-kubectl version --short   # Kurzform (deprecated ab 1.28, aber noch verbreitet)
+kubectl version --short   # Short form (deprecated since 1.28 but still common)
 ```
 
 ### 2. kubectl cluster-info
@@ -32,7 +32,7 @@ After logging into a new cluster this is your first command.
 
 ```bash
 kubectl cluster-info
-kubectl cluster-info dump   # Ausführliche Diagnoseinformationen
+kubectl cluster-info dump   # Detailed diagnostic information
 ```
 
 ### 3. kubectl config
@@ -41,10 +41,10 @@ Manages your `kubeconfig` file (`~/.kube/config`). Here you choose which cluster
 which credentials you work with. Especially important when you manage several clusters.
 
 ```bash
-kubectl config get-contexts                  # Alle Kontexte anzeigen
-kubectl config current-context               # Aktuellen Kontext anzeigen
-kubectl config use-context mein-cluster      # Zu anderem Cluster wechseln
-kubectl config set-context --current --namespace=mein-ns   # Standard-Namespace setzen
+kubectl config get-contexts                  # List all contexts
+kubectl config current-context               # Show the current context
+kubectl config use-context mein-cluster      # Switch to another cluster
+kubectl config set-context --current --namespace=mein-ns   # Set the default Namespace
 ```
 
 **Tip:** when you switch between contexts often, save typing effort with tools such as
@@ -60,15 +60,15 @@ The most used command of all. Lists Kubernetes resources in tabular form. You
 can query almost every resource type -- Pods, Deployments, Services, nodes and much more.
 
 ```bash
-kubectl get nodes                          # Alle Nodes im Cluster
-kubectl get pods                           # Pods im aktuellen Namespace
-kubectl get pods -A                        # Pods in ALLEN Namespaces
-kubectl get pods -o wide                   # Mehr Details (Node, IP)
-kubectl get pods -o yaml                   # Vollständige YAML-Ausgabe
-kubectl get deployment,svc,pods            # Mehrere Typen gleichzeitig
-kubectl get pods -l app=chromium           # Nach Label filtern
-kubectl get pods --field-selector status.phase=Running   # Nach Feldwert filtern
-kubectl get pods -w                        # Watch-Modus (live Änderungen)
+kubectl get nodes                          # All nodes in the cluster
+kubectl get pods                           # Pods in the current Namespace
+kubectl get pods -A                        # Pods in ALL Namespaces
+kubectl get pods -o wide                   # More details (node, IP)
+kubectl get pods -o yaml                   # Full YAML output
+kubectl get deployment,svc,pods            # Multiple resource types at once
+kubectl get pods -l app=chromium           # Filter by label
+kubectl get pods --field-selector status.phase=Running   # Filter by field value
+kubectl get pods -w                        # Watch for live changes
 ```
 
 ### 5. kubectl describe
@@ -93,9 +93,9 @@ Shows all available resource types in the cluster -- including short forms, API 
 they are Namespace-bound. Indispensable when you do not know the exact name of a resource type.
 
 ```bash
-kubectl api-resources                       # Alle Ressourcentypen
-kubectl api-resources --namespaced=true     # Nur Namespace-gebundene
-kubectl api-resources | grep -i deploy      # Nach Namen suchen
+kubectl api-resources                       # All resource types
+kubectl api-resources --namespaced=true     # Namespaced resources only
+kubectl api-resources | grep -i deploy      # Search by name
 ```
 
 ---
@@ -109,7 +109,7 @@ logical separation of resources -- for example per team, environment or applicat
 
 ```bash
 kubectl create namespace schulung
-kubectl get namespaces                      # Alle Namespaces anzeigen
+kubectl get namespaces                      # List all Namespaces
 ```
 
 From now on you can work inside this Namespace deliberately with `-n schulung` or make it the
@@ -138,10 +138,10 @@ creates new resources or updates existing ones. Unlike `create`, `apply`
 stays idempotent: you can run it as often as you like.
 
 ```bash
-kubectl apply -f deployment.yaml            # Einzelne Datei anwenden
-kubectl apply -f ./k8s/                     # Alle YAMLs in einem Verzeichnis
-kubectl apply -f https://example.com/manifest.yaml   # Direkt von URL
-kubectl apply -k ./overlays/production/     # Mit Kustomize
+kubectl apply -f deployment.yaml            # Apply a single file
+kubectl apply -f ./k8s/                     # Apply all YAML files in a directory
+kubectl apply -f https://example.com/manifest.yaml   # Apply directly from a URL
+kubectl apply -k ./overlays/production/     # Apply with Kustomize
 ```
 
 **Best practice:** store all your manifests in a Git repository. That gives you versioned,
@@ -153,8 +153,8 @@ Creates a single Pod -- useful for quick ad-hoc tests or debug containers. Creat
 **no** Deployment, which means: no self-healing, no scaling.
 
 ```bash
-kubectl run test-pod --image=busybox --rm -it -- sh          # Temporärer Debug-Pod
-kubectl run nginx-test --image=nginx --port=80               # Einfacher Pod
+kubectl run test-pod --image=busybox --rm -it -- sh          # Temporary debug Pod
+kubectl run nginx-test --image=nginx --port=80               # Simple Pod
 kubectl run curl-test --image=curlimages/curl -it --rm -- curl http://mein-service
 ```
 
@@ -168,8 +168,8 @@ Changes the number of replicas of a Deployment, ReplicaSet or StatefulSet. With 
 your application up or down manually.
 
 ```bash
-kubectl scale deployment chromium --replicas=3    # Auf 3 Pods hochskalieren
-kubectl scale deployment chromium --replicas=1    # Wieder auf 1 reduzieren
+kubectl scale deployment chromium --replicas=3    # Scale up to 3 Pods
+kubectl scale deployment chromium --replicas=1    # Scale back down to 1
 ```
 
 ### 12. kubectl set
@@ -178,8 +178,8 @@ Changes properties of existing resources -- most often the container image durin
 Deployment update.
 
 ```bash
-kubectl set image deployment/chromium chromium=chromium:v2   # Image aktualisieren
-kubectl set env deployment/chromium LOG_LEVEL=debug          # Umgebungsvariable setzen
+kubectl set image deployment/chromium chromium=chromium:v2   # Update the image
+kubectl set env deployment/chromium LOG_LEVEL=debug          # Set an environment variable
 kubectl set resources deployment/chromium -c chromium --limits=cpu=200m,memory=256Mi
 ```
 
@@ -189,12 +189,12 @@ Manages [rolling updates](/docs/kubernetes-basis-en/90-glossary#rolling-updates)
 running rollouts, roll back on failures or pause an update.
 
 ```bash
-kubectl rollout status deployment/chromium       # Status eines Rollouts beobachten
-kubectl rollout history deployment/chromium      # Rollout-Verlauf anzeigen
-kubectl rollout undo deployment/chromium         # Auf vorherige Version zurückrollen
-kubectl rollout undo deployment/chromium --to-revision=2   # Zu bestimmter Revision
-kubectl rollout pause deployment/chromium        # Rollout pausieren
-kubectl rollout resume deployment/chromium       # Rollout fortsetzen
+kubectl rollout status deployment/chromium       # Watch rollout status
+kubectl rollout history deployment/chromium      # Show rollout history
+kubectl rollout undo deployment/chromium         # Roll back to the previous version
+kubectl rollout undo deployment/chromium --to-revision=2   # Roll back to a specific revision
+kubectl rollout pause deployment/chromium        # Pause the rollout
+kubectl rollout resume deployment/chromium       # Resume the rollout
 ```
 
 ---
@@ -207,12 +207,12 @@ Shows the logs of a Pod -- your most important tool for troubleshooting. With Po
 containers you must name the container with `-c`.
 
 ```bash
-kubectl logs chromium-7d8f9c6b5-x2vnk           # Aktuelle Logs
+kubectl logs chromium-7d8f9c6b5-x2vnk           # Current logs
 kubectl logs chromium-7d8f9c6b5-x2vnk -f        # Live-Stream (follow)
-kubectl logs chromium-7d8f9c6b5-x2vnk --tail=50 # Letzte 50 Zeilen
-kubectl logs chromium-7d8f9c6b5-x2vnk -c sidecar   # Bestimmter Container
-kubectl logs chromium-7d8f9c6b5-x2vnk --previous    # Logs des vorherigen Containers
-kubectl logs -l app=chromium --all-containers    # Alle Pods mit Label
+kubectl logs chromium-7d8f9c6b5-x2vnk --tail=50 # Last 50 lines
+kubectl logs chromium-7d8f9c6b5-x2vnk -c sidecar   # Specific container
+kubectl logs chromium-7d8f9c6b5-x2vnk --previous    # Logs from the previous container
+kubectl logs -l app=chromium --all-containers    # All Pods with the label
 ```
 
 ### 15. kubectl exec
@@ -221,9 +221,9 @@ Runs a command inside a running container -- comparable to `docker exec`. With i
 you debug interactively, inspect files or test network connections.
 
 ```bash
-kubectl exec -it chromium-7d8f9c6b5-x2vnk -- /bin/sh       # Shell öffnen
-kubectl exec chromium-7d8f9c6b5-x2vnk -- cat /etc/hostname  # Einzelnen Befehl ausführen
-kubectl exec chromium-7d8f9c6b5-x2vnk -c sidecar -- env     # In bestimmtem Container
+kubectl exec -it chromium-7d8f9c6b5-x2vnk -- /bin/sh       # Open a shell
+kubectl exec chromium-7d8f9c6b5-x2vnk -- cat /etc/hostname  # Run a single command
+kubectl exec chromium-7d8f9c6b5-x2vnk -c sidecar -- env     # Run in a specific container
 ```
 
 **Security note:** in production clusters restrict access via `exec` through RBAC --
@@ -235,9 +235,9 @@ Forwards a local port to a Pod or Service -- ideal for testing without setting u
 public route.
 
 ```bash
-kubectl port-forward pod/chromium-7d8f9c6b5-x2vnk 8080:80    # Pod-Port weiterleiten
-kubectl port-forward svc/chromium-service 8080:80              # Service-Port weiterleiten
-kubectl port-forward deployment/chromium 8080:80               # Deployment-Port weiterleiten
+kubectl port-forward pod/chromium-7d8f9c6b5-x2vnk 8080:80    # Forward a Pod port
+kubectl port-forward svc/chromium-service 8080:80              # Forward a Service port
+kubectl port-forward deployment/chromium 8080:80               # Forward a Deployment port
 ```
 
 Afterwards you reach the application at `http://localhost:8080`.
@@ -248,10 +248,10 @@ Shows the current CPU and memory utilisation of nodes or Pods. Requires the
 <a href="https://github.com/kubernetes-sigs/metrics-server" target="_blank" rel="noopener noreferrer">Metrics Server</a> in the cluster.
 
 ```bash
-kubectl top nodes                            # Ressourcenverbrauch aller Nodes
-kubectl top pods                             # Ressourcenverbrauch aller Pods
-kubectl top pods -A --sort-by=memory         # Sortiert nach Speicherverbrauch
-kubectl top pods -l app=chromium             # Nur bestimmte Pods
+kubectl top nodes                            # Resource usage of all nodes
+kubectl top pods                             # Resource usage of all Pods
+kubectl top pods -A --sort-by=memory         # Sort by memory usage
+kubectl top pods -l app=chromium             # Selected Pods only
 ```
 
 ---
@@ -264,8 +264,8 @@ Copies files between your local machine and a container. Useful for quick
 file transfers -- for regular data exchange volumes suit better.
 
 ```bash
-kubectl cp ./lokale-datei.txt chromium-7d8f9c6b5-x2vnk:/tmp/datei.txt   # Hochladen
-kubectl cp chromium-7d8f9c6b5-x2vnk:/var/log/app.log ./app.log          # Herunterladen
+kubectl cp ./lokale-datei.txt chromium-7d8f9c6b5-x2vnk:/tmp/datei.txt   # Upload
+kubectl cp chromium-7d8f9c6b5-x2vnk:/var/log/app.log ./app.log          # Download
 ```
 
 ### 19. kubectl edit
@@ -277,7 +277,7 @@ for reproducible changes -- use YAML files with `kubectl apply` instead.
 ```bash
 kubectl edit deployment chromium
 kubectl edit svc chromium-service
-KUBE_EDITOR="nano" kubectl edit deployment chromium   # Anderen Editor verwenden
+KUBE_EDITOR="nano" kubectl edit deployment chromium   # Use a different editor
 ```
 
 ### 20. kubectl patch
@@ -286,13 +286,13 @@ Changes individual fields of a resource without rewriting the whole definition. 
 strategic merge patch, JSON merge patch and JSON patch.
 
 ```bash
-# Replicas per Patch ändern
+# Change replicas with a patch.
 kubectl patch deployment chromium -p '{"spec":{"replicas":3}}'
 
-# Label hinzufügen
+# Add a label.
 kubectl patch pod chromium-7d8f9c6b5-x2vnk -p '{"metadata":{"labels":{"env":"staging"}}}'
 
-# JSON Patch (gezieltes Ändern eines Array-Elements)
+# JSON Patch (change a specific array element).
 kubectl patch deployment chromium --type='json' \
   -p='[{"op":"replace","path":"/spec/replicas","value":5}]'
 ```
@@ -308,12 +308,12 @@ filters. **Caution:** deleted resources cannot be restored -- unless you
 backed up the YAML files.
 
 ```bash
-kubectl delete pod chromium-7d8f9c6b5-x2vnk           # Einzelnen Pod löschen
-kubectl delete deployment chromium                      # Deployment löschen (samt Pods)
-kubectl delete -f deployment.yaml                       # Alles aus YAML-Datei löschen
-kubectl delete pods -l app=chromium                     # Nach Label löschen
-kubectl delete namespace schulung                       # Ganzen Namespace löschen
-kubectl delete pods --field-selector status.phase=Failed # Fehlgeschlagene Pods aufräumen
+kubectl delete pod chromium-7d8f9c6b5-x2vnk           # Delete a single Pod
+kubectl delete deployment chromium                      # Delete a Deployment (and its Pods)
+kubectl delete -f deployment.yaml                       # Delete everything from a YAML file
+kubectl delete pods -l app=chromium                     # Delete by label
+kubectl delete namespace schulung                       # Delete an entire Namespace
+kubectl delete pods --field-selector status.phase=Failed # Clean up failed Pods
 ```
 
 **Tip:** when a Pod hangs while deleting, `--force --grace-period=0` forces
@@ -329,10 +329,10 @@ Adds labels to resources, changes them or removes them. Labels are key-value pai
 that serve selection and organisation.
 
 ```bash
-kubectl label pod chromium-7d8f9c6b5-x2vnk env=production          # Label setzen
-kubectl label pod chromium-7d8f9c6b5-x2vnk env=staging --overwrite # Label überschreiben
-kubectl label pod chromium-7d8f9c6b5-x2vnk env-                    # Label entfernen
-kubectl label nodes worker-01 disktype=ssd                          # Node labeln
+kubectl label pod chromium-7d8f9c6b5-x2vnk env=production          # Set a label
+kubectl label pod chromium-7d8f9c6b5-x2vnk env=staging --overwrite # Overwrite a label
+kubectl label pod chromium-7d8f9c6b5-x2vnk env-                    # Remove a label
+kubectl label nodes worker-01 disktype=ssd                          # Label a node
 ```
 
 ### 23. kubectl annotate
@@ -345,7 +345,7 @@ for humans and tools. When you want to find or steer resources in a targeted way
 
 ```bash
 kubectl annotate deployment chromium description="Chromium Browser"
-kubectl annotate deployment chromium description-                    # Annotation entfernen
+kubectl annotate deployment chromium description-                    # Remove an annotation
 ```
 
 **Memory aid:**
@@ -363,10 +363,10 @@ Checks permissions in the cluster: may a certain account run an action? Essentia
 for RBAC debugging.
 
 ```bash
-kubectl auth can-i create deployments                       # Kann ICH Deployments erstellen?
-kubectl auth can-i delete pods --as=system:serviceaccount:default:my-sa  # Für anderen Account prüfen
-kubectl auth can-i '*' '*'                                  # Bin ich Cluster-Admin?
-kubectl auth can-i list secrets --namespace=kube-system      # In bestimmtem Namespace
+kubectl auth can-i create deployments                       # Can I create Deployments?
+kubectl auth can-i delete pods --as=system:serviceaccount:default:my-sa  # Check for another account
+kubectl auth can-i '*' '*'                                  # Am I a cluster admin?
+kubectl auth can-i list secrets --namespace=kube-system      # In a specific Namespace
 ```
 
 ### 25. kubectl create role / clusterrole / rolebinding / clusterrolebinding
@@ -375,13 +375,13 @@ Creates RBAC rules for access control. With them you define who may run which ac
 Namespaces.
 
 ```bash
-# Rolle erstellen: darf Pods lesen
+# Create a Role that can read Pods.
 kubectl create role pod-reader --verb=get,list,watch --resource=pods
 
-# Rolle an einen ServiceAccount binden
+# Bind the Role to a ServiceAccount.
 kubectl create rolebinding pod-reader-binding --role=pod-reader --serviceaccount=default:my-sa
 
-# Cluster-weite Rolle und Binding
+# Cluster-wide Role and binding.
 kubectl create clusterrole node-reader --verb=get,list --resource=nodes
 kubectl create clusterrolebinding read-nodes --clusterrole=node-reader --user=admin@example.com
 ```
@@ -415,8 +415,8 @@ Marks a node as unschedulable (`cordon`) or schedulable again (`uncordon`).
 Existing Pods keep running -- no new ones get assigned only.
 
 ```bash
-kubectl cordon worker-01      # Keine neuen Pods auf diesem Node
-kubectl uncordon worker-01    # Node wieder freigeben
+kubectl cordon worker-01      # Prevent new Pods from being scheduled on this node
+kubectl uncordon worker-01    # Allow scheduling on the node again
 ```
 
 ### 28. kubectl taint
@@ -425,8 +425,8 @@ Sets taints on nodes -- that prevents Pods from getting scheduled there, unless
 they carry a matching toleration.
 
 ```bash
-kubectl taint nodes worker-01 key=value:NoSchedule       # Taint setzen
-kubectl taint nodes worker-01 key=value:NoSchedule-      # Taint entfernen
+kubectl taint nodes worker-01 key=value:NoSchedule       # Add a taint
+kubectl taint nodes worker-01 key=value:NoSchedule-      # Remove a taint
 ```
 
 **Note:** for Pods to get scheduled on a tainted node, they must define a matching toleration in the Pod spec:
@@ -449,28 +449,28 @@ For targeted data extraction from Kubernetes objects. Especially useful in scrip
 automations.
 
 ```bash
-# Alle Pod-Namen auflisten
+# List all Pod names.
 kubectl get pods -o jsonpath='{.items[*].metadata.name}'
 
-# IPs aller Pods
+# IP addresses of all Pods.
 kubectl get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.podIP}{"\n"}{end}'
 
-# Custom Columns für übersichtliche Tabellen
+# Custom columns for clear tables.
 kubectl get pods -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName
 ```
 
 **Useful JSONPath examples:**
 ```bash
-# Container-Images aller Pods
+# Container images for all Pods.
 kubectl get pods -o jsonpath='{.items[*].spec.containers[*].image}'
 
-# Node-Namen und ihre CPU-Capacity
+# Node names and their CPU capacity.
 kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.capacity.cpu}{"\n"}{end}'
 
-# Alle Secrets-Namen
+# Names of all Secrets.
 kubectl get secrets -o jsonpath='{.items[*].metadata.name}'
 
-# Namespace und Status aller Deployments
+# Namespace and status of all Deployments.
 kubectl get deployments -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.status.readyReplicas}{" / "}{.spec.replicas}{"\n"}{end}'
 ```
 
@@ -506,10 +506,10 @@ Shows the API documentation of a field directly in the terminal -- your built-in
 when you are unsure which fields YAML manifests offer.
 
 ```bash
-kubectl explain pod                          # Übersicht Pod-Felder
-kubectl explain pod.spec.containers          # Container-Spezifikation
-kubectl explain deployment.spec.strategy     # Update-Strategie
-kubectl explain pod --recursive              # Alle Felder rekursiv anzeigen
+kubectl explain pod                          # Overview of Pod fields
+kubectl explain pod.spec.containers          # Container specification
+kubectl explain deployment.spec.strategy     # Update strategy
+kubectl explain pod --recursive              # Show all fields recursively
 ```
 
 ---

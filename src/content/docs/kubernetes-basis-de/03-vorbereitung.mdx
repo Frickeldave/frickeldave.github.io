@@ -47,7 +47,7 @@ Im Falle einer lokalen Installation mit k3d siehe unten.
 Du kannst mehrere configs speichern und entweder mit dem Parameter `--kubeconfig=<Pfad zur Datei>` oder mit der Umgebungsvariablen 
 `KUBECONFIG` (Pfad zur config) referenzieren. 
 
-### Optional: Tuning Linux
+### Optional: Tuning Linux / MacOS
 
 Das folgende Skript richtet den `k`-Alias für kubectl sowie die Bash-Autovervollständigung
 dauerhaft in deiner `.bashrc` ein. Es arbeitet mit einem Marker-Block: Ein bereits vorhandener
@@ -125,6 +125,14 @@ setup_kubectl_shell() {
 setup_kubectl_shell
 ```
 
+### Optional: Tuning MacOS
+
+``` bash
+
+brew install bash-completion@2
+
+```
+
 Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#enable-shell-autocompletion" target="_blank" rel="noopener noreferrer">kubectl auf Linux</a>.
 
 ### Optional: Tuning Windows
@@ -178,18 +186,11 @@ if ($content -match $pattern) {
 Set-Content -Path $profilePath -Value $newContent -Encoding UTF8
 
 . $PROFILE
-
 ```
 
 Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/" target="_blank" rel="noopener noreferrer">kubectl auf Windows</a>.
 
-### Optional: Tuning MacOS
 
-``` bash
-
-brew install bash-completion@2
-
-```
 Autocompletion can be enabled with the same script as for linux. 
 Mehr info findest du unter <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/" target="_blank" rel="noopener noreferrer">kubectl auf MacOS</a>.
 
