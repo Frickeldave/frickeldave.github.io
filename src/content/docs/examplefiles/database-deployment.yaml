@@ -7,6 +7,11 @@ metadata:
     app: database
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: database
@@ -16,8 +21,8 @@ spec:
         app: database
     spec:
       initContainers:
-        - name: wait-for-mariadb
-          image: mariadb:11
+        - name: prepare-database-init
+          image: busybox:1.36
           resources:
             requests:
               cpu: "50m"
@@ -28,57 +33,50 @@ spec:
           command:
             - sh
             - -c
-            - |
-              echo "Warte auf MariaDB auf localhost:3306 ..."
-              until mysqladmin ping -h localhost -u root -ptrainingk8s --silent; do
-                echo "MariaDB noch nicht bereit - warte 2s ..."
-                sleep 2
-              done
-              echo "MariaDB ist bereit!"
+            - cp /source/10-health.sql /initdb/10-health.sql
+          volumeMounts:
+            - name: database-health-secret
+              mountPath: /source
+              readOnly: true
+            - name: database-health-init
+              mountPath: /initdb
       containers:
         - name: mariadb
           image: lscr.io/linuxserver/mariadb:latest
           resources:
             requests:
-              cpu: "100m"
-              memory: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          ports:
-            - containerPort: 3306
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
-            # training value in plain text; in production use secretKeyRef from a Secret
-            - name: MYSQL_ROOT_PASSWORD
-              value: "trainingk8s"
-          volumeMounts:
-            - name: config
-              mountPath: /config
-        - name: phpmyadmin
-          image: lscr.io/linuxserver/phpmyadmin:latest
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "128Mi"
-            limits:
               cpu: "250m"
               memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
           ports:
-            - containerPort: 80
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: database-config
           env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Berlin"
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-secret
+                  key: MYSQL_ROOT_PASSWORD
+          volumeMounts:
+            - name: database-config
+              mountPath: /config
+            - name: database-health-init
+              mountPath: /config/initdb.d
       volumes:
-        - name: config
+        - name: database-config
           persistentVolumeClaim:
             claimName: mariadb-config
+        - name: database-health-init
+          emptyDir: {}
+        - name: database-health-secret
+          secret:
+            secretName: database-secret
+            items:
+              - key: 10-health.sql
+                path: 10-health.sql

@@ -30,24 +30,24 @@ vertieft das anschließend mit MariaDB und phpMyAdmin.
 
 ## Zeitplan
 
-| Zeit / Schedule         | Block                | Inhalt                                     |
-| -------------- | -------------------- | ------------------------------------------ |
-| 09:00 – 09:15  | Recap                | Status-Check Tag 1                         |
-| 09:15 – 09:45  | Theorie              | Pods: Multi-Container, Resources           |
-| 09:45 – 10:15  | ConfigMaps           | Konfiguration auslagern (Code-Server)      |
-| 10:15 – 11:00  | Resource Limits      | Auf Chromium + Code-Server anwenden        |
-| 11:00 – 11:15  | **Pause**            |                                            |
-| 11:15 – 11:45  | Theorie              | Health Checks                              |
-| 11:45 – 12:15  | Probes konfigurieren | Chromium + Code-Server                     |
-| 12:15 – 12:30  | Theorie              | Deployment-Strategien                      |
-| 12:30 – 13:30  | **Mittagspause**     |                                            |
-| 13:30 – 14:00  | Rolling Updates      | Update + Rollback Code-Server              |
-| 14:00 – 14:45  | Secrets & Security   | Passwörter auslagern, SecurityContext      |
-| 14:45 – 15:15  | Sidecar-Container    | Vector als Sidecar für Chromium-Logs       |
-| 15:15 – 15:30  | **Pause**            |                                            |
-| 15:30 – 16:15  | Persistent Volumes   | PVCs, StorageClass, Fehlerbild „Pending“   |
-| 16:15 – 17:00  | **[Optional / Vertiefung: MariaDB + phpMyAdmin](#-vertiefung-mariadb--phpmyadmin-deployen-optional)** | Optional – Deployments mit PVC, Init-Container |
-| 17:00 – 17:15  | Abschluss            | Zusammenfassung + Ausblick                 |
+| Schedule     | Block                | Inhalt                                     |
+| ------------ | -------------------- | ------------------------------------------ |
+| 09:00–09:15  | Recap                | Status-Check Tag 1                         |
+| 09:15–09:45  | Theorie              | Pods: Multi-Container, Resources           |
+| 09:45–10:15  | ConfigMaps           | Konfiguration auslagern (Code-Server)      |
+| 10:15–11:00  | Resource Limits      | Auf Chromium + Code-Server anwenden        |
+| 11:00–11:15  | **Pause**            |                                            |
+| 11:15–11:45  | Theorie              | Health Checks                              |
+| 11:45–12:15  | Probes konfigurieren | Chromium + Code-Server                     |
+| 12:15–12:30  | Theorie              | Deployment-Strategien                      |
+| 12:30–13:30  | **Mittagspause**     |                                            |
+| 13:30–14:00  | Rolling Updates      | Update + Rollback Code-Server              |
+| 14:00–14:45  | Secrets & Security   | Passwörter auslagern, SecurityContext      |
+| 14:45–15:15  | Sidecar-Container    | Vector als Sidecar für Chromium-Logs       |
+| 15:15–15:30  | **Pause**            |                                            |
+| 15:30–16:15  | Persistent Volumes   | PVCs, StorageClass, Fehlerbild „Pending“   |
+| 16:15–17:00  | **[Optional / Vertiefung: MariaDB + phpMyAdmin](#-vertiefung-mariadb--phpmyadmin-deployen-optional)** | Optional – Deployments mit PVC, Init-Container |
+| 17:00–17:15  | Abschluss            | Zusammenfassung + Ausblick                 |
 
 ## Recap
 
@@ -116,6 +116,8 @@ kubectl apply -f linuxserver-common-config-map.yaml
 Eingebunden wird sie mit `envFrom` -- das importiert alle drei Keys als Umgebungsvariablen:
 
 ```yaml
+env:
+...
 envFrom:
   - configMapRef:
       name: linuxserver-common
@@ -1640,18 +1642,22 @@ Einer der Teilnehmer teilt seinen Bildschirm und zeigt live, wie er die Aufgabe 
 <Image src={knba20080} alt="Übung: MariaDB und PHPMyAdmin deployen * Erstellt mit OpenAI Imagegen" />
 
 
-Deploye **MariaDB** und **phpMyAdmin** in den Namespace `k8s-training`. 
+Deploye **MariaDB** und **phpMyAdmin** in den Namespace `k8s-training`. Jede Anwendung läuft in
+einem eigenen Pod mit genau einem App-Container. Der phpMyAdmin-Pod erhält zusätzlich einen
+Init-Container, der wartet, bis MariaDB über den Service `mariadb` und den User "health" erreichbar ist.
+Der User "health" muss in der DB angelegt werden. Die Pods kommunizieren über den Kubernetes-Service – nicht über `localhost`.
 
 | Eigenschaft | MariaDB | phpMyAdmin |
 |-------------|---------|------------|
 | Image | `lscr.io/linuxserver/mariadb:latest` | `lscr.io/linuxserver/phpmyadmin:latest` |
 | Container-Port | `3306` | `80` |
 | Service-Port | `3306` | `80` |
-| Service-Typ | `ClusterIP` | `NodePort` |
+| Service-Typ | `ClusterIP` | `ClusterIP` (Zugriff über Ingress) |
 | Namespace | `k8s-training` | `k8s-training` |
-| PVC | `mariadb-config` (1Gi, `ReadWriteOnce`) | – (nutzt `emptyDir` für Sessions) |
-| Mount-Pfad | `/config` | – |
-| Umgebungsvariablen | `PUID=1000`, `PGID=1000`, `TZ=Europe/Berlin`, `MYSQL_ROOT_PASSWORD=trainingk8s` | `PUID=1000`, `PGID=1000`, `TZ=Europe/Berlin` |
+| Deployment | `database` (ein App-Container + Init-Container) | `pma` (ein App-Container + Init-Container) |
+| PVC | `mariadb-config` (1Gi, `ReadWriteOnce`) | – (Session-Volume via `emptyDir`) |
+| Mount-Pfad | `/config` | `/sessions` |
+| Umgebungsvariablen | `PUID=1000`, `PGID=1000`, `TZ=Europe/Berlin`, `MYSQL_ROOT_PASSWORD` aus Secret | `PUID=1000`, `PGID=1000`, `TZ=Europe/Berlin`, `PMA_HOST=mariadb`, `PMA_PORT=3306` |
 
 **Wichtig:** Das Root-Passwort (`MYSQL_ROOT_PASSWORD`) ist ein Secret – lagere es in ein
 Kubernetes-Secret aus, nicht in die ConfigMap!
@@ -1663,31 +1669,32 @@ Deine Lösung muss folgende Konzepte aus Tag 1 und Tag 2 abdecken:
 <InteractiveChecklist
   items={[
     "Deklaratives Deployment per YAML (kein kubectl create deployment)",
-    "Labels (app: database) für Selektor und Service",
+    "Labels und Selektoren passend zu beiden Pods und Services (app: database bzw. app: pma)",
     "Service (ClusterIP) für MariaDB (Port 3306), damit andere Pods die Datenbank erreichen",
-    "Service (ClusterIP) für phpMyAdmin (Port 80), damit Ingress darauf zugreifen kann.",
-    "Ingress für phpMyAdmin (Port 80)",
+    "Service (ClusterIP) und Ingress für phpMyAdmin (Port 80), damit du im Browser darauf zugreifen kannst",
     "ConfigMap für die Umgebungsvariablen (PUID, PGID, TZ)",
     "Secret für MYSQL_ROOT_PASSWORD",
+    "Health-Nutzer mit ausschließlich USAGE-Rechten und eigenem Secret-Key über ein MariaDB-Init-Skript anlegen",
     "PersistentVolumeClaim (1Gi, ReadWriteOnce) für MariaDB unter /config",
-    "Resource Limits für beide Container (requests: 256Mi/250m, limits: 1Gi/1000m)",
+    "Resource Limits für beide App-Container (requests: 256Mi/250m, limits: 1Gi/1000m)",
     "Health Checks – StartupProbe, LivenessProbe, ReadinessProbe (jeweils auf Port 80 für phpMyAdmin)",
     "RollingUpdate-Strategie (maxSurge: 1, maxUnavailable: 0)",
-    "Multi-Container Pod – MariaDB + phpMyAdmin teilen sich localhost",
-    "Ingress route (freiwillig) – PhpMyAdmin ist über eine Ingress-Route erreichbar. Zusatzaufgabe: wer die Ingress-Route aus Tag 1 wiederholen möchte, legt zusätzlich eine Ingress-Ressource mit Host phpmyadmin.k8s-training.frickeldave.de an; verpflichtend ist der NodePort-Service.",
+    "Getrennte Pods: MariaDB und phpMyAdmin haben jeweils genau einen App-Container",
+    "Init-Container im phpMyAdmin-Pod prüft mit dem Health-Nutzer eine authentifizierte SELECT-1-Abfrage über den Service mariadb:3306",
   ]}
 />
 
 
 ### Tipps
 
-- Beginne mit PVC, dann Secret, dann ConfigMap, dann Deployment, dann **zwei Services**
+- Beginne mit PVC, Secret und ConfigMap, dann mit beiden Deployments und **zwei Services**
 - Der PVC muss `Bound` sein, bevor der Pod startet
-- phpMyAdmin verbindet sich per Config auf `localhost:3306` – das funktioniert, weil beide Container im selben Pod sind
+- phpMyAdmin verbindet sich über `PMA_HOST=mariadb` mit dem ClusterIP-Service; `localhost` funktioniert hier nicht, weil die Anwendungen in getrennten Pods laufen
+- Der Init-Container im phpMyAdmin-Pod verwendet `mariadb:11` und wiederholt eine authentifizierte Abfrage `SELECT 1` als `health`, bis sie erfolgreich ist
 - **MariaDB bekommt einen eigenen `ClusterIP`-Service** (Port `3306`). Andere Pods (z. B. eine Nextcloud) können dann über den DNS-Namen `mariadb.k8s-training.svc.cluster.local:3306` auf die Datenbank zugreifen
 - Die Probes für phpMyAdmin zeigen auf HTTP `:80/`
-- MariaDB braucht keine eigene Probe – wenn die DB weg ist, merkt phpMyAdmin das
-- Nach dem Deploy: `kubectl get all -n k8s-training` – das neue Deployment sollte als drittes auftauchen
+- MariaDB braucht keine eigene Probe; der Init-Container verzögert den Start von phpMyAdmin, bis MariaDB beim ersten Start erreichbar ist
+- Nach dem Deploy: `kubectl get deployments,pods -n k8s-training` – `database` und `pma` erscheinen als separate Deployments und Pods
 
 ### Erwartetes Ergebnis
 
@@ -1696,15 +1703,15 @@ kubectl get deployments -n k8s-training
 # NAME            READY   UP-TO-DATE   AVAILABLE
 # chromium        1/1     1            1
 # code-server     1/1     1            1
-# mariadb         1/1     1            1
-# phpmyadmin      1/1     1            1
+# database        1/1     1            1
+# pma             1/1     1            1
 
 kubectl get pods -n k8s-training
 # NAME                        READY   STATUS
 # chromium-xxx                2/2     Running
 # code-server-xxx             1/1     Running
 # database-xxx                1/1     Running
-# phpmyadmin-xxx              1/1     Running
+# pma-xxx                     1/1     Running
 
 kubectl get pvc -n k8s-training
 # NAME                    STATUS   VOLUME
@@ -1721,12 +1728,11 @@ kubectl get pvc -n k8s-training
 5. Warte, bis der neue Pod läuft
 6. Lade phpMyAdmin neu – die erstellte Datenbank sollte noch vorhanden sein (Dank PVC!)
 
-## 🧪 Vertiefung: Init-Container für MariaDB-Wartezeit (optional)
+## 🧪 Vertiefung: Init-Container für MariaDB-Wartezeit
 
-In der Sidecar-Übung mit Vector hast du gesehen, wie zwei Container parallel starten.
-Bei MariaDB + phpMyAdmin ist das anders: phpMyAdmin **braucht** eine laufende MariaDB,
-sonst zeigt es nur eine Fehlerseite. Ein Init-Container löst das: Er läuft **vor** den
-App-Containern und blockiert so lange, bis MariaDB bereit ist. 
+Der phpMyAdmin-Pod hat einen eigenen Init-Container. Er läuft vor dem App-Container und wartet,
+bis MariaDB über den ClusterIP-Service erreichbar ist. Da MariaDB und phpMyAdmin in getrennten
+Pods laufen, verbindet sich der Init-Container mit `mariadb:3306` statt mit `localhost`.
 
 <br/>
 <Notice type="info">
@@ -1740,78 +1746,82 @@ Einer der Teilnehmer teilt seinen Bildschirm und zeigt live, wie er die Aufgabe 
 
 ### Aufgabe
 
-Ergänze das Deployment aus der vorherigen Übung um einen **Init-Container**, der vor dem
-Start von phpMyAdmin prüft, ob MariaDB auf `localhost:3306` antwortet. Der Init-Container
-verwendet das offizielle `mariadb:11`-Image und führt `mysqladmin ping` aus.
+Das Deployment `pma` aus der vorherigen Übung enthält einen **Init-Container**, der vor dem
+Start des App-Containers prüft, ob MariaDB über den Service `mariadb:3306` erreichbar ist. Der
+Init-Container verwendet das offizielle `mariadb:11`-Image und meldet sich als `health` an.
 
 ### Lösung (Schritt für Schritt)
 
-**1. Deployment anpassen**
+Die vollständigen Manifeste liegen im Schulungsmaterial: `examplefiles/database-deployment.yaml`
+für MariaDB, `examplefiles/database-pma-deployment.yaml` für phpMyAdmin und
+`examplefiles/database-service.yaml` für den Datenbank-Service.
 
-Füge einen `initContainers`-Block in das Deployment ein. Der Init-Container sitzt auf
-derselben Ebene wie `containers` und `volumes`:
+**Health-Nutzer vorbereiten:** Das Secret `database-secret.yaml` enthält das
+Schulungs-Passwort `health` und ein SQL-Skript mit `CREATE USER 'health'@'%' IDENTIFIED BY 'health';`.
+Der Nutzer erhält dadurch nur `USAGE`, also keine zusätzlichen Datenbankrechte. Das
+Datenbank-Deployment kopiert das Skript beim Pod-Start nach `/config/initdb.d/`. Das
+LinuxServer-MariaDB-Image führt es **nur bei der ersten Initialisierung einer leeren Datenbank**
+aus. Für einen bereits verwendeten PVC muss ein Datenbankadministrator den Nutzer separat anlegen;
+ein Neustart allein führt das Skript nicht erneut aus.
+
+Das Passwort steht in diesem Schulungsbeispiel sowohl im Secret-Feld `HEALTH_PASSWORD` als auch im SQL;
+bei einer Änderung müssen beide übereinstimmen. `health` ist kein sicheres Produktionspasswort.
+Kubernetes-Secrets sind nicht automatisch verschlüsselt, und Beispielpasswörter dürfen nicht in
+Produktivumgebungen verwendet werden.
+
+**1. Init-Container im phpMyAdmin-Deployment**
+
+Der Init-Container gehört in das phpMyAdmin-Deployment. Kubernetes löst den Service-Namen
+`mariadb` innerhalb des Namespace `k8s-training` auf.
 
 ```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: database
-  namespace: k8s-training
-  labels:
-    app: database
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: database
-  template:
-    metadata:
-      labels:
-        app: database
-    spec:
-      initContainers:                          # ⬅️ NEU: läuft vor den App-Containern
-        - name: wait-for-mariadb
-          image: mariadb:11
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "32Mi"
-            limits:
-              cpu: "100m"
-              memory: "64Mi"
-          command:
-            - sh
-            - -c
-            - |
-              echo "Warte auf MariaDB auf localhost:3306 ..."
-              until mysqladmin ping -h localhost -u root -ptrainingk8s --silent; do
-                echo "MariaDB noch nicht bereit – warte 2s ..."
-                sleep 2
-              done
-              echo "MariaDB ist bereit!"
-      containers:
-        - name: mariadb
-          # ... bestehende Konfiguration ...
-        - name: phpmyadmin
-          # ... bestehende Konfiguration ...
+initContainers:
+  - name: wait-for-mariadb
+    image: mariadb:11
+    env:
+      - name: HEALTH_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: database-secret
+            key: HEALTH_PASSWORD
+    command:
+      - sh
+      - -c
+      - |
+        echo "Waiting for MariaDB at mariadb:3306 ..."
+        until MYSQL_PWD="$HEALTH_PASSWORD" mariadb --host=mariadb --user=health --connect-timeout=5 --batch --skip-column-names -e "SELECT 1"; do
+          echo "MariaDB connection or health authentication failed; retrying in 2 seconds ..."
+          sleep 2
+        done
+        echo "MariaDB is ready!"
 ```
 
 **Was passiert hier?**
 
 | Schritt | Beschreibung |
 |---------|-------------|
-| `image: mariadb:11` | Der Init-Container nutzt das offizielle MariaDB-Image – darin ist `mysqladmin` enthalten |
-| `mysqladmin ping` | Prüft, ob der MariaDB-Server auf `localhost:3306` antwortet. Exit-Code 0 = bereit |
-| `-h localhost` | MariaDB läuft im selben Pod – also über `localhost` erreichbar |
-| `-u root -ptrainingk8s` | Authentifizierung mit dem Root-Passwort aus dem Secret |
-| `--silent` | Nur Exit-Code, keine Ausgabe |
+| `image: mariadb:11` | Der Init-Container nutzt das offizielle MariaDB-Image mit dem Client `mariadb` |
+| `mariadb ... -e "SELECT 1"` | Prüft Verbindung und erfolgreiche Anmeldung, ohne Tabellenrechte zu benötigen |
+| `--host=mariadb` | Der Service routet die Verbindung vom phpMyAdmin-Pod zum MariaDB-Pod |
+| `MYSQL_PWD` | Übergibt das Health-Passwort aus dem Kubernetes-Secret an den Client |
+| `--connect-timeout=5` | Begrenzt die Wartezeit pro Verbindungsversuch |
 | `until ...; do sleep 2; done` | Wiederhole die Prüfung alle 2 Sekunden, bis MariaDB antwortet |
-| `echo "MariaDB ist bereit!"` | Sobald MariaDB antwortet, beendet sich der Init-Container mit Exit-Code 0 |
+| `echo "MariaDB is ready!"` | Sobald die Abfrage erfolgreich ist, beendet sich der Init-Container mit Exit-Code 0 |
 
-**2. Deployment aktualisieren**
+Ein `mariadb-admin ping` genügt hier nicht: Er kann auch dann erfolgreich sein, wenn der Server
+eine Anmeldung abweist. Die `SELECT 1`-Abfrage prüft dagegen die Anmeldung mit dem Health-Nutzer.
+
+**2. Ressourcen anwenden**
 
 ```bash
+kubectl apply -f database-pvc.yaml
+kubectl apply -f database-secret.yaml
+kubectl apply -f database-config-map.yaml
 kubectl apply -f database-deployment.yaml
+kubectl apply -f database-service.yaml
+kubectl apply -f database-pma-deployment.yaml
+kubectl apply -f database-pma-service.yaml
+kubectl apply -f database-pma-ingress.yaml
 ```
 
 **3. Beobachten, was passiert**
@@ -1821,35 +1831,41 @@ kubectl apply -f database-deployment.yaml
 **Terminal 1 – Pod-Status live:**
 
 ```bash
-kubectl get pods -l app=database -n k8s-training -w
+kubectl get pods -l app=pma -n k8s-training -w
 ```
 
 Du siehst:
 
 ```
-NAME                        READY   STATUS     RESTARTS
-database-xxx                0/2     Init:0/1   0       ← Init-Container läuft
-database-xxx                0/2     Init:0/1   0       ← Init-Container wartet auf MariaDB
-database-xxx                0/2     Init:0/1   0       ← (wiederholt sich bis MariaDB bereit)
-database-xxx                0/2     PodInitializing    ← Init-Container fertig, App-Container starten
-database-xxx                1/2     Running            ← MariaDB läft, phpMyAdmin startet
-database-xxx                2/2     Running            ← Beide Container laufen
+NAME                            READY   STATUS
+pma-xxx                         0/1     Init:0/1         ← Init-Container wartet
+pma-xxx                         0/1     PodInitializing  ← Init-Container fertig
+pma-xxx                         1/1     Running          ← phpMyAdmin läuft
 ```
 
 **Terminal 2 – Logs des Init-Containers anzeigen:**
 
 ```bash
-kubectl logs -l app=database -n k8s-training -c wait-for-mariadb
+kubectl logs -l app=pma -n k8s-training -c wait-for-mariadb
 ```
 
 Erwartete Ausgabe:
 
 ```
-Warte auf MariaDB auf localhost:3306 ...
-MariaDB noch nicht bereit – warte 2s ...
-MariaDB noch nicht bereit – warte 2s ...
-MariaDB ist bereit!
+Waiting for MariaDB at mariadb:3306 ...
+MariaDB connection or health authentication failed; retrying in 2 seconds ...
+1
+MariaDB is ready!
 ```
+
+Starte den phpMyAdmin-Pod neu und beobachte den Init-Container erneut:
+
+```bash
+kubectl delete pod -l app=pma -n k8s-training
+kubectl get pods -l app=pma -n k8s-training -w
+```
+
+Der Pod bleibt in `Init:0/1`, bis MariaDB antwortet. Erst danach startet der phpMyAdmin-App-Container.
 
 ### Zusammenfassung Init-Container
 
@@ -1858,7 +1874,7 @@ MariaDB ist bereit!
 | **Reihenfolge** | Init-Container laufen **sequenziell** vor allen App-Containern |
 | **Lebensdauer** | Einmalig bis zum erfolgreichen Exit-Code 0 |
 | **Bei Fehler** | Pod startet App-Container nicht – bleibt in `Init:`-Status |
-| **Restart** | Init-Container werden **nicht** automatisch neu gestartet (kein CrashLoop) |
+| **Restart** | Fehlgeschlagene Init-Container werden gemäß `restartPolicy` erneut gestartet |
 | **Typische Nutzung** | Warten auf Abhängigkeiten, Schema-Migrationen, Dateien vorbereiten |
 | **Image** | Beliebiges Image – muss nicht zum App-Image passen |
 
@@ -1875,10 +1891,10 @@ kubectl get all -n k8s-training
 
 | Ressource       | Anzahl | Details                                              |
 | --------------- | ------ | ---------------------------------------------------- |
-| Deployments     | 3      | chromium, code-server, database                      |
-| ReplicaSets     | 3+     | je 1 pro Deployment (+ alte für Rollback)            |
-| Pods            | 3      | chromium (2 Container), code-server (1 Container), database (2 Container) |
-| Services        | 3      | chromium (4000), code-server (8443), database (80)   |
+| Deployments     | 4      | chromium, code-server, database, pma                 |
+| ReplicaSets     | 4+     | je 1 pro Deployment (+ alte für Rollback)            |
+| Pods            | 4      | chromium (2 Container), code-server (1), database (1 + Init-Container), pma (1 + Init-Container) |
+| Services        | 4      | chromium (4000), code-server (8443), mariadb (3306), pma (80) |
 | ConfigMaps      | 3      | code-server-config, vector-config, database-config   |
 | Secrets         | 2      | code-server-secret, database-secret                  |
 | PVCs            | 2      | code-server-config (1Gi), mariadb-config (1Gi)       |

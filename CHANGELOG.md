@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.15] - 2026-11-11
+
+### Added
+
+- ZIP-Download der Trainings-Beispieldateien: `scripts/build-examplefiles-zip.mjs` packt
+  `src/content/docs/examplefiles/` ohne Fremdbibliothek und mit festem Zeitstempel deterministisch
+  nach `public/downloads/kubernetes-basis-examplefiles.zip`; `prebuild` und `predev` erzeugen das
+  Archiv vor jedem Build, das ZIP bleibt als Build-Artefakt aus dem Repository (#301).
+- Siebter Eintrag im Download-Bereich: „Kubernetes-Trainingsmaterial (Beispieldateien)“ mit
+  `fileType: zip` und Kategorie „Kubernetes“, bewusst ohne Dateigröße, Version und Datum (#301).
+- Hinweis in beiden Einleitungskapiteln (`kubernetes-basis-de/01-einleitung` und
+  `kubernetes-basis-en/01-introduction`), dass die Beispieldateien im Download-Bereich liegen (#301).
+- Sieben neue Manifeste im Trainingsmaterial: ConfigMap, Secret, PVC, Service und Deployment für
+  MariaDB sowie Deployment, Service und Ingress für phpMyAdmin (#301).
+
+### Changed
+
+- Trainingskapitel beider Sprachfassungen an die neue Database-Struktur angeglichen: MariaDB und
+  phpMyAdmin laufen in getrennten Pods und kommunizieren über den Service `mariadb`, phpMyAdmin
+  erhält einen Init-Container mit dem Benutzer `health` und ist über Ingress statt NodePort
+  erreichbar; Checklisten, Tipps und Zeitplan-Tabellen folgen der neuen Form (#301).
+
+### Removed
+
+- `src/content/docs/examplefiles/example_commands.txt`: die Beispielbefehle stehen jetzt in den
+  Kapiteln und im ZIP-Download (#301).
+
 ## [1.0.14] - 2026-11-10
 
 ### Added

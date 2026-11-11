@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pma
+  namespace: k8s-training
+  labels:
+    app: pma
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: pma
+  template:
+    metadata:
+      labels:
+        app: pma
+    spec:
+      initContainers:
+        - name: wait-for-mariadb
+          image: mariadb:11
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          env:
+            - name: HEALTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-secret
+                  key: HEALTH_PASSWORD
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MariaDB at mariadb:3306 ..."
+              until MYSQL_PWD="$HEALTH_PASSWORD" mariadb --host=mariadb --user=health --connect-timeout=5 --batch --skip-column-names -e "SELECT 1"; do
+                echo "MariaDB connection or health authentication failed; retrying in 2 seconds ..."
+                sleep 2
+              done
+              echo "MariaDB is ready!"
+      containers:
+        - name: phpmyadmin
+          image: lscr.io/linuxserver/phpmyadmin:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: database-config
+          env:
+            - name: PMA_HOST
+              value: mariadb
+            - name: PMA_PORT
+              value: "3306"
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: phpmyadmin-sessions
+              mountPath: /sessions
+      volumes:
+        - name: phpmyadmin-sessions
+          emptyDir: {}
