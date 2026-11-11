@@ -3515,6 +3515,24 @@ richtigen Abhilfe statt in die falsche Spur einer fehlenden Benutzerfreigabe.
 **What:** `docs/features/fr008-ha-manager.md` beschreibt im Tab Allgemeine Einstellungen den gemeinsamen Button **Einstellungen speichern** für Speicherort samt Backup-Schalter und Bild-Maximalgröße, die Wirkung von **Änderung verwerfen** auf beide Bereiche, den PATCH mit ausschließlich geänderten Abschnitten und den Reload nur bei geändertem Speicherort. Neuer Abschnitt „Verbindung zum Server fehlgeschlagen (0.2.6 bis 0.2.7)“ erklärt den URL-Fehler. Versionsbasis in Tabelle und Statuszeile auf 0.2.7 gehoben. `CHANGELOG.md` ergänzt unter `## [Unreleased]` je einen Eintrag in `### Fixed` und `### Changed`.
 **Why:** Die absolute URL verdoppelte `auth.data.hassUrl` über `fetchWithAuth`, sodass jeder Panel-Aufruf mit „Verbindung zum Server fehlgeschlagen“ endete; ein separater Button für die Bildgröße war neben dem allgemeinen Speichern überflüssig.
 
+### 2026-11-11T21-05-01: Kamera-Aufnahme im Store-Panel erscheint mit Basis 0.2.8
+**By:** Squad (Coordinator)
+**What:** Kamera-Aufnahme im Store-Panel erscheint mit Basis 0.2.8
+**Why:**
+
+#### 2026-11-11: Release-Version der Kamera-Aufnahme (#321) entschieden
+
+**By:** David Koenig (via Copilot), festgehalten vom Squad-Koordinator
+**What:** Die in #321 spezifizierte Kamera-Aufnahme im Bilder-Tab des Store-Panels wird mit der Basis-Version **0.2.8** der Integration `frickeldave_store` live gesetzt; 0.2.7 bleibt unverändert.
+**Why:** Der offene Punkt aus `### Offene Fragen` in #321 (Owner Tony/Maria) ist damit entschieden.
+
+Konsequenzen:
+
+- `docs/features/fr008-ha-manager.md` (dieses Repository): Statuszeile, Versionstabelle und der `**Kamera.**`-Absatz nennen 0.2.8 als Release-Version statt „entscheidet der Store-PR“.
+- `CHANGELOG.md` (dieses Repository): `## [Unreleased]`-Eintrag zu #321 nennt 0.2.8.
+- Status der Integration am 2026-11-11 geprüft: `manifest.json` führt `0.2.7`, letzter Tag und letztes Release ist `0.2.7` (2026-11-06). 0.2.8 ist noch nicht getaggt — die Doku nennt 0.2.8 deshalb als Ziel-/Vorbereitungsversion, nicht als bereits veröffentlichtes Artefakt.
+- Die Code-Umsetzung (Panel, Tests, Manifest/CHANGELOG der Integration) bleibt in `Frickeldave/homeassistant-frickeldave-store` und ist nicht Teil dieses Repositorys.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
