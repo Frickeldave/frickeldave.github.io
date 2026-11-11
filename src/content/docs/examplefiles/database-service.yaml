@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: k8s-training
+spec:
+  type: ClusterIP
+  selector:
+    app: database
+  ports:
+    - name: mysql
+      protocol: TCP
+      port: 3306
+      targetPort: mysql

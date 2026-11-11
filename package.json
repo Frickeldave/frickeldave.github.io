@@ -1,6 +1,6 @@
 {
   "name": "Astrogon",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Template.",
   "author": "Frickeldave",
   "license": "MIT",
@@ -10,9 +10,12 @@
   },
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
+    "predev": "npm run zip:examples",
+    "zip:examples": "node scripts/build-examplefiles-zip.mjs",
     "scad:render": "node scripts/build-scad.mjs",
     "scad:install": "node scripts/install-openscad.mjs",
     "build": "npm run scad:render && astro build",
+    "prebuild": "npm run zip:examples",
     "postbuild": "pagefind --site dist",
     "prepare": "husky",
     "postinstall": "npm run prose-install && npm run scad:install",
@@ -28,7 +31,7 @@
     "start-reqeng": "node scripts/start-reqeng.mjs",
     "start-review": "node scripts/start-review.mjs",
     "versionbump": "node scripts/versionbump.mjs",
-    "test:scripts": "node --experimental-test-module-mocks --test scripts/start-work.test.mjs scripts/start-reqeng.test.mjs scripts/start-review.test.mjs scripts/start-flow-flags.test.mjs scripts/flow-shared.test.mjs scripts/copilot-provider.test.mjs scripts/platform-shared.test.mjs scripts/copilot-environment.test.mjs scripts/ensure-issue-branch.test.mjs scripts/versionbump.test.mjs scripts/release-gate.test.mjs scripts/check-release-label.test.mjs scripts/catalog-only.test.mjs"
+    "test:scripts": "node --experimental-test-module-mocks --test scripts/start-work.test.mjs scripts/start-reqeng.test.mjs scripts/start-review.test.mjs scripts/start-flow-flags.test.mjs scripts/flow-shared.test.mjs scripts/copilot-provider.test.mjs scripts/platform-shared.test.mjs scripts/copilot-environment.test.mjs scripts/ensure-issue-branch.test.mjs scripts/versionbump.test.mjs scripts/release-gate.test.mjs scripts/check-release-label.test.mjs scripts/catalog-only.test.mjs scripts/build-examplefiles-zip.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
