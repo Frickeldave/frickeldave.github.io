@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Dokumentation des Drehens von Produktbildern um 90° in `docs/features/fr008-ha-manager.md`: neue
+  Schaltflächen **↺ 90°** und **↻ 90°** im Tab Bilder, Endpoint
+  `POST /api/frickeldave_store/products/{artikelnummer}/images/{name}/rotate`, Formate und
+  Qualitätsstufen, die bewusste Ablehnung animierter GIF- und WebP-Dateien sowie die
+  Original-Sicherung unter `backups/images/` (Basis 0.2.9, #322).
+
 ## [1.0.15] - 2026-11-11
 
 ### Added

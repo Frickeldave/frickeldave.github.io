@@ -17,8 +17,9 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
   Veröffentlichungsdialog ist released. Basis 0.2.5 mit der einstellbaren Bildgrenze und der
   Speicherbelegung im Konfigurationspanel ist released. Basis 0.2.6 mit der automatischen
   Token-Erneuerung im Panel ist released. Basis 0.2.7 mit dem gemeinsamen Speichern-Button und dem
-  korrigierten `fetchWithAuth`-Aufruf ist in Vorbereitung; Erweiterung 0.1.6 mit dem korrigierten
-  Dispatch-Endpoint folgt. Finanz- und Kundenfunktionen bleiben geplant.
+  korrigierten `fetchWithAuth`-Aufruf ist in Vorbereitung; Basis 0.2.9 mit dem Drehen von
+  Produktbildern um 90 Grad folgt. Erweiterung 0.1.6 mit dem korrigierten Dispatch-Endpoint steht
+  ebenfalls noch aus. Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -67,7 +68,7 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.7` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.9` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6` |
 
 - Basis: `custom_components/frickeldave_store/`.
@@ -479,12 +480,12 @@ Felder. Beide Bedienelemente teilen denselben Sortierzustand.
 **Neues Produkt** und **Produkt bearbeiten** öffnen denselben Dialog mit vier Tabs in dieser
 Reihenfolge:
 
-| Tab          | Inhalt                                                                           |
-| ------------ | -------------------------------------------------------------------------------- |
-| Grunddaten   | Name, Kategorie, Preis, Größe, Tags, Sichtbarkeit und Personalisierbar           |
-| Bilder       | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen, Optimieren |
-| Beschreibung | Beschreibungsfeld, „Eigene Hinweise“ für die KI und „Beschreibung vorschlagen“   |
-| Bestand      | Bestände je Lagerstätte und Buchungshistorie                                     |
+| Tab          | Inhalt                                                                                   |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| Grunddaten   | Name, Kategorie, Preis, Größe, Tags, Sichtbarkeit und Personalisierbar                   |
+| Bilder       | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen, Optimieren, Drehen |
+| Beschreibung | Beschreibungsfeld, „Eigene Hinweise“ für die KI und „Beschreibung vorschlagen“           |
+| Bestand      | Bestände je Lagerstätte und Buchungshistorie                                             |
 
 - Einen separaten Bilder-Dialog gibt es nicht mehr; die Bildverwaltung liegt vollständig im Tab
   **Bilder**. Einen separaten **Bestand**-Button in der Produktkarte gibt es ebenfalls nicht mehr.
@@ -556,11 +557,79 @@ eine ruhige Bestätigung und bei einem GIF der Hinweis, dass es unverändert üb
 **Bilder** steht je Bild „1600 × 1200 · 278 KB“; zu große Bilder tragen ein Warndreieck mit
 Detailhinweis, über der Liste steht ein Warnbanner mit Anzahl und den geltenden Schwellwerten
 (1600 px lange Kante und eingestellte Maximalgröße) und darunter der Button **Bilder optimieren** —
-deaktiviert, wenn nichts zu tun ist, sonst mit Ergebnis und Ersparnis in Prozent. In der Kachel sitzt
-das Warndreieck als Badge am Bild, in der Liste in der Statusspalte mit dem Text „Bilder zu groß“;
+deaktiviert, wenn nichts zu tun ist, sonst mit Ergebnis und Ersparnis in Prozent. Seit Basis 0.2.9
+trägt jede Bildkarte außerdem die beiden Drehschaltflächen **↺ 90°** und **↻ 90°**; auf schmalen
+Bildschirmen stehen damit sechs Aktionen je Karte. In der Kachel sitzt das Warndreieck als Badge am
+Bild, in der Liste in der Statusspalte mit dem Text „Bilder zu groß“;
 sein Tooltip lautet „Mindestens ein Bild ist zu groß. Produkt öffnen und Bilder optimieren.“, und ein
 Klick öffnet den Bilder-Tab. In der Liste ist das Badge genauso hoch wie das Badge
 **Personalisierbar**; treffen beide zu, stehen sie auf einer Zeile.
+
+#### Drehen
+
+Jede Bildkarte im Tab **Bilder** trägt seit Basis 0.2.9 zwei Drehschaltflächen: **↺ 90°** dreht das
+Bild nach links, also gegen den Uhrzeigersinn, **↻ 90°** dreht es nach rechts, also im
+Uhrzeigersinn. Die Schaltflächen stehen im Bearbeitungsmodus zur Verfügung — beim Anlegen eines
+Produkts noch nicht — und sind deaktiviert, solange eine Bildaktion läuft oder das Bild animiert ist;
+der Tooltip nennt dann „Animierte Bilder lassen sich nicht drehen.“ Die Vorschau im Dialog zeigt das
+Ergebnis sofort; ein Neuladen der Seite, ein erneutes Öffnen des Dialogs oder ein Tabwechsel ist
+nicht nötig. Die Drehung wird mit dem Klick gespeichert, einen eigenen Speichern-Schritt gibt es
+dafür nicht. Als Bestätigung erscheint „Bild wurde um 90° nach links gedreht.“ beziehungsweise
+„… nach rechts …“.
+
+`POST /api/frickeldave_store/products/{artikelnummer}/images/{name}/rotate` erwartet
+`{"direction": "left"}` oder `{"direction": "right"}`. Die Antwort führt unter `result` den Zustand
+vor und nach der Drehung sowie eine deutsche Meldung; `degrees` ist `-90` für links und `90` für
+rechts, `images` enthält die aktualisierte Bildliste:
+
+```json
+{
+  "result": {
+    "name": "LAKBCD-03.jpg",
+    "direction": "left",
+    "degrees": -90,
+    "before": {"bytes": 285000, "width": 1600, "height": 1200,
+               "content_type": "image/jpeg", "oversized": false},
+    "after": {"bytes": 279000, "width": 1200, "height": 1600,
+              "content_type": "image/jpeg", "oversized": false},
+    "message": "Bild um 90° gegen den Uhrzeigersinn gedreht (1600×1200 → 1200×1600)."
+  }
+}
+```
+
+| Status | Code                 | Bedeutung                                                           |
+| ------ | -------------------- | ------------------------------------------------------------------- |
+| `400`  | `validation_error`   | `direction` fehlt oder ist ungültig, ebenso ein unzulässiger `name` |
+| `404`  | `not_found`          | Produkt oder Bild existiert nicht                                   |
+| `409`  | `image_animated`     | animiertes GIF oder WebP; die Datei bleibt unverändert              |
+| `400`  | `image_invalid`      | Datei ist kein lesbares Bild                                        |
+| `500`  | `pillow_missing`     | Pillow fehlt in der Installation                                    |
+| `500`  | `image_write_failed` | Lesen oder Schreiben schlug fehl; das Original bleibt               |
+| `401`  | `not_authenticated`  | Sitzung fehlt oder ist abgelaufen                                   |
+| `403`  | `forbidden`          | Rolle Produktpflege fehlt                                           |
+
+**Formate und Qualität.** Die Drehung behält das Format bei: JPEG bleibt JPEG mit Qualität 82 und
+progressivem Aufbau; WebP bleibt WebP mit Qualität 85 und erhaltener Transparenz; PNG bleibt
+verlustfrei und behält Alpha; ein statisches GIF bleibt GIF. EXIF- und ICC-Daten fallen in allen
+Formaten weg. Vor dem Drehen wendet die Integration die EXIF-Orientierung an, damit ein
+Hochformatfoto nicht quer erscheint. Animierte GIF- und WebP-Dateien lehnt die Route bewusst mit
+`409 image_animated` ab und lässt sie unverändert — eine Drehung würde nur das erste Einzelbild
+erfassen und die Animation zerstören.
+
+**Altbestand über 1600 px.** Bilder aus der Zeit vor der automatischen Verkleinerung können eine
+längere Kante als 1600 px haben. Beim Drehen verkleinert die Integration die lange Kante auf 1600 px
+und skaliert nie hoch. Die eingestellte Maximalgröße bleibt eine Warnschwelle und wird nicht als
+Zielgröße angewendet. Danach berechnet sie `oversized` neu; das Warndreieck im Panel verschwindet,
+sobald das gedrehte Bild innerhalb beider Schwellen liegt.
+
+**Byte-Identität.** Für JPEG und WebP gilt die Zusage „bereits passende Bilder bleiben byteweise
+unverändert“ nach einer Drehung nicht mehr: Beide Formate werden neu geschrieben. Ein PNG bleibt
+pixelidentisch, die Bytes können sich durch das erneute Schreiben trotzdem unterscheiden; die
+mittlere Abweichung je Farbkanal liegt bei höchstens 2 von 255.
+
+Vor dem Schreiben legt die Integration eine Original-Sicherung der Bilddatei an. Wo sie liegt und wie
+sie zurückgespielt wird, steht unter
+[Backup und Wiederherstellung](#backup-und-wiederherstellung).
 
 ### Katalogimport
 
@@ -626,6 +695,11 @@ bleibt das Hauptbild `-01`, und jedes weitere Bild behält seine Store-Nummer, s
 Das Löschen eines Bildes erzeugt deshalb nur einen `removed`-Eintrag. Verwenden zwei Produkte
 dasselbe Foto, liegen die Dateien getrennt unter `images/<artikelnummer>/`; identische Bildinhalte
 sind kein Fehler.
+
+**Drehen und Dateinamen.** Eine Drehung ändert den Dateinamen nicht: Das veröffentlichte Bild behält
+`{artikelnummer}-NN<suffix>`, also etwa `LAKBCD-03.jpg` oder `LAKBCD-03.webp`. Der
+Veröffentlichungsablauf sieht die Datei trotzdem als geändert an, weil sich ihr Inhalt geändert hat.
+Weder die Erweiterung `frickeldave_store_syncfd` noch der Website-Code brauchen dafür eine Anpassung.
 
 Der Export endet lokal. Den Transport übernimmt die Erweiterung `frickeldave_store_syncfd`: `dev`
 wird per Commit über die Git-Data-API geschrieben, `prod` über den Workflow `fd-deploy-prd`. Siehe
@@ -1245,6 +1319,59 @@ URL-Fehler im Panel, nicht von einem fehlenden oder abgelaufenen Token.
   getestet: identische Checksummen und erhaltener Migrationsstand.
 - Ein Backup ersetzt keine Rechteprüfung: Personen mit Zugriff auf HA-Dateien oder Backups können
   die anwendungsinternen Sperren umgehen.
+- Eine Drehung von Bildern schreibt vor dem Überschreiben eine **Original-Sicherung** der Bilddatei
+  nach `backups/images/<artikelnummer>/`. Der Name setzt sich aus Zeitstempel und ursprünglichem
+  Dateinamen zusammen, etwa `backups/images/LAKBCD/2026-11-11T21-15-00Z-LAKBCD-03.jpg`; die Kopie
+  ist byteweise identisch mit dem Original und enthält dessen Pixel, nicht nur Metadaten.
+- Zusätzlich entsteht ein Metadaten-Snapshot `backups/<zeitstempel>-pre-image-rotate.json`. Er hält
+  den Store-Stand vor der Drehung fest — Bildliste, Reihenfolge und Hauptbild —, aber wie alle
+  Snapshots keine Bilddateien. Bis zu dieser Änderung enthielten Snapshots grundsätzlich keine
+  Bilddateien; die Original-Sicherung unter `backups/images/` ist neu.
+- Diese Sicherungen zählen zur Speicherbelegung: `storage.usage.backups_bytes` umfasst seit Basis
+  0.2.9 auch `backups/images/`. Die Zeile **Belegt: …** im Tab Allgemeine Einstellungen wächst also
+  mit jeder Drehung um die Größe des jeweiligen Originals. Die Integration löscht diese Sicherungen
+  nicht automatisch; die Aufbewahrung liegt bei der Administration.
+
+### Bild-Originale nach einer Drehung zurückspielen
+
+Ein Bild lässt sich nicht über das Panel auf den Stand vor einer Drehung bringen; dafür dient die
+Original-Sicherung. Reihenfolge:
+
+1. Home Assistant stoppen, damit während des Kopierens niemand schreibt.
+2. Die passende Sicherung suchen; die Liste ist nach Zeitstempel sortiert, die neueste steht oben:
+
+   ```bash
+   cd config/frickeldave_store
+   ls -1t backups/images/LAKBCD/*-LAKBCD-03.jpg
+   ```
+
+3. Den aktuellen Stand beiseitelegen:
+
+   ```bash
+   cp frickeldave_store.data "frickeldave_store.data.vor-restore-$(date +%F-%H%M)"
+   cp images/LAKBCD/LAKBCD-03.jpg "images/LAKBCD/LAKBCD-03.jpg.vor-restore-$(date +%F-%H%M)"
+   ```
+
+4. Das Original an seinen alten Platz kopieren. Die Sicherung behält die Endung der Bilddatei und
+   stellt den Zeitstempel voran, sodass das Ziel eindeutig bleibt:
+
+   ```bash
+   cp backups/images/LAKBCD/2026-11-11T21-15-00Z-LAKBCD-03.jpg images/LAKBCD/LAKBCD-03.jpg
+   ```
+
+5. Wenn auch die Metadaten zurück sollen, den Snapshot an die Stelle der Store-Datei legen:
+
+   ```bash
+   cp backups/2026-11-11T21-15-00Z-pre-image-rotate.json frickeldave_store.data
+   ```
+
+6. Home Assistant starten und im Panel Produktanzahl, Reihenfolge und das Stichprobenbild prüfen.
+   `bytes`, `width`, `height` und `oversized` ermittelt die Integration beim Lesen neu; ein fehlender
+   Eintrag in `backups/images/` lässt sich nicht rekonstruieren und muss aus einem HA-Backup kommen.
+
+Sicherungen erst löschen, wenn Produktanzahl und Stichprobenbilder stimmen. Bei `share` oder `media`
+liegt der Datenordner unter `/share/frickeldave_store/` beziehungsweise `/media/frickeldave_store/`;
+die Pfade in den Befehlen verschieben sich entsprechend.
 
 ### Wiederherstellung nach dem Datenverlust-Bug (bis 0.1.10)
 
