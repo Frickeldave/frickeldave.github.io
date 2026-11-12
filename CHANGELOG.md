@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kamera-Aufnahme im Bilder-Tab des Store-Panels: Die Feature-Dokumentation
   `docs/features/fr008-ha-manager.md` beschreibt die neue Schaltfläche **Foto aufnehmen**, die
   Sichtbarkeit über `@media (pointer: coarse)`, die deutschen Mikrotexte und die unveränderte
-  Server-Pipeline. Die Dokumentation folgt dem Integrations-Release 0.2.8 (erschienen am 12.11.2026, #321).
+  Server-Pipeline. Die Dokumentation folgt dem Integrations-Release 0.2.10 (2026-11-12, #321) mit der
+  für Android korrigierten Kamera-Aufnahme; die Bilddrehung kam mit 0.2.9 (#322).
 
 ## [1.0.15] - 2026-11-11
 

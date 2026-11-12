@@ -19,7 +19,9 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
   Token-Erneuerung im Panel ist released. Basis 0.2.7 mit dem gemeinsamen Speichern-Button und dem
   korrigierten `fetchWithAuth`-Aufruf ist am 06.11.2026 erschienen; Erweiterung 0.1.6 mit dem
   korrigierten Dispatch-Endpoint folgt. Basis 0.2.8 mit der Kamera-Aufnahme im Tab **Bilder** ist am
-  12.11.2026 erschienen; 0.2.7 bleibt unverändert. Finanz- und Kundenfunktionen bleiben geplant.
+  12.11.2026 erschienen; 0.2.9 brachte die Bilddrehung (#322), nicht die Kamera-Korrektur. Basis 0.2.10
+  mit der korrigierten Kamera-Aufnahme ist ebenfalls am 12.11.2026 erschienen; 0.2.7 bleibt unverändert.
+  Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -66,13 +68,13 @@ flowchart LR
 Seit 0.2.0 besteht das Werkzeug aus zwei Integrationen, jede mit eigenem Repository, eigener Domain
 und genau einem Integrationsverzeichnis:
 
-| Integration     | Domain                     | Repository                                           | Version |
-| --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.8` |
-| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6` |
+| Integration     | Domain                     | Repository                                           | Version  |
+| --------------- | -------------------------- | ---------------------------------------------------- | -------- |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.10` |
+| Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6`  |
 
-Basis 0.2.8 ist am 12.11.2026 erschienen und enthält die Kamera-Aufnahme im Tab **Bilder**
-([Details](#bilder)).
+Basis 0.2.10 ist am 12.11.2026 erschienen und enthält die Kamera-Aufnahme im Tab **Bilder**
+([Details](#bilder)); 0.2.9 enthielt die Bilddrehung aus #322.
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -567,24 +569,30 @@ Klick öffnet den Bilder-Tab. In der Liste ist das Badge genauso hoch wie das Ba
 **Personalisierbar**; treffen beide zu, stehen sie auf einer Zeile.
 
 **Kamera.** Auf dem Mobilgerät ergänzt die Schaltfläche **Foto aufnehmen** den Tab **Bilder**; sie steht
-über dem Dateifeld **Bilder hochladen**, das unverändert nutzbar bleibt. Ein Tipp öffnet die Kamera der
-Home-Assistant-Companion-App, das aufgenommene Foto wird sofort hochgeladen. Das Control besteht aus
-einem per `.fd-sr-only` versteckten `<input type="file" capture="environment">` ohne `multiple`: pro
-Aufnahme entsteht genau ein Bild, der Vorgang ist bis zur Grenze von zehn Bildern je Produkt
-wiederholbar. Die Sichtbarkeit regelt CSS über `@media (pointer: coarse)`; ein Desktop-Browser mit
-primärem Pointer `fine` rendert kein Aufnahme-Control, sein Bilder-Tab bleibt unverändert. Wie das
-Upload-Feld gibt es die Aufnahme nur bei einem bereits gespeicherten Produkt, weil die Bild-API die
-Artikelnummer braucht; im Anlegen-Dialog fehlt sie. Unter der Schaltfläche steht der Hinweis „Ein Foto
-pro Aufnahme, bis zu 10 Bilder je Produkt.“. Ist das Limit erreicht, sind Schaltfläche und Feld
-deaktiviert und es erscheint der vorhandene Satz „Die maximale Anzahl ist erreicht. Bitte zuerst ein
-Bild löschen.“. Ein abgebrochenes Foto meldet still „Es wurde kein Foto aufgenommen.“. Ohne Kamera oder
-Berechtigung steht „Kamera nicht verfügbar. Bitte die Kamera-Berechtigung der Home-Assistant-App in den
-Systemeinstellungen prüfen.“, bei einem HEIC- oder HEIF-Foto „Dieses Bildformat wird nicht unterstützt.
-Bitte ein Foto aufnehmen oder als JPEG hochladen.“. Kamera-Fotos laufen durch dieselbe Server-Pipeline
-wie Galerie-Uploads: lange Kante höchstens 1600 px, EXIF und ICC entfernt, die Grenzen von 10 MiB und
-zehn Bildern je Produkt bleiben unverändert. Zielgeräte sind die Android- und iOS-App von Home
-Assistant; die Abnahme erfolgt manuell auf echter Hardware, weil das Panel keinen Browser-Test hat. Die
-Aufnahme kommt mit Basis 0.2.8, die am 12.11.2026 erschienen ist.
+über dem Dateifeld **Bilder hochladen**, das unverändert nutzbar bleibt. Ein Tipp öffnet die Kamera
+direkt im Panel: `navigator.mediaDevices.getUserMedia` liefert den Videostream, bevorzugt von der
+rückseitigen Kamera, die Vorschau zeigt das Bild, **Auslösen** übernimmt es und **Abbrechen** schließt
+sie; der Schnappschuss geht auf 1600 px lange Kante begrenzt als JPEG durch denselben Upload-Pfad.
+Fehlt `getUserMedia` oder wird die Berechtigung abgelehnt, bleibt das per `.fd-sr-only` versteckte
+`<input type="file" capture="environment">` ohne `multiple` als Rückfall, und der Host öffnet seine
+eigene Auswahl, auf Android die Galerie. `getUserMedia` braucht einen sicheren Kontext: über `https://`
+startet die Kamera, über `http://homeassistant.local:8123` fehlt `navigator.mediaDevices` und der
+Host-Picker erscheint wieder. Pro Aufnahme entsteht genau ein Bild, der Vorgang ist bis zur Grenze von
+zehn Bildern je Produkt wiederholbar. Die Sichtbarkeit regelt CSS über `@media (pointer: coarse)`; ein
+Desktop-Browser mit primärem Pointer `fine` rendert kein Aufnahme-Control, sein Bilder-Tab bleibt
+unverändert. Wie das Upload-Feld gibt es die Aufnahme nur bei einem bereits gespeicherten Produkt, weil
+die Bild-API die Artikelnummer braucht; im Anlegen-Dialog fehlt sie. Unter der Schaltfläche steht der
+Hinweis „Ein Foto pro Aufnahme, bis zu 10 Bilder je Produkt.“. Ist das Limit erreicht, sind Schaltfläche
+und Feld deaktiviert und es erscheint der vorhandene Satz „Die maximale Anzahl ist erreicht. Bitte
+zuerst ein Bild löschen.“. Ein abgebrochenes Foto meldet still „Es wurde kein Foto aufgenommen.“. Ohne
+Kamera oder Berechtigung steht „Kamera nicht verfügbar. Bitte die Kamera-Berechtigung der
+Home-Assistant-App in den Systemeinstellungen prüfen.“, bei einem HEIC- oder HEIF-Foto „Dieses Bildformat
+wird nicht unterstützt. Bitte ein Foto aufnehmen oder als JPEG hochladen.“. Kamera-Fotos laufen durch
+dieselbe Server-Pipeline wie Galerie-Uploads: lange Kante höchstens 1600 px, EXIF und ICC entfernt, die
+Grenzen von 10 MiB und zehn Bildern je Produkt bleiben unverändert. Zielgeräte sind die Android- und
+iOS-App von Home Assistant; die Abnahme erfolgt manuell auf echter Hardware, weil das Panel keinen
+Browser-Test hat. Die Aufnahme kommt mit Basis 0.2.10, die am 12.11.2026 erschienen ist und die
+Kamera-Korrektur enthält; 0.2.8 öffnete auf Android noch die Galerie.
 
 ### Katalogimport
 
