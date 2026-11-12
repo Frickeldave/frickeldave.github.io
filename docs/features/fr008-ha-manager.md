@@ -19,8 +19,9 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
   Token-Erneuerung im Panel ist released. Basis 0.2.7 mit dem gemeinsamen Speichern-Button und dem
   korrigierten `fetchWithAuth`-Aufruf ist am 06.11.2026 erschienen; Erweiterung 0.1.6 mit dem
   korrigierten Dispatch-Endpoint folgt. Basis 0.2.8 mit der Kamera-Aufnahme im Tab **Bilder** ist am
-  12.11.2026 erschienen; 0.2.9 brachte die Bilddrehung (#322), nicht die Kamera-Korrektur. Basis 0.2.10
-  mit der korrigierten Kamera-Aufnahme ist ebenfalls am 12.11.2026 erschienen; 0.2.7 bleibt unverändert.
+  12.11.2026 erschienen; 0.2.9 brachte die Bilddrehung (#322), nicht die Kamera-Korrektur. Basis 0.2.11
+  mit dem sichtbaren Hinweis auf die https-Voraussetzung der Kamera ist ebenfalls am 12.11.2026
+  erschienen; 0.2.7 bleibt unverändert.
   Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
@@ -70,11 +71,11 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version  |
 | --------------- | -------------------------- | ---------------------------------------------------- | -------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.10` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.11` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6`  |
 
-Basis 0.2.10 ist am 12.11.2026 erschienen und enthält die Kamera-Aufnahme im Tab **Bilder**
-([Details](#bilder)); 0.2.9 enthielt die Bilddrehung aus #322.
+Basis 0.2.11 ist am 12.11.2026 erschienen und erklärt die https-Voraussetzung der Kamera
+([Details](#bilder)); 0.2.10 brachte den `getUserMedia`-Pfad, 0.2.9 die Bilddrehung aus #322.
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -575,24 +576,32 @@ rückseitigen Kamera, die Vorschau zeigt das Bild, **Auslösen** übernimmt es u
 sie; der Schnappschuss geht auf 1600 px lange Kante begrenzt als JPEG durch denselben Upload-Pfad.
 Fehlt `getUserMedia` oder wird die Berechtigung abgelehnt, bleibt das per `.fd-sr-only` versteckte
 `<input type="file" capture="environment">` ohne `multiple` als Rückfall, und der Host öffnet seine
-eigene Auswahl, auf Android die Galerie. `getUserMedia` braucht einen sicheren Kontext: über `https://`
-startet die Kamera, über `http://homeassistant.local:8123` fehlt `navigator.mediaDevices` und der
-Host-Picker erscheint wieder. Pro Aufnahme entsteht genau ein Bild, der Vorgang ist bis zur Grenze von
-zehn Bildern je Produkt wiederholbar. Die Sichtbarkeit regelt CSS über `@media (pointer: coarse)`; ein
+eigene Auswahl, auf Android die Galerie. Die Kamera braucht einen sicheren Kontext, also einen
+`https`-Origin: Über die interne `http`-Adresse wie `http://homeassistant.local:8123` fehlt
+`navigator.mediaDevices`, und statt der Aufnahme öffnet der Host seine Auswahl, auf Android die
+Galerie. Seit Basis 0.2.11 unterscheidet das Panel drei Fälle mit eigenem deutschen Hinweis —
+unsicherer Kontext, fehlendes `getUserMedia` im sicheren Kontext, abgelehnte Berechtigung. Über `http`
+steht der Hinweis vorab: „Kamera nur über eine https-Verbindung. Über die lokale http-Adresse öffnet
+Android die Galerie — nutze die Home-Assistant-Cloud oder eine https-Adresse als interne URL.“, und die
+Schaltfläche heißt dann **Bild auswählen** statt **Foto aufnehmen**, verknüpft über
+`aria-describedby`. Zwei Wege führen zur Kamera: die Home-Assistant-Cloud (https) oder eine
+`https`-interne URL über einen Reverse Proxy mit gültigem Zertifikat; in der App ist die Cloud-Adresse
+zu bevorzugen. Pro Aufnahme entsteht genau ein Bild, der Vorgang ist bis zur Grenze von zehn
+Bildern je Produkt wiederholbar. Die Sichtbarkeit regelt CSS über `@media (pointer: coarse)`; ein
 Desktop-Browser mit primärem Pointer `fine` rendert kein Aufnahme-Control, sein Bilder-Tab bleibt
 unverändert. Wie das Upload-Feld gibt es die Aufnahme nur bei einem bereits gespeicherten Produkt, weil
 die Bild-API die Artikelnummer braucht; im Anlegen-Dialog fehlt sie. Unter der Schaltfläche steht der
 Hinweis „Ein Foto pro Aufnahme, bis zu 10 Bilder je Produkt.“. Ist das Limit erreicht, sind Schaltfläche
 und Feld deaktiviert und es erscheint der vorhandene Satz „Die maximale Anzahl ist erreicht. Bitte
-zuerst ein Bild löschen.“. Ein abgebrochenes Foto meldet still „Es wurde kein Foto aufgenommen.“. Ohne
-Kamera oder Berechtigung steht „Kamera nicht verfügbar. Bitte die Kamera-Berechtigung der
-Home-Assistant-App in den Systemeinstellungen prüfen.“, bei einem HEIC- oder HEIF-Foto „Dieses Bildformat
-wird nicht unterstützt. Bitte ein Foto aufnehmen oder als JPEG hochladen.“. Kamera-Fotos laufen durch
-dieselbe Server-Pipeline wie Galerie-Uploads: lange Kante höchstens 1600 px, EXIF und ICC entfernt, die
-Grenzen von 10 MiB und zehn Bildern je Produkt bleiben unverändert. Zielgeräte sind die Android- und
-iOS-App von Home Assistant; die Abnahme erfolgt manuell auf echter Hardware, weil das Panel keinen
-Browser-Test hat. Die Aufnahme kommt mit Basis 0.2.10, die am 12.11.2026 erschienen ist und die
-Kamera-Korrektur enthält; 0.2.8 öffnete auf Android noch die Galerie.
+zuerst ein Bild löschen.“. Ein abgebrochenes Foto meldet still „Es wurde kein Foto aufgenommen.“. Bei
+fehlender Kamera oder abgelehnter Berechtigung steht „Kamera nicht verfügbar. Bitte die
+Kamera-Berechtigung der Home-Assistant-App in den Systemeinstellungen prüfen.“, bei einem HEIC- oder
+HEIF-Foto „Dieses Bildformat wird nicht unterstützt. Bitte ein Foto aufnehmen oder als JPEG
+hochladen.“. Kamera-Fotos laufen durch dieselbe Server-Pipeline wie Galerie-Uploads: lange Kante
+höchstens 1600 px, EXIF und ICC entfernt, die Grenzen von 10 MiB und zehn Bildern je Produkt bleiben
+unverändert. Zielgeräte sind die Android- und iOS-App von Home Assistant; die Abnahme erfolgt manuell
+auf echter Hardware, weil das Panel keinen Browser-Test hat. Die Aufnahme kommt mit Basis 0.2.10, die
+am 12.11.2026 erschienen ist und die Kamera-Korrektur enthält; 0.2.8 öffnete auf Android noch die Galerie.
 
 ### Katalogimport
 
