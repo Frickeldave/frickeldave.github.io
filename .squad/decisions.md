@@ -170,6 +170,32 @@ In `tests/test_config_flow.py`, await the dependency setup before the test ends
 (`await hass.async_block_till_done()` after `flow.async_init`) or accept the documented HA-internal
 timer, so the HTTP config save is scheduled while HA is still running. Out of scope for this PR.
 
+#### 2026-11-12T10:52:00+00:00: Release 0.2.9: Merge-Konflikt in `feat/322-bilder-drehen` aufgelöst
+
+- **Datum:** 2026-11-12
+- **Agent:** Nick (DevOps/Infrastructure)
+- **Kontext:** Release 0.2.9 aus PR #12 (`Frickeldave/homeassistant-frickeldave-store`).
+
+##### Entscheidung
+
+PR #12 war nach dem Merge von #321 (0.2.8) `CONFLICTING`; dadurch existierte kein
+`refs/pull/12/merge` und GitHub startete **keine** `pull_request`-CI. Vor dem Merge
+wurde `origin/main` (1e9975c) in den Feature-Branch gemergt (Merge-Commit bca58aa)
+und die Konflikte wurden aufgelöst:
+
+- `const.py`, `manifest.json`, `pyproject.toml`: Version bleibt **0.2.9**.
+- `CHANGELOG.md`: beide Einträge unter `[Unreleased]`/`Added`, #322 zuerst.
+- `tests/test_views.py`: Import vereinigt (`MAX_IMAGE_BYTES`, `CatalogStore`,
+  `ImageStorage`).
+
+Lokal verifiziert mit ruff, mypy, 328 Backend-Tests und 35 Frontend-Tests; CI auf
+bca58aa vollständig grün. Squash-Merge nach `main`: 4f56dc9, Tag/Release `0.2.9`.
+
+##### Folge
+
+Branches, die auf einem älteren `main` basieren, sollten vor dem PR-Öffnen gegen
+`main` aktualisiert werden – sonst läuft keine PR-CI, weil der Merge-Ref fehlt.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
