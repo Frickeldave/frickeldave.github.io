@@ -18,9 +18,8 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
   Speicherbelegung im Konfigurationspanel ist released. Basis 0.2.6 mit der automatischen
   Token-Erneuerung im Panel ist released. Basis 0.2.7 mit dem gemeinsamen Speichern-Button und dem
   korrigierten `fetchWithAuth`-Aufruf ist am 06.11.2026 erschienen; Erweiterung 0.1.6 mit dem
-  korrigierten Dispatch-Endpoint folgt. Die Kamera-Aufnahme im Tab **Bilder** kommt mit Basis 0.2.8,
-  die 0.2.7 unverändert lässt; 0.2.8 war am 11.11.2026 noch nicht getaggt. Finanz- und
-  Kundenfunktionen bleiben geplant.
+  korrigierten Dispatch-Endpoint folgt. Basis 0.2.8 mit der Kamera-Aufnahme im Tab **Bilder** ist am
+  12.11.2026 erschienen; 0.2.7 bleibt unverändert. Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -72,8 +71,8 @@ und genau einem Integrationsverzeichnis:
 | Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.8` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6` |
 
-Die Kamera-Aufnahme im Tab **Bilder** ([Details](#bilder)) kommt mit Basis 0.2.8; diese Version war am
-11.11.2026 noch nicht getaggt, die Spalte nennt deshalb die vorgesehene Zielversion.
+Basis 0.2.8 ist am 12.11.2026 erschienen und enthält die Kamera-Aufnahme im Tab **Bilder**
+([Details](#bilder)).
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -585,8 +584,7 @@ Bitte ein Foto aufnehmen oder als JPEG hochladen.“. Kamera-Fotos laufen durch 
 wie Galerie-Uploads: lange Kante höchstens 1600 px, EXIF und ICC entfernt, die Grenzen von 10 MiB und
 zehn Bildern je Produkt bleiben unverändert. Zielgeräte sind die Android- und iOS-App von Home
 Assistant; die Abnahme erfolgt manuell auf echter Hardware, weil das Panel keinen Browser-Test hat. Die
-Aufnahme kommt mit Basis 0.2.8; diese Version war zum Zeitpunkt der Erstellung dieses Textes noch nicht
-getaggt.
+Aufnahme kommt mit Basis 0.2.8, die am 12.11.2026 erschienen ist.
 
 ### Katalogimport
 
