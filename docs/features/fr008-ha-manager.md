@@ -17,8 +17,8 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
   Veröffentlichungsdialog ist released. Basis 0.2.5 mit der einstellbaren Bildgrenze und der
   Speicherbelegung im Konfigurationspanel ist released. Basis 0.2.6 mit der automatischen
   Token-Erneuerung im Panel ist released. Basis 0.2.7 mit dem gemeinsamen Speichern-Button und dem
-  korrigierten `fetchWithAuth`-Aufruf ist in Vorbereitung; Basis 0.2.9 mit dem Drehen von
-  Produktbildern um 90 Grad folgt. Erweiterung 0.1.6 mit dem korrigierten Dispatch-Endpoint steht
+  korrigierten `fetchWithAuth`-Aufruf ist released. Basis 0.2.9 mit dem Drehen von Produktbildern um
+  90 Grad ist am 12.11.2026 released. Erweiterung 0.1.6 mit dem korrigierten Dispatch-Endpoint steht
   ebenfalls noch aus. Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
