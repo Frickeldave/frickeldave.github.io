@@ -17,8 +17,9 @@ Synchronisation nach frickeldave.de aus der eigenständigen Erweiterung `frickel
   Veröffentlichungsdialog ist released. Basis 0.2.5 mit der einstellbaren Bildgrenze und der
   Speicherbelegung im Konfigurationspanel ist released. Basis 0.2.6 mit der automatischen
   Token-Erneuerung im Panel ist released. Basis 0.2.7 mit dem gemeinsamen Speichern-Button und dem
-  korrigierten `fetchWithAuth`-Aufruf ist in Vorbereitung; Erweiterung 0.1.6 mit dem korrigierten
-  Dispatch-Endpoint folgt. Finanz- und Kundenfunktionen bleiben geplant.
+  korrigierten `fetchWithAuth`-Aufruf ist am 06.11.2026 erschienen; Erweiterung 0.1.6 mit dem
+  korrigierten Dispatch-Endpoint folgt. Basis 0.2.8 mit der Kamera-Aufnahme im Tab **Bilder** ist am
+  12.11.2026 erschienen; 0.2.7 bleibt unverändert. Finanz- und Kundenfunktionen bleiben geplant.
 
 > Hinweis zur Repository-Bezeichnung: Die Spezifikation in #289 nennt
 > `Frickeldave/frickeldave-store`. Am 27.10.2026 lag die Integration im Repository
@@ -67,8 +68,11 @@ und genau einem Integrationsverzeichnis:
 
 | Integration     | Domain                     | Repository                                           | Version |
 | --------------- | -------------------------- | ---------------------------------------------------- | ------- |
-| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.7` |
+| Basis           | `frickeldave_store`        | `Frickeldave/homeassistant-frickeldave-store`        | `0.2.8` |
 | Synchronisation | `frickeldave_store_syncfd` | `Frickeldave/homeassistant-frickeldave-store-syncfd` | `0.1.6` |
+
+Basis 0.2.8 ist am 12.11.2026 erschienen und enthält die Kamera-Aufnahme im Tab **Bilder**
+([Details](#bilder)).
 
 - Basis: `custom_components/frickeldave_store/`.
 - Erweiterung: `custom_components/frickeldave_store_syncfd/`.
@@ -479,12 +483,12 @@ Felder. Beide Bedienelemente teilen denselben Sortierzustand.
 **Neues Produkt** und **Produkt bearbeiten** öffnen denselben Dialog mit vier Tabs in dieser
 Reihenfolge:
 
-| Tab          | Inhalt                                                                           |
-| ------------ | -------------------------------------------------------------------------------- |
-| Grunddaten   | Name, Kategorie, Preis, Größe, Tags, Sichtbarkeit und Personalisierbar           |
-| Bilder       | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen, Optimieren |
-| Beschreibung | Beschreibungsfeld, „Eigene Hinweise“ für die KI und „Beschreibung vorschlagen“   |
-| Bestand      | Bestände je Lagerstätte und Buchungshistorie                                     |
+| Tab          | Inhalt                                                                                           |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| Grunddaten   | Name, Kategorie, Preis, Größe, Tags, Sichtbarkeit und Personalisierbar                           |
+| Bilder       | Bildverwaltung: maximal zehn Bilder, Reihenfolge, Hauptbild, Löschen, Optimieren, Kameraaufnahme |
+| Beschreibung | Beschreibungsfeld, „Eigene Hinweise“ für die KI und „Beschreibung vorschlagen“                   |
+| Bestand      | Bestände je Lagerstätte und Buchungshistorie                                                     |
 
 - Einen separaten Bilder-Dialog gibt es nicht mehr; die Bildverwaltung liegt vollständig im Tab
   **Bilder**. Einen separaten **Bestand**-Button in der Produktkarte gibt es ebenfalls nicht mehr.
@@ -561,6 +565,26 @@ das Warndreieck als Badge am Bild, in der Liste in der Statusspalte mit dem Text
 sein Tooltip lautet „Mindestens ein Bild ist zu groß. Produkt öffnen und Bilder optimieren.“, und ein
 Klick öffnet den Bilder-Tab. In der Liste ist das Badge genauso hoch wie das Badge
 **Personalisierbar**; treffen beide zu, stehen sie auf einer Zeile.
+
+**Kamera.** Auf dem Mobilgerät ergänzt die Schaltfläche **Foto aufnehmen** den Tab **Bilder**; sie steht
+über dem Dateifeld **Bilder hochladen**, das unverändert nutzbar bleibt. Ein Tipp öffnet die Kamera der
+Home-Assistant-Companion-App, das aufgenommene Foto wird sofort hochgeladen. Das Control besteht aus
+einem per `.fd-sr-only` versteckten `<input type="file" capture="environment">` ohne `multiple`: pro
+Aufnahme entsteht genau ein Bild, der Vorgang ist bis zur Grenze von zehn Bildern je Produkt
+wiederholbar. Die Sichtbarkeit regelt CSS über `@media (pointer: coarse)`; ein Desktop-Browser mit
+primärem Pointer `fine` rendert kein Aufnahme-Control, sein Bilder-Tab bleibt unverändert. Wie das
+Upload-Feld gibt es die Aufnahme nur bei einem bereits gespeicherten Produkt, weil die Bild-API die
+Artikelnummer braucht; im Anlegen-Dialog fehlt sie. Unter der Schaltfläche steht der Hinweis „Ein Foto
+pro Aufnahme, bis zu 10 Bilder je Produkt.“. Ist das Limit erreicht, sind Schaltfläche und Feld
+deaktiviert und es erscheint der vorhandene Satz „Die maximale Anzahl ist erreicht. Bitte zuerst ein
+Bild löschen.“. Ein abgebrochenes Foto meldet still „Es wurde kein Foto aufgenommen.“. Ohne Kamera oder
+Berechtigung steht „Kamera nicht verfügbar. Bitte die Kamera-Berechtigung der Home-Assistant-App in den
+Systemeinstellungen prüfen.“, bei einem HEIC- oder HEIF-Foto „Dieses Bildformat wird nicht unterstützt.
+Bitte ein Foto aufnehmen oder als JPEG hochladen.“. Kamera-Fotos laufen durch dieselbe Server-Pipeline
+wie Galerie-Uploads: lange Kante höchstens 1600 px, EXIF und ICC entfernt, die Grenzen von 10 MiB und
+zehn Bildern je Produkt bleiben unverändert. Zielgeräte sind die Android- und iOS-App von Home
+Assistant; die Abnahme erfolgt manuell auf echter Hardware, weil das Panel keinen Browser-Test hat. Die
+Aufnahme kommt mit Basis 0.2.8, die am 12.11.2026 erschienen ist.
 
 ### Katalogimport
 

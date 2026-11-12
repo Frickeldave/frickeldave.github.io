@@ -3515,6 +3515,50 @@ richtigen Abhilfe statt in die falsche Spur einer fehlenden Benutzerfreigabe.
 **What:** `docs/features/fr008-ha-manager.md` beschreibt im Tab Allgemeine Einstellungen den gemeinsamen Button **Einstellungen speichern** für Speicherort samt Backup-Schalter und Bild-Maximalgröße, die Wirkung von **Änderung verwerfen** auf beide Bereiche, den PATCH mit ausschließlich geänderten Abschnitten und den Reload nur bei geändertem Speicherort. Neuer Abschnitt „Verbindung zum Server fehlgeschlagen (0.2.6 bis 0.2.7)“ erklärt den URL-Fehler. Versionsbasis in Tabelle und Statuszeile auf 0.2.7 gehoben. `CHANGELOG.md` ergänzt unter `## [Unreleased]` je einen Eintrag in `### Fixed` und `### Changed`.
 **Why:** Die absolute URL verdoppelte `auth.data.hassUrl` über `fetchWithAuth`, sodass jeder Panel-Aufruf mit „Verbindung zum Server fehlgeschlagen“ endete; ein separater Button für die Bildgröße war neben dem allgemeinen Speichern überflüssig.
 
+### 2026-11-11T21-05-01: Kamera-Aufnahme im Store-Panel erscheint mit Basis 0.2.8
+**By:** Squad (Coordinator)
+**What:** Kamera-Aufnahme im Store-Panel erscheint mit Basis 0.2.8
+**Why:**
+
+#### 2026-11-11: Release-Version der Kamera-Aufnahme (#321) entschieden
+
+**By:** David Koenig (via Copilot), festgehalten vom Squad-Koordinator
+**What:** Die in #321 spezifizierte Kamera-Aufnahme im Bilder-Tab des Store-Panels wird mit der Basis-Version **0.2.8** der Integration `frickeldave_store` live gesetzt; 0.2.7 bleibt unverändert.
+**Why:** Der offene Punkt aus `### Offene Fragen` in #321 (Owner Tony/Maria) ist damit entschieden.
+
+Konsequenzen:
+
+- `docs/features/fr008-ha-manager.md` (dieses Repository): Statuszeile, Versionstabelle und der `**Kamera.**`-Absatz nennen 0.2.8 als Release-Version statt „entscheidet der Store-PR“.
+- `CHANGELOG.md` (dieses Repository): `## [Unreleased]`-Eintrag zu #321 nennt 0.2.8.
+- Status der Integration am 2026-11-11 geprüft: `manifest.json` führt `0.2.7`, letzter Tag und letztes Release ist `0.2.7` (2026-11-06). 0.2.8 ist noch nicht getaggt — die Doku nennt 0.2.8 deshalb als Ziel-/Vorbereitungsversion, nicht als bereits veröffentlichtes Artefakt.
+- Die Code-Umsetzung (Panel, Tests, Manifest/CHANGELOG der Integration) bleibt in `Frickeldave/homeassistant-frickeldave-store` und ist nicht Teil dieses Repositorys.
+
+### 2026-11-12T06-39-05: Basis 0.2.8 mit Kamera-Aufnahme released (Tag 1e9975c)
+**By:** Squad (Coordinator)
+**What:** Basis 0.2.8 mit Kamera-Aufnahme released (Tag 1e9975c)
+**Why:**
+
+#### 2026-11-12: Basis 0.2.8 released (#321)
+
+**By:** David Koenig (via Copilot), ausgeführt vom Squad-Koordinator
+**What:** Die Kamera-Aufnahme aus #321 ist mit Basis **0.2.8** der Integration `frickeldave_store` veröffentlicht.
+
+Belege:
+
+- Code-PR `Frickeldave/homeassistant-frickeldave-store#10` als Squash nach `main` gemergt → `1e9975c`.
+- Annotierter Tag `0.2.8` auf `1e9975c`, gepusht.
+- GitHub-Release `0.2.8 — Foto aufnehmen im Bilder-Tab` am 2026-11-12T06:31:49Z veröffentlicht (Latest).
+- Im getaggten Tree tragen `manifest.json`, `const.py` (`VERSION`) und `pyproject.toml` `0.2.8`.
+- CI auf dem PR vollständig grün (`pytest` 281, `Ruff`, `mypy`, `Frontend`, `hassfest`, HACS).
+
+**Why:** Der offene Punkt aus #321 ist abgeschlossen; die Geräte-Abnahme (Kriterien 1, 3–11) läuft beim
+Nutzer auf Android und iOS nach.
+
+Konsequenzen:
+
+- `docs/features/fr008-ha-manager.md` nennt 0.2.8 als released (erschienen 2026-11-12), nicht mehr als Zielversion.
+- Ein Website-Release dieses Repositorys ist damit **nicht** verbunden: die Doku-Änderung bleibt `release:no` und erreicht die Seite erst über `fd-promote-prd`.
+
 ## Governance
 
 - Alle bedeutenden Änderungen erfordern Teamkonsens
